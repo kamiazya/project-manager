@@ -462,7 +462,13 @@ Lock file naming convention:
   ],
   "operation_risk": "high|medium|low",
   "user_confirmed": true,
-  "timestamp": "2024-01-01T12:00:00Z"
+  "timestamp": "2024-01-01T12:00:00Z",
+  "safeguard": {
+    "type": "user_confirmation",
+    "confirmation_requested_at": "2024-01-01T12:00:00Z",
+    "user_confirmed_at": "2024-01-01T12:00:30Z",
+    "confirmation_details": "Delete 15 files in /docs directory"
+  }
 }
 ```
 
@@ -472,18 +478,9 @@ Lock file naming convention:
 - **Medium Risk**: Significant modifications, schema changes
 - **Low Risk**: Read operations, minor updates, formatting changes
 
-### Safeguard Records
+### Safeguard Integration
 
-```json
-{
-  "operation_id": "op_123",
-  "risk_level": "high",
-  "safeguard_type": "user_confirmation",
-  "confirmation_requested_at": "2024-01-01T12:00:00Z",
-  "user_confirmed_at": "2024-01-01T12:00:30Z",
-  "confirmation_details": "Delete 15 files in /docs directory"
-}
-```
+Safeguard data is nested within the main operation document to keep related data together and simplify the data model. The `safeguard` field is only present for operations that require user confirmation (high-risk operations).
 
 ## Related Documentation
 
