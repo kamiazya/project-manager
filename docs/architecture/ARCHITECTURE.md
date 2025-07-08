@@ -113,10 +113,12 @@ Project Manager is a local-first ticket management system designed to enable eff
 - File-based templates
 
 **AI Integration**
-- Model Context Protocol (MCP) server
+- Model Context Protocol (MCP) server (mandatory standard)
 - Support for multiple AI providers
-- Language bridging capabilities
+- Language bridging capabilities  
 - AI Resource Management (optional)
+- Git-style co-authorship model for AI operations
+- AI-optional design (all basic features work without AI)
 
 ### 5.2. Data Storage
 
@@ -143,6 +145,8 @@ project-root/
 - Markdown for documentation and templates
 - Timestamps for chronological ordering
 - Lock files for concurrent access control (item-level granularity)
+- **Version Control**: Snapshot-based storage initially, with future migration to diff-based storage
+- **Co-authorship Tracking**: Record both AI agent and human instructor for all AI operations
 
 ## 6. Integration Architecture
 
@@ -182,6 +186,8 @@ project-root/
 - Secure storage of API keys and credentials
 - Audit logging for all operations
 - Privacy controls for sensitive information
+- **AI Operation Safeguards**: User confirmation steps before AI executes destructive operations
+- **Operation Risk Assessment**: Categorize operations by risk level (high/medium/low) to determine appropriate safeguards
 
 ### 7.2. Integration Security
 

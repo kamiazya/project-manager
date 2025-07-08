@@ -446,6 +446,45 @@ Lock file naming convention:
 - Lock presence indicates active lock
 - Expired locks are automatically cleaned up based on timestamp
 
+## AI Operations Tracking
+
+### Co-authorship Format
+
+```json
+{
+  "author": "user123",
+  "co_authors": [
+    {
+      "type": "ai",
+      "agent": "claude-3",
+      "instructed_by": "user123"
+    }
+  ],
+  "operation_risk": "high|medium|low",
+  "user_confirmed": true,
+  "timestamp": "2024-01-01T12:00:00Z"
+}
+```
+
+### Operation Risk Levels
+
+- **High Risk**: File deletion, bulk operations, destructive changes
+- **Medium Risk**: Significant modifications, schema changes
+- **Low Risk**: Read operations, minor updates, formatting changes
+
+### Safeguard Records
+
+```json
+{
+  "operation_id": "op_123",
+  "risk_level": "high",
+  "safeguard_type": "user_confirmation",
+  "confirmation_requested_at": "2024-01-01T12:00:00Z",
+  "user_confirmed_at": "2024-01-01T12:00:30Z",
+  "confirmation_details": "Delete 15 files in /docs directory"
+}
+```
+
 ## Related Documentation
 
 - [Domain Models](../../contexts/ticket_management/DOMAIN_MODEL.md) - Business concept definitions

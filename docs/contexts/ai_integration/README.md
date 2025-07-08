@@ -23,6 +23,10 @@ The AI Integration context manages the collaboration between human developers an
 - Language translation maintains semantic accuracy
 - Resource usage should be monitored and reported (optional)
 - Context generation should adapt to model constraints
+- **MCP Protocol**: Mandatory for all AI integrations
+- **Operation Risk Assessment**: All operations categorized by risk level (high/medium/low)
+- **Destructive Operation Safeguards**: User confirmation required for high-risk operations
+- **Co-authorship Tracking**: Record both AI agent and human instructor for all operations
 
 ## Domain Model Overview
 
@@ -36,6 +40,9 @@ Represents an AI system participating in development workflows.
 - Manage current task assignment
 - Maintain session context
 - Record interaction history
+- **Co-authorship Tracking**: Record human instructor for all operations
+- **Operation Risk Assessment**: Evaluate and categorize operation risk levels
+- **Safeguard Execution**: Implement user confirmation for destructive operations
 
 #### Design Proposal
 Technical design requiring validation before implementation.
