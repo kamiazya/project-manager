@@ -249,7 +249,7 @@ Epic (Strategic Level)
 
 When creating tasks for collaborators working asynchronously with limited context (AI agents, remote developers, new contributors), proper task structure is critical for success.
 
-For comprehensive guidelines on structuring tasks for asynchronous delegation, see [Asynchronous Delegation Best Practices](./docs/best-practices/asynchronous-delegation.md).
+For comprehensive guidelines on structuring tasks for asynchronous delegation, see [Asynchronous Delegation Best Practices](docs/best-practices/asynchronous-delegation.md).
 
 #### Key Principles
 1. **Self-Contained Tasks**: Include all necessary information upfront

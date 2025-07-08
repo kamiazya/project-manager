@@ -123,7 +123,7 @@ The project is in early development phase with comprehensive requirements and ar
 
 When creating tasks that will be executed asynchronously (by AI agents, remote developers, or new contributors), proper structure is essential for success.
 
-For detailed guidelines and examples, see [Asynchronous Delegation Best Practices](./docs/best-practices/asynchronous-delegation.md).
+For detailed guidelines and examples, see [Asynchronous Delegation Best Practices](docs/best-practices/asynchronous-delegation.md).
 
 **Key Points for AI Agents:**
 - Use extreme precision with literal specifications

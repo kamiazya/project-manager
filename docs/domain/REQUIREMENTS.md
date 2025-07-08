@@ -34,7 +34,7 @@ Enable comprehensive issue tracking with rich context for both human and AI coll
 - All development work organized through issues
 - Implementation approaches reviewed before coding
 - Decision rationale preserved for future reference
-- Tasks can be effectively delegated asynchronously
+- Asynchronous collaboration achieves high effectiveness
 
 ### BR-2: Local-First Project Management
 **ID**: REQ-002  
