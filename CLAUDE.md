@@ -169,6 +169,7 @@ This project follows an integrated AI-driven development approach. See @docs/DEV
 **Second Opinion Principle**: Leverage multiple AI systems for independent validation and critical evaluation. See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed AI interaction guidelines and best practices.
 
 **AI Safety Guidelines**:
+
 - **Destructive Operation Safeguards**: AI requires user confirmation before executing potentially destructive operations (file deletion, bulk overwrites)
 - **Operation Risk Assessment**: Operations are categorized by risk level to determine appropriate safeguards
 - **Co-authorship Model**: All AI operations record both the AI agent and human instructor following Git-style co-authorship
