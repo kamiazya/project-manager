@@ -101,7 +101,6 @@ Connect with existing project management tools while maintaining local control.
 
 **Key Capabilities**:
 - Sync with GitHub Issues, Jira, etc.
-- External tool-based synchronization
 - Selective synchronization
 - Plugin architecture
 
