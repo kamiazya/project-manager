@@ -245,6 +245,22 @@ Epic (Strategic Level)
 - **Ownership**: AI-driven execution with human oversight
 - **Example**: "Implement login API endpoint with validation"
 
+### Effective Asynchronous Delegation
+
+When creating tasks for collaborators working asynchronously with limited context (AI agents, remote developers, new contributors), proper task structure is critical for success.
+
+For comprehensive guidelines on structuring tasks for asynchronous delegation, see [Asynchronous Delegation Best Practices](docs/best-practices/asynchronous-delegation.md).
+
+#### Key Principles
+1. **Self-Contained Tasks**: Include all necessary information upfront
+2. **Clear Success Criteria**: Define measurable outcomes
+3. **Atomic Scope**: Ensure tasks are independently executable
+
+#### Quick Reference
+- **For AI Agents**: Use extreme precision, literal specifications, concrete examples
+- **For Remote Developers**: Provide context, rationale, and areas for judgment
+- **For Both**: Ensure tasks can be completed without clarification
+
 ### Single Responsibility Principle
 
 Each Task must adhere to the Single Responsibility Principle:
@@ -458,6 +474,14 @@ For detailed ADR guidelines, see [Architecture Decision Records](./docs/architec
 - Use AI for code generation, review, and refactoring suggestions
 - Combine human creativity with AI processing capabilities
 - Maintain human oversight of AI-generated code
+
+### Working with AI and Automation
+
+The project supports various forms of AI and automated assistance. When leveraging these tools:
+
+1. **Task Structure**: Follow the guidelines in [Asynchronous Delegation Best Practices](./docs/best-practices/asynchronous-delegation.md)
+2. **Tool Selection**: Match the tool capabilities to the task complexity
+3. **Quality Assurance**: Always review and validate automated contributions
 
 ### AI Expert Validation
 

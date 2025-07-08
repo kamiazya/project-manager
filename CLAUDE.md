@@ -119,6 +119,20 @@ The project is in early development phase with comprehensive requirements and ar
 - Document decisions and alternatives considered
 - Update progress regularly in issue files
 
+#### Effective Task Structuring for Asynchronous Work
+
+When creating tasks that will be executed asynchronously (by AI agents, remote developers, or new contributors), proper structure is essential for success.
+
+For detailed guidelines and examples, see [Asynchronous Delegation Best Practices](@docs/best-practices/asynchronous-delegation.md).
+
+**Key Points for AI Agents:**
+- Use extreme precision with literal specifications
+- Include concrete examples and test cases
+- Define exact file paths and function signatures
+- Provide self-contained validation criteria
+
+**Remember:** Well-structured tasks lead to higher success rates and less rework, regardless of who executes them.
+
 ### Local Development Workflow
 
 TODO: Define local development workflow for project-manager
