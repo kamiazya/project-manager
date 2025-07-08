@@ -8,7 +8,7 @@ Welcome to the Project Manager project! This document provides comprehensive gui
 2. [Development Philosophy](#development-philosophy)
 3. [Development Process](#development-process)
    - [Pull Request-Based Development Workflow](#pull-request-based-development-workflow)
-   - [Development Flow](#development-flow)
+   - [Conceptual Development Flow](#conceptual-development-flow)
    - [Enhanced Issue Workflow Process](#enhanced-issue-workflow-process)
 4. [Issue Management](#issue-management)
 5. [Code Standards](#code-standards)
@@ -153,7 +153,9 @@ All code changes must be submitted through pull requests. This ensures code qual
 - Update documentation alongside code changes
 - Link related issues using keywords (closes #123)
 
-### Development Flow
+### Conceptual Development Flow
+
+This describes the high-level approach to development, complementing the Git workflow above:
 
 1. **Understand and Analyze**: Understand requirements and analyze domain model
 2. **Design and Document**: Design architecture and document it
