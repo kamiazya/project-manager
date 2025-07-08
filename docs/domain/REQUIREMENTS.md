@@ -34,7 +34,7 @@ Enable comprehensive issue tracking with rich context for both human and AI coll
 - All development work organized through issues
 - Implementation approaches reviewed before coding
 - Decision rationale preserved for future reference
-- Asynchronous collaboration achieves high effectiveness
+- > 80% first-pass completion rate for asynchronously delegated tasks
 
 ### BR-2: Local-First Project Management
 **ID**: REQ-002  
@@ -72,7 +72,7 @@ Enable multiple AI systems to collaborate effectively on development tasks.
 - Multiple AIs maintain consistent project understanding
 - Context handoff between AI systems works seamlessly
 - AI contributions are tracked and attributed
-- Asynchronous collaboration achieves high success rates
+- > 80% task completion rate without requiring clarification
 
 ### BR-4: Developer Productivity
 **ID**: REQ-004  
