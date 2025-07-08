@@ -429,22 +429,36 @@ File-system based permissions:
 
 ### Lock Mechanism
 
-Item-level locking using filesystem-based lock files:
+Item-level locking using filesystem-based lock files with explicit expiry:
 
 ```
 .pm/locks/
 ├── issues/
-│   └── issue-001.lock.user123.1704110400
+│   └── issue-001.lock
 ├── epics/
-│   └── epic-001.lock.ai-agent.1704114000
+│   └── epic-001.lock
 └── projects/
-    └── project.lock.user456.1704117600
+    └── project.lock
+```
+
+Lock file format:
+```json
+{
+  "locked_by": "user123",
+  "locked_at": 1704110400,
+  "expires_at": 1704114000,
+  "operation": "edit",
+  "pid": 12345
+}
 ```
 
 Lock file naming convention:
-- `{item-id}.lock.{locked-by}.{unix-timestamp}`
-- Lock presence indicates active lock
-- Expired locks are automatically cleaned up based on timestamp
+- `{item-id}.lock`
+- Lock file contains expiry timestamp and process information
+- **Cleanup Strategy**: 
+  - Janitor task runs periodically to check for expired locks
+  - Process ID validation to detect crashed processes
+  - Explicit expiry field ensures reliable cleanup after crashes
 
 ## AI Operations Tracking
 
