@@ -86,6 +86,10 @@ Key requirements driving this decision:
 # Preference order:
 1. Diff-based storage (if implementation complexity is manageable)
 2. Snapshot-based storage (fallback for simplicity)
+
+# Implementation approach:
+- Start with snapshot-based storage for rapid development
+- Consider migration to diff-based storage as storage efficiency becomes critical
 ```
 
 ### Co-authorship Format
@@ -120,6 +124,8 @@ Key requirements driving this decision:
 - All AI operations are logged for security audit
 - Human instructor is recorded for accountability
 - Version control enables rollback of problematic changes
+- **Safeguards for destructive operations**: Consider implementing user confirmation steps before AI executes potentially destructive operations (e.g., file deletion, bulk overwrites)
+- **Operation risk assessment**: Categorize operations by risk level to determine appropriate safeguards
 
 ## Tags
 `architecture`, `ai-integration`, `mcp`, `audit`, `version-control`
