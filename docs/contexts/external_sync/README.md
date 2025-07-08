@@ -2,7 +2,7 @@
 
 ## Overview
 
-The External Sync context handles bidirectional synchronization between the Project Manager system and external project management tools such as GitHub Issues, Jira, Linear, and others. It manages data mapping, conflict resolution, and privacy-aware selective sharing.
+The External Sync context handles external tool-based synchronization between the Project Manager system and external project management tools such as GitHub Issues, Jira, Linear, and others. It manages data mapping, conflict resolution, and privacy-aware selective sharing.
 
 ## Context Responsibilities
 
