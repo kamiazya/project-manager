@@ -262,7 +262,7 @@ Specialized AI assistant for specific domains.
 - Real-time collaboration features
 - Custom AI expert training
 - Resource usage analytics and reporting
-- Cross-project AI resource pooling
+- Cross-project resource pooling
 - Intelligent model selection based on task and budget
 
 ### Potential Challenges

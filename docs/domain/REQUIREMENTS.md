@@ -108,7 +108,7 @@ Connect with existing project management tools while maintaining local control.
 ### BR-6: AI Resource Awareness (Optional)
 **ID**: REQ-013  
 **Priority**: Low  
-**Status**: Future
+**Status**: Planned
 
 Provide optional features for teams using AI extensively to manage resource constraints.
 

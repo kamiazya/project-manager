@@ -88,6 +88,8 @@
 
 ### AI Resource Management (Optional)
 
+Optional stories addressing token limits, rate limits, and budget constraints when working with AI assistants.
+
 **US-011**: As a developer using AI assistants, I want visibility into resource usage so that I can manage token limits and costs.
 - **Given** I'm working with AI assistants
 - **When** I approach token or rate limits
