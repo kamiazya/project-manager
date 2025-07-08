@@ -27,11 +27,14 @@ Enable comprehensive issue tracking with rich context for both human and AI coll
 - Implementation plans with technical approaches for review
 - Design proposals capturing architectural decisions
 - Progress tracking throughout issue lifecycle
+- Structured templates supporting various collaboration patterns
+- Validation rules ensuring task completeness
 
 **Success Criteria**:
 - All development work organized through issues
 - Implementation approaches reviewed before coding
 - Decision rationale preserved for future reference
+- Tasks can be effectively delegated asynchronously
 
 ### BR-2: Local-First Project Management
 **ID**: REQ-002  
@@ -63,11 +66,13 @@ Enable multiple AI systems to collaborate effectively on development tasks.
 - Shared context across AI systems
 - Context persistence between sessions
 - AI-assisted validation workflows
+- Support for various AI interaction patterns
 
 **Success Criteria**:
 - Multiple AIs maintain consistent project understanding
 - Context handoff between AI systems works seamlessly
 - AI contributions are tracked and attributed
+- Asynchronous collaboration achieves high success rates
 
 ### BR-4: Developer Productivity
 **ID**: REQ-004  
