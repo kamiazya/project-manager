@@ -39,7 +39,7 @@ AI agents require extreme precision and literal interpretation. They excel at we
 
 #### Task Structure Template
 
-```markdown
+````markdown
 ---
 title: [Specific action verb] [specific component/function]
 complexity: simple|medium|complex
@@ -72,11 +72,11 @@ estimated_hours: [1-8]
 // Expected output
 [concrete example]
 ```
-```
+````
 
 #### Example: Well-Structured AI Agent Task
 
-```markdown
+````markdown
 ---
 title: Implement email validation in auth module
 complexity: simple
@@ -113,7 +113,7 @@ validateEmail("name+tag@domain.co.uk") // {valid: true, value: "name+tag@domain.
 validateEmail("invalid.email") // {valid: false, error: "Invalid email format"}
 validateEmail("@domain.com") // {valid: false, error: "Invalid email format"}
 ```
-```
+````
 
 ### For Remote Human Developers
 
@@ -129,7 +129,7 @@ Human developers need context and rationale but can handle some ambiguity and ma
 
 #### Example: Remote Developer Task
 
-```markdown
+````markdown
 ---
 title: Optimize dashboard query performance
 priority: high
@@ -158,7 +158,7 @@ Users report 5-10 second load times for the main dashboard. Analytics show this 
 - Choice of caching technology (Redis vs in-memory)
 - Whether to implement progressive loading
 - Specific query optimization techniques
-```
+````
 
 ## Task Creation Workflow
 
