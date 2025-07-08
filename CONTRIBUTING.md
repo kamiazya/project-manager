@@ -7,6 +7,9 @@ Welcome to the Project Manager project! This document provides comprehensive gui
 1. [Getting Started](#getting-started)
 2. [Development Philosophy](#development-philosophy)
 3. [Development Process](#development-process)
+   - [Pull Request-Based Development Workflow](#pull-request-based-development-workflow)
+   - [Development Flow](#development-flow)
+   - [Enhanced Issue Workflow Process](#enhanced-issue-workflow-process)
 4. [Issue Management](#issue-management)
 5. [Code Standards](#code-standards)
 6. [Testing](#testing)
@@ -85,6 +88,56 @@ The project integrates four key methodologies:
 - Safety net for refactoring
 
 ## Development Process
+
+### Pull Request-Based Development Workflow
+
+All code changes must be submitted through pull requests. This ensures code quality, knowledge sharing, and maintains a clear history of changes.
+
+#### Branch Strategy
+
+- **`main`**: Protected branch containing stable code
+- **`feature/*`**: New feature development
+- **`fix/*`**: Bug fixes
+- **`docs/*`**: Documentation updates
+
+#### Development Flow
+
+1. **Create Feature Branch**
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make Changes**
+   - Follow the development principles below
+   - Commit frequently with clear messages
+   - Keep commits focused and atomic
+
+3. **Create Pull Request**
+   - Push your branch to remote
+   - Create PR with descriptive title
+   - Fill out PR description with:
+     - Summary of changes
+     - Why the change is needed
+     - Related issues (if any)
+
+4. **Review and Merge**
+   - Self-review is acceptable for solo developers
+   - Ensure all checks pass (when CI is set up)
+   - Update branch with latest main if needed
+   - Use "Squash and merge" to keep history clean
+
+5. **Post-Merge**
+   - Delete the feature branch
+   - Pull latest main locally
+
+#### PR Best Practices
+
+- Keep PRs focused and small when possible
+- Write clear, descriptive commit messages
+- Update documentation alongside code changes
+- Link related issues using keywords (closes #123)
 
 ### Development Flow
 
