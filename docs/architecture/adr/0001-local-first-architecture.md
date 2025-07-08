@@ -65,7 +65,7 @@ Key requirements driving this decision:
 
 ### Alternative 2: Hybrid Sync Architecture
 - **Description**: Real-time sync with offline fallback
-- **Rejection reason**: Complexity of conflict resolution and unclear ownership model
+- **Rejection reason**: Project requirements do not mandate real-time capabilities, making the implementation complexity unjustified for the limited benefits
 
 ### Alternative 3: P2P Synchronization
 - **Description**: Direct device-to-device sync without central server
