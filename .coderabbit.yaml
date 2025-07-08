@@ -14,12 +14,13 @@ reviews:
 
   auto_review:
     enabled: true
+    auto_incremental_review: true
     drafts: false
 
   # Path-specific review instructions
   path_instructions:
-    - path: "docs/**"
-      instructions: "Check documentation consistency with implementation and architectural decisions"
+    - path: "**/*.md"
+      instructions: "Check documentation consistency with implementation and architectural decisions. Ensure all documentation is written in English as per project language policy."
 
 # Knowledge Base Integration
 knowledge_base:
@@ -27,7 +28,22 @@ knowledge_base:
   code_guidelines:
     enabled: true
     filePatterns:
-      - 'docs/**/*.md'
+      # Core project documentation
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      # Architecture and design documents
+      - 'docs/architecture/ARCHITECTURE.md'
+      - 'docs/architecture/CONTEXT_MAP.md'
+      - 'docs/architecture/TECHNICAL_DATA_MODEL.md'
+      - 'docs/architecture/adr/*.md'
+      # Domain knowledge
+      - 'docs/domain/REQUIREMENTS.md'
+      - 'docs/domain/UBIQUITOUS_LANGUAGE.md'
+      # Context-specific domain models and workflows
+      - 'docs/contexts/*/*.md'
+      # Development practices
+      - 'docs/TEST_STRATEGY.md'
+      - 'docs/best-practices/*.md'
   learnings:
     scope: local
   issues:
