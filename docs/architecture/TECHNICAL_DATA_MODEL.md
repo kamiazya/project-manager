@@ -425,6 +425,27 @@ File-system based permissions:
 3. **Index Rebuild**: Periodic full reindex
 4. **Cache Warm-up**: Pre-load hot data
 
+## Concurrency Control
+
+### Lock Mechanism
+
+Item-level locking using filesystem-based lock files:
+
+```
+.pm/locks/
+├── issues/
+│   └── issue-001.lock.user123.2024-01-01T12:00:00Z
+├── epics/
+│   └── epic-001.lock.ai-agent.2024-01-01T13:00:00Z
+└── projects/
+    └── project.lock.user456.2024-01-01T14:00:00Z
+```
+
+Lock file naming convention:
+- `{item-id}.lock.{locked-by}.{expiry-timestamp}`
+- Lock presence indicates active lock
+- Expired locks are automatically cleaned up
+
 ## Related Documentation
 
 - [Domain Models](../../contexts/ticket_management/DOMAIN_MODEL.md) - Business concept definitions

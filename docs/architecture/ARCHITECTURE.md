@@ -13,7 +13,7 @@ Project Manager is a local-first ticket management system designed to enable eff
 - **CLI Interface**: Command-line tools for developer productivity
 - **Local Storage**: File-based persistence for tickets, epics, and project data
 - **MCP Server**: Model Context Protocol implementation for AI integration
-- **External Integrations**: Bidirectional synchronization with external systems
+- **External Integrations**: External tool-based synchronization with existing systems
 
 ## 3. Architectural Principles
 
@@ -142,6 +142,7 @@ project-root/
 - JSON for structured data (tickets, epics, configuration)
 - Markdown for documentation and templates
 - Timestamps for chronological ordering
+- Lock files for concurrent access control (item-level granularity)
 
 ## 6. Integration Architecture
 
@@ -162,8 +163,8 @@ project-root/
 ### 6.2. External System Integration
 
 **Synchronization Strategy**
-- Bidirectional sync with external systems
-- Conflict resolution mechanisms
+- External tool-based synchronization (not direct sync)
+- User-driven conflict resolution with AI assistance
 - Selective sharing based on privacy settings
 - Audit trail for all changes
 

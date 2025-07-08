@@ -8,9 +8,9 @@ The External Sync context handles bidirectional synchronization between the Proj
 
 ### Primary Responsibilities
 - External system authentication and connection management
-- Bidirectional data synchronization
+- External tool-based synchronization (not direct device-to-device sync)
 - Data format translation and mapping
-- Conflict detection and resolution
+- Conflict detection and user-driven resolution with AI assistance
 - Privacy and access control enforcement
 - Sync status monitoring and reporting
 - Rate limiting and API quota management

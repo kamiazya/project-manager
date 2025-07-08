@@ -17,7 +17,7 @@ The system follows a local-first approach with external integration capabilities
 - **Local Ticket Management**: Full CRUD operations for tickets, epics, and roadmaps
 - **CLI Interface**: Command-line tools for developer productivity
 - **MCP Server**: Model Context Protocol implementation for AI integration
-- **External Sync**: Bidirectional synchronization with GitHub Issues, Jira, and other project management tools
+- **External Sync**: External tool-based synchronization with GitHub Issues, Jira, and other project management tools
 
 ### Target Users
 - **AI-Driven Developers**: Those using AI assistants as primary development partners
