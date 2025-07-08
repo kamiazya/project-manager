@@ -179,10 +179,13 @@ Provide optional features for teams using AI extensively to manage resource cons
 **ID**: REQ-010  
 **Priority**: High
 
+**Core Reliability**:
 - **Availability**: Local operations always available
 - **Data Integrity**: Zero data loss guarantee
 - **Recovery**: Automatic backup and restore
 - **Degradation**: Graceful handling of integration failures
+
+**AI-Specific Resilience** (Optional):
 - **AI Resource Resilience**: Continue functioning when AI limits reached
 - **Context Recovery**: Restore AI context after interruptions
 
@@ -212,7 +215,7 @@ Provide optional features for teams using AI extensively to manage resource cons
 - **Resource Usage**: Run on typical developer machines
 - **Dependencies**: Minimize external dependencies
 - **AI Model Limitations**: Work within token limits and rate constraints
-- **Context Windows**: Adapt to varying AI model context sizes
+- **AI Model Context Windows**: Adapt to varying AI model context sizes
 
 ### Business Constraints
 - **Open Source**: Community-driven development
