@@ -36,7 +36,7 @@ knowledge_base:
       - 'docs/architecture/ARCHITECTURE.md'
       - 'docs/architecture/CONTEXT_MAP.md'
       - 'docs/architecture/TECHNICAL_DATA_MODEL.md'
-      - 'docs/architecture/adr/*.md'
+      - 'docs/adr/[0-9][0-9][0-9][0-9]*.md'
       # Domain knowledge
       - 'docs/domain/REQUIREMENTS.md'
       - 'docs/domain/UBIQUITOUS_LANGUAGE.md'
