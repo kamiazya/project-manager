@@ -113,6 +113,7 @@ Project Manager is a local-first ticket management system designed to enable eff
 - File-based templates
 
 **AI Integration**
+
 - Model Context Protocol (MCP) server (mandatory standard)
 - Support for multiple AI providers
 - Language bridging capabilities  
