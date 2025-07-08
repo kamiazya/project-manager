@@ -273,6 +273,32 @@ Sustained bandwidth: 20 Mbps
 - Async/await for I/O operations
 - Resource pooling
 
+## AI Resource Constraints (Optional)
+
+### Token Limits
+- Adapt ticket content for AI context windows
+- Support various model limits (4K to 100K+ tokens)
+- Automatic content summarization when needed
+- Priority-based content inclusion
+
+### Rate Limiting
+- Respect AI provider rate limits
+- Queue management for AI requests
+- Graceful degradation when limits reached
+- Cross-project resource sharing
+
+### Cost Management
+- Token usage tracking per project
+- Budget alerts and limits
+- Cost optimization strategies
+- Resource allocation policies
+
+### Context Optimization
+- Efficient context generation algorithms
+- Incremental context updates
+- Context caching strategies
+- Compression techniques for large tickets
+
 ## Related Documentation
 
 - [Domain Model](./DOMAIN_MODEL.md) - Entity specifications

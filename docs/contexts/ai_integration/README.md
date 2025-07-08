@@ -21,6 +21,8 @@ The AI Integration context manages the collaboration between human developers an
 - AI context must be synchronized across all active assistants
 - Validation results must be traceable to specific AI experts
 - Language translation maintains semantic accuracy
+- Resource usage should be monitored and reported (optional)
+- Context generation should adapt to model constraints
 
 ## Domain Model Overview
 
@@ -187,6 +189,9 @@ Specialized AI assistant for specific domains.
 - **Selective Inclusion**: Only relevant information
 - **Context Sizing**: Optimized for AI model limits
 - **Version Control**: Track context evolution
+- **Resource Awareness**: Token usage tracking and optimization
+- **Adaptive Compression**: Automatic context reduction when approaching limits
+- **Priority-based Inclusion**: Most relevant content prioritized
 
 ### Expert Selection Algorithm
 ```
@@ -256,12 +261,18 @@ Specialized AI assistant for specific domains.
 - Automated context optimization
 - Real-time collaboration features
 - Custom AI expert training
+- Resource usage analytics and reporting
+- Cross-project resource pooling
+- Intelligent model selection based on task and budget
 
 ### Potential Challenges
 - Managing diverse AI model capabilities
 - Ensuring consistent validation quality
 - Scaling to many concurrent sessions
 - Handling AI service API changes
+- Balancing resource constraints with functionality
+- Managing costs across multiple AI providers
+- Handling rate limits gracefully
 
 ## Related Documentation
 

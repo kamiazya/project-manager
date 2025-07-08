@@ -86,6 +86,25 @@
 - **When** I start local development
 - **Then** I can import relevant issues
 
+### AI Resource Management (Optional)
+
+Optional stories addressing token limits, rate limits, and budget constraints when working with AI assistants.
+
+**US-011**: As a developer using AI assistants, I want visibility into resource usage so that I can manage token limits and costs.
+- **Given** I'm working with AI assistants
+- **When** I approach token or rate limits
+- **Then** I can see usage and adjust my approach
+
+**US-012**: As a developer, I want the system to optimize context for AI models so that essential information fits within token limits.
+- **Given** My project context exceeds model limits
+- **When** I request AI assistance
+- **Then** The most relevant context is prioritized
+
+**US-013**: As a team lead, I want to allocate AI resources across multiple projects so that teams can work efficiently within budgets.
+- **Given** Multiple projects using AI assistants
+- **When** Resources are limited
+- **Then** I can prioritize and allocate fairly
+
 ## Use Cases
 
 ### UC-1: Starting a New Feature
@@ -150,6 +169,19 @@
 4. Contributor syncs completed work
 5. GitHub Issues are updated
 6. Local private notes remain local
+
+### UC-6: AI Resource Management (Optional)
+
+**Actor**: Developer using multiple AI assistants
+**Precondition**: Working with AI assistants that have token/rate limits
+**Flow**:
+1. Developer starts working with premium AI model
+2. System tracks token usage during session
+3. As limits approach, developer receives notification
+4. Developer can continue with reduced model or pause
+5. Context is optimized to fit in smaller windows
+6. Work continues with minimal disruption
+7. Resource usage is visible for planning
 
 ## Acceptance Criteria
 
