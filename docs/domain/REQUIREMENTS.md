@@ -105,6 +105,24 @@ Connect with existing project management tools while maintaining local control.
 - No data loss during sync
 - Privacy controls respected
 
+### BR-6: AI Resource Awareness (Optional)
+**ID**: REQ-013  
+**Priority**: Low  
+**Status**: Future
+
+Provide optional features for teams using AI extensively to manage resource constraints.
+
+**Key Capabilities**:
+- Token usage visibility
+- Context size optimization helpers
+- Resource usage reporting
+- Best practices for efficient AI usage
+
+**Success Criteria**:
+- Resource information available when needed
+- No impact on core functionality
+- Optional features easily disabled
+
 ## Quality Attributes
 
 ### QA-1: Shift-Left Benefits
@@ -165,6 +183,8 @@ Connect with existing project management tools while maintaining local control.
 - **Data Integrity**: Zero data loss guarantee
 - **Recovery**: Automatic backup and restore
 - **Degradation**: Graceful handling of integration failures
+- **AI Resource Resilience**: Continue functioning when AI limits reached
+- **Context Recovery**: Restore AI context after interruptions
 
 ### NFR-4: Usability
 **ID**: REQ-011  
@@ -191,11 +211,14 @@ Connect with existing project management tools while maintaining local control.
 - **Local First**: Network optional for core features
 - **Resource Usage**: Run on typical developer machines
 - **Dependencies**: Minimize external dependencies
+- **AI Model Limitations**: Work within token limits and rate constraints
+- **Context Windows**: Adapt to varying AI model context sizes
 
 ### Business Constraints
 - **Open Source**: Community-driven development
 - **Privacy First**: User data stays local by default
 - **No Vendor Lock-in**: Standard formats and protocols
+- **AI Cost Management**: Optimize for efficient token usage
 
 ## Success Metrics
 
