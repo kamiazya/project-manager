@@ -72,7 +72,7 @@ Key requirements driving this decision:
 - **Rejection reason**: Technical complexity and potential security concerns
 
 ## Related Decisions
-N/A
+- ADR-0002: Adopt AI-Driven Development Architecture
 
 ## Scope
 - **Bounded Context**: Core ticket management, local storage management
