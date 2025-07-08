@@ -59,7 +59,7 @@ The project is in early development phase with comprehensive requirements and ar
 
 ### Architecture Decision Records (ADRs)
 - **Purpose**: Document architectural decisions with context, rationale, and consequences
-- **Location**: `/docs/adr/` directory with numbered files (e.g., `0001-record-architecture-decisions.md`)
+- **Location**: `/docs/architecture/adr/` directory with numbered files (e.g., `0001-record-architecture-decisions.md`)
 - **When to Create**: For decisions that cross bounded contexts, introduce new technologies, define major interfaces, or impact system qualities
 - **Integration**: ADRs should be created during the design proposal phase of issues involving architectural decisions
 - **Template**: Use `/docs/architecture/adr/TEMPLATE.md` for consistent structure
