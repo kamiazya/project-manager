@@ -100,7 +100,7 @@ All code changes must be submitted through pull requests. This ensures code qual
 - **`fix/*`**: Bug fixes
 - **`docs/*`**: Documentation updates
 
-#### Development Flow
+#### Git Workflow
 
 1. **Create Feature Branch**
    ```bash
@@ -114,7 +114,20 @@ All code changes must be submitted through pull requests. This ensures code qual
    - Commit frequently with clear messages
    - Keep commits focused and atomic
 
-3. **Create Pull Request**
+3. **Run Local Checks**
+   Before pushing, ensure all local checks pass:
+   ```bash
+   # Type check all packages
+   pnpm typecheck
+   
+   # Run tests (when available)
+   # pnpm test
+   
+   # Run linter (when configured)
+   # pnpm lint
+   ```
+
+4. **Create Pull Request**
    - Push your branch to remote
    - Create PR with descriptive title
    - Fill out PR description with:
@@ -122,13 +135,14 @@ All code changes must be submitted through pull requests. This ensures code qual
      - Why the change is needed
      - Related issues (if any)
 
-4. **Review and Merge**
+5. **Review and Merge**
    - Self-review is acceptable for solo developers
    - Ensure all checks pass (when CI is set up)
    - Update branch with latest main if needed
    - Use "Squash and merge" to keep history clean
+     - The PR title and description become the commit message, so make them clear and descriptive
 
-5. **Post-Merge**
+6. **Post-Merge**
    - Delete the feature branch
    - Pull latest main locally
 
