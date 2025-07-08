@@ -466,6 +466,7 @@ Lock file naming convention:
 
 ```json
 {
+  "operation_id": "op_01HQAB2CD3FGH4JK5L6MNO7P8Q",
   "author": "user123",
   "co_authors": [
     {
@@ -474,7 +475,7 @@ Lock file naming convention:
       "instructed_by": "user123"
     }
   ],
-  "operation_risk": "high|medium|low",
+  "operation_risk": "high",
   "user_confirmed": true,
   "timestamp": "2024-01-01T12:00:00Z",
   "safeguard": {
@@ -485,6 +486,10 @@ Lock file naming convention:
   }
 }
 ```
+
+**Field Constraints**:
+- `operation_id`: Required unique identifier for audit correlation
+- `operation_risk`: Enum values: `"high"`, `"medium"`, `"low"`
 
 ### Operation Risk Levels
 
