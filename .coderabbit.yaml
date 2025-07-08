@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+# CodeRabbit Configuration
+language: en-US
+early_access: true
+
+# Reviews Configuration
+reviews:
+  profile: assertive
+  high_level_summary: true
+  poem: false
+  review_status: true
+  sequence_diagrams: true
+
+  auto_review:
+    enabled: true
+    drafts: false
+
+  # Path-specific review instructions
+  path_instructions:
+    - path: "docs/**"
+      instructions: "Check documentation consistency with implementation and architectural decisions"
+
+# Knowledge Base Integration
+knowledge_base:
+  opt_out: false
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - 'docs/**/*.md'
+  learnings:
+    scope: local
+  issues:
+    scope: local
+  pull_requests:
+    scope: local
+
+
+# Code Generation Configuration
+code_generation:
+  docstrings:
+    language: en-US
+    path_instructions:
+      - path: "src/**"
+        instructions: "Generate JSDoc comments following TypeScript documentation standards"
+
+  unit_tests:
+    path_instructions:
+      - path: "src/**"
+        instructions: "Generate Vitest unit tests following TDD patterns with comprehensive coverage"
