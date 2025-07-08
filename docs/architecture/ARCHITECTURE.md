@@ -116,6 +116,7 @@ Project Manager is a local-first ticket management system designed to enable eff
 - Model Context Protocol (MCP) server
 - Support for multiple AI providers
 - Language bridging capabilities
+- Resource management (optional)
 
 ### 5.2. Data Storage
 
@@ -219,6 +220,16 @@ project-root/
 - Mobile companion app
 - Real-time notifications
 - Advanced analytics and reporting
+
+### 9.3. AI Resource Management (Optional)
+
+- Token usage monitoring dashboard
+- Cross-project resource allocation
+- Cost optimization algorithms
+- Automatic context compression
+- Model selection strategies
+- Rate limit management
+- Budget tracking and alerts
 
 ## 10. Related Documents
 
