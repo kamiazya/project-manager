@@ -434,17 +434,17 @@ Item-level locking using filesystem-based lock files:
 ```
 .pm/locks/
 ├── issues/
-│   └── issue-001.lock.user123.2024-01-01T12:00:00Z
+│   └── issue-001.lock.user123.1704110400
 ├── epics/
-│   └── epic-001.lock.ai-agent.2024-01-01T13:00:00Z
+│   └── epic-001.lock.ai-agent.1704114000
 └── projects/
-    └── project.lock.user456.2024-01-01T14:00:00Z
+    └── project.lock.user456.1704117600
 ```
 
 Lock file naming convention:
-- `{item-id}.lock.{locked-by}.{expiry-timestamp}`
+- `{item-id}.lock.{locked-by}.{unix-timestamp}`
 - Lock presence indicates active lock
-- Expired locks are automatically cleaned up
+- Expired locks are automatically cleaned up based on timestamp
 
 ## Related Documentation
 
