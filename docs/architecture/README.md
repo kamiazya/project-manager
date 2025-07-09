@@ -10,6 +10,7 @@ The architecture documentation focuses on the **HOW** - technical decisions, sys
 
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Comprehensive system architecture including principles, components, and technical stack
 - **[CONTEXT_MAP.md](./CONTEXT_MAP.md)** - Visual representation of bounded context relationships and integration patterns
+- **[TECHNICAL_DATA_MODEL.md](./TECHNICAL_DATA_MODEL.md)** - Physical data storage and implementation details
 - **[adr/](./adr/)** - Architecture Decision Records documenting significant technical decisions
 
 ## Architectural Principles
@@ -19,6 +20,8 @@ The architecture documentation focuses on the **HOW** - technical decisions, sys
 - **Domain-Driven Design**: Clear bounded contexts with well-defined boundaries
 - **AI-Native Design**: Built specifically for human-AI collaboration workflows
 - **Secure-by-Design**: Security integrated into every architectural decision
+- **Standards-First Approach**: Adopt industry standards over custom implementations
+- **CLI-First Interface**: Command-line interface as foundation for all other interfaces
 
 ### Quality Attributes
 - **Modularity**: Bounded contexts can evolve independently
@@ -54,18 +57,20 @@ See [Architecture Decision Records](./adr/) for:
 ### Core Technologies
 - **Runtime**: Node.js with ES modules
 - **Language**: TypeScript for type safety
-- **Package Manager**: pnpm for monorepo management
-- **CLI Framework**: Commander.js
+- **Package Manager**: pnpm for monorepo management (following npm ecosystem standards)
+- **CLI Framework**: Commander.js (following POSIX and GNU conventions)
 
 ### Storage
-- **Local Storage**: JSON files for structured data
-- **Documentation**: Markdown files
+- **Local Storage**: JSON files for structured data (XDG Base Directory compliance)
+- **Documentation**: CommonMark format for Markdown files
 - **Templates**: File-based template system
+- **Configuration**: XDG Base Directory specification
 
 ### Integration
-- **AI Integration**: Model Context Protocol (MCP)
-- **External Systems**: REST APIs and webhooks
-- **Authentication**: OAuth 2.0 for external services
+- **AI Integration**: Model Context Protocol (MCP) - launched via CLI
+- **External Systems**: RESTful APIs following OpenAPI 3.0 specification
+- **Authentication**: OAuth 2.0 for external services (industry standard)
+- **Versioning**: Semantic Versioning (SemVer 2.0.0) for all components
 
 ## Architectural Patterns
 
@@ -82,14 +87,41 @@ See [Architecture Decision Records](./adr/) for:
 - **API Gateway**: Unified external interface
 
 ### Implementation Patterns
+- **CLI-First Pattern**: All interfaces built on CLI foundation
 - **Dependency Injection**: Loose coupling and testability
 - **Command Pattern**: CLI command implementation
 - **Strategy Pattern**: Pluggable integrations
 - **Observer Pattern**: Event handling
+- **Standards Adoption**: Prefer industry standards over custom solutions
+
+## Interface Architecture
+
+### Primary Interface
+- **CLI**: Complete functionality with structured output formats
+- **Interactive and non-interactive modes**
+- **Foundation for all other interfaces**
+
+### Additional Interfaces
+- **MCP Server**: AI integration (launched via CLI)
+- **SDK/Libraries**: Direct core access for programmatic use
+- **TUI**: Enhanced terminal experience (launched via CLI)
+- **RESTful API**: External integration (TBD)
+- **Web UI**: Visual interface (TBD)
+- **IDE Extensions**: Integrated development experience (TBD)
+
+### Design Principles
+- **CLI as Single Source of Truth**: All business logic in CLI layer
+- **Unified Command Model**: Consistent operations across interfaces
+- **Progressive Enhancement**: Basic functionality works everywhere
+- **Configuration-Driven**: External integrations managed via configuration
+- **Context-Aware**: Support for both global and project-specific contexts
 
 ## Related Documentation
 
 - [Domain Documentation](../domain/) - Business concepts and requirements
-- [Bounded Contexts](../contexts/) - Detailed context implementations
+- **TODO: Bounded Contexts Documentation** - Detailed context implementations including:
+  - Ticket Management Context (domain model, workflows, constraints)
+  - AI Integration Context (AI assistant coordination, validation workflows)
+  - External Sync Context (integration patterns, conflict resolution)
 - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Development guidelines
 - [TEST_STRATEGY.md](../TEST_STRATEGY.md) - Testing approach
