@@ -18,6 +18,7 @@ Welcome to the Project Manager documentation. This guide helps you navigate thro
 │   └── adr/                   # Architecture Decision Records
 │       ├── README.md          # ADR overview and index
 │       └── TEMPLATE.md        # ADR template
+<!-- TODO: Implement bounded contexts documentation
 └── contexts/                  # Bounded contexts (detailed domain models)
     ├── README.md              # Bounded contexts overview
     ├── ticket_management/     # Core ticket and project management
@@ -29,6 +30,7 @@ Welcome to the Project Manager documentation. This guide helps you navigate thro
     │   └── (same structure as above)
     └── external_sync/         # External system integration
         └── (same structure as above)
+-->
 ```
 
 ## Navigation Guide
@@ -44,7 +46,7 @@ Start with high-level business understanding:
 #### 👩‍💻 Developers & Technical Contributors
 For implementation and technical details:
 1. [Architecture Overview](./architecture/ARCHITECTURE.md) - System design
-2. [Bounded Contexts](./contexts/README.md) - Detailed domain models
+2. **TODO: Bounded Contexts** - Detailed domain models for each context
 3. [CONTRIBUTING.md](../CONTRIBUTING.md) - Development guidelines
 
 #### 🤖 AI Assistants
@@ -55,7 +57,7 @@ For understanding project context:
 
 #### 🔧 Integration Engineers
 For external system integration:
-1. [External Sync Context](./contexts/external_sync/) - Integration patterns
+1. **TODO: External Sync Context** - Integration patterns and conflict resolution
 2. [Context Map](./architecture/CONTEXT_MAP.md) - Integration boundaries
 3. [Architecture Decisions](./architecture/adr/) - Technology choices
 
@@ -72,9 +74,10 @@ For external system integration:
 - **Decisions**: [ADRs](./architecture/adr/)
 
 #### Working with Specific Features
-- **Ticket Management**: [Ticket Management Context](./contexts/ticket_management/)
-- **AI Features**: [AI Integration Context](./contexts/ai_integration/)
-- **External Systems**: [External Sync Context](./contexts/external_sync/)
+<!-- TODO: Implement detailed context documentation -->
+- **Ticket Management**: Core ticket and project management workflows
+- **AI Features**: AI assistant coordination and validation
+- **External Systems**: External tool integration and synchronization
 
 ## Key Documentation Principles
 
@@ -133,7 +136,7 @@ Documentation mirrors the system's bounded contexts, making it easier to:
 
 ### Technical Details
 - [Architecture](./architecture/ARCHITECTURE.md) - System design
-- [Bounded Contexts](./contexts/) - Detailed implementations
+- **TODO: Bounded Contexts** - Detailed implementations for each context
 - [ADRs](./architecture/adr/) - Design decisions
 
 ## Getting Help

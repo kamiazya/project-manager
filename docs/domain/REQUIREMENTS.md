@@ -252,7 +252,9 @@ Provide optional features for teams using AI extensively to manage resource cons
 - [User Stories](./USER_STORIES.md) - Detailed user scenarios
 - [Ubiquitous Language](./UBIQUITOUS_LANGUAGE.md) - Domain terminology
 - [Context Map](../architecture/CONTEXT_MAP.md) - System boundaries
+<!-- TODO: Implement context-specific requirements documentation
 - Context-Specific Requirements:
-  - [Ticket Management](../contexts/ticket_management/README.md)
-  - [AI Integration](../contexts/ai_integration/README.md)
-  - [External Sync](../contexts/external_sync/README.md)
+  - Ticket Management Context
+  - AI Integration Context
+  - External Sync Context
+-->

@@ -14,7 +14,7 @@ The domain documentation captures the core business concepts, rules, and workflo
 ## Relationship to Other Documentation
 
 - **Domain ↔ Architecture**: Domain concepts are implemented through the technical architecture described in `/docs/architecture/`
-- **Domain ↔ Contexts**: Domain concepts are detailed and organized within specific bounded contexts in `/docs/contexts/`
+- **Domain ↔ Contexts**: Domain concepts will be detailed and organized within specific bounded contexts (TODO: implement context documentation)
 - **Domain ↔ Requirements**: High-level domain understanding drives the specific requirements within each bounded context
 
 ## Key Domain Concepts
@@ -42,4 +42,4 @@ The domain is organized into three main bounded contexts:
 2. **AI Integration** - AI assistant collaboration and coordination
 3. **External Sync** - Integration with external project management systems
 
-For detailed information about each bounded context, see [Bounded Contexts](../contexts/).
+<!-- TODO: Implement detailed bounded context documentation -->
