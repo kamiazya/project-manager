@@ -25,11 +25,13 @@ All ADRs in this project follow a standardized format defined in [`TEMPLATE.md`]
 ## Naming Convention
 
 ADRs are named using the following pattern:
+
 ```
 NNNN-short-decision-title.md
 ```
 
 Where:
+
 - `NNNN` is a zero-padded sequential number (e.g., 0001, 0002, 0003)
 - `short-decision-title` is a kebab-case summary of the decision
 
@@ -88,6 +90,7 @@ graph TD
 | [0005](./0005-cli-first-interface-architecture.md) | Proposed | CLI-First Interface Architecture | Command-line interface as foundation for all other interfaces |
 
 **Legend:**
+
 - 📋 Process and workflow decisions
 - 🏠 Core architectural principles
 - 🤖 AI integration and automation
@@ -98,7 +101,9 @@ graph TD
 ## Tools and Resources
 
 ### Template Usage
+
 To create a new ADR:
+
 1. Copy the [`TEMPLATE.md`](./TEMPLATE.md) file
 2. Rename following the naming convention
 3. Replace placeholder text with actual content

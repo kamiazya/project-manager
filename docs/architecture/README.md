@@ -16,6 +16,7 @@ The architecture documentation focuses on the **HOW** - technical decisions, sys
 ## Architectural Principles
 
 ### Core Philosophy
+
 - **Local-First Architecture**: All core functionality works offline with local data storage
 - **Domain-Driven Design**: Clear bounded contexts with well-defined boundaries
 - **AI-Native Design**: Built specifically for human-AI collaboration workflows
@@ -24,6 +25,7 @@ The architecture documentation focuses on the **HOW** - technical decisions, sys
 - **CLI-First Interface**: Command-line interface as foundation for all other interfaces
 
 ### Quality Attributes
+
 - **Modularity**: Bounded contexts can evolve independently
 - **Scalability**: Support for multiple projects and AI assistants
 - **Extensibility**: Plugin architecture for new integrations
@@ -32,21 +34,27 @@ The architecture documentation focuses on the **HOW** - technical decisions, sys
 ## Key Architectural Views
 
 ### System Architecture
+
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed views including:
+
 - High-level component architecture
 - Technology stack decisions
 - Data storage patterns
 - Integration architecture
 
 ### Context Relationships
+
 See [CONTEXT_MAP.md](./CONTEXT_MAP.md) for:
+
 - Bounded context boundaries
 - Integration patterns between contexts
 - Shared kernel definitions
 - Anti-corruption layer implementations
 
 ### Design Decisions
+
 See [Architecture Decision Records](./adr/) for:
+
 - Rationale behind major technical choices
 - Trade-offs considered
 - Implementation guidance
@@ -55,18 +63,21 @@ See [Architecture Decision Records](./adr/) for:
 ## Technology Stack Summary
 
 ### Core Technologies
+
 - **Runtime**: Node.js with ES modules
 - **Language**: TypeScript for type safety
 - **Package Manager**: pnpm for monorepo management (following npm ecosystem standards)
 - **CLI Framework**: Commander.js (following POSIX and GNU conventions)
 
 ### Storage
+
 - **Local Storage**: JSON files for structured data (XDG Base Directory compliance)
 - **Documentation**: CommonMark format for Markdown files
 - **Templates**: File-based template system
 - **Configuration**: XDG Base Directory specification
 
 ### Integration
+
 - **AI Integration**: Model Context Protocol (MCP) - launched via CLI
 - **External Systems**: RESTful APIs following OpenAPI 3.0 specification
 - **Authentication**: OAuth 2.0 for external services (industry standard)
@@ -75,18 +86,21 @@ See [Architecture Decision Records](./adr/) for:
 ## Architectural Patterns
 
 ### Domain Patterns
+
 - **Bounded Contexts**: Clear separation of domain concerns
 - **Aggregates**: Consistency boundaries within contexts
 - **Domain Events**: Cross-context communication
 - **Repository Pattern**: Data access abstraction
 
 ### Integration Patterns
+
 - **Anti-Corruption Layer**: Protection from external system changes
 - **Context Mapping**: Well-defined relationships between contexts
 - **Event-Driven**: Asynchronous communication between contexts
 - **API Gateway**: Unified external interface
 
 ### Implementation Patterns
+
 - **CLI-First Pattern**: All interfaces built on CLI foundation
 - **Dependency Injection**: Loose coupling and testability
 - **Command Pattern**: CLI command implementation
@@ -97,11 +111,13 @@ See [Architecture Decision Records](./adr/) for:
 ## Interface Architecture
 
 ### Primary Interface
+
 - **CLI**: Complete functionality with structured output formats
 - **Interactive and non-interactive modes**
 - **Foundation for all other interfaces**
 
 ### Additional Interfaces
+
 - **MCP Server**: AI integration (launched via CLI)
 - **SDK/Libraries**: Direct core access for programmatic use
 - **TUI**: Enhanced terminal experience (launched via CLI)
@@ -110,6 +126,7 @@ See [Architecture Decision Records](./adr/) for:
 - **IDE Extensions**: Integrated development experience (TBD)
 
 ### Design Principles
+
 - **CLI as Single Source of Truth**: All business logic in CLI layer
 - **Unified Command Model**: Consistent operations across interfaces
 - **Progressive Enhancement**: Basic functionality works everywhere

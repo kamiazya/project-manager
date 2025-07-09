@@ -5,12 +5,14 @@ This document defines the core domain terminology used throughout the Project Ma
 ## Core Entities
 
 ### Project
+
 A software development initiative that contains tickets, epics, and involves multiple contributors (human and AI). Projects have configuration, metadata, and track overall progress.
 
 **Synonyms**: Repository, Workspace
 **Context**: Primary aggregate root in Ticket Management context
 
 ### Ticket
+
 A discrete unit of development work with defined scope, status, and acceptance criteria. Tickets are the fundamental unit of work organization.
 
 **Aliases**: Issue (when referring to external systems like GitHub Issues)
@@ -18,18 +20,21 @@ A discrete unit of development work with defined scope, status, and acceptance c
 **Note**: We use "Ticket" internally, "Issue" when interfacing with external systems
 
 ### Epic
+
 A collection of related tickets that together deliver a significant business capability or user-facing feature. Epics provide grouping and progress tracking across multiple tickets.
 
 **Context**: Aggregate in Ticket Management context
 **Relationship**: Contains multiple Tickets
 
 ### User
+
 A human participant in the development process. Users can be developers, project managers, stakeholders, or contributors.
 
 **Context**: Shared across all bounded contexts
 **Roles**: Developer, Project Manager, Stakeholder, Contributor
 
 ### AI Assistant
+
 An artificial intelligence system that participates in development workflows, providing suggestions, generating code, or automating tasks.
 
 **Context**: Core entity in AI Integration context
@@ -38,24 +43,28 @@ An artificial intelligence system that participates in development workflows, pr
 ## Value Objects
 
 ### Status
+
 The current state of a ticket in its lifecycle.
 
 **Valid Values**: `pending`, `in_progress`, `completed`, `archived`
 **Context**: Ticket Management
 
 ### Priority
+
 The relative importance and urgency of a ticket.
 
 **Valid Values**: `high`, `medium`, `low`
 **Context**: Ticket Management
 
 ### Ticket Type
+
 The category of work represented by a ticket.
 
 **Valid Values**: `feature`, `bug`, `task`, `epic`, `research`, `design`, `chore`
 **Context**: Ticket Management
 
 ### Privacy Level
+
 The visibility and sharing policy for project artifacts.
 
 **Valid Values**: `local-only`, `shareable`, `public`
@@ -64,18 +73,21 @@ The visibility and sharing policy for project artifacts.
 ## Domain Services
 
 ### Implementation Planner
+
 Coordinates the pre-implementation design and validation workflow, including AI expert consultation and design proposal creation.
 
 **Context**: AI Integration
 **Responsibilities**: Design validation, AI expert coordination, plan generation
 
 ### Sync Coordinator
+
 Manages bidirectional synchronization between local tickets and external project management systems.
 
 **Context**: External Sync
 **Responsibilities**: Conflict resolution, data mapping, sync scheduling
 
 ### Context Manager
+
 Maintains shared context and knowledge across human developers and multiple AI assistants.
 
 **Context**: AI Integration
@@ -84,6 +96,7 @@ Maintains shared context and knowledge across human developers and multiple AI a
 ## Architecture and Interface Terms
 
 ### CLI-First Architecture
+
 Design principle where the Command-Line Interface serves as the primary interface and foundation for all other interfaces.
 
 **Related Terms**: Primary Interface, Interface Foundation
@@ -91,6 +104,7 @@ Design principle where the Command-Line Interface serves as the primary interfac
 **Implementation**: Other interfaces (TUI, MCP) are launched via CLI
 
 ### MCP Server (Model Context Protocol)
+
 AI integration interface that provides standardized communication between AI assistants and the Project Manager system.
 
 **Context**: AI Integration
@@ -98,6 +112,7 @@ AI integration interface that provides standardized communication between AI ass
 **Purpose**: AI assistant coordination, context sharing
 
 ### TUI (Terminal User Interface)
+
 Enhanced interactive command-line interface providing rich text-based user interaction.
 
 **Context**: Ticket Management
@@ -105,6 +120,7 @@ Enhanced interactive command-line interface providing rich text-based user inter
 **Purpose**: Interactive ticket management, visual feedback
 
 ### SDK (Software Development Kit)
+
 Programmatic interface providing direct access to core business logic for integration purposes.
 
 **Context**: All contexts
@@ -112,20 +128,24 @@ Programmatic interface providing direct access to core business logic for integr
 **Purpose**: Library integration, automation
 
 ### Standards-First Approach
+
 Design principle prioritizing adoption of industry standards over custom implementations.
 
 **Examples**: XDG Base Directory, OAuth 2.0, OpenAPI, CommonMark
 **Context**: All contexts (cross-cutting principle)
 
 ### Diagrams-First Documentation
+
 Documentation approach using Mermaid diagrams to enhance understanding and reduce ambiguity.
 
 **Tool**: Mermaid
 **Context**: All documentation
 **Purpose**: Visual communication, AI collaboration
+
 ## Context-Specific Terms
 
 ### Bounded Context
+
 Domain-driven design concept representing a distinct area of the system with its own models and vocabulary.
 
 **Current Contexts**: Ticket Management, AI Integration, External Sync
@@ -133,12 +153,14 @@ Domain-driven design concept representing a distinct area of the system with its
 **Integration**: Through shared kernel and CLI-first architecture
 
 ### Shared Kernel
+
 Common concepts and values shared across all bounded contexts.
 
 **Components**: User Identity, Project ID, Ticket ID, Status Values, Priority Values
 **Purpose**: Consistency across contexts, integration foundation
 
 ### Anti-Corruption Layer
+
 Protection pattern preventing external system changes from affecting internal domain models.
 
 **Context**: External Sync
@@ -147,6 +169,7 @@ Protection pattern preventing external system changes from affecting internal do
 ## Data and Storage Terms
 
 ### XDG Base Directory
+
 Industry standard for configuration file locations on Unix-like systems.
 
 **Purpose**: Standards compliance, predictable file locations
@@ -154,6 +177,7 @@ Industry standard for configuration file locations on Unix-like systems.
 **Context**: All contexts (technical implementation)
 
 ### Context-Aware Storage
+
 Storage approach supporting both global and project-specific configurations.
 
 **Global Context**: User home directory (~/.config/project-manager)
@@ -161,6 +185,7 @@ Storage approach supporting both global and project-specific configurations.
 **Detection**: Presence of .pm/config.json
 
 ### Event Sourcing
+
 Data pattern using append-only event log for audit trail and change tracking.
 
 **File Format**: .jsonl (newline-delimited JSON)
@@ -168,6 +193,7 @@ Data pattern using append-only event log for audit trail and change tracking.
 **Context**: All contexts (technical implementation)
 
 ### Co-authorship Tracking
+
 Method for recording both human and AI contributions to development work.
 
 **Format**: Git-style co-authorship
@@ -177,6 +203,7 @@ Method for recording both human and AI contributions to development work.
 ## Operational Terms
 
 ### Operation Risk Assessment
+
 Categorization system for determining appropriate safeguards for different types of operations.
 
 **Risk Levels**: High, Medium, Low
@@ -184,6 +211,7 @@ Categorization system for determining appropriate safeguards for different types
 **Purpose**: User safety, operation control
 
 ### Safeguards
+
 User confirmation steps required before AI executes potentially destructive operations.
 
 **Trigger**: High-risk operations
@@ -191,6 +219,7 @@ User confirmation steps required before AI executes potentially destructive oper
 **Context**: AI Integration
 
 ### Design Proposal
+
 Structured document capturing technical approach, alternatives, and rationale before implementation.
 
 **Components**: Approach, rationale, alternatives, validation status
@@ -198,6 +227,7 @@ Structured document capturing technical approach, alternatives, and rationale be
 **Context**: AI Integration
 
 ### AI Session
+
 Bounded interaction period between human developers and AI assistants with maintained context.
 
 **Properties**: Session ID, context data, expiration
@@ -207,16 +237,19 @@ Bounded interaction period between human developers and AI assistants with maint
 ## Workflows and Processes
 
 ### Issue-Based Development
+
 The core workflow where all development work is organized around tickets with clear acceptance criteria, implementation plans, and progress tracking.
 
 **Phases**: Design Proposal → AI Validation → Implementation → Review
 
 ### AI-Assisted Validation
+
 The process of using multiple AI experts to review and validate design proposals before implementation begins.
 
 **Participants**: Human developer, multiple AI experts, system coordinator
 
 ### Local-First Workflow
+
 The principle that all core functionality works offline with local data storage, with optional external synchronization.
 
 **Benefits**: Offline capability, data ownership, reduced dependencies
@@ -224,16 +257,19 @@ The principle that all core functionality works offline with local data storage,
 ## Relationships and Rules
 
 ### Aggregation Rules
+
 - **Project** contains multiple **Epics** and **Tickets**
 - **Epic** contains multiple **Tickets**
 - **Ticket** belongs to one **Project** and optionally one **Epic**
 
 ### Status Transition Rules
+
 - Tickets can only move forward in status: `pending` → `in_progress` → `completed` → `archived`
 - Only one ticket per AI Assistant can be `in_progress` at a time
 - Tickets with dependencies cannot start until prerequisites are `completed`
 
 ### Dependency Rules
+
 - **Tickets** can depend on other **Tickets** (prerequisite relationship)
 - **Tickets** can block other **Tickets** (blocking relationship)
 - **Epics** cannot start until all prerequisite **Tickets** are completed
@@ -241,6 +277,7 @@ The principle that all core functionality works offline with local data storage,
 ## Integration Terminology
 
 ### External System Mapping
+
 When interfacing with external systems, these mappings apply:
 
 | Internal Term | GitHub Issues | Jira | Linear |
@@ -251,12 +288,14 @@ When interfacing with external systems, these mappings apply:
 | Status | State | Status | State |
 
 ### AI System Terminology
+
 - **AI Expert**: Specialized AI assistant for specific domains (architecture, testing, etc.)
 - **AI Context**: The shared knowledge and state provided to AI assistants
 - **AI Session**: A bounded interaction period between human and AI assistant
 - **AI Validation**: The process of AI expert review for design proposals
 
 ### Architecture Decision Record (ADR) Terminology
+
 - **ADR**: Document capturing important architectural decisions with context and consequences
 - **Decision Status**: Proposed, Accepted, Deprecated, Superseded
 - **Decision Evolution**: Timeline and dependency relationships between ADRs
@@ -265,11 +304,13 @@ When interfacing with external systems, these mappings apply:
 ## Anti-Patterns to Avoid
 
 ### Terminology Confusion
+
 - ❌ Don't use "Issue" and "Ticket" interchangeably in internal documentation
 - ❌ Don't use "Task" to refer to Tickets (Task is a specific Ticket Type)
 - ❌ Don't use "Story" to refer to Tickets (Stories are in USER_STORIES.md)
 
 ### Context Mixing
+
 - ❌ Don't mix AI Integration concepts in Ticket Management documentation
 - ❌ Don't put External Sync requirements in AI Integration context
 - ❌ Don't reference implementation details in domain documentation

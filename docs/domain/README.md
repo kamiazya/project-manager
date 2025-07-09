@@ -22,6 +22,7 @@ The domain documentation captures the core business concepts, rules, and workflo
 The Project Manager domain revolves around these core concepts:
 
 ### Primary Entities
+
 - **Project**: A software development initiative with tickets, epics, and contributors
 - **Ticket/Issue**: A discrete unit of work with status, priority, and assignees
 - **Epic**: A collection of related tickets forming a larger initiative
@@ -29,6 +30,7 @@ The Project Manager domain revolves around these core concepts:
 - **AI Assistant**: AI systems that participate in development workflows
 
 ### Key Workflows
+
 - **Issue Management**: Creating, updating, and tracking development tasks
 - **AI Collaboration**: Human-AI coordination for development tasks
 - **External Synchronization**: Bidirectional sync with external project management tools

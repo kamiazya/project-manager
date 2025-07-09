@@ -42,6 +42,7 @@ pnpm run typecheck
 ### Project Structure
 
 Project Manager follows a local-first architecture with these core components:
+
 - **CLI Interface**: Command-line tools for developer productivity
 - **Local Storage**: File-based persistence for tickets, epics, and project data
 - **MCP Server**: Model Context Protocol implementation for AI integration
@@ -54,12 +55,16 @@ For detailed architecture information, see [ARCHITECTURE.md](./docs/ARCHITECTURE
 ### Foundational Philosophies
 
 #### 1. Secure-by-Design Philosophy
+
 Security is integrated into every phase of development:
+
 - **Proactive Security**: Security controls and threat modeling built into design and architecture
 - **Built-in Quality**: Quality and security ensured from the beginning through vulnerability scanning, license compliance, and security analysis
 
 #### 2. Multi-faceted Shift-Left Approach
+
 Testing, security, and quality assurance moved as early as possible in the development lifecycle:
+
 - **Early Detection**: Issues identified during design and implementation to reduce costs and complexity
 - **Continuous Feedback**: Real-time feedback through automated tools, pre-commit hooks, and CI/CD checks
 
@@ -68,21 +73,25 @@ Testing, security, and quality assurance moved as early as possible in the devel
 The project integrates four key methodologies:
 
 #### 1. AI-Driven Development
+
 - Leverage AI as a development partner for efficiency and quality
 - Utilize AI for code generation, review, and refactoring suggestions
 - Combine human creativity with AI processing capabilities
 
 #### 2. Domain-Driven Design (DDD)
+
 - Design centered around business logic
 - Clear communication through ubiquitous language
 - Manage complexity through bounded contexts
 
 #### 3. Document-Driven Development
+
 - Clarify specifications through documentation before implementation
 - Share knowledge by keeping documentation up-to-date
 - Maintain consistency between code and documentation
 
 #### 4. Test-Driven Development (TDD)
+
 - Build quality through test-first approach
 - Tests as executable specifications
 - Safety net for refactoring
@@ -103,6 +112,7 @@ All code changes must be submitted through pull requests. This ensures code qual
 #### Git Workflow
 
 1. **Create Feature Branch**
+
    ```bash
    git checkout main
    git pull origin main
@@ -116,6 +126,7 @@ All code changes must be submitted through pull requests. This ensures code qual
 
 3. **Run Local Checks**
    Before pushing, ensure all local checks pass:
+
    ```bash
    # Type check all packages
    pnpm typecheck
@@ -172,12 +183,14 @@ This describes the high-level approach to development, complementing the Git wor
 ### Enhanced Issue Workflow Process
 
 #### Phase 1: Design Proposal Creation
+
 1. **Create Design Proposal**: Fill out the generated design proposal template
 2. **Clarify Purpose and Goals**: Expand on the original issue's objectives
 3. **Document Implementation Approach**: Specify technical choices and architecture
 4. **Consider Alternatives**: Document other approaches and justify the chosen one
 
 #### Phase 2: AI Expert Validation
+
 1. **Request AI Expert Reviews**: Use validation commands
 2. **Code Analysis Review**: Get architecture and structure feedback
 3. **Technical Implementation Review**: Get API and library guidance
@@ -187,6 +200,7 @@ This describes the high-level approach to development, complementing the Git wor
 7. **Synthesize Feedback**: Combine insights and resolve conflicts
 
 #### Phase 3: Implementation
+
 1. **Finalize Implementation Plan**: Based on AI expert feedback
 2. **Begin Development**: Proceed with validated approach
 3. **Progress Tracking**: Update issue files with discoveries and decisions
@@ -209,6 +223,7 @@ todo → in_progress → completed
 ### Issue ID Format
 
 Issues use UNIX timestamp-based IDs for automatic chronological ordering:
+
 - Format: `TIMESTAMP-description.md`
 - Example: `1751764474-static-analysis-linting.md`
 - No need to check existing IDs when creating new issues
@@ -228,18 +243,21 @@ Epic (Strategic Level)
 ```
 
 #### Epic Level (Strategic)
+
 - **Purpose**: Large strategic goals spanning multiple features
 - **Duration**: 1-3 months
 - **Ownership**: Human-driven decision making
 - **Example**: "Complete user authentication system overhaul"
 
 #### Feature Level (Functional)
+
 - **Purpose**: User-facing functionality that provides business value
 - **Duration**: 1-4 weeks
 - **Ownership**: Human-AI collaborative planning
 - **Example**: "Implement email/password authentication"
 
 #### Task Level (Implementation)
+
 - **Purpose**: Concrete implementation work that AI can execute autonomously
 - **Duration**: 1-5 days
 - **Ownership**: AI-driven execution with human oversight
@@ -252,11 +270,13 @@ When creating tasks for collaborators working asynchronously with limited contex
 For comprehensive guidelines on structuring tasks for asynchronous delegation, see [Asynchronous Delegation Best Practices](docs/best-practices/asynchronous-delegation.md).
 
 #### Key Principles
+
 1. **Self-Contained Tasks**: Include all necessary information upfront
 2. **Clear Success Criteria**: Define measurable outcomes
 3. **Atomic Scope**: Ensure tasks are independently executable
 
 #### Quick Reference
+
 - **For AI Agents**: Use extreme precision, literal specifications, concrete examples
 - **For Remote Developers**: Provide context, rationale, and areas for judgment
 - **For Both**: Ensure tasks can be completed without clarification
@@ -266,12 +286,14 @@ For comprehensive guidelines on structuring tasks for asynchronous delegation, s
 Each Task must adhere to the Single Responsibility Principle:
 
 #### ✅ Good Task Examples
+
 - `coding`: Implement the `loginUser` function in `auth.service.ts`
 - `test`: Write unit tests for password validation with 90%+ coverage
 - `refactor`: Extract authentication logic into reusable service class
 - `research`: Investigate OAuth 2.0 libraries compatible with our stack
 
 #### ❌ Poor Task Examples
+
 - `coding`: Implement entire authentication system (too broad)
 - `refactor`: Improve code quality (too vague)
 - `research`: Research authentication (too open-ended)
@@ -279,6 +301,7 @@ Each Task must adhere to the Single Responsibility Principle:
 ### Issue Creation Standards
 
 #### Frontmatter Schema
+
 ```yaml
 ---
 id: unique-identifier
@@ -311,6 +334,7 @@ ai_metadata:
 Every Task-level issue must include:
 
 1. **Clear Completion Criteria**
+
    ```markdown
    ## Success Criteria
    - [ ] Function `authenticateUser()` implemented in `src/auth/service.ts`
@@ -320,6 +344,7 @@ Every Task-level issue must include:
    ```
 
 2. **Context Information**
+
    ```markdown
    ## Context
    **Files to modify**: `src/auth/service.ts`, `src/auth/types.ts`
@@ -328,6 +353,7 @@ Every Task-level issue must include:
    ```
 
 3. **AI Metadata**
+
    ```yaml
    ai_metadata:
      complexity_score: 3  # 1-5 scale
@@ -379,17 +405,20 @@ Every Task-level issue must include:
 ### Test Levels
 
 #### Unit Testing
+
 - **Scope**: Individual functions, classes, and modules
 - **Coverage Target**: 90%+ for core business logic
 - **Technology**: Vitest testing framework
 - **Categories**: Domain model validation, business logic verification, utility function testing, error handling scenarios
 
 #### Integration Testing
+
 - **Scope**: Component interactions and API endpoints
 - Test component integration and data flow
 - Verify external system interactions
 
 #### End-to-End Testing
+
 - **Scope**: Full system workflows and user interactions
 - Test complete user journeys
 - Validate system behavior in production-like environments
@@ -397,10 +426,12 @@ Every Task-level issue must include:
 ### Test Environment Setup
 
 **Requirements**:
+
 - Node.js 20+
 - pnpm package manager
 
 **Running Tests**:
+
 ```bash
 # Run all tests
 pnpm test
@@ -442,6 +473,7 @@ pnpm test:watch
 ### When to Create ADRs
 
 Create an ADR when making decisions that:
+
 - **Cross bounded contexts** or affect multiple system components
 - **Introduce new technologies** or third-party dependencies
 - **Define major interfaces** or API contracts
@@ -486,6 +518,7 @@ The project supports various forms of AI and automated assistance. When leveragi
 ### AI Expert Validation
 
 Use AI experts for:
+
 - Architecture review and code structure analysis
 - Technical implementation guidance
 - API design and error handling
@@ -509,6 +542,7 @@ Apply the Second Opinion Principle: leverage multiple AI systems for independent
 ### Design Review Workflow
 
 For complex changes:
+
 1. Create design proposal
 2. Get AI expert validation
 3. Review with team members
@@ -518,6 +552,7 @@ For complex changes:
 ### Quality Gates
 
 Before marking work as complete:
+
 - [ ] All success criteria met
 - [ ] No breaking changes introduced
 - [ ] All tests passing
@@ -535,6 +570,7 @@ Before marking work as complete:
 ## Getting Help
 
 If you have questions or need help:
+
 - Check the documentation in the `docs/` directory
 - Review existing issues and ADRs
 - Create a new issue with your question

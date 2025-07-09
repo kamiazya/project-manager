@@ -9,6 +9,7 @@ Proposed
 As an open-source project aiming for broad adoption and community contribution, Project Manager must make deliberate choices about technology standards and conventions. Adopting established industry standards rather than creating custom solutions offers numerous benefits for both the project and the broader developer community.
 
 Key considerations:
+
 - Reduced learning curve for contributors and users
 - Improved interoperability with existing tools and workflows
 - Decreased maintenance burden through community-maintained standards
@@ -20,6 +21,7 @@ Key considerations:
 We will adopt a "Standards-First" approach across all technical decisions:
 
 ### Core Principle
+
 **Prefer established industry standards over custom implementations** unless there is a compelling technical reason that makes the standard unsuitable for our specific use case.
 
 ### Implementation Guidelines
@@ -73,6 +75,7 @@ These standards are adopted by this ADR and should be followed unless superseded
 ## Consequences
 
 ### Positive
+
 - Lower barrier to entry for new contributors
 - Reduced need for custom documentation
 - Better tooling support and ecosystem integration
@@ -81,12 +84,14 @@ These standards are adopted by this ADR and should be followed unless superseded
 - Natural alignment with best practices
 
 ### Negative
+
 - Less flexibility in implementation approaches
 - Potential limitations imposed by standards
 - Need to stay updated with evolving standards
 - May require refactoring if standards change significantly
 
 ### Neutral
+
 - Requires research before implementation
 - Standards knowledge becomes prerequisite
 - Dependency on external standard bodies

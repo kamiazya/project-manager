@@ -146,22 +146,26 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 #### Core Entities
 
 **Project**
+
 - Contains configuration and metadata
 - Manages tickets, epics, and roadmaps
 - Tracks contributors (human and AI)
 
 **Ticket (Issue)**
+
 - Represents a single development task
 - Contains background, purpose, and acceptance criteria
 - Tracks status, priority, and assignments
 - Links to implementation plans and design proposals
 
 **Epic**
+
 - Groups related tickets into larger initiatives
 - Defines business goals and success metrics
 - Tracks progress across multiple tickets
 
 **Implementation Plan**
+
 - Documents technical approach for tickets
 - Captures architectural decisions and alternatives
 - Enables pre-implementation review and validation
@@ -178,31 +182,37 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 ### 5.1. Technology Stack
 
 **Runtime Environment**
+
 - Node.js with ES modules
 - TypeScript for type safety
 - pnpm for package management (following npm ecosystem standards)
 
 **CLI Framework (CLI-First Implementation)**
+
 - Commander.js for command structure (following POSIX and GNU conventions)
 - tsx for TypeScript execution
 - Chalk for terminal styling
 
 **Configuration Management (Standards Adoption)**
+
 - XDG Base Directory specification for file locations
 - JSON format for structured configuration
 - Environment variable support following dotenv standards
 
 **API Design (Standards Adoption)**
+
 - RESTful principles with OpenAPI 3.0 specification
 - JSON response format
 - Standard HTTP status codes
 
 **Code Quality (Standards Adoption)**
+
 - ESLint/Prettier for JS/TS code style
 - Conventional Commits for commit messages
 - Semantic Versioning (SemVer 2.0.0) for releases
 
 **Storage**
+
 - JSON files for structured data
 - CommonMark for Markdown documentation
 - File-based templates
@@ -219,6 +229,7 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 ### 5.2. Data Storage
 
 **Local Storage Structure (XDG Base Directory Compliance)**
+
 ```
 # Home directory structure
 ~/.config/project-manager/     # XDG Base Directory compliance
@@ -248,6 +259,7 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 ```
 
 **Data Format**
+
 - JSON for structured data (tickets, epics, configuration)
 - Markdown for documentation and templates
 - Timestamps for chronological ordering
@@ -260,12 +272,14 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 ### 6.1. MCP Server Implementation
 
 **Core Services**
+
 - Ticket management operations
 - Project context retrieval
 - AI-assisted validation workflows
 - Language translation services
 
 **API Endpoints**
+
 - CRUD operations for tickets and epics
 - Search and filtering capabilities
 - Status reporting and analytics
@@ -274,12 +288,14 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 ### 6.2. External System Integration
 
 **Synchronization Strategy**
+
 - External tool-based synchronization (not direct sync)
 - User-driven conflict resolution with AI assistance
 - Selective sharing based on privacy settings
 - Audit trail for all changes
 
 **Supported Systems**
+
 - GitHub Issues
 - Jira
 - Linear
@@ -335,16 +351,19 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 ### 9.2. User Experience (Phased Interface Implementation)
 
 **Phase 1: CLI-First Implementation**
+
 - Command-line interface as primary interaction method
 - Structured output formats (JSON, plain text) for programmatic use
 - Interactive and non-interactive modes
 
 **Phase 2: Programmatic Interfaces**
+
 - Model Context Protocol (MCP) server for AI integration
 - RESTful API exposing CLI functionality
 - SDK/libraries for common programming languages
 
 **Phase 3: Additional User Interfaces (As Needed)**
+
 - Terminal User Interface (TUI) for enhanced interactive experience
 - IDE extensions (VSCode, IntelliJ) for integrated workflows
 - Web UI for team collaboration and visualization

@@ -5,6 +5,7 @@ This document describes the physical data storage and technical implementation d
 ## Overview
 
 The Project Manager uses a hybrid storage approach:
+
 - **Primary Storage**: JSON files for flexibility and portability
 - **Index Storage**: Lightweight indexes for performance
 - **Cache Layer**: In-memory caching for hot data
@@ -21,6 +22,7 @@ Following the XDG Base Directory specification is a firm decision, but the dual-
 **Note:** The decision of whether to support both global and per-project contexts is under active discussion. This section represents a potential implementation approach, not a committed feature.
 
 **Proposed Global Context** (Default):
+
 ```
 ~/.config/project-manager/        # XDG Base Directory compliance
 ├── config.json                  # Global configuration
@@ -48,6 +50,7 @@ Following the XDG Base Directory specification is a firm decision, but the dual-
 ```
 
 **Project Context** (When project marker exists):
+
 ```
 project-root/
 ├── .pm/                         # Project-specific data
@@ -61,6 +64,7 @@ project-root/
 ```
 
 **Context Detection**:
+
 - Presence of `.pm/config.json` indicates project context
 - Project settings override global settings
 - All interfaces (CLI, TUI, MCP, SDK) respect context switching
@@ -238,6 +242,7 @@ erDiagram
 ```
 
 **Key Relationships:**
+
 - **Project-Epic-Ticket Hierarchy**: Projects contain epics, which group related tickets
 - **Ticket Dependencies**: Tickets can depend on other tickets (blocking relationships)
 - **User Assignments**: Users can be assigned to tickets and create various entities
@@ -567,6 +572,7 @@ Optional encryption for sensitive data:
 ### Access Control
 
 File-system based permissions:
+
 - Read-only for backup files
 - Write protection for event logs
 - User-specific permission files
@@ -578,6 +584,7 @@ File-system based permissions:
 All data access follows CLI-first architecture:
 
 **Interface Access Patterns**:
+
 ```typescript
 // CLI: Direct access to all contexts
 interface CLIAccess {
@@ -688,6 +695,7 @@ Item-level locking using filesystem-based lock files with explicit expiry:
 ```
 
 Lock file format:
+
 ```json
 {
   "locked_by": "user123",
@@ -699,6 +707,7 @@ Lock file format:
 ```
 
 Lock file naming convention:
+
 - `{item-id}.lock`
 - Lock file contains expiry timestamp and process information
 - **Cleanup Strategy**:
@@ -734,6 +743,7 @@ Lock file naming convention:
 ```
 
 **Field Constraints**:
+
 - `operation_id`: Required unique identifier for audit correlation
 - `operation_risk`: Enum values: `"high"`, `"medium"`, `"low"`
 
@@ -750,18 +760,21 @@ Safeguard data is nested within the main operation document to keep related data
 ## Standards Compliance
 
 ### Configuration Standards
+
 - **XDG Base Directory**: All configuration follows XDG specification
 - **File Formats**: JSON for structured data, CommonMark for documentation
 - **Naming**: Lowercase with hyphens for directory names
 - **Permissions**: Standard file system permissions
 
 ### API Standards (If Implemented)
+
 - **RESTful Design**: Following REST principles
 - **OpenAPI**: API documentation using OpenAPI 3.0
 - **HTTP Standards**: Standard status codes and methods
 - **Content Type**: JSON for API responses
 
 ### Version Management
+
 - **Semantic Versioning**: SemVer 2.0.0 for all data schemas
 - **Migration Scripts**: Automated migration between versions
 - **Backward Compatibility**: Maintained for at least one major version

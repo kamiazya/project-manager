@@ -9,6 +9,7 @@ Proposed
 Project Manager requires various interaction interfaces to serve different user needs and usage contexts. While the system is designed for developer productivity, the choice of interface implementation order and design principles will significantly impact adoption, maintainability, and extensibility.
 
 Key considerations:
+
 - Local-first architecture requires offline-capable interfaces
 - AI-driven development needs programmatic access patterns
 - Developer productivity demands efficient command-line workflows
@@ -20,17 +21,20 @@ Key considerations:
 We will adopt a CLI-first interface architecture with the following components:
 
 ### Primary Interface
+
 - **Command-line interface (CLI)**: Primary and complete implementation of all core functionality
 - Structured output formats (JSON, plain text) for programmatic use
 - Interactive and non-interactive modes
 - Serves as the foundation for other interfaces
 
 ### Programmatic Interfaces
+
 - **Model Context Protocol (MCP) server**: AI integration interface launched via CLI
 - **SDK/libraries**: Direct core access for common programming languages
 - **RESTful API**: TBD - decision pending based on requirements
 
 ### Additional User Interfaces
+
 - **Terminal User Interface (TUI)**: Enhanced interactive experience launched via CLI
 - **IDE extensions**: TBD - decision pending based on requirements
 - **Web UI**: TBD - decision pending based on requirements
@@ -152,6 +156,7 @@ pm config set sync.repository owner/repo
 ## Consequences
 
 ### Positive
+
 - CLI foundation provides complete functionality from the start
 - Flexibility to add interfaces based on actual user needs
 - Consistent experience across different interaction methods
@@ -160,6 +165,7 @@ pm config set sync.repository owner/repo
 - Clear launch strategy for additional interfaces
 
 ### Negative
+
 - Initial development focuses on command-line interface
 - Additional development effort for each new interface
 - Potential feature disparities between interfaces
@@ -167,6 +173,7 @@ pm config set sync.repository owner/repo
 - Interface coordination complexity
 
 ### Neutral
+
 - Need for comprehensive CLI documentation
 - Requirement for structured output formats
 - Investment in CLI testing and stability
