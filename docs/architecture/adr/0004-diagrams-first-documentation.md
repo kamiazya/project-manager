@@ -1,4 +1,4 @@
-# ADR-0005: Diagrams-First Documentation
+# ADR-0004: Diagrams-First Documentation
 
 ## Status
 

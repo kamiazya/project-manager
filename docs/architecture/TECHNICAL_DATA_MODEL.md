@@ -66,7 +66,7 @@ project-root/
 **Context Detection**:
 
 - Presence of `.pm/config.json` indicates project context
-- Project settings override global settings
+- Project settings override the global settings
 - All interfaces (CLI, TUI, MCP, SDK) respect context switching
 
 ## Entity Relationship Diagram
