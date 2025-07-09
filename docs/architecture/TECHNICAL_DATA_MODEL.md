@@ -12,26 +12,238 @@ The Project Manager uses a hybrid storage approach:
 
 ## Storage Architecture
 
+### Proposed Context-Aware Storage Model (Future Consideration)
+
+This dual-context storage model is a proposal to enhance flexibility, but it is **not a final decision**. The implementation details are still under discussion, and the final approach may differ. The primary goal is to support both global (user-level) and project-specific configurations seamlessly.
+
+Following the XDG Base Directory specification is a firm decision, but the dual-context support is an idea for future implementation.
+
+**Note:** The decision of whether to support both global and per-project contexts is under active discussion. This section represents a potential implementation approach, not a committed feature.
+
+**Proposed Global Context** (Default):
+```
+~/.config/project-manager/        # XDG Base Directory compliance
+├── config.json                  # Global configuration
+├── projects/                    # Project data
+│   ├── {project-id}/           # Individual project
+│   │   ├── project.json       # Project metadata
+│   │   ├── tickets.json       # Ticket collection
+│   │   ├── epics.json         # Epic collection
+│   │   ├── users.json         # Project users
+│   │   └── events.jsonl       # Event log (append-only)
+│   └── index.json              # Cross-project index
+├── ai/                          # AI Integration data
+│   ├── sessions/               # AI session data
+│   ├── contexts/               # Cached contexts
+│   └── validations/            # Validation results
+└── sync/                        # External sync data
+    ├── mappings/               # Entity mappings
+    └── cache/                  # External data cache
+
+~/.cache/project-manager/        # XDG cache directory
+└── [cache files]
+
+~/.local/share/project-manager/  # XDG data directory
+└── [user data]
+```
+
+**Project Context** (When project marker exists):
 ```
 project-root/
-├── .pm/                          # Project Manager data
-│   ├── config.json              # Global configuration
-│   ├── projects/                # Project data
-│   │   ├── {project-id}/       # Individual project
-│   │   │   ├── project.json   # Project metadata
-│   │   │   ├── tickets.json   # Ticket collection
-│   │   │   ├── epics.json     # Epic collection
-│   │   │   ├── users.json     # Project users
-│   │   │   └── events.jsonl   # Event log (append-only)
-│   │   └── index.json          # Cross-project index
-│   ├── ai/                      # AI Integration data
-│   │   ├── sessions/           # AI session data
-│   │   ├── contexts/           # Cached contexts
-│   │   └── validations/        # Validation results
-│   └── sync/                    # External sync data
-│       ├── mappings/           # Entity mappings
-│       └── cache/              # External data cache
+├── .pm/                         # Project-specific data
+│   ├── config.json             # Project configuration
+│   ├── project.json            # Project metadata
+│   ├── tickets.json            # Project tickets
+│   ├── epics.json              # Project epics
+│   ├── users.json              # Project users
+│   └── events.jsonl            # Project event log
+└── [project files]
 ```
+
+**Context Detection**:
+- Presence of `.pm/config.json` indicates project context
+- Project settings override global settings
+- All interfaces (CLI, TUI, MCP, SDK) respect context switching
+
+## Entity Relationship Diagram
+
+The following diagram shows the relationships between core entities in the Project Manager system:
+
+```mermaid
+---
+title: Project Manager Data Model
+---
+%%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#4caf50", "primaryTextColor": "#2e7d32", "primaryBorderColor": "#2e7d32"}}}%%
+erDiagram
+    PROJECT {
+        string id PK
+        string name
+        string description
+        string privacy_level
+        boolean sync_enabled
+        datetime created_at
+        datetime updated_at
+        int total_tickets
+        int active_tickets
+        int total_epics
+        int contributors
+    }
+    
+    EPIC {
+        string id PK
+        string project_id FK
+        string title
+        string description
+        string business_value
+        string status
+        datetime target_date
+        datetime created_at
+        datetime updated_at
+        int total_tickets
+        int completed_tickets
+        int completion_percentage
+    }
+    
+    TICKET {
+        string id PK
+        string project_id FK
+        string epic_id FK
+        string parent_id FK
+        int number
+        string title
+        string description
+        string type
+        string status
+        string priority
+        string privacy_level
+        string assignee_id FK
+        string implementation_plan_id FK
+        datetime created_at
+        datetime updated_at
+        string created_by FK
+        int task_count
+        int completed_task_count
+        int comment_count
+        datetime last_activity
+    }
+    
+    USER {
+        string id PK
+        string name
+        string email
+        string role
+        datetime created_at
+        datetime last_seen
+        boolean is_ai_agent
+    }
+    
+    IMPLEMENTATION_PLAN {
+        string id PK
+        string ticket_id FK
+        string approach
+        string rationale
+        string validation_status
+        datetime created_at
+        datetime updated_at
+        string created_by FK
+    }
+    
+    ACCEPTANCE_CRITERIA {
+        string id PK
+        string ticket_id FK
+        string description
+        boolean is_met
+        int order_index
+        datetime created_at
+        datetime updated_at
+    }
+    
+    DEPENDENCY {
+        string id PK
+        string ticket_id FK
+        string depends_on_ticket_id FK
+        string type
+        datetime created_at
+        string created_by FK
+    }
+    
+    EVENT {
+        string id PK
+        string entity_type
+        string entity_id
+        string event_type
+        string actor_id FK
+        json data
+        datetime timestamp
+        string session_id
+    }
+    
+    AI_CONTEXT {
+        string id PK
+        string project_id FK
+        string session_id
+        json context_data
+        int size_bytes
+        string compression
+        datetime created_at
+        datetime expires_at
+    }
+    
+    SYNC_MAPPING {
+        string id PK
+        string project_id FK
+        string internal_id
+        string external_id
+        string external_system
+        string entity_type
+        json external_data
+        datetime last_sync
+        datetime created_at
+        datetime updated_at
+        string sync_status
+    }
+    
+    %% Relationships
+    PROJECT ||--o{ EPIC : "contains"
+    PROJECT ||--o{ TICKET : "contains"
+    PROJECT ||--o{ USER : "has_members"
+    PROJECT ||--o{ AI_CONTEXT : "generates"
+    PROJECT ||--o{ SYNC_MAPPING : "syncs_with"
+    PROJECT ||--o{ EVENT : "logs"
+    
+    EPIC ||--o{ TICKET : "groups"
+    
+    TICKET ||--o{ TICKET : "parent_child"
+    TICKET ||--o{ ACCEPTANCE_CRITERIA : "defines"
+    TICKET ||--o{ DEPENDENCY : "depends_on"
+    TICKET ||--o{ DEPENDENCY : "blocks"
+    TICKET ||--|| IMPLEMENTATION_PLAN : "has"
+    TICKET }o--|| USER : "assigned_to"
+    TICKET ||--o{ EVENT : "generates"
+    
+    USER ||--o{ TICKET : "creates"
+    USER ||--o{ IMPLEMENTATION_PLAN : "authors"
+    USER ||--o{ DEPENDENCY : "creates"
+    USER ||--o{ EVENT : "performs"
+    
+    IMPLEMENTATION_PLAN ||--o{ EVENT : "generates"
+    
+    ACCEPTANCE_CRITERIA ||--o{ EVENT : "generates"
+    
+    DEPENDENCY ||--o{ EVENT : "generates"
+    
+    AI_CONTEXT }o--|| USER : "created_by"
+    
+    SYNC_MAPPING ||--o{ EVENT : "generates"
+```
+
+**Key Relationships:**
+- **Project-Epic-Ticket Hierarchy**: Projects contain epics, which group related tickets
+- **Ticket Dependencies**: Tickets can depend on other tickets (blocking relationships)
+- **User Assignments**: Users can be assigned to tickets and create various entities
+- **AI Integration**: AI contexts provide cached information for AI operations
+- **External Sync**: Sync mappings enable bidirectional synchronization with external systems
+- **Event Sourcing**: All entities generate events for audit trail and change tracking
 
 ## Data Schemas
 
@@ -361,6 +573,40 @@ File-system based permissions:
 
 ## Integration Points
 
+### CLI-First Interface Architecture (ADR-0004)
+
+All data access follows CLI-first architecture:
+
+**Interface Access Patterns**:
+```typescript
+// CLI: Direct access to all contexts
+interface CLIAccess {
+  ticketManagement: TicketManagementContext;
+  aiIntegration: AIIntegrationContext;
+  externalSync: ExternalSyncContext;
+}
+
+// MCP Server: Launched via CLI, focuses on AI Integration
+interface MCPAccess {
+  launchMode: "cli-spawned";
+  primaryContext: AIIntegrationContext;
+  secondaryAccess: TicketManagementContext; // for AI operations
+}
+
+// SDK: Direct access to core functionality
+interface SDKAccess {
+  directAccess: CoreBusinessLogic;
+  contexts: AllContexts;
+}
+
+// TUI: Launched via CLI, focuses on Ticket Management
+interface TUIAccess {
+  launchMode: "cli-spawned";
+  primaryContext: TicketManagementContext;
+  secondaryAccess: ExternalSyncContext; // for sync status
+}
+```
+
 ### External System Caching
 
 ```typescript
@@ -501,9 +747,29 @@ Lock file naming convention:
 
 Safeguard data is nested within the main operation document to keep related data together and simplify the data model. The `safeguard` field is only present for operations that require user confirmation (high-risk operations).
 
+## Standards Compliance
+
+### Configuration Standards
+- **XDG Base Directory**: All configuration follows XDG specification
+- **File Formats**: JSON for structured data, CommonMark for documentation
+- **Naming**: Lowercase with hyphens for directory names
+- **Permissions**: Standard file system permissions
+
+### API Standards (If Implemented)
+- **RESTful Design**: Following REST principles
+- **OpenAPI**: API documentation using OpenAPI 3.0
+- **HTTP Standards**: Standard status codes and methods
+- **Content Type**: JSON for API responses
+
+### Version Management
+- **Semantic Versioning**: SemVer 2.0.0 for all data schemas
+- **Migration Scripts**: Automated migration between versions
+- **Backward Compatibility**: Maintained for at least one major version
+
 ## Related Documentation
 
-- [Domain Models](../../contexts/ticket_management/DOMAIN_MODEL.md) - Business concept definitions
+<!-- TODO: Implement domain model documentation -->
 - [Architecture](./ARCHITECTURE.md) - System architecture
 - [Context Map](./CONTEXT_MAP.md) - Bounded context boundaries
-- [Constraints](../../contexts/ticket_management/CONSTRAINTS.md) - Performance requirements
+<!-- TODO: Implement constraints documentation -->
+- [Architecture Decision Records](./adr/) - Technical and architectural decisions

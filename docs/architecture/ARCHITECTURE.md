@@ -23,6 +23,8 @@ Project Manager is a local-first ticket management system designed to enable eff
 - **AI-Driven Development**: Built specifically to support AI-assisted development workflows
 - **Issue-Based Development**: Structured around tickets, epics, and implementation planning
 - **Secure-by-Design**: Security considerations integrated into every architectural decision
+- **Standards-First Approach**: Adopt industry standards over custom implementations
+- **CLI-First Interface**: Command-line interface as the foundation for all other interfaces
 
 ### 3.2. Quality Principles
 
@@ -33,33 +35,111 @@ Project Manager is a local-first ticket management system designed to enable eff
 
 ## 4. System Architecture
 
-### 4.1. High-Level Architecture
+### 4.1. Component Interaction Diagram
 
+The following diagram illustrates the key components and their interaction patterns, emphasizing the CLI-first architecture where all interfaces delegate to the CLI component:
+
+```mermaid
+---
+title: Project Manager System Architecture
+---
+%%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#4caf50", "primaryTextColor": "#2e7d32", "primaryBorderColor": "#2e7d32"}}}%%
+graph TB
+    %% External Systems
+    subgraph "External Systems"
+        GH[GitHub Issues]
+        JIRA[Jira]
+        OTHER[Other Tools]
+    end
+
+    %% Actors
+    Human[Human User]
+    AI[AI Assistant/Agent]
+    Automation[Automation Agent]
+
+    %% User Interface Layer
+    subgraph "User Interface Layer"
+        CLI[CLI Interface<br/>Primary Interface]
+        TUI[Terminal UI<br/>Enhanced Interactive]
+    end
+
+    %% Integration Layer
+    subgraph "Integration Layer"
+        MCP[MCP Server<br/>AI Integration]
+        SDK[SDK/Libraries<br/>Programmatic Access]
+    end
+
+    %% Core System
+    subgraph "Core System"
+        CORE[Core Logic<br/>Business Rules]
+        
+        subgraph "Services"
+            STORAGE[File Storage<br/>Local Data]
+            CONFIG[Configuration<br/>XDG Compliant]
+            LOG[Logging<br/>Audit Trail]
+            SYNC[Sync Services<br/>External Integration]
+        end
+    end
+
+    %% Actor Interactions
+    Human --> CLI
+    Human --> TUI
+    Human --> AI
+    AI --> MCP
+    Automation --> CLI
+    Automation --> SDK
+
+    %% Interface Relationships (CLI-First Architecture)
+    CLI --> CORE
+    CLI -.-> TUI
+    CLI -.-> MCP
+    SDK --> CORE
+
+    %% Service Dependencies
+    CORE --> STORAGE
+    CORE --> CONFIG
+    CORE --> LOG
+    CORE --> SYNC
+
+    %% External Integration
+    SYNC --> GH
+    SYNC --> JIRA
+    SYNC --> OTHER
+
+    %% Styling
+    classDef actor fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef primary fill:#4caf50,stroke:#2e7d32,stroke-width:3px
+    classDef interface fill:#ff9800,stroke:#e65100,stroke-width:2px
+    classDef integration fill:#2196f3,stroke:#1565c0,stroke-width:2px
+    classDef service fill:#9e9e9e,stroke:#424242,stroke-width:1px
+    classDef external fill:#f44336,stroke:#c62828,stroke-width:1px
+
+    class Human,AI,Automation actor
+    class CLI,CORE primary
+    class TUI interface
+    class MCP,SDK integration
+    class STORAGE,CONFIG,LOG,SYNC service
+    class GH,JIRA,OTHER external
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    External Systems                          │
-├─────────────────────────────────────────────────────────────┤
-│  GitHub Issues  │  Jira  │  Other PM Tools  │  AI Services  │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-┌─────────────────┴───────────────────────────────────────────┐
-│                  Integration Layer                          │
-├─────────────────────────────────────────────────────────────┤
-│  Sync Services  │  MCP Server  │  Export/Import  │  API     │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-┌─────────────────┴───────────────────────────────────────────┐
-│                    Core Domain                              │
-├─────────────────────────────────────────────────────────────┤
-│  Ticket Mgmt  │  Epic Mgmt  │  Project Mgmt  │  Workflow   │
-└─────────────────┬───────────────────────────────────────────┘
-                  │
-┌─────────────────┴───────────────────────────────────────────┐
-│                 Infrastructure Layer                        │
-├─────────────────────────────────────────────────────────────┤
-│  File Storage  │  CLI Engine  │  Logging  │  Configuration  │
-└─────────────────────────────────────────────────────────────┘
-```
+
+**Architecture Description:**
+This diagram illustrates the CLI-first architecture where the CLI serves as the primary interface and foundation for all other components. The system emphasizes local-first design with external integration capabilities, supporting multiple user types including human developers, AI assistants, and automation agents.
+
+**Key Architectural Patterns:**
+
+- **CLI-First Design**: CLI serves as the primary interface and can launch/control other components like MCP server
+- **Core System**: Contains business logic and shared configuration, ensuring consistent behavior across all interfaces
+- **Actor-Based Interactions**: Human users, AI assistants, and automation agents interact through appropriate interfaces
+- **Service-Oriented Architecture**: Core system coordinates various services (storage, configuration, logging, synchronization)
+- **External Integration**: Synchronization services provide controlled access to external project management tools
+
+**Interface Relationships:**
+
+- **CLI → Core**: Primary interface accessing core business logic
+- **CLI → TUI**: CLI can launch Terminal UI (e.g., `pm --tui`)
+- **CLI → MCP**: CLI can launch and manage MCP server (e.g., `pm --mcp`)
+- **SDK → Core**: Direct access to core for programmatic use
+- Core maintains configuration and state, ensuring consistent behavior across all access patterns
 
 ### 4.2. Domain Model
 
@@ -100,45 +180,71 @@ Project Manager is a local-first ticket management system designed to enable eff
 **Runtime Environment**
 - Node.js with ES modules
 - TypeScript for type safety
-- pnpm for package management
+- pnpm for package management (following npm ecosystem standards)
 
-**CLI Framework**
-- Commander.js for command structure
+**CLI Framework (CLI-First Implementation)**
+- Commander.js for command structure (following POSIX and GNU conventions)
 - tsx for TypeScript execution
 - Chalk for terminal styling
 
+**Configuration Management (Standards Adoption)**
+- XDG Base Directory specification for file locations
+- JSON format for structured configuration
+- Environment variable support following dotenv standards
+
+**API Design (Standards Adoption)**
+- RESTful principles with OpenAPI 3.0 specification
+- JSON response format
+- Standard HTTP status codes
+
+**Code Quality (Standards Adoption)**
+- ESLint/Prettier for JS/TS code style
+- Conventional Commits for commit messages
+- Semantic Versioning (SemVer 2.0.0) for releases
+
 **Storage**
 - JSON files for structured data
-- Markdown for documentation
+- CommonMark for Markdown documentation
 - File-based templates
 
 **AI Integration**
 
 - Model Context Protocol (MCP) server (mandatory standard)
 - Support for multiple AI providers
-- Language bridging capabilities  
+- Language bridging capabilities
 - AI Resource Management (optional)
 - Git-style co-authorship model for AI operations
 - AI-optional design (all basic features work without AI)
 
 ### 5.2. Data Storage
 
-**Local Storage Structure**
+**Local Storage Structure (XDG Base Directory Compliance)**
 ```
-project-root/
-├── .pm/
-│   ├── config.json
-│   ├── project.json
-│   ├── tickets/
-│   │   ├── ticket-001.json
-│   │   └── ticket-002.json
-│   ├── epics/
-│   │   └── epic-001.json
-│   └── templates/
-│       ├── issue-template.md
-│       └── epic-template.md
-└── docs/
-    └── [project documentation]
+# Home directory structure
+~/.config/project-manager/     # XDG Base Directory compliance
+├── config.json              # Global configuration
+├── projects/                # Project data
+│   ├── {project-id}/       # Individual project
+│   │   ├── project.json   # Project metadata
+│   │   ├── tickets.json   # Ticket collection
+│   │   ├── epics.json     # Epic collection
+│   │   └── events.jsonl   # Event log (append-only)
+│   └── index.json          # Cross-project index
+├── ai/                      # AI Integration data
+│   ├── sessions/           # AI session data
+│   └── contexts/           # Cached contexts
+└── sync/                    # External sync data
+    ├── mappings/           # Entity mappings
+    └── cache/              # External data cache
+
+~/.cache/project-manager/      # XDG Base Directory compliance
+└── [cache files]
+
+~/.local/share/project-manager/ # XDG Base Directory compliance
+└── [user data]
+
+# Note: Project scope (global vs per-project) is under discussion
+# and will be addressed in future architecture decisions
 ```
 
 **Data Format**
@@ -190,12 +296,14 @@ project-root/
 - **AI Operation Safeguards**: User confirmation steps before AI executes destructive operations
 - **Operation Risk Assessment**: Categorize operations by risk level (high/medium/low) to determine appropriate safeguards
 
-### 7.2. Integration Security
+### 7.2. Integration Security (Standards Adoption)
 
-- OAuth 2.0 for external system authentication
+- OAuth 2.0 for external system authentication (industry standard)
+- JWT tokens for secure API communication
 - API key rotation and management
 - Rate limiting and throttling
 - Data sanitization and validation
+- OWASP guidelines compliance for security practices
 
 ## 8. Development Guidelines
 
@@ -205,6 +313,8 @@ project-root/
 - **Test-Driven Development**: Tests before implementation
 - **Document-Driven Development**: Clear specifications
 - **AI-Assisted Development**: Leverage AI for efficiency
+- **Standards-First Development**: Adopt industry standards over custom implementations
+- **CLI-First Implementation**: Build CLI as foundation for all other interfaces
 
 ### 8.2. Quality Assurance
 
@@ -222,12 +332,23 @@ project-root/
 - Team collaboration features
 - Enterprise-grade security
 
-### 9.2. User Experience
+### 9.2. User Experience (Phased Interface Implementation)
 
-- Web-based UI for visual project management
-- Mobile companion app
-- Real-time notifications
-- Advanced analytics and reporting
+**Phase 1: CLI-First Implementation**
+- Command-line interface as primary interaction method
+- Structured output formats (JSON, plain text) for programmatic use
+- Interactive and non-interactive modes
+
+**Phase 2: Programmatic Interfaces**
+- Model Context Protocol (MCP) server for AI integration
+- RESTful API exposing CLI functionality
+- SDK/libraries for common programming languages
+
+**Phase 3: Additional User Interfaces (As Needed)**
+- Terminal User Interface (TUI) for enhanced interactive experience
+- IDE extensions (VSCode, IntelliJ) for integrated workflows
+- Web UI for team collaboration and visualization
+- Other interfaces based on user feedback and adoption patterns
 
 ### 9.3. AI Resource Management (Optional)
 

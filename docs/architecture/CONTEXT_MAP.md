@@ -6,23 +6,100 @@ This document visualizes the relationships between bounded contexts in the Proje
 
 The Project Manager system is organized into three primary bounded contexts, each with distinct responsibilities and models:
 
+```mermaid
+%%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#4caf50", "primaryTextColor": "#2e7d32", "primaryBorderColor": "#2e7d32"}}}%%
+graph TB
+    %% System Boundary
+    subgraph "Project Manager System"
+        %% Bounded Contexts
+        subgraph "Ticket Management Context"
+            TM_P[Project]
+            TM_T[Ticket]
+            TM_E[Epic]
+            TM_U[User]
+            TM_IP[Implementation Plan]
+        end
+        
+        subgraph "AI Integration Context"
+            AI_A[AI Assistant]
+            AI_C[AI Context]
+            AI_DP[Design Proposal]
+            AI_VR[Validation Result]
+            AI_S[AI Session]
+        end
+        
+        subgraph "External Sync Context"
+            ES_EP[External Project]
+            ES_SM[Sync Mapping]
+            ES_ET[External Ticket]
+            ES_SS[Sync Status]
+        end
+        
+        subgraph "Shared Kernel"
+            SK_UI[User Identity]
+            SK_PID[Project ID]
+            SK_TID[Ticket ID]
+            SK_SV[Status Values]
+            SK_PV[Priority Values]
+        end
+    end
+    
+    %% External Systems
+    subgraph "External Systems"
+        GH[GitHub Issues]
+        JIRA[Jira]
+        LINEAR[Linear]
+        OTHER[Other PM Tools]
+    end
+    
+    %% User Types
+    subgraph "Users"
+        DEV[Developer]
+        PM[Project Manager]
+        AI_USER[AI Assistant]
+    end
+    
+    %% Context Relationships
+    TM_T -.-> AI_A
+    AI_VR -.-> TM_T
+    TM_T -.-> ES_SM
+    ES_ET -.-> TM_T
+    
+    %% External Integrations
+    ES_SM --> GH
+    ES_SM --> JIRA
+    ES_SM --> LINEAR
+    ES_SM --> OTHER
+    
+    %% User Interactions
+    DEV --> TM_P
+    PM --> TM_E
+    AI_USER --> AI_A
+    
+    %% Shared Kernel Usage
+    TM_P --> SK_PID
+    TM_T --> SK_TID
+    TM_T --> SK_SV
+    AI_A --> SK_UI
+    ES_SM --> SK_TID
+    
+    %% Styling
+    classDef contextStyle fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef sharedStyle fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    classDef externalStyle fill:#ffebee,stroke:#f44336,stroke-width:1px
+    classDef userStyle fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    classDef entityStyle fill:#f5f5f5,stroke:#757575,stroke-width:1px
+    
+    class TM_P,TM_T,TM_E,TM_U,TM_IP,AI_A,AI_C,AI_DP,AI_VR,AI_S,ES_EP,ES_SM,ES_ET,ES_SS entityStyle
+    class SK_UI,SK_PID,SK_TID,SK_SV,SK_PV sharedStyle
+    class GH,JIRA,LINEAR,OTHER externalStyle
+    class DEV,PM,AI_USER userStyle
 ```
-┌─────────────────────┐      ┌─────────────────────┐      ┌─────────────────────┐
-│   Ticket Management │      │   AI Integration    │      │   External Sync     │
-│                     │      │                     │      │                     │
-│ • Project           │◄────►│ • AI Assistant      │      │ • External Project  │
-│ • Ticket            │      │ • AI Context        │◄────►│ • Sync Mapping      │
-│ • Epic              │      │ • Design Proposal   │      │ • External Ticket   │
-│ • User              │      │ • Validation Result │      │ • Sync Status       │
-│ • Implementation    │      │                     │      │                     │
-│   Plan              │      │                     │      │                     │
-└─────────────────────┘      └─────────────────────┘      └─────────────────────┘
-        │                            │                            │
-        │                            │                            │
-        └────────────── Shared Kernel ──────────────────────────┘
-                     │ • User Identity • Project ID • Ticket ID │
-                     │ • Status Values • Priority Values        │
-```
+
+**Key Relationships:**
+- **Customer/Supplier**: Ticket Management → AI Integration
+- **Conformist**: External Sync → Ticket Management
+- **Separate Ways**: AI Integration ↔ External Sync (minimal direct integration)
 
 ## Bounded Context Details
 
@@ -191,26 +268,62 @@ Changes to shared kernel require coordination across all contexts. Interface cha
 ### Future Context Addition
 New bounded contexts (e.g., Reporting, Analytics) can be added without modifying existing contexts by following the established integration patterns.
 
+## Interface Architecture Integration
+
+### CLI-First Interface Design
+
+All bounded contexts are accessed through a unified CLI-first interface architecture:
+
+**Primary Interface**:
+- **CLI**: Single source of truth for all business logic
+- All contexts coordinate through CLI commands
+- Structured output formats (JSON, plain text) for programmatic use
+
+**Additional Interfaces**:
+- **MCP Server**: Launched via CLI for AI Integration context
+- **TUI**: Launched via CLI for enhanced user experience
+- **SDK**: Direct core access for programmatic integration
+
+**Interface-Context Mapping**:
+```
+CLI → All Contexts (primary access)
+MCP Server → AI Integration Context (AI assistant coordination)
+TUI → Ticket Management Context (interactive ticket management)
+SDK → All Contexts (direct programmatic access)
+```
+
+### Standards Compliance
+
+All contexts follow industry standards:
+- **Configuration**: XDG Base Directory specification
+- **APIs**: RESTful principles with OpenAPI specification (if implemented)
+- **CLI**: POSIX and GNU conventions
+- **Documentation**: CommonMark for Markdown
+- **Versioning**: Semantic Versioning (SemVer)
+
 ## Implementation Guidance
 
 ### Team Organization
 - **Ticket Management**: Core platform team
 - **AI Integration**: AI/ML specialists
 - **External Sync**: Integration specialists
+- **Interface Layer**: CLI and integration specialists
 
 ### Technology Boundaries
 - Each context can choose appropriate technology stacks
-- Integration happens through well-defined APIs and events
+- Integration happens through CLI-first interface architecture
 - Shared kernel implemented as shared libraries/modules
+- All interfaces follow industry standards as defined in ADR-0003
 
 ### Testing Strategy
 - Unit tests within each context
 - Integration tests at context boundaries
 - Contract tests for external integrations
+- CLI interface tests for all context interactions
 
 ## Related Documentation
 
 - [Architecture Overview](./README.md) - High-level architectural principles
 - [Domain Documentation](../domain/README.md) - Business domain concepts
-- [Context Implementation Details](../contexts/README.md) - Detailed context specifications
+<!-- TODO: Implement context implementation details documentation -->
 - [Ubiquitous Language](../domain/UBIQUITOUS_LANGUAGE.md) - Domain terminology
