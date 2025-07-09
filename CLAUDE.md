@@ -17,7 +17,7 @@ The system follows a local-first approach with external integration capabilities
 - **Local Ticket Management**: Full CRUD operations for tickets, epics, and roadmaps
 - **CLI Interface**: Command-line tools for developer productivity
 - **MCP Server**: Model Context Protocol implementation for AI integration
-- **External Sync**: Bidirectional synchronization with GitHub Issues, Jira, and other project management tools
+- **External Sync**: External tool-based synchronization with GitHub Issues, Jira, and other project management tools
 
 ### Target Users
 - **AI-Driven Developers**: Those using AI assistants as primary development partners
@@ -59,7 +59,7 @@ The project is in early development phase with comprehensive requirements and ar
 
 ### Architecture Decision Records (ADRs)
 - **Purpose**: Document architectural decisions with context, rationale, and consequences
-- **Location**: `/docs/adr/` directory with numbered files (e.g., `0001-record-architecture-decisions.md`)
+- **Location**: `/docs/architecture/adr/` directory with numbered files (e.g., `0001-record-architecture-decisions.md`)
 - **When to Create**: For decisions that cross bounded contexts, introduce new technologies, define major interfaces, or impact system qualities
 - **Integration**: ADRs should be created during the design proposal phase of issues involving architectural decisions
 - **Template**: Use `/docs/architecture/adr/TEMPLATE.md` for consistent structure
@@ -167,6 +167,13 @@ This project follows an integrated AI-driven development approach. See @docs/DEV
 ### AI-Assisted Quality Assurance
 
 **Second Opinion Principle**: Leverage multiple AI systems for independent validation and critical evaluation. See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed AI interaction guidelines and best practices.
+
+**AI Safety Guidelines**:
+
+- **Destructive Operation Safeguards**: AI requires user confirmation before executing potentially destructive operations (file deletion, bulk overwrites)
+- **Operation Risk Assessment**: Operations are categorized by risk level to determine appropriate safeguards
+- **Co-authorship Model**: All AI operations record both the AI agent and human instructor following Git-style co-authorship
+- **AI-Optional Design**: All core functionality works without AI assistance
 
 
 ## Architecture and Design

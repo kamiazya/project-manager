@@ -425,6 +425,82 @@ File-system based permissions:
 3. **Index Rebuild**: Periodic full reindex
 4. **Cache Warm-up**: Pre-load hot data
 
+## Concurrency Control
+
+### Lock Mechanism
+
+Item-level locking using filesystem-based lock files with explicit expiry:
+
+```
+.pm/locks/
+├── issues/
+│   └── issue-001.lock
+├── epics/
+│   └── epic-001.lock
+└── projects/
+    └── project.lock
+```
+
+Lock file format:
+```json
+{
+  "locked_by": "user123",
+  "locked_at": 1704110400,
+  "expires_at": 1704114000,
+  "operation": "edit",
+  "pid": 12345
+}
+```
+
+Lock file naming convention:
+- `{item-id}.lock`
+- Lock file contains expiry timestamp and process information
+- **Cleanup Strategy**: 
+  - Janitor task runs periodically to check for expired locks
+  - Process ID validation to detect crashed processes
+  - Explicit expiry field ensures reliable cleanup after crashes
+
+## AI Operations Tracking
+
+### Co-authorship Format
+
+```json
+{
+  "operation_id": "op_01HQAB2CD3FGH4JK5L6MNO7P8Q",
+  "author": "user123",
+  "co_authors": [
+    {
+      "type": "ai",
+      "agent": "claude-3",
+      "instructed_by": "user123"
+    }
+  ],
+  "operation_risk": "high",
+  "user_confirmed": true,
+  "timestamp": "2024-01-01T12:00:00Z",
+  "safeguard": {
+    "type": "user_confirmation",
+    "confirmation_requested_at": "2024-01-01T12:00:00Z",
+    "user_confirmed_at": "2024-01-01T12:00:30Z",
+    "confirmation_details": "Delete 15 files in /docs directory"
+  }
+}
+```
+
+**Field Constraints**:
+- `operation_id`: Required unique identifier for audit correlation
+- `operation_risk`: Enum values: `"high"`, `"medium"`, `"low"`
+
+### Operation Risk Levels
+
+- **High Risk**: File deletion, bulk operations, destructive changes
+- **Medium Risk**: Significant modifications, schema changes
+- **Low Risk**: Read operations, minor updates, formatting changes
+
+### Safeguard Integration
+
+Safeguard data is nested within the main operation document to keep related data together and simplify the data model. The `safeguard` field is only present for operations that require user confirmation (high-risk operations).
+
 ## Related Documentation
 
 - [Domain Models](../../contexts/ticket_management/DOMAIN_MODEL.md) - Business concept definitions
