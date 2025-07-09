@@ -105,6 +105,193 @@ Optional stories addressing token limits, rate limits, and budget constraints wh
 - **When** Resources are limited
 - **Then** I can prioritize and allocate fairly
 
+## User Flow Diagrams
+
+### Developer Daily Workflow
+
+The following diagram shows the typical daily workflow for a developer using the Project Manager system:
+
+```mermaid
+---
+title: Developer Daily Workflow
+---
+%%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#4caf50", "primaryTextColor": "#2e7d32", "primaryBorderColor": "#2e7d32"}}}%%
+flowchart TD
+    START([Start Development Session])
+    
+    %% Issue Selection
+    CHECK_ISSUES[Check current issues]
+    SELECT_ISSUE[Select high-priority task]
+    
+    %% AI Collaboration
+    AI_READS[AI reads issue context]
+    WORK_WITH_AI[Work with AI on implementation]
+    
+    %% Progress Updates
+    UPDATE_PROGRESS[Update progress in issue]
+    CREATE_CHILD[Create child issues for discoveries]
+    
+    %% Session End
+    PRESERVE_CONTEXT[Preserve context for next session]
+    END([End Session])
+    
+    %% Decision Points
+    NEED_REVIEW{Need design review?}
+    TASK_COMPLETE{Task complete?}
+    NEW_DISCOVERIES{New discoveries?}
+    
+    %% Review Process
+    CREATE_PROPOSAL[Create design proposal]
+    AI_REVIEW[AI provides feedback]
+    TEAM_REVIEW[Team reviews proposal]
+    INCORPORATE_FEEDBACK[Incorporate feedback]
+    
+    %% Flow
+    START --> CHECK_ISSUES
+    CHECK_ISSUES --> SELECT_ISSUE
+    SELECT_ISSUE --> NEED_REVIEW
+    
+    NEED_REVIEW -->|Yes| CREATE_PROPOSAL
+    CREATE_PROPOSAL --> AI_REVIEW
+    AI_REVIEW --> TEAM_REVIEW
+    TEAM_REVIEW --> INCORPORATE_FEEDBACK
+    INCORPORATE_FEEDBACK --> AI_READS
+    
+    NEED_REVIEW -->|No| AI_READS
+    AI_READS --> WORK_WITH_AI
+    WORK_WITH_AI --> UPDATE_PROGRESS
+    UPDATE_PROGRESS --> NEW_DISCOVERIES
+    
+    NEW_DISCOVERIES -->|Yes| CREATE_CHILD
+    CREATE_CHILD --> TASK_COMPLETE
+    NEW_DISCOVERIES -->|No| TASK_COMPLETE
+    
+    TASK_COMPLETE -->|No| WORK_WITH_AI
+    TASK_COMPLETE -->|Yes| PRESERVE_CONTEXT
+    PRESERVE_CONTEXT --> END
+    
+    %% Styling
+    classDef startEnd fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
+    classDef process fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef decision fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    classDef review fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    
+    class START,END startEnd
+    class CHECK_ISSUES,SELECT_ISSUE,AI_READS,WORK_WITH_AI,UPDATE_PROGRESS,CREATE_CHILD,PRESERVE_CONTEXT process
+    class NEED_REVIEW,TASK_COMPLETE,NEW_DISCOVERIES decision
+    class CREATE_PROPOSAL,AI_REVIEW,TEAM_REVIEW,INCORPORATE_FEEDBACK review
+```
+
+### AI Assistant Handoff Flow
+
+This diagram shows how context is maintained when switching between different AI assistants:
+
+```mermaid
+---
+title: AI Assistant Handoff Flow
+---
+%%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#2196f3", "primaryTextColor": "#1565c0", "primaryBorderColor": "#1565c0"}}}%%
+sequenceDiagram
+    participant Dev as Developer
+    participant AI_A as AI Assistant A
+    participant PM as Project Manager
+    participant AI_B as AI Assistant B
+    
+    Note over Dev,AI_B: Architecture Phase
+    
+    Dev->>AI_A: Help with system architecture
+    AI_A->>PM: Read current project context
+    PM-->>AI_A: Issue details, requirements, constraints
+    AI_A->>Dev: Propose architecture approach
+    Dev->>AI_A: Refine architecture
+    AI_A->>PM: Update issue with architecture decisions
+    PM-->>AI_A: Context saved
+    
+    Note over Dev,AI_B: Implementation Phase
+    
+    Dev->>AI_B: Help with implementation
+    AI_B->>PM: Read current project context
+    PM-->>AI_B: Issue details + architecture decisions from AI_A
+    AI_B->>Dev: Implement based on architecture
+    Dev->>AI_B: Address implementation details
+    AI_B->>PM: Update issue with implementation progress
+    PM-->>AI_B: Context saved
+    
+    Note over Dev,AI_B: Context Continuity Maintained
+    
+    Dev->>AI_A: Resume architecture discussion
+    AI_A->>PM: Read updated context
+    PM-->>AI_A: Full context including AI_B's implementation work
+    AI_A->>Dev: Continue with full awareness
+```
+
+### External Sync Workflow
+
+This diagram illustrates how local issues synchronize with external systems:
+
+```mermaid
+---
+title: External Sync Workflow
+---
+%%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#f44336", "primaryTextColor": "#c62828", "primaryBorderColor": "#c62828"}}}%%
+flowchart LR
+    %% Local System
+    subgraph "Local System"
+        LOCAL_ISSUE[Local Issue]
+        LOCAL_CONTEXT[Implementation Details]
+        LOCAL_NOTES[Private Notes]
+    end
+    
+    %% Sync Process
+    subgraph "Sync Process"
+        SYNC_CHECK{Sync enabled?}
+        PRIVACY_CHECK{Privacy level?}
+        CONFLICT_CHECK{Conflicts?}
+        MERGE_PROCESS[Merge Process]
+        CONFLICT_RESOLUTION[Conflict Resolution]
+    end
+    
+    %% External Systems
+    subgraph "External Systems"
+        GITHUB[GitHub Issues]
+        JIRA[Jira Tickets]
+        LINEAR[Linear Issues]
+    end
+    
+    %% Data Flow
+    LOCAL_ISSUE --> SYNC_CHECK
+    SYNC_CHECK -->|Yes| PRIVACY_CHECK
+    SYNC_CHECK -->|No| LOCAL_CONTEXT
+    
+    PRIVACY_CHECK -->|Public/Shareable| CONFLICT_CHECK
+    PRIVACY_CHECK -->|Local-only| LOCAL_NOTES
+    
+    CONFLICT_CHECK -->|No conflicts| MERGE_PROCESS
+    CONFLICT_CHECK -->|Conflicts found| CONFLICT_RESOLUTION
+    
+    CONFLICT_RESOLUTION --> MERGE_PROCESS
+    
+    MERGE_PROCESS --> GITHUB
+    MERGE_PROCESS --> JIRA
+    MERGE_PROCESS --> LINEAR
+    
+    %% Bidirectional sync
+    GITHUB -.-> CONFLICT_CHECK
+    JIRA -.-> CONFLICT_CHECK
+    LINEAR -.-> CONFLICT_CHECK
+    
+    %% Styling
+    classDef local fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef sync fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    classDef external fill:#ffebee,stroke:#f44336,stroke-width:2px
+    classDef decision fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    
+    class LOCAL_ISSUE,LOCAL_CONTEXT,LOCAL_NOTES local
+    class MERGE_PROCESS,CONFLICT_RESOLUTION sync
+    class GITHUB,JIRA,LINEAR external
+    class SYNC_CHECK,PRIVACY_CHECK,CONFLICT_CHECK decision
+```
+
 ## Use Cases
 
 ### UC-1: Starting a New Feature
