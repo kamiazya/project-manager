@@ -81,6 +81,132 @@ Maintains shared context and knowledge across human developers and multiple AI a
 **Context**: AI Integration  
 **Responsibilities**: Context preservation, knowledge sharing, session coordination
 
+## Architecture and Interface Terms
+
+### CLI-First Architecture
+Design principle where the Command-Line Interface serves as the primary interface and foundation for all other interfaces.
+
+**Related Terms**: Primary Interface, Interface Foundation  
+**Context**: All contexts (cross-cutting principle)  
+**Implementation**: Other interfaces (TUI, MCP) are launched via CLI
+
+### MCP Server (Model Context Protocol)
+AI integration interface that provides standardized communication between AI assistants and the Project Manager system.
+
+**Context**: AI Integration  
+**Launch Method**: Via CLI command  
+**Purpose**: AI assistant coordination, context sharing
+
+### TUI (Terminal User Interface)
+Enhanced interactive command-line interface providing rich text-based user interaction.
+
+**Context**: Ticket Management  
+**Launch Method**: Via CLI command  
+**Purpose**: Interactive ticket management, visual feedback
+
+### SDK (Software Development Kit)
+Programmatic interface providing direct access to core business logic for integration purposes.
+
+**Context**: All contexts  
+**Access Pattern**: Direct core access  
+**Purpose**: Library integration, automation
+
+### Standards-First Approach
+Design principle prioritizing adoption of industry standards over custom implementations.
+
+**Examples**: XDG Base Directory, OAuth 2.0, OpenAPI, CommonMark  
+**Context**: All contexts (cross-cutting principle)  
+**Source**: ADR-0003
+
+### Diagrams-First Documentation
+Documentation approach using Mermaid diagrams to enhance understanding and reduce ambiguity.
+
+**Tool**: Mermaid  
+**Context**: All documentation  
+**Purpose**: Visual communication, AI collaboration  
+**Source**: ADR-0004
+
+## Context-Specific Terms
+
+### Bounded Context
+Domain-driven design concept representing a distinct area of the system with its own models and vocabulary.
+
+**Current Contexts**: Ticket Management, AI Integration, External Sync  
+**Relationships**: Customer/Supplier, Conformist, Separate Ways  
+**Integration**: Through shared kernel and CLI-first architecture
+
+### Shared Kernel
+Common concepts and values shared across all bounded contexts.
+
+**Components**: User Identity, Project ID, Ticket ID, Status Values, Priority Values  
+**Purpose**: Consistency across contexts, integration foundation
+
+### Anti-Corruption Layer
+Protection pattern preventing external system changes from affecting internal domain models.
+
+**Context**: External Sync  
+**Purpose**: Data mapping, external system abstraction
+
+## Data and Storage Terms
+
+### XDG Base Directory
+Industry standard for configuration file locations on Unix-like systems.
+
+**Purpose**: Standards compliance, predictable file locations  
+**Directories**: ~/.config, ~/.cache, ~/.local/share  
+**Context**: All contexts (technical implementation)
+
+### Context-Aware Storage
+Storage approach supporting both global and project-specific configurations.
+
+**Global Context**: User home directory (~/.config/project-manager)  
+**Project Context**: Project directory (.pm/)  
+**Detection**: Presence of .pm/config.json
+
+### Event Sourcing
+Data pattern using append-only event log for audit trail and change tracking.
+
+**File Format**: .jsonl (newline-delimited JSON)  
+**Purpose**: Audit trail, change history, recovery  
+**Context**: All contexts (technical implementation)
+
+### Co-authorship Tracking
+Method for recording both human and AI contributions to development work.
+
+**Format**: Git-style co-authorship  
+**Purpose**: Attribution, audit trail, collaboration history  
+**Context**: AI Integration
+
+## Operational Terms
+
+### Operation Risk Assessment
+Categorization system for determining appropriate safeguards for different types of operations.
+
+**Risk Levels**: High, Medium, Low  
+**High Risk**: File deletion, bulk operations, destructive changes  
+**Purpose**: User safety, operation control
+
+### Safeguards
+User confirmation steps required before AI executes potentially destructive operations.
+
+**Trigger**: High-risk operations  
+**Types**: User confirmation, approval workflows  
+**Context**: AI Integration
+
+### Design Proposal
+Structured document capturing technical approach, alternatives, and rationale before implementation.
+
+**Components**: Approach, rationale, alternatives, validation status  
+**Process**: Creation → AI Review → Team Review → Implementation  
+**Context**: AI Integration
+
+### AI Session
+Bounded interaction period between human developers and AI assistants with maintained context.
+
+**Properties**: Session ID, context data, expiration  
+**Purpose**: Context preservation, resource management  
+**Context**: AI Integration
+
 ## Workflows and Processes
 
 ### Issue-Based Development
@@ -132,6 +258,12 @@ When interfacing with external systems, these mappings apply:
 - **AI Context**: The shared knowledge and state provided to AI assistants
 - **AI Session**: A bounded interaction period between human and AI assistant
 - **AI Validation**: The process of AI expert review for design proposals
+
+### Architecture Decision Record (ADR) Terminology
+- **ADR**: Document capturing important architectural decisions with context and consequences
+- **Decision Status**: Proposed, Accepted, Deprecated, Superseded
+- **Decision Evolution**: Timeline and dependency relationships between ADRs
+- **ADR Template**: Standardized format for consistent decision documentation
 
 ## Anti-Patterns to Avoid
 
