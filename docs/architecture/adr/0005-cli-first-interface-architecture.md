@@ -1,4 +1,4 @@
-# ADR-0006: CLI-First Interface Architecture
+# ADR-0005: CLI-First Interface Architecture
 
 ## Status
 
@@ -118,7 +118,7 @@ graph TD
     classDef primary fill:#4caf50,stroke:#2e7d32,stroke-width:2px
     classDef secondary fill:#2196f3,stroke:#1565c0,stroke-width:2px
     classDef tbd fill:#ff9800,stroke:#e65100,stroke-width:1px,stroke-dasharray: 5 5
-    
+
     class CLI primary
     class Core_Business_Logic primary
     class TUI,MCP_Server,SDK secondary

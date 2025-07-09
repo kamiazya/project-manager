@@ -65,13 +65,6 @@ The project is in early development phase with comprehensive requirements and ar
 - **Template**: Use `/docs/architecture/adr/TEMPLATE.md` for consistent structure
 - **Review**: Include ADR review in AI expert validation phase
 
-#### Current ADR Status
-- **ADR-0001**: Local-First Architecture principles established
-- **ADR-0002**: AI-Driven Development Architecture defined
-- **ADR-0003**: Industry Standards Adoption - prefer established standards over custom implementations
-- **ADR-0004**: Diagrams-First Documentation - use Mermaid for visual specification documentation
-- **ADR-0005**: CLI-First Interface Architecture - command-line interface as foundation for all other interfaces
-
 #### Key Principles from ADRs
 - **Standards-First**: Adopt industry standards (XDG Base Directory, OAuth 2.0, OpenAPI, etc.) over custom implementations
 - **CLI-First**: Build CLI as the primary interface, with other interfaces (TUI, MCP server) launched via CLI

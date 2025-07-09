@@ -46,51 +46,46 @@ title: ADR Relationship and Evolution
 %%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#4caf50", "primaryTextColor": "#2e7d32", "primaryBorderColor": "#2e7d32"}}}%%
 graph TD
     %% Foundation ADRs
-    ADR_001[ADR-0001: Record Architecture Decisions<br/>📋 Process Foundation]
-    ADR_002[ADR-0002: Local-First Architecture<br/>🏠 Core Architecture]
-    
+    ADR_001[ADR-0001: Local-First Architecture<br/>🏠 Core Architecture]
+
     %% Standards and Principles
-    ADR_003[ADR-0003: AI-Driven Development<br/>🤖 AI Integration]
-    ADR_004[ADR-0004: Adopt Industry Standards<br/>📐 Standards-First]
-    
+    ADR_002[ADR-0002: AI-Driven Development<br/>🤖 AI Integration]
+    ADR_003[ADR-0003: Adopt Industry Standards<br/>📐 Standards-First]
+
     %% Implementation Approach
-    ADR_005[ADR-0005: Diagrams-First Documentation<br/>📊 Visual Communication]
-    ADR_006[ADR-0006: CLI-First Interface Architecture<br/>💻 Interface Design]
-    
+    ADR_004[ADR-0004: Diagrams-First Documentation<br/>📊 Visual Communication]
+    ADR_005[ADR-0005: CLI-First Interface Architecture<br/>💻 Interface Design]
+
     %% Dependencies
     ADR_001 --> ADR_002
-    ADR_001 --> ADR_003
-    ADR_002 --> ADR_003
+    ADR_003 --> ADR_004
+    ADR_003 --> ADR_005
     ADR_004 --> ADR_005
-    ADR_004 --> ADR_006
-    ADR_005 --> ADR_006
-    
+
     %% Influences (dotted lines)
-    ADR_003 -.-> ADR_006
-    ADR_002 -.-> ADR_006
-    
+    ADR_002 -.-> ADR_005
+    ADR_001 -.-> ADR_005
+
     %% Styling
     classDef foundation fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
     classDef standards fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
     classDef implementation fill:#fff3e0,stroke:#ff9800,stroke-width:2px
     classDef process fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
-    
-    class ADR_001 process
-    class ADR_002,ADR_003 foundation
-    class ADR_004,ADR_005 standards
-    class ADR_006 implementation
+
+    class ADR_001,ADR_002 foundation
+    class ADR_003,ADR_004 standards
+    class ADR_005 implementation
 ```
 
 ### ADR Index
 
 | ADR | Status | Title | Description |
 |-----|--------|-------|-------------|
-| [0001](./0001-record-architecture-decisions.md) | Accepted | Record Architecture Decisions | Establish ADR process and documentation standards |
-| [0002](./0002-local-first-architecture.md) | Accepted | Local-First Architecture | Define local-first principles and data storage approach |
-| [0003](./0003-ai-driven-development-architecture.md) | Accepted | AI-Driven Development Architecture | Framework for AI assistant integration and collaboration |
-| [0004](./0004-adopt-industry-standards.md) | Accepted | Adopt Industry Standards | Prefer established standards over custom implementations |
-| [0005](./0005-diagrams-first-documentation.md) | Accepted | Diagrams-First Documentation | Use Mermaid for visual specification documentation |
-| [0006](./0006-cli-first-interface-architecture.md) | Proposed | CLI-First Interface Architecture | Command-line interface as foundation for all other interfaces |
+| [0001](./0001-local-first-architecture.md) | Accepted | Local-First Architecture | Define local-first principles and data storage approach |
+| [0002](./0002-ai-driven-development-architecture.md) | Accepted | AI-Driven Development Architecture | Framework for AI assistant integration and collaboration |
+| [0003](./0003-adopt-industry-standards.md) | Accepted | Adopt Industry Standards | Prefer established standards over custom implementations |
+| [0004](./0004-diagrams-first-documentation.md) | Accepted | Diagrams-First Documentation | Use Mermaid for visual specification documentation |
+| [0005](./0005-cli-first-interface-architecture.md) | Proposed | CLI-First Interface Architecture | Command-line interface as foundation for all other interfaces |
 
 **Legend:**
 - 📋 Process and workflow decisions
@@ -99,41 +94,6 @@ graph TD
 - 📐 Standards and conventions
 - 📊 Documentation and communication
 - 💻 Interface and user experience
-
-### Decision Evolution Timeline
-
-```mermaid
----
-title: ADR Decision Timeline
----
-%%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#4caf50", "primaryTextColor": "#2e7d32", "primaryBorderColor": "#2e7d32"}}}%%
-timeline
-    title ADR Evolution Timeline
-    
-    section Foundation Phase
-        ADR-0001 : Record Architecture Decisions
-                 : Establish documentation process
-        ADR-0002 : Local-First Architecture
-                 : Define core architecture principles
-    
-    section Integration Phase
-        ADR-0003 : AI-Driven Development
-                 : AI assistant integration framework
-        ADR-0004 : Adopt Industry Standards
-                 : Standards-first approach
-    
-    section Implementation Phase
-        ADR-0005 : Diagrams-First Documentation
-                 : Visual communication strategy
-        ADR-0006 : CLI-First Interface Architecture
-                 : Primary interface design
-    
-    section Future
-        TBD : Additional interface decisions
-            : API design, GUI frameworks
-        TBD : Performance and scalability
-            : Optimization strategies
-```
 
 ## Tools and Resources
 

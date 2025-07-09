@@ -1,4 +1,4 @@
-# ADR-0004: Adopt Industry Standards
+# ADR-0003: Adopt Industry Standards
 
 ## Status
 
@@ -37,9 +37,9 @@ We will adopt a "Standards-First" approach across all technical decisions:
    - **License**: Compatible with our open-source license
 
 3. **Areas of Standardization**
-   
+
    The following are examples of standards to consider. The specific choice should be made based on project requirements and context:
-   
+
    - **APIs**: REST, GraphQL, JSON-RPC, OpenAPI
    - **CLI**: POSIX, GNU conventions, modern CLI guidelines
    - **Configuration**: XDG Base Directory, dotenv, TOML/YAML/JSON

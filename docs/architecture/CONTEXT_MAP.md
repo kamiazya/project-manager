@@ -19,7 +19,7 @@ graph TB
             TM_U[User]
             TM_IP[Implementation Plan]
         end
-        
+
         subgraph "AI Integration Context"
             AI_A[AI Assistant]
             AI_C[AI Context]
@@ -27,14 +27,14 @@ graph TB
             AI_VR[Validation Result]
             AI_S[AI Session]
         end
-        
+
         subgraph "External Sync Context"
             ES_EP[External Project]
             ES_SM[Sync Mapping]
             ES_ET[External Ticket]
             ES_SS[Sync Status]
         end
-        
+
         subgraph "Shared Kernel"
             SK_UI[User Identity]
             SK_PID[Project ID]
@@ -43,7 +43,7 @@ graph TB
             SK_PV[Priority Values]
         end
     end
-    
+
     %% External Systems
     subgraph "External Systems"
         GH[GitHub Issues]
@@ -51,45 +51,45 @@ graph TB
         LINEAR[Linear]
         OTHER[Other PM Tools]
     end
-    
+
     %% User Types
     subgraph "Users"
         DEV[Developer]
         PM[Project Manager]
         AI_USER[AI Assistant]
     end
-    
+
     %% Context Relationships
     TM_T -.-> AI_A
     AI_VR -.-> TM_T
     TM_T -.-> ES_SM
     ES_ET -.-> TM_T
-    
+
     %% External Integrations
     ES_SM --> GH
     ES_SM --> JIRA
     ES_SM --> LINEAR
     ES_SM --> OTHER
-    
+
     %% User Interactions
     DEV --> TM_P
     PM --> TM_E
     AI_USER --> AI_A
-    
+
     %% Shared Kernel Usage
     TM_P --> SK_PID
     TM_T --> SK_TID
     TM_T --> SK_SV
     AI_A --> SK_UI
     ES_SM --> SK_TID
-    
+
     %% Styling
     classDef contextStyle fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
     classDef sharedStyle fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
     classDef externalStyle fill:#ffebee,stroke:#f44336,stroke-width:1px
     classDef userStyle fill:#fff3e0,stroke:#ff9800,stroke-width:2px
     classDef entityStyle fill:#f5f5f5,stroke:#757575,stroke-width:1px
-    
+
     class TM_P,TM_T,TM_E,TM_U,TM_IP,AI_A,AI_C,AI_DP,AI_VR,AI_S,ES_EP,ES_SM,ES_ET,ES_SS entityStyle
     class SK_UI,SK_PID,SK_TID,SK_SV,SK_PV sharedStyle
     class GH,JIRA,LINEAR,OTHER externalStyle
@@ -165,7 +165,7 @@ graph TB
 
 **Relationship Type**: Customer/Supplier
 
-**Integration Pattern**: 
+**Integration Pattern**:
 - **Ticket Management** is the **Customer** (upstream)
 - **AI Integration** is the **Supplier** (downstream)
 
@@ -174,7 +174,7 @@ graph TB
 - AI Integration returns validation results and AI-generated proposals
 - AI Integration updates ticket status based on AI work completion
 
-**Anti-Corruption Layer**: 
+**Anti-Corruption Layer**:
 - AI Integration translates ticket concepts into AI-specific context
 - Validation results are translated back to ticket management concepts
 
@@ -195,7 +195,7 @@ AI Integration → Ticket Management:
 
 **Relationship Type**: Conformist
 
-**Integration Pattern**: 
+**Integration Pattern**:
 - **External Sync** conforms to **Ticket Management** model
 - External systems are adapted to internal model via mapping
 
@@ -225,7 +225,7 @@ External Sync → Ticket Management:
 
 **Relationship Type**: Separate Ways
 
-**Integration Pattern**: 
+**Integration Pattern**:
 - Minimal direct integration
 - Coordination happens through Ticket Management context
 
@@ -313,7 +313,7 @@ All contexts follow industry standards:
 - Each context can choose appropriate technology stacks
 - Integration happens through CLI-first interface architecture
 - Shared kernel implemented as shared libraries/modules
-- All interfaces follow industry standards as defined in ADR-0003
+- All interfaces follow industry standards
 
 ### Testing Strategy
 - Unit tests within each context

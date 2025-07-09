@@ -7,32 +7,32 @@ This document defines the core domain terminology used throughout the Project Ma
 ### Project
 A software development initiative that contains tickets, epics, and involves multiple contributors (human and AI). Projects have configuration, metadata, and track overall progress.
 
-**Synonyms**: Repository, Workspace  
+**Synonyms**: Repository, Workspace
 **Context**: Primary aggregate root in Ticket Management context
 
 ### Ticket
 A discrete unit of development work with defined scope, status, and acceptance criteria. Tickets are the fundamental unit of work organization.
 
-**Aliases**: Issue (when referring to external systems like GitHub Issues)  
-**Context**: Core entity in Ticket Management context  
+**Aliases**: Issue (when referring to external systems like GitHub Issues)
+**Context**: Core entity in Ticket Management context
 **Note**: We use "Ticket" internally, "Issue" when interfacing with external systems
 
 ### Epic
 A collection of related tickets that together deliver a significant business capability or user-facing feature. Epics provide grouping and progress tracking across multiple tickets.
 
-**Context**: Aggregate in Ticket Management context  
+**Context**: Aggregate in Ticket Management context
 **Relationship**: Contains multiple Tickets
 
 ### User
 A human participant in the development process. Users can be developers, project managers, stakeholders, or contributors.
 
-**Context**: Shared across all bounded contexts  
+**Context**: Shared across all bounded contexts
 **Roles**: Developer, Project Manager, Stakeholder, Contributor
 
 ### AI Assistant
 An artificial intelligence system that participates in development workflows, providing suggestions, generating code, or automating tasks.
 
-**Context**: Core entity in AI Integration context  
+**Context**: Core entity in AI Integration context
 **Types**: Code Generator, Code Reviewer, Task Planner, Translator
 
 ## Value Objects
@@ -40,25 +40,25 @@ An artificial intelligence system that participates in development workflows, pr
 ### Status
 The current state of a ticket in its lifecycle.
 
-**Valid Values**: `pending`, `in_progress`, `completed`, `archived`  
+**Valid Values**: `pending`, `in_progress`, `completed`, `archived`
 **Context**: Ticket Management
 
 ### Priority
 The relative importance and urgency of a ticket.
 
-**Valid Values**: `high`, `medium`, `low`  
+**Valid Values**: `high`, `medium`, `low`
 **Context**: Ticket Management
 
 ### Ticket Type
 The category of work represented by a ticket.
 
-**Valid Values**: `feature`, `bug`, `task`, `epic`, `research`, `design`, `chore`  
+**Valid Values**: `feature`, `bug`, `task`, `epic`, `research`, `design`, `chore`
 **Context**: Ticket Management
 
 ### Privacy Level
 The visibility and sharing policy for project artifacts.
 
-**Valid Values**: `local-only`, `shareable`, `public`  
+**Valid Values**: `local-only`, `shareable`, `public`
 **Context**: External Sync
 
 ## Domain Services
@@ -66,19 +66,19 @@ The visibility and sharing policy for project artifacts.
 ### Implementation Planner
 Coordinates the pre-implementation design and validation workflow, including AI expert consultation and design proposal creation.
 
-**Context**: AI Integration  
+**Context**: AI Integration
 **Responsibilities**: Design validation, AI expert coordination, plan generation
 
 ### Sync Coordinator
 Manages bidirectional synchronization between local tickets and external project management systems.
 
-**Context**: External Sync  
+**Context**: External Sync
 **Responsibilities**: Conflict resolution, data mapping, sync scheduling
 
 ### Context Manager
 Maintains shared context and knowledge across human developers and multiple AI assistants.
 
-**Context**: AI Integration  
+**Context**: AI Integration
 **Responsibilities**: Context preservation, knowledge sharing, session coordination
 
 ## Architecture and Interface Terms
@@ -86,65 +86,62 @@ Maintains shared context and knowledge across human developers and multiple AI a
 ### CLI-First Architecture
 Design principle where the Command-Line Interface serves as the primary interface and foundation for all other interfaces.
 
-**Related Terms**: Primary Interface, Interface Foundation  
-**Context**: All contexts (cross-cutting principle)  
+**Related Terms**: Primary Interface, Interface Foundation
+**Context**: All contexts (cross-cutting principle)
 **Implementation**: Other interfaces (TUI, MCP) are launched via CLI
 
 ### MCP Server (Model Context Protocol)
 AI integration interface that provides standardized communication between AI assistants and the Project Manager system.
 
-**Context**: AI Integration  
-**Launch Method**: Via CLI command  
+**Context**: AI Integration
+**Launch Method**: Via CLI command
 **Purpose**: AI assistant coordination, context sharing
 
 ### TUI (Terminal User Interface)
 Enhanced interactive command-line interface providing rich text-based user interaction.
 
-**Context**: Ticket Management  
-**Launch Method**: Via CLI command  
+**Context**: Ticket Management
+**Launch Method**: Via CLI command
 **Purpose**: Interactive ticket management, visual feedback
 
 ### SDK (Software Development Kit)
 Programmatic interface providing direct access to core business logic for integration purposes.
 
-**Context**: All contexts  
-**Access Pattern**: Direct core access  
+**Context**: All contexts
+**Access Pattern**: Direct core access
 **Purpose**: Library integration, automation
 
 ### Standards-First Approach
 Design principle prioritizing adoption of industry standards over custom implementations.
 
-**Examples**: XDG Base Directory, OAuth 2.0, OpenAPI, CommonMark  
-**Context**: All contexts (cross-cutting principle)  
-**Source**: ADR-0003
+**Examples**: XDG Base Directory, OAuth 2.0, OpenAPI, CommonMark
+**Context**: All contexts (cross-cutting principle)
 
 ### Diagrams-First Documentation
 Documentation approach using Mermaid diagrams to enhance understanding and reduce ambiguity.
 
-**Tool**: Mermaid  
-**Context**: All documentation  
-**Purpose**: Visual communication, AI collaboration  
-**Source**: ADR-0004
-
+**Tool**: Mermaid
+**Context**: All documentation
+**Purpose**: Visual communication, AI collaboration
 ## Context-Specific Terms
 
 ### Bounded Context
 Domain-driven design concept representing a distinct area of the system with its own models and vocabulary.
 
-**Current Contexts**: Ticket Management, AI Integration, External Sync  
-**Relationships**: Customer/Supplier, Conformist, Separate Ways  
+**Current Contexts**: Ticket Management, AI Integration, External Sync
+**Relationships**: Customer/Supplier, Conformist, Separate Ways
 **Integration**: Through shared kernel and CLI-first architecture
 
 ### Shared Kernel
 Common concepts and values shared across all bounded contexts.
 
-**Components**: User Identity, Project ID, Ticket ID, Status Values, Priority Values  
+**Components**: User Identity, Project ID, Ticket ID, Status Values, Priority Values
 **Purpose**: Consistency across contexts, integration foundation
 
 ### Anti-Corruption Layer
 Protection pattern preventing external system changes from affecting internal domain models.
 
-**Context**: External Sync  
+**Context**: External Sync
 **Purpose**: Data mapping, external system abstraction
 
 ## Data and Storage Terms
@@ -152,29 +149,29 @@ Protection pattern preventing external system changes from affecting internal do
 ### XDG Base Directory
 Industry standard for configuration file locations on Unix-like systems.
 
-**Purpose**: Standards compliance, predictable file locations  
-**Directories**: ~/.config, ~/.cache, ~/.local/share  
+**Purpose**: Standards compliance, predictable file locations
+**Directories**: ~/.config, ~/.cache, ~/.local/share
 **Context**: All contexts (technical implementation)
 
 ### Context-Aware Storage
 Storage approach supporting both global and project-specific configurations.
 
-**Global Context**: User home directory (~/.config/project-manager)  
-**Project Context**: Project directory (.pm/)  
+**Global Context**: User home directory (~/.config/project-manager)
+**Project Context**: Project directory (.pm/)
 **Detection**: Presence of .pm/config.json
 
 ### Event Sourcing
 Data pattern using append-only event log for audit trail and change tracking.
 
-**File Format**: .jsonl (newline-delimited JSON)  
-**Purpose**: Audit trail, change history, recovery  
+**File Format**: .jsonl (newline-delimited JSON)
+**Purpose**: Audit trail, change history, recovery
 **Context**: All contexts (technical implementation)
 
 ### Co-authorship Tracking
 Method for recording both human and AI contributions to development work.
 
-**Format**: Git-style co-authorship  
-**Purpose**: Attribution, audit trail, collaboration history  
+**Format**: Git-style co-authorship
+**Purpose**: Attribution, audit trail, collaboration history
 **Context**: AI Integration
 
 ## Operational Terms
@@ -182,29 +179,29 @@ Method for recording both human and AI contributions to development work.
 ### Operation Risk Assessment
 Categorization system for determining appropriate safeguards for different types of operations.
 
-**Risk Levels**: High, Medium, Low  
-**High Risk**: File deletion, bulk operations, destructive changes  
+**Risk Levels**: High, Medium, Low
+**High Risk**: File deletion, bulk operations, destructive changes
 **Purpose**: User safety, operation control
 
 ### Safeguards
 User confirmation steps required before AI executes potentially destructive operations.
 
-**Trigger**: High-risk operations  
-**Types**: User confirmation, approval workflows  
+**Trigger**: High-risk operations
+**Types**: User confirmation, approval workflows
 **Context**: AI Integration
 
 ### Design Proposal
 Structured document capturing technical approach, alternatives, and rationale before implementation.
 
-**Components**: Approach, rationale, alternatives, validation status  
-**Process**: Creation → AI Review → Team Review → Implementation  
+**Components**: Approach, rationale, alternatives, validation status
+**Process**: Creation → AI Review → Team Review → Implementation
 **Context**: AI Integration
 
 ### AI Session
 Bounded interaction period between human developers and AI assistants with maintained context.
 
-**Properties**: Session ID, context data, expiration  
-**Purpose**: Context preservation, resource management  
+**Properties**: Session ID, context data, expiration
+**Purpose**: Context preservation, resource management
 **Context**: AI Integration
 
 ## Workflows and Processes

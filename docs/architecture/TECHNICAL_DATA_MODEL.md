@@ -88,7 +88,7 @@ erDiagram
         int total_epics
         int contributors
     }
-    
+
     EPIC {
         string id PK
         string project_id FK
@@ -103,7 +103,7 @@ erDiagram
         int completed_tickets
         int completion_percentage
     }
-    
+
     TICKET {
         string id PK
         string project_id FK
@@ -126,7 +126,7 @@ erDiagram
         int comment_count
         datetime last_activity
     }
-    
+
     USER {
         string id PK
         string name
@@ -136,7 +136,7 @@ erDiagram
         datetime last_seen
         boolean is_ai_agent
     }
-    
+
     IMPLEMENTATION_PLAN {
         string id PK
         string ticket_id FK
@@ -147,7 +147,7 @@ erDiagram
         datetime updated_at
         string created_by FK
     }
-    
+
     ACCEPTANCE_CRITERIA {
         string id PK
         string ticket_id FK
@@ -157,7 +157,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+
     DEPENDENCY {
         string id PK
         string ticket_id FK
@@ -166,7 +166,7 @@ erDiagram
         datetime created_at
         string created_by FK
     }
-    
+
     EVENT {
         string id PK
         string entity_type
@@ -177,7 +177,7 @@ erDiagram
         datetime timestamp
         string session_id
     }
-    
+
     AI_CONTEXT {
         string id PK
         string project_id FK
@@ -188,7 +188,7 @@ erDiagram
         datetime created_at
         datetime expires_at
     }
-    
+
     SYNC_MAPPING {
         string id PK
         string project_id FK
@@ -202,7 +202,7 @@ erDiagram
         datetime updated_at
         string sync_status
     }
-    
+
     %% Relationships
     PROJECT ||--o{ EPIC : "contains"
     PROJECT ||--o{ TICKET : "contains"
@@ -210,9 +210,9 @@ erDiagram
     PROJECT ||--o{ AI_CONTEXT : "generates"
     PROJECT ||--o{ SYNC_MAPPING : "syncs_with"
     PROJECT ||--o{ EVENT : "logs"
-    
+
     EPIC ||--o{ TICKET : "groups"
-    
+
     TICKET ||--o{ TICKET : "parent_child"
     TICKET ||--o{ ACCEPTANCE_CRITERIA : "defines"
     TICKET ||--o{ DEPENDENCY : "depends_on"
@@ -220,20 +220,20 @@ erDiagram
     TICKET ||--|| IMPLEMENTATION_PLAN : "has"
     TICKET }o--|| USER : "assigned_to"
     TICKET ||--o{ EVENT : "generates"
-    
+
     USER ||--o{ TICKET : "creates"
     USER ||--o{ IMPLEMENTATION_PLAN : "authors"
     USER ||--o{ DEPENDENCY : "creates"
     USER ||--o{ EVENT : "performs"
-    
+
     IMPLEMENTATION_PLAN ||--o{ EVENT : "generates"
-    
+
     ACCEPTANCE_CRITERIA ||--o{ EVENT : "generates"
-    
+
     DEPENDENCY ||--o{ EVENT : "generates"
-    
+
     AI_CONTEXT }o--|| USER : "created_by"
-    
+
     SYNC_MAPPING ||--o{ EVENT : "generates"
 ```
 
@@ -288,18 +288,18 @@ erDiagram
     "status": "in_progress",
     "priority": "high",
     "privacy_level": "shareable",
-    
+
     // Relationships
     "epic_id": "epic_1234567890",
     "parent_id": null,
     "dependencies": [
       {"ticket_id": "tkt_0987654321", "type": "depends_on"}
     ],
-    
+
     // Assignment
     "assignee_id": "user_1234567890",
     "reviewer_ids": ["user_0987654321"],
-    
+
     // Content
     "implementation_plan_id": "plan_1234567890",
     "acceptance_criteria": [
@@ -309,12 +309,12 @@ erDiagram
         "is_met": false
       }
     ],
-    
+
     // Metadata
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-02T00:00:00Z",
     "created_by": "user_1234567890",
-    
+
     // Denormalized data for performance
     "task_count": 5,
     "completed_task_count": 2,
@@ -342,7 +342,7 @@ erDiagram
       "Sessions are secure",
       "Password reset works"
     ],
-    
+
     // Denormalized progress data
     "statistics": {
       "total_tickets": 15,
@@ -351,7 +351,7 @@ erDiagram
       "pending_tickets": 7,
       "completion_percentage": 33
     },
-    
+
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-02T00:00:00Z"
   }
@@ -434,11 +434,11 @@ interface CacheLayer {
   // Hot data - frequently accessed
   projects: LRUCache<ProjectId, Project>;
   tickets: LRUCache<TicketId, Ticket>;
-  
+
   // Computed data
   epicProgress: TTLCache<EpicId, Progress>;
   dependencyGraphs: TTLCache<ProjectId, DependencyGraph>;
-  
+
   // AI contexts
   aiContexts: TTLCache<SessionId, AIContext>;
 }
@@ -573,7 +573,7 @@ File-system based permissions:
 
 ## Integration Points
 
-### CLI-First Interface Architecture (ADR-0004)
+### CLI-First Interface Architecture
 
 All data access follows CLI-first architecture:
 
@@ -701,7 +701,7 @@ Lock file format:
 Lock file naming convention:
 - `{item-id}.lock`
 - Lock file contains expiry timestamp and process information
-- **Cleanup Strategy**: 
+- **Cleanup Strategy**:
   - Janitor task runs periodically to check for expired locks
   - Process ID validation to detect crashed processes
   - Explicit expiry field ensures reliable cleanup after crashes

@@ -115,7 +115,7 @@ sequenceDiagram
     participant CLI
     participant Core
     participant Storage
-    
+
     User->>CLI: pm ticket create
     CLI->>Core: Create ticket
     Core->>Storage: Save ticket
