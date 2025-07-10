@@ -79,7 +79,7 @@ The project is in early development phase with comprehensive requirements and ar
 #### Key Principles from ADRs
 
 - **Standards-First**: Adopt industry standards (XDG Base Directory, OAuth 2.0, OpenAPI, etc.) over custom implementations
-- **CLI-First**: Build CLI as the primary interface, with other interfaces (TUI, MCP server) launched via CLI
+- **CLI-First**: Build CLI as the primary interface to core business logic, with other interfaces (TUI, MCP server) launched via CLI
 - **Diagrams-First**: Use Mermaid diagrams for clear visual communication in documentation
 - **Context-Aware**: Support both global and project-specific contexts with appropriate precedence
 

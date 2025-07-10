@@ -42,11 +42,13 @@ We will adopt a CLI-first interface architecture with the following components:
 
 ### Design Principles
 
-1. **CLI as Single Source of Truth**
-   - All business logic implemented in CLI layer
+1. **CLI as Primary Interface**
+   - CLI serves as the primary and complete interface to core business logic
+   - Core business logic implemented as a separate layer accessed by interfaces
    - MCP server and TUI launched via CLI flags
-   - SDK accesses core directly, other interfaces delegate to CLI commands
-   - Ensures consistency and reduces duplication
+   - SDK provides direct programmatic access to the same core logic
+   - Other interfaces may delegate to CLI commands or access core directly
+   - Ensures consistency through shared core logic
 
 2. **Unified Command Model**
    - Same conceptual operations across all interfaces
@@ -74,8 +76,9 @@ We will adopt a CLI-first interface architecture with the following components:
 
 6. **Interface Launch Strategy**
    - MCP server and TUI launched via CLI commands
-   - SDK provides direct library access to core functionality
+   - SDK provides direct library access to core business logic
    - External interfaces coordinate through shared core configuration
+   - All interfaces access the same core business logic layer for consistency
 
 ### Architecture Diagram
 

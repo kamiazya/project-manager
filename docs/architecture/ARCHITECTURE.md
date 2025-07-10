@@ -37,7 +37,7 @@ Project Manager is a local-first ticket management system designed to enable eff
 
 ### 4.1. Component Interaction Diagram
 
-The following diagram illustrates the key components and their interaction patterns, emphasizing the CLI-first architecture where all interfaces delegate to the CLI component:
+The following diagram illustrates the key components and their interaction patterns, emphasizing the CLI-first architecture where the CLI serves as the primary interface to the core business logic:
 
 ```mermaid
 ---
@@ -330,7 +330,7 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 - **Document-Driven Development**: Clear specifications
 - **AI-Assisted Development**: Leverage AI for efficiency
 - **Standards-First Development**: Adopt industry standards over custom implementations
-- **CLI-First Implementation**: Build CLI as foundation for all other interfaces
+- **CLI-First Implementation**: Build CLI as primary interface to core business logic
 
 ### 8.2. Quality Assurance
 
@@ -359,7 +359,7 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 **Phase 2: Programmatic Interfaces**
 
 - Model Context Protocol (MCP) server for AI integration
-- RESTful API exposing CLI functionality
+- RESTful API exposing core functionality
 - SDK/libraries for common programming languages
 
 **Phase 3: Additional User Interfaces (As Needed)**
