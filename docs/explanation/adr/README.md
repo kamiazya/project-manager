@@ -206,5 +206,5 @@ To create a new ADR:
 
 - [ADR GitHub Organization](https://adr.github.io/) - Community resources and tools
 - [Architecture Decision Records by Michael Nygard](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
-- [Project Manager Architecture](../ARCHITECTURE.md) - System architecture context
+- [Architecture Overview](../architecture-overview.md) - Architecture concepts and principles
 - [CONTRIBUTING.md](../../../CONTRIBUTING.md) - ADR creation guidelines and workflow integration

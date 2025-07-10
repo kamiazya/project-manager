@@ -4,7 +4,7 @@ This directory contains technical architecture documentation for the Project Man
 
 ## Overview
 
-The architecture documentation focuses on the **HOW** - technical decisions, system structure, and implementation patterns that realize the business domain described in `/docs/domain/`.
+The architecture documentation focuses on the **HOW** - technical decisions, system structure, and implementation patterns that realize the business domain described in [Domain Overview](./domain-overview.md).
 
 ## Documentation Structure
 
