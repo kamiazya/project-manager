@@ -2,7 +2,7 @@
 
 A local-first ticket management system designed for AI-driven development, enabling seamless collaboration between developers and multiple AI assistants while supporting native language development workflows.
 
-## What is Project Manager?
+## What is Project Manager
 
 Project Manager is an open-source tool that enables effective collaboration between developers and AI assistants through issue-based development:
 
