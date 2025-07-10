@@ -8,10 +8,9 @@ The architecture documentation focuses on the **HOW** - technical decisions, sys
 
 ## Documentation Structure
 
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Comprehensive system architecture including principles, components, and technical stack
-- **[CONTEXT_MAP.md](./CONTEXT_MAP.md)** - Visual representation of bounded context relationships and integration patterns
-- **[TECHNICAL_DATA_MODEL.md](./TECHNICAL_DATA_MODEL.md)** - Physical data storage and implementation details
-- **[adr/](./adr/)** - Architecture Decision Records documenting significant technical decisions
+- **[Architecture Reference](../reference/architecture.md)** - Complete system architecture and technical design
+- **[Context Map](./context-map.md)** - Visual representation of bounded context relationships and integration patterns
+- **[adr/](./adr/README.md)** - Architecture Decision Records documenting significant technical decisions
 
 ## Architectural Principles
 

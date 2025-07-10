@@ -48,7 +48,7 @@ Project Manager follows a local-first architecture with these core components:
 - **MCP Server**: Model Context Protocol implementation for AI integration
 - **External Integrations**: Bidirectional synchronization with external systems
 
-For detailed architecture information, see [ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+For detailed architecture information, see [Architecture Reference](./docs/reference/architecture.md).
 
 ## Development Philosophy
 
@@ -267,7 +267,7 @@ Epic (Strategic Level)
 
 When creating tasks for collaborators working asynchronously with limited context (AI agents, remote developers, new contributors), proper task structure is critical for success.
 
-For comprehensive guidelines on structuring tasks for asynchronous delegation, see [Asynchronous Delegation Best Practices](docs/best-practices/asynchronous-delegation.md).
+For comprehensive guidelines on structuring tasks for asynchronous delegation, see [Asynchronous Delegation Best Practices](docs/guides/asynchronous-delegation.md).
 
 #### Key Principles
 
@@ -496,7 +496,7 @@ Create an ADR when making decisions that:
 - **Reference supporting materials**: Link to relevant documentation or research
 - **Consider future maintainers**: Write for developers who weren't involved in the decision
 
-For detailed ADR guidelines, see [Architecture Decision Records](./docs/architecture/adr/README.md).
+For detailed ADR guidelines, see [Architecture Decision Records](./docs/explanation/adr/README.md).
 
 ## AI Integration
 
@@ -511,7 +511,7 @@ For detailed ADR guidelines, see [Architecture Decision Records](./docs/architec
 
 The project supports various forms of AI and automated assistance. When leveraging these tools:
 
-1. **Task Structure**: Follow the guidelines in [Asynchronous Delegation Best Practices](./docs/best-practices/asynchronous-delegation.md)
+1. **Task Structure**: Follow the guidelines in [Asynchronous Delegation Best Practices](./docs/guides/asynchronous-delegation.md)
 2. **Tool Selection**: Match the tool capabilities to the task complexity
 3. **Quality Assurance**: Always review and validate automated contributions
 
@@ -570,10 +570,10 @@ Before marking work as complete:
 
 ## Related Documents
 
-- [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md) - System architecture and design decisions
-- [TEST_STRATEGY.md](./docs/TEST_STRATEGY.md) - Comprehensive testing approach
+- [Architecture Reference](./docs/reference/architecture.md) - System architecture and design decisions
+- [Testing Strategy](./docs/guides/testing-strategy.md) - Comprehensive testing approach
 - [Documentation Overview](./docs/README.md) - Documentation structure and navigation
-- [Architecture Decision Records](./docs/architecture/adr/README.md) - Architectural decisions and their rationale
+- [Architecture Decision Records](./docs/explanation/adr/README.md) - Architectural decisions and their rationale
 - [CLAUDE.md](./CLAUDE.md) - AI assistant project instructions and context
 
 ## Getting Help

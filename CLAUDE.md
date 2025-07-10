@@ -70,10 +70,10 @@ The project is in early development phase with comprehensive requirements and ar
 ### Architecture Decision Records (ADRs)
 
 - **Purpose**: Document architectural decisions with context, rationale, and consequences
-- **Location**: `/docs/architecture/adr/` directory with numbered files (e.g., `0001-record-architecture-decisions.md`)
+- **Location**: `/docs/explanation/adr/` directory with numbered files (e.g., `0001-record-architecture-decisions.md`)
 - **When to Create**: For decisions that cross bounded contexts, introduce new technologies, define major interfaces, or impact system qualities
 - **Integration**: ADRs should be created during the design proposal phase of issues involving architectural decisions
-- **Template**: Use `/docs/architecture/adr/TEMPLATE.md` for consistent structure
+- **Template**: Use `/docs/explanation/adr/TEMPLATE.md` for consistent structure
 - **Review**: Include ADR review in AI expert validation phase
 
 #### Key Principles from ADRs
@@ -148,7 +148,7 @@ The project is in early development phase with comprehensive requirements and ar
 
 When creating tasks that will be executed asynchronously (by AI agents, remote developers, or new contributors), proper structure is essential for success.
 
-For detailed guidelines and examples, see [Asynchronous Delegation Best Practices](@docs/best-practices/asynchronous-delegation.md).
+For detailed guidelines and examples, see [Asynchronous Delegation Best Practices](@docs/guides/asynchronous-delegation.md).
 
 **Key Points for AI Agents:**
 
@@ -165,7 +165,7 @@ TODO: Define local development workflow for project-manager
 
 ## Development Process Guidelines
 
-This project follows an integrated AI-driven development approach. See @docs/DEVELOPMENT_PROCESS.md for comprehensive details.
+This project follows an integrated AI-driven development approach. See the [Contributing Guide](./CONTRIBUTING.md) for comprehensive development process details.
 
 ### Key Development Principles
 
@@ -204,7 +204,7 @@ This project follows an integrated AI-driven development approach. See @docs/DEV
 
 ## Architecture and Design
 
-The system follows a local-first architecture with AI integration capabilities. See @docs/architecture/ARCHITECTURE.md for comprehensive architectural details.
+The system follows a local-first architecture with AI integration capabilities. See @docs/reference/architecture.md for comprehensive architectural details.
 
 ## Use Cases and Target Users
 
@@ -235,7 +235,7 @@ TODO: Update development status for project-manager
 
 ## Testing Strategy
 
-Comprehensive Test-Driven Development approach with AI-assisted testing. See @docs/TEST_STRATEGY.md for detailed testing guidelines and implementation.
+Comprehensive Test-Driven Development approach with AI-assisted testing. See @docs/guides/testing-strategy.md for detailed testing guidelines and implementation.
 
 ## Development Commands
 

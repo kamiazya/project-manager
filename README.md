@@ -42,16 +42,15 @@ Project Manager is an open-source tool that enables effective collaboration betw
 
 ### Core Documentation
 
-- [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md) - System architecture and design principles
-- [REQUIREMENTS.md](./docs/domain/REQUIREMENTS.md) - Functional and non-functional requirements
-- [TEST_STRATEGY.md](./docs/TEST_STRATEGY.md) - Comprehensive testing approach
-- [USER_STORIES.md](./docs/domain/USER_STORIES.md) - User scenarios and requirements
+- [Architecture Reference](./docs/reference/architecture.md) - System architecture and design principles
+- [Domain Overview](./docs/explanation/domain-overview.md) - Business domain, requirements, and user scenarios
+- [Testing Strategy](./docs/guides/testing-strategy.md) - Comprehensive testing approach
 
 ### Development Guidelines
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - **Start here for contributors** - Development process, coding standards, and workflow guidelines
 - [CLAUDE.md](./CLAUDE.md) - AI assistant project instructions
-- [Architecture Decision Records](./docs/architecture/adr/README.md) - Architectural decisions and rationale
+- [Architecture Decision Records](./docs/explanation/adr/README.md) - Architectural decisions and rationale
 
 ## Development Status
 

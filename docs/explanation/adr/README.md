@@ -145,10 +145,14 @@ graph TD
     ADR_004[ADR-0004: Diagrams-First Documentation<br/>📊 Visual Communication]
     ADR_005[ADR-0005: CLI-First Interface Architecture<br/>💻 Interface Design]
 
+    %% Process and Organization
+    ADR_006[ADR-0006: Adopt Diátaxis Documentation Framework<br/>📋 Documentation Organization]
+
     %% Dependencies
-    ADR_001 --> ADR_002
     ADR_003 --> ADR_004
     ADR_003 --> ADR_005
+    ADR_001 --> ADR_002
+    ADR_003 --> ADR_006
     ADR_004 --> ADR_005
 
     %% Influences (dotted lines)
@@ -164,6 +168,7 @@ graph TD
     class ADR_001,ADR_002 foundation
     class ADR_003,ADR_004 standards
     class ADR_005 implementation
+    class ADR_006 process
 ```
 
 ### ADR Index
@@ -175,6 +180,7 @@ graph TD
 | [0003](./0003-adopt-industry-standards.md) | Accepted | Adopt Industry Standards | Prefer established standards over custom implementations |
 | [0004](./0004-diagrams-first-documentation.md) | Accepted | Diagrams-First Documentation | Use Mermaid for visual specification documentation |
 | [0005](./0005-cli-first-interface-architecture.md) | Accepted | CLI-First Interface Architecture | Command-line interface as foundation for all other interfaces |
+| [0006](./0006-adopt-diataxis-documentation-framework.md) | Accepted | Adopt Diátaxis Documentation Framework | Organize documentation using user-centered categories |
 
 **Legend:**
 
