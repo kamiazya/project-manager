@@ -324,7 +324,7 @@ The discussion and consensus-building process that occurs before creating an ADR
 **ADR Management Phase**
 The Git-managed phase where decisions are documented and tracked.
 
-**Location**: Git Repository (docs/architecture/adr/)
+**Location**: Git Repository (docs/explanation/adr/)
 **Activities**: Document Creation → Status Management → Evolution Tracking
 **Principle**: All ADRs start with "Accepted" status
 
@@ -388,7 +388,7 @@ The ability to track the evolution and relationships of architectural decisions.
 Standardized format ensuring consistent structure across all decision records.
 
 **Sections**: Status, Context, Decision, Consequences, Alternatives, Implementation Notes
-**Location**: docs/architecture/adr/TEMPLATE.md
+**Location**: docs/explanation/adr/TEMPLATE.md
 **Purpose**: Consistency, completeness, ease of use
 
 **ADR Numbering**

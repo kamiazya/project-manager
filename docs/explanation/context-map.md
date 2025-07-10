@@ -354,7 +354,7 @@ All contexts follow industry standards:
 
 ## Related Documentation
 
-- [Architecture Overview](./README.md) - High-level architectural principles
-- [Domain Documentation](../domain/README.md) - Business domain concepts
+- [Architecture Overview](./architecture-overview.md) - High-level architectural principles
+- [Domain Overview](./domain-overview.md) - Business domain concepts
 <!-- TODO: Implement context implementation details documentation -->
-- [Ubiquitous Language](../domain/UBIQUITOUS_LANGUAGE.md) - Domain terminology
+- [Ubiquitous Language](../reference/ubiquitous-language.md) - Domain terminology

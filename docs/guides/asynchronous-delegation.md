@@ -236,7 +236,6 @@ Track these metrics to improve task delegation:
 
 ## Related Resources
 
-- [Issue Templates](../templates/issues/) - Pre-configured templates for common task types
 - **Project Workflows** (TODO: Documentation coming soon) - Detailed workflow patterns and examples
 - [Contributing Guide](../../CONTRIBUTING.md) - General contribution guidelines
-- [Architecture Decisions](../architecture/adr/) - Context for technical decisions
+- [Architecture Decisions](../explanation/adr/README.md) - Context for technical decisions

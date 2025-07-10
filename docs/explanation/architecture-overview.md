@@ -34,7 +34,7 @@ The architecture documentation focuses on the **HOW** - technical decisions, sys
 
 ### System Architecture
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed views including:
+See [Architecture Reference](../reference/architecture.md) for detailed views including:
 
 - High-level component architecture
 - Technology stack decisions
@@ -43,7 +43,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed views including:
 
 ### Context Relationships
 
-See [CONTEXT_MAP.md](./CONTEXT_MAP.md) for:
+See [Context Map](./context-map.md) for:
 
 - Bounded context boundaries
 - Integration patterns between contexts
@@ -134,10 +134,10 @@ See [Architecture Decision Records](./adr/) for:
 
 ## Related Documentation
 
-- [Domain Documentation](../domain/) - Business concepts and requirements
+- [Domain Overview](./domain-overview.md) - Business concepts and requirements
 - **TODO: Bounded Contexts Documentation** - Detailed context implementations including:
   - Ticket Management Context (domain model, workflows, constraints)
   - AI Integration Context (AI assistant coordination, validation workflows)
   - External Sync Context (integration patterns, conflict resolution)
 - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Development guidelines
-- [TEST_STRATEGY.md](../TEST_STRATEGY.md) - Testing approach
+- [Testing Strategy](../guides/testing-strategy.md) - Testing approach
