@@ -14,21 +14,25 @@ Enable effective collaboration between developers and AI assistants through a lo
 ## User Personas
 
 ### AI-Driven Developer
+
 - Uses AI assistants daily for development
 - Struggles with context loss during long sessions
 - Wants to maintain project momentum
 
 ### Tech Lead
+
 - Reviews implementation plans from team
 - Coordinates between multiple developers and AI assistants
 - Needs visibility into project progress
 
 ### OSS Contributor
+
 - Works on multiple projects simultaneously
 - Collaborates with international teams
 - Needs to sync local work with upstream projects
 
 ### AI Agent/Assistant (Claude/Gemini)
+
 - Processes developer requests
 - Needs context from previous sessions
 - Must understand project state and priorities
@@ -63,6 +67,7 @@ The domain is organized into three main bounded contexts:
 ## Business Requirements Summary
 
 ### Issue-Based Development
+
 - Comprehensive tickets with background, purpose, and acceptance criteria
 - Implementation plans with technical approaches for review
 - Design proposals capturing architectural decisions
@@ -70,18 +75,21 @@ The domain is organized into three main bounded contexts:
 - > 80% first-pass completion rate for asynchronously delegated tasks
 
 ### Local-First Project Management
+
 - Full project management capabilities that work offline
 - Optional synchronization with external systems
 - Data sovereignty and privacy controls
 - Version control integration
 
 ### AI-Assisted Development
+
 - Natural language interfaces for non-English speakers
 - Context preservation across AI sessions
 - AI-assisted validation workflows
 - Multi-AI coordination capabilities
 
 ### External System Integration
+
 - Bidirectional sync with GitHub Issues, Jira, Linear
 - Privacy-aware data sharing
 - Conflict resolution mechanisms
@@ -105,3 +113,9 @@ Domain concepts are implemented through the technical architecture described in 
 - Validation rules and business logic
 
 > **Note**: For technical specifications and implementation details, see the reference documentation. For terminology definitions, see the [ubiquitous language](../reference/ubiquitous-language.md).
+
+## Related Domain Documentation
+
+- [User Stories and Use Cases](./user-stories.md) - Detailed user personas, workflows, and use cases
+- [Requirements](./requirements.md) - Complete functional and non-functional requirements
+- [Context Map](./context-map.md) - Bounded context relationships and integration patterns

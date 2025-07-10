@@ -3,11 +3,13 @@
 ## System Architecture Overview
 
 ### Core Purpose
+
 Project Manager is a local-first ticket management system designed to enable effective collaboration between developers and AI assistants through issue-based development workflows.
 
 ### Architectural Principles
 
 **Design Philosophy**
+
 - **Local-First Architecture**: All core functionality works offline with local data storage
 - **AI-Driven Development**: Built specifically to support AI-assisted development workflows
 - **Issue-Based Development**: Structured around tickets, epics, and implementation planning
@@ -16,6 +18,7 @@ Project Manager is a local-first ticket management system designed to enable eff
 - **CLI-First Interface**: Command-line interface as the foundation for all other interfaces
 
 **Quality Principles**
+
 - **Shift-Left Development**: Early quality assurance through pre-implementation reviews
 - **Document-Driven Development**: Specifications and design decisions captured before implementation
 - **Test-Driven Development**: Comprehensive testing strategy from unit to integration levels
@@ -108,6 +111,7 @@ graph TB
 ```
 
 **Key Architectural Patterns**
+
 - **CLI-First Design**: CLI serves as the primary interface and can launch/control other components like MCP server
 - **Core System**: Contains business logic and shared configuration, ensuring consistent behavior across all interfaces
 - **Actor-Based Interactions**: Human users, AI assistants, and automation agents interact through appropriate interfaces
@@ -115,6 +119,7 @@ graph TB
 - **External Integration**: Synchronization services provide controlled access to external project management tools
 
 **Interface Relationships**
+
 - **CLI → Core**: Primary interface accessing core business logic
 - **CLI → TUI**: CLI can launch Terminal UI (e.g., `pm --tui`)
 - **CLI → MCP**: CLI can launch and manage MCP server (e.g., `pm --mcp`)
@@ -126,24 +131,28 @@ graph TB
 ### Core System Components
 
 **Core Logic**
+
 - Business rule enforcement
 - Entity lifecycle management
 - Event sourcing and audit logging
 - Cross-cutting feature composition
 
 **Storage Service**
+
 - File-based persistence layer
 - JSON serialization/deserialization
 - Atomic write operations with lock files
 - Migration support for schema changes
 
 **Configuration Service**
+
 - XDG Base Directory compliance
 - Environment variable resolution
 - Cascading configuration (global → project → local)
 - Settings validation and defaults
 
 **Sync Service**
+
 - External system adapters (GitHub, Jira, Linear)
 - Bidirectional data mapping
 - Conflict detection and resolution
@@ -152,23 +161,27 @@ graph TB
 ### Interface Components
 
 **CLI Interface**
+
 - Command structure using Commander.js
 - Interactive and non-interactive modes
 - Structured output formats (JSON, plain text)
 - Progress reporting for long operations
 
 **MCP Server**
+
 - Model Context Protocol implementation
 - RESTful API endpoints
 - WebSocket support for real-time updates
 - Authentication and authorization
 
 **Terminal UI (TUI)**
+
 - Enhanced interactive experience
 - Launched via CLI (`pm --tui`)
 - Rich visual interface for complex operations
 
 **SDK/Libraries**
+
 - Direct programmatic access to core business logic
 - Language-specific implementations
 - Consistent API across platforms
@@ -191,27 +204,32 @@ erDiagram
 ### Core Domain Entities
 
 **Project**
+
 - Contains configuration and metadata
 - Manages tickets, epics, and roadmaps
 - Tracks contributors (human and AI)
 
 **Epic**
+
 - Groups related tickets into larger initiatives
 - Defines business goals and success metrics
 - Tracks progress across multiple tickets
 
 **Ticket (Issue)**
+
 - Represents a single development task
 - Contains background, purpose, and acceptance criteria
 - Tracks status, priority, and assignments
 - Links to implementation plans and design proposals
 
 **Sub-Ticket**
+
 - Granular work items within tickets
 - Enables detailed task decomposition
 - Supports full feature composition
 
 **Implementation Plan**
+
 - Documents technical approach for tickets
 - Captures architectural decisions and alternatives
 - Enables pre-implementation review and validation
@@ -219,21 +237,25 @@ erDiagram
 ### Aggregate Boundaries
 
 **Project Aggregate**
+
 - **Root**: Project entity
 - **Scope**: Project configuration, metadata, statistics
 - **Consistency**: Manages overall project state
 
 **Epic Aggregate**
+
 - **Root**: Epic entity
 - **Scope**: Epic details, success criteria, progress tracking
 - **Consistency**: Epic-level business rules and progress
 
 **Ticket Aggregate**
+
 - **Root**: Ticket entity
 - **Scope**: Ticket details, acceptance criteria, implementation plans, tasks
 - **Consistency**: Ticket-level business rules and state transitions
 
 **Sub-Ticket Aggregate**
+
 - **Root**: Sub-Ticket entity
 - **Scope**: Sub-task details, dependencies, implementation plans
 - **Consistency**: Sub-task level business rules and state transitions
@@ -253,6 +275,7 @@ erDiagram
 All entities support the complete set of cross-cutting features, but are typically used at different levels of granularity:
 
 **EPIC Level**
+
 - **Comments**: Strategic discussions, stakeholder feedback, business requirements
 - **Attachments**: Requirements documents, business cases, market research
 - **Tasks**: Milestones, major deliverables, phase gates, stakeholder approvals
@@ -260,6 +283,7 @@ All entities support the complete set of cross-cutting features, but are typical
 - **Relationships**: Epic dependencies, business process flows
 
 **TICKET Level**
+
 - **Comments**: Technical discussions, implementation notes, progress updates
 - **Attachments**: Design documents, screenshots, test data, specifications
 - **Tasks**: Implementation steps, testing checklist, review items
@@ -267,6 +291,7 @@ All entities support the complete set of cross-cutting features, but are typical
 - **Relationships**: Feature dependencies, technical constraints, blocking issues
 
 **SUB_TICKET Level**
+
 - **Comments**: Detailed technical notes, code review feedback, troubleshooting
 - **Attachments**: Code snippets, log files, specific test cases, patches
 - **Tasks**: Granular implementation steps, unit test cases, code review items
@@ -334,18 +359,21 @@ interface Ticket {
 **Storage Operations**
 
 *Write Operations*
+
 - Atomic writes using temporary files and rename
 - File-level locking for concurrent access
 - Automatic backup before modifications
 - Transaction log for recovery
 
 *Read Operations*
+
 - In-memory caching with TTL
 - Lazy loading for large datasets
 - Index-based quick lookups
 - Stream processing for event logs
 
 **Data Storage Philosophy**
+
 - **Local-First**: All data stored locally for offline operation and data sovereignty
 - **Standards Compliance**: Following XDG Base Directory specification for cross-platform compatibility
 - **Version Control Friendly**: JSON and Markdown formats work well with Git
@@ -358,6 +386,7 @@ interface Ticket {
 ### CLI-First Data Access
 
 Following the CLI-first architecture principle:
+
 - **CLI**: Direct access to all data contexts
 - **MCP Server**: AI-focused data access, launched via CLI
 - **SDK**: Direct programmatic access to core business logic
@@ -366,12 +395,14 @@ Following the CLI-first architecture principle:
 ### MCP Server Integration
 
 **Core Services**
+
 - Ticket management operations
 - Project context retrieval
 - AI-assisted validation workflows
 - Language translation services
 
 **API Endpoints**
+
 - CRUD operations for tickets and epics
 - Search and filtering capabilities
 - Status reporting and analytics
@@ -380,23 +411,27 @@ Following the CLI-first architecture principle:
 ### External System Integration
 
 **Integration Philosophy**
+
 - **Tool-Based Sync**: No direct API integration, maintaining system independence
 - **User Control**: All synchronization requires explicit user action
 - **Privacy Preservation**: Local-only data never leaves the system
 - **Extensibility**: Plugin architecture for adding new integrations
 
 **Synchronization Strategy**
+
 - External tool-based synchronization (not direct sync)
 - User-driven conflict resolution with AI assistance
 - Selective sharing based on privacy settings
 - Audit trail for all changes
 
 **Data Mapping**: Anti-corruption layer pattern
+
 - Internal domain model protected from external changes
 - Mapping layer for external system integration
 - Cached external data for offline operation
 
 **Supported Systems**
+
 - GitHub Issues
 - Jira
 - Linear
@@ -405,11 +440,13 @@ Following the CLI-first architecture principle:
 ### AI Integration
 
 **Context Management**: AI session and context storage
+
 - Compressed context data for AI operations
 - Session-based context isolation
 - Automatic context cleanup and expiration
 
 **Operation Tracking**: Co-authorship and audit trail
+
 - AI operation attribution and risk assessment
 - User confirmation for high-risk operations
 - Operation outcome tracking
@@ -417,6 +454,7 @@ Following the CLI-first architecture principle:
 ## Security Architecture
 
 ### Local Security
+
 - File system permissions for data protection
 - Secure storage of API keys and credentials
 - Audit logging for all operations
@@ -427,11 +465,13 @@ Following the CLI-first architecture principle:
 ### Access Control
 
 **File Permissions**
+
 - User-only access for sensitive data (0600)
 - Read-only for shared configuration (0644)
 - Directory restrictions (0700)
 
 **API Security**
+
 - JWT token validation
 - Rate limiting per user/IP
 - Request signing for integrity
@@ -440,12 +480,14 @@ Following the CLI-first architecture principle:
 ### Data Protection
 
 **Sensitive Data Handling**
+
 - Credential encryption at rest
 - Secure credential storage using OS keychain
 - Memory scrubbing for sensitive data
 - No logging of sensitive information
 
 ### Integration Security (Standards Adoption)
+
 - OAuth 2.0 for external system authentication (industry standard)
 - JWT tokens for secure API communication
 - API key rotation and management
@@ -458,36 +500,43 @@ Following the CLI-first architecture principle:
 ### Core Technologies and Rationale
 
 **Runtime Environment**
+
 - **Node.js**: Chosen for its ubiquity in developer tooling and excellent CLI support
 - **TypeScript**: Provides type safety and better IDE support for large codebases
 - **pnpm**: Monorepo package management with workspaces
 
 **CLI Framework (CLI-First Implementation)**
+
 - **Commander.js**: Command structure following POSIX and GNU conventions
 - **tsx**: Direct TypeScript execution for development efficiency
 - **Chalk**: Terminal styling and structured output
 
 **Configuration Management (Standards Adoption)**
+
 - **XDG Base Directory**: Specification for file locations
 - **JSON**: Format for structured configuration
 - **Environment Variables**: Support following dotenv standards
 
 **API Design (Standards Adoption)**
+
 - **RESTful Principles**: With OpenAPI 3.0 specification
 - **JSON**: Response format
 - **Standard HTTP Status Codes**: For consistent error handling
 
 **Code Quality (Standards Adoption)**
+
 - **ESLint/Prettier**: For JS/TS code style
 - **Conventional Commits**: For commit messages
 - **Semantic Versioning**: SemVer 2.0.0 for releases
 
 **Storage**
+
 - **JSON Files**: For structured data
 - **CommonMark**: For Markdown documentation
 - **File-based Templates**: For code generation
 
 **AI Integration**
+
 - **Model Context Protocol (MCP)**: Server implementation (mandatory standard)
 - **Multi-Provider Support**: For various AI systems
 - **Language Bridging**: Capabilities for non-English speakers
@@ -496,6 +545,7 @@ Following the CLI-first architecture principle:
 - **AI-Optional Design**: All basic features work without AI
 
 **Key Technology Decisions**
+
 - **Local-First Storage**: JSON files provide simplicity and version control compatibility
 - **Model Context Protocol**: Industry standard for AI integration
 - **Conventional Commits**: Enables automated versioning and changelog generation
@@ -503,6 +553,7 @@ Following the CLI-first architecture principle:
 ## Implementation Guidelines
 
 ### Development Approach
+
 - **Domain-Driven Design**: Focus on core domain concepts
 - **Test-Driven Development**: Tests before implementation
 - **Document-Driven Development**: Clear specifications
@@ -513,11 +564,13 @@ Following the CLI-first architecture principle:
 ### Schema Evolution
 
 **Version Management**: Semantic versioning for data schemas
+
 - Migration scripts for schema changes
 - Backward compatibility maintenance
 - Forward compatibility where possible
 
 **Field Addition**: Additive changes preferred
+
 - Optional fields for new features
 - Default values for missing fields
 - Graceful degradation for older clients
@@ -525,18 +578,21 @@ Following the CLI-first architecture principle:
 ### Performance Considerations
 
 **Optimization Strategies**
+
 - Lazy loading for large collections
 - Index files for quick lookups
 - Incremental updates where possible
 - Background sync operations
 
 **Resource Management**
+
 - File handle pooling
 - Memory usage monitoring
 - Disk space management
 - Network request throttling
 
 ### Documentation and Decision Tracking
+
 - **Architecture Decision Records (ADRs)**: Document significant architectural decisions
 - **Decision-Implementation Separation**: ADRs track decisions, not implementation status
 - **Implementation Tracking**: Use project management tools for implementation lifecycle
@@ -554,6 +610,7 @@ packages/
 ```
 
 ### Quality Assurance
+
 - Comprehensive test coverage (unit, integration, E2E)
 - Static analysis and linting
 - Security scanning and vulnerability assessment
@@ -562,6 +619,7 @@ packages/
 ## Future Considerations
 
 ### Scalability
+
 - Plugin architecture for extensibility
 - Multi-project support
 - Team collaboration features
@@ -570,22 +628,26 @@ packages/
 ### User Experience (Phased Interface Implementation)
 
 **Phase 1: CLI-First Implementation**
+
 - Command-line interface as primary interaction method
 - Structured output formats (JSON, plain text) for programmatic use
 - Interactive and non-interactive modes
 
 **Phase 2: Programmatic Interfaces**
+
 - Model Context Protocol (MCP) server for AI integration
 - RESTful API exposing core functionality
 - SDK/libraries for common programming languages
 
 **Phase 3: Additional User Interfaces (As Needed)**
+
 - Terminal User Interface (TUI) for enhanced interactive experience
 - IDE extensions (VSCode, IntelliJ) for integrated workflows
 - Web UI for team collaboration and visualization
 - Other interfaces based on user feedback and adoption patterns
 
 ### AI Resource Management (Optional)
+
 - Token usage monitoring dashboard
 - Cross-project resource allocation
 - Cost optimization algorithms

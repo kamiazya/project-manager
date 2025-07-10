@@ -14,18 +14,21 @@ Our current documentation structure has several issues:
 4. **Difficult navigation**: Users struggle to find the right documentation for their needs
 
 The project has grown to include various types of documentation:
+
 - Architectural decisions and design documents
 - Domain models and business requirements  
 - Development guides and setup instructions
 - API references and technical specifications
 
 Without a clear framework, documentation becomes:
+
 - Hard to maintain (unclear where to add new content)
 - Difficult to navigate (users don't know where to look)
 - Prone to duplication (same information in multiple places)
 - Inconsistent in style and purpose
 
 **Specific problem scenarios:**
+
 - New developers struggle to find setup instructions, as they are scattered across multiple documents
 - Contributors looking for specific API details have to search through explanatory documents
 - Maintainers are unsure where to place new documentation, leading to inconsistent organization
@@ -54,12 +57,14 @@ Our documentation will be reorganized into four main categories:
 Each category serves a specific purpose and audience need, making it clear where to find and place documentation.
 
 **Existing document classification examples:**
+
 - **Tutorials**: New `docs/tutorials/getting-started.md` for new developers
 - **How-to guides**: `docs/TEST_STRATEGY.md` → `docs/guides/testing-strategy.md`
 - **Reference**: `docs/architecture/ARCHITECTURE.md` + `docs/architecture/DESIGN.md` → `docs/reference/architecture.md` (merged)
 - **Explanation**: `docs/domain/REQUIREMENTS.md` → `docs/explanation/domain-overview.md`, `docs/architecture/adr/` → `docs/explanation/adr/`
 
 **Documents remaining in current locations:**
+
 - `CONTRIBUTING.md`: Stays at project root (OSS community best practice)
 - `docs/README.md`: Remains as navigation guide
 
@@ -104,6 +109,7 @@ Diátaxis was chosen because it provides a proven, systematic approach with clea
 ## Scope
 
 This decision applies to all documentation in the `/docs` directory. It does not affect:
+
 - `README.md` files in code packages
 - Inline code documentation
 - `CONTRIBUTING.md` (remains at project root)
