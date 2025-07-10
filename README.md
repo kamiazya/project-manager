@@ -15,6 +15,7 @@ Project Manager is an open-source tool that enables effective collaboration betw
 ## Key Features
 
 ### Current
+
 - Local ticket, epic, and roadmap management
 - CLI interface for developer productivity
 - MCP (Model Context Protocol) server for AI integration
@@ -22,6 +23,7 @@ Project Manager is an open-source tool that enables effective collaboration betw
 - AI-powered language bridging (through MCP and integrated AI services)
 
 ### Planned
+
 - Multi-AI collaboration protocols
 - External ticket system synchronization (GitHub Issues, Jira, etc.)
 - Implementation plan templates and review workflows
@@ -39,15 +41,16 @@ Project Manager is an open-source tool that enables effective collaboration betw
 ## Documentation
 
 ### Core Documentation
-- [ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md) - System architecture and design principles
-- [REQUIREMENTS.md](./docs/domain/REQUIREMENTS.md) - Functional and non-functional requirements
-- [TEST_STRATEGY.md](./docs/TEST_STRATEGY.md) - Comprehensive testing approach
-- [USER_STORIES.md](./docs/domain/USER_STORIES.md) - User scenarios and requirements
+
+- [Architecture Reference](./docs/reference/architecture.md) - System architecture and design principles
+- [Domain Overview](./docs/explanation/domain-overview.md) - Business domain, requirements, and user scenarios
+- [Testing Strategy](./docs/guides/testing-strategy.md) - Comprehensive testing approach
 
 ### Development Guidelines
+
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - **Start here for contributors** - Development process, coding standards, and workflow guidelines
 - [CLAUDE.md](./CLAUDE.md) - AI assistant project instructions
-- [Architecture Decision Records](./docs/architecture/adr/README.md) - Architectural decisions and rationale
+- [Architecture Decision Records](./docs/explanation/adr/README.md) - Architectural decisions and rationale
 
 ## Development Status
 

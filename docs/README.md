@@ -1,147 +1,179 @@
 # Project Manager Documentation
 
-Welcome to the Project Manager documentation. This guide helps you navigate through our comprehensive documentation structure organized following Domain-Driven Design (DDD) principles.
+Welcome to the Project Manager documentation. This guide helps you navigate through our comprehensive documentation structure organized following the Diátaxis framework.
 
 ## Documentation Structure Overview
+
+Our documentation is organized into four categories based on user needs:
 
 ```
 /docs/
 ├── README.md                  # This file - Documentation navigation guide
-├── domain/                    # Business domain concepts (WHAT the system does)
-│   ├── README.md              # Domain overview and key concepts
-│   ├── USER_STORIES.md        # User personas and scenarios
-│   └── UBIQUITOUS_LANGUAGE.md # Centralized glossary of domain terms
-├── architecture/              # Technical architecture (HOW it's built)
-│   ├── README.md              # Architecture principles and overview
-│   ├── ARCHITECTURE.md        # System architecture details
-│   ├── CONTEXT_MAP.md         # Bounded context relationships visualization
-│   └── adr/                   # Architecture Decision Records
-│       ├── README.md          # ADR overview and index
-│       └── TEMPLATE.md        # ADR template
-└── contexts/                  # Bounded contexts (detailed domain models)
-    ├── README.md              # Bounded contexts overview
-    ├── ticket_management/     # Core ticket and project management
-    │   ├── README.md          # Context overview
-    │   ├── DOMAIN_MODEL.md    # Entities and aggregates
-    │   ├── WORKFLOWS.md       # Business processes
-    │   └── CONSTRAINTS.md     # Non-functional requirements
-    ├── ai_integration/        # AI assistant collaboration
-    │   └── (same structure as above)
-    └── external_sync/         # External system integration
-        └── (same structure as above)
+├── tutorials/                 # Learning-oriented guides for newcomers
+├── guides/                    # Task-oriented how-to guides
+│   ├── testing-strategy.md    # How to test the system
+│   └── asynchronous-delegation.md # Best practices for async work
+├── reference/                 # Information-oriented technical descriptions
+│   ├── architecture.md        # System architecture specification
+│   └── ubiquitous-language.md # Domain terminology reference
+└── explanation/               # Understanding-oriented conceptual discussions
+    ├── domain-overview.md     # Business domain explanation
+    ├── context-map.md         # Bounded contexts visualization
+    ├── architecture-overview.md # Architecture concepts
+    └── adr/                   # Architecture Decision Records
 ```
 
 ## Navigation Guide
 
 ### For Different Audiences
 
-#### 🏢 Product Managers & Stakeholders
-Start with high-level business understanding:
-1. [Domain Overview](./domain/README.md) - Core concepts and business value
-2. [User Stories](./domain/USER_STORIES.md) - User personas and scenarios
-3. [Context Map](./architecture/CONTEXT_MAP.md) - System boundaries visualization
+#### 🎓 New Contributors
 
-#### 👩‍💻 Developers & Technical Contributors
-For implementation and technical details:
-1. [Architecture Overview](./architecture/ARCHITECTURE.md) - System design
-2. [Bounded Contexts](./contexts/README.md) - Detailed domain models
-3. [CONTRIBUTING.md](../CONTRIBUTING.md) - Development guidelines
+Start your learning journey:
+
+1. **Tutorials** - Step-by-step learning guides (coming soon)
+2. [Domain Overview](./explanation/domain-overview.md) - Understand the business domain
+3. [CONTRIBUTING.md](../CONTRIBUTING.md) - Development setup and workflow
+
+#### 🔧 Developers & Contributors
+
+Find practical guidance:
+
+1. [Testing Strategy](./guides/testing-strategy.md) - How to test your changes
+2. [Asynchronous Delegation](./guides/asynchronous-delegation.md) - Best practices for distributed work
+3. [Architecture Reference](./reference/architecture.md) - Technical specifications
+
+#### 📚 Looking for Specific Information
+
+Quick reference materials:
+
+1. [Architecture Reference](./reference/architecture.md) - Complete technical specification
+2. [Ubiquitous Language](./reference/ubiquitous-language.md) - Domain terminology
+3. [CLI Reference](./reference/) - Command documentation (coming soon)
+
+#### 🤔 Understanding Concepts
+
+Dive deeper into the "why":
+
+1. [Domain Overview](./explanation/domain-overview.md) - Business concepts and user needs
+2. [Context Map](./explanation/context-map.md) - System boundaries and relationships
+3. [Architecture Decisions](./explanation/adr/) - Why we made specific technical choices
 
 #### 🤖 AI Assistants
+
 For understanding project context:
-1. [Ubiquitous Language](./domain/UBIQUITOUS_LANGUAGE.md) - Domain terminology
+
+1. [Ubiquitous Language](./reference/ubiquitous-language.md) - Domain terminology
 2. [CLAUDE.md](../CLAUDE.md) - AI-specific instructions
-3. Relevant bounded context documentation
+3. [Domain Overview](./explanation/domain-overview.md) - Business context
 
-#### 🔧 Integration Engineers
-For external system integration:
-1. [External Sync Context](./contexts/external_sync/) - Integration patterns
-2. [Context Map](./architecture/CONTEXT_MAP.md) - Integration boundaries
-3. [Architecture Decisions](./architecture/adr/) - Technology choices
+### By Document Type
 
-### By Purpose
+#### 📖 Tutorials (Learning-oriented)
 
-#### Understanding the Business Domain
-- **Start**: [Domain README](./domain/README.md)
-- **Deep Dive**: [User Stories](./domain/USER_STORIES.md)
-- **Terminology**: [Ubiquitous Language](./domain/UBIQUITOUS_LANGUAGE.md)
+*Coming soon: Step-by-step guides for newcomers*
 
-#### Understanding the Architecture
-- **Overview**: [Architecture](./architecture/ARCHITECTURE.md)
-- **Relationships**: [Context Map](./architecture/CONTEXT_MAP.md)
-- **Decisions**: [ADRs](./architecture/adr/)
+- Getting started tutorial
+- Development environment setup
 
-#### Working with Specific Features
-- **Ticket Management**: [Ticket Management Context](./contexts/ticket_management/)
-- **AI Features**: [AI Integration Context](./contexts/ai_integration/)
-- **External Systems**: [External Sync Context](./contexts/external_sync/)
+#### 📝 How-to Guides (Task-oriented)
+
+- [Testing Strategy](./guides/testing-strategy.md) - How to test the system
+- [Asynchronous Delegation](./guides/asynchronous-delegation.md) - Best practices for distributed work
+
+#### 📋 Reference (Information-oriented)
+
+- [Architecture](./reference/architecture.md) - Complete system specification
+- [Ubiquitous Language](./reference/ubiquitous-language.md) - Domain terminology reference
+
+#### 💡 Explanation (Understanding-oriented)
+
+- [Domain Overview](./explanation/domain-overview.md) - Business domain concepts
+- [User Stories](./explanation/user-stories.md) - Individual user stories with personas and scenarios
+- [User Stories](./explanation/user-stories.md) - Detailed interaction flows and scenarios
+- [Requirements](./explanation/requirements.md) - Formal business, functional, and non-functional requirements
+- [Context Map](./explanation/context-map.md) - System boundaries visualization
+- [Architecture Overview](./explanation/architecture-overview.md) - Architecture principles
+- [Architecture Decisions](./explanation/adr/) - Decision rationale and context
 
 ## Key Documentation Principles
 
-### 1. Domain-Driven Design (DDD) Organization
-Documentation mirrors the system's bounded contexts, making it easier to:
-- Find relevant information for specific features
-- Understand dependencies and relationships
-- Maintain consistency within contexts
+### 1. Diátaxis Framework
 
-### 2. Separation of Concerns
-- **Domain** (What): Business concepts independent of implementation
-- **Architecture** (How): Technical design and system structure
-- **Contexts** (Details): Specific implementations within boundaries
+Documentation is organized by user intent:
+
+- **Tutorials**: "I want to learn"
+- **How-to guides**: "I want to accomplish a task"
+- **Reference**: "I want to look up information"
+- **Explanation**: "I want to understand"
+
+### 2. Single Source of Truth
+
+- Each piece of information has one authoritative location
+- Cross-references point to the definitive source
+- Reduces duplication and maintenance burden
 
 ### 3. Progressive Disclosure
-- Start with high-level overviews
-- Drill down into specific contexts as needed
-- Cross-references guide deeper exploration
+
+- Start with overviews and drill down as needed
+- Clear navigation between related concepts
+- Appropriate level of detail for each document type
 
 ### 4. Living Documentation
+
 - Documentation evolves with the system
 - Changes follow the same review process as code
-- Regular reviews ensure accuracy
+- Regular reviews ensure accuracy and relevance
 
 ## Documentation Maintenance
 
 ### Adding New Documentation
-1. Determine the appropriate location based on content type
-2. Follow existing patterns and templates
-3. Update relevant index/navigation files
-4. Add cross-references to related documents
 
-### Updating Existing Documentation
-1. Make changes in the appropriate document
-2. Update any impacted cross-references
-3. Consider if architectural decisions need documenting
-4. Ensure consistency with Ubiquitous Language
+1. **Determine the category** based on user intent:
+   - Tutorial: Teaching newcomers
+   - Guide: Solving specific problems
+   - Reference: Looking up information
+   - Explanation: Understanding concepts
+
+2. **Follow existing patterns** and maintain consistency
+3. **Update navigation** in this README.md
+4. **Add cross-references** to related documents
 
 ### Quality Guidelines
+
 - Use clear, concise language
 - Include examples and diagrams where helpful
 - Maintain consistent formatting
-- Keep technical jargon in appropriate contexts
+- Keep content focused on the document's category purpose
 
 ## Quick Links
 
 ### Essential Documents
+
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - How to contribute
 - [README.md](../README.md) - Project overview
 - [CLAUDE.md](../CLAUDE.md) - AI assistant instructions
 
-### Domain Understanding
-- [Ubiquitous Language](./domain/UBIQUITOUS_LANGUAGE.md) - Key terminology
-- [User Stories](./domain/USER_STORIES.md) - User scenarios
-- [Context Map](./architecture/CONTEXT_MAP.md) - System boundaries
+### Start Here
 
-### Technical Details
-- [Architecture](./architecture/ARCHITECTURE.md) - System design
-- [Bounded Contexts](./contexts/) - Detailed implementations
-- [ADRs](./architecture/adr/) - Design decisions
+- [Domain Overview](./explanation/domain-overview.md) - What this system does
+- [Testing Strategy](./guides/testing-strategy.md) - How to test your changes
+- [Architecture Reference](./reference/architecture.md) - Technical specification
+
+### Deep Dive
+
+- [Context Map](./explanation/context-map.md) - System organization
+- [Architecture Decisions](./explanation/adr/) - Why we made these choices
+- [Ubiquitous Language](./reference/ubiquitous-language.md) - Domain terminology
 
 ## Getting Help
 
 If you can't find what you're looking for:
-1. Check the [Ubiquitous Language](./domain/UBIQUITOUS_LANGUAGE.md) for terminology
-2. Review the [Context Map](./architecture/CONTEXT_MAP.md) for system organization
-3. Consult [CONTRIBUTING.md](../CONTRIBUTING.md) for development questions
-4. Create an issue for documentation improvements
 
-Remember: Good documentation is crucial for successful collaboration between humans and AI assistants!
+1. **Check the appropriate category** based on your need (tutorial, guide, reference, explanation)
+2. **Search the ubiquitous language** for terminology clarification
+3. **Review related architecture decisions** for context
+4. **Consult CONTRIBUTING.md** for development questions
+5. **Create an issue** for documentation improvements
+
+Remember: Well-organized documentation enables effective collaboration between humans and AI assistants!

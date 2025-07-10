@@ -3,6 +3,7 @@
 ## Overview
 
 This guide provides best practices for creating tasks that can be effectively delegated to collaborators working asynchronously with limited context. This applies to:
+
 - AI coding agents (Devin, Claude Code Action, etc.)
 - Remote developers in different time zones
 - Contributors unfamiliar with the codebase
@@ -11,6 +12,7 @@ This guide provides best practices for creating tasks that can be effectively de
 ## Core Principles
 
 ### 1. Self-Contained Tasks
+
 Each task must be completable without requiring additional clarification or context gathering.
 
 **Why**: Asynchronous workers cannot easily ask questions or get immediate feedback.
@@ -18,6 +20,7 @@ Each task must be completable without requiring additional clarification or cont
 **How**: Include all necessary information upfront, from requirements to validation criteria.
 
 ### 2. Clear Success Criteria
+
 Define explicit, measurable outcomes that indicate task completion.
 
 **Why**: Workers need objective ways to verify their work is complete and correct.
@@ -25,6 +28,7 @@ Define explicit, measurable outcomes that indicate task completion.
 **How**: Use checklists, test cases, and specific acceptance criteria.
 
 ### 3. Atomic Scope
+
 Tasks should be indivisible units of work with no external dependencies.
 
 **Why**: Prevents blocking on other work and enables parallel execution.
@@ -163,18 +167,23 @@ Users report 5-10 second load times for the main dashboard. Analytics show this 
 ## Task Creation Workflow
 
 ### 1. Assess the Worker Type
+
 Before creating a task, identify who will execute it:
+
 - **AI Agent**: Repetitive, well-defined implementation
 - **Remote Developer**: Complex problems requiring judgment
 - **Either**: Simple, well-scoped tasks with clear patterns
 
 ### 2. Choose Appropriate Detail Level
+
 - **AI Agents**: Maximum detail, no assumptions
 - **Experienced Remote Developers**: Context and goals, trust expertise
 - **New Contributors**: Balance between guidance and learning opportunity
 
 ### 3. Validate Task Completeness
+
 Use this checklist before assigning:
+
 - [ ] Can this be started without asking questions?
 - [ ] Are success criteria objectively measurable?
 - [ ] Are all dependencies and blockers identified?
@@ -183,18 +192,22 @@ Use this checklist before assigning:
 ## Common Pitfalls and Solutions
 
 ### Pitfall 1: Assuming Implicit Knowledge
+
 **Problem**: "Update the user service" - Which service? What kind of update?
 **Solution**: "Update the UserAuthenticationService.validateCredentials method to support OAuth 2.0 tokens in addition to passwords"
 
 ### Pitfall 2: Unbounded Scope
+
 **Problem**: "Improve application performance"
 **Solution**: "Reduce login API response time from 500ms to 200ms by implementing connection pooling"
 
 ### Pitfall 3: Missing Context
+
 **Problem**: "Fix the bug in checkout"
 **Solution**: "Fix race condition in checkout process where concurrent requests can result in duplicate orders (see error logs from incident #1234)"
 
 ### Pitfall 4: Unclear Validation
+
 **Problem**: "Make sure it works"
 **Solution**: "Ensure all existing tests pass, plus new tests for OAuth token validation achieve 90% coverage"
 
@@ -223,7 +236,6 @@ Track these metrics to improve task delegation:
 
 ## Related Resources
 
-- [Issue Templates](../templates/issues/) - Pre-configured templates for common task types
-- [Project Workflows](../contexts/ticket_management/WORKFLOWS.md) - How tasks fit into larger processes
+- **Project Workflows** (TODO: Documentation coming soon) - Detailed workflow patterns and examples
 - [Contributing Guide](../../CONTRIBUTING.md) - General contribution guidelines
-- [Architecture Decisions](../architecture/adr/) - Context for technical decisions
+- [Architecture Decisions](../explanation/adr/README.md) - Context for technical decisions

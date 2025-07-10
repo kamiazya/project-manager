@@ -6,7 +6,6 @@ early_access: true
 
 # Reviews Configuration
 reviews:
-  profile: assertive
   high_level_summary: true
   poem: false
   review_status: true

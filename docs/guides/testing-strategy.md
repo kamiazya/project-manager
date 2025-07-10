@@ -23,15 +23,18 @@ This document defines the comprehensive testing strategy for the Project Manager
 **Coverage Target**: 90%+ for core business logic
 
 **Technology Stack**:
+
 - **Vitest**: Primary testing framework
 
 **Test Categories**:
+
 - Domain model validation
 - Business logic verification
 - Utility function testing
 - Error handling scenarios
 
 **Example Test Structure**:
+
 ```typescript
 describe('TicketManager', () => {
   describe('createTicket', () => {
@@ -74,12 +77,14 @@ describe('TicketManager', () => {
 ### 4.1. Local Development
 
 **Requirements**:
+
 - Node.js 20+
 - pnpm package manager
 
 ### 4.2. Continuous Integration
 
 **Pipeline Configuration**:
+
 - Run tests on every commit
 - Parallel test execution
 - Coverage reporting
