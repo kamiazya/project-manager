@@ -54,7 +54,7 @@ For external system integration:
 
 1. **TODO: External Sync Context** - Integration patterns and conflict resolution
 2. [Context Map](./architecture/CONTEXT_MAP.md) - Integration boundaries
-3. [Architecture Decisions](./architecture/adr/) - Technology choices
+3. [Architecture Decisions](./architecture/adr/README.md) - Technology choices
 
 ### By Purpose
 

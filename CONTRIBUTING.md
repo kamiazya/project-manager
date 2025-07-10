@@ -545,9 +545,18 @@ For complex changes:
 
 1. Create design proposal
 2. Get AI expert validation
-3. Review with team members
+3. Review with community members
 4. Document decisions in ADRs if needed
 5. Implement with proper testing
+
+**Note on ADRs and Implementation Status:**
+
+Architecture Decision Records (ADRs) document architectural decisions, not implementation progress. When creating or referencing ADRs:
+
+- ADRs capture the "what" and "why" of decisions
+- Implementation status belongs in issue tracking systems
+- ADR status (Accepted/Superseded) reflects decision validity, not code completion
+- Track implementation progress through project management tools, not ADR updates
 
 ### Quality Gates
 

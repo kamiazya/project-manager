@@ -2,7 +2,10 @@
 
 ## Status
 
-[Proposed | Accepted | Deprecated | Superseded by ADR-XXXX]
+[Accepted | Superseded by ADR-XXXX]
+
+<!-- Note: All ADRs should have status "Accepted" when initially created.
+     See ./README.md for status guidelines and workflow. -->
 
 ## Context
 

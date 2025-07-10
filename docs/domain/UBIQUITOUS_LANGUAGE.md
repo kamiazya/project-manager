@@ -1,6 +1,6 @@
 # Ubiquitous Language
 
-This document defines the core domain terminology used throughout the Project Manager system. All documentation, code, and communication should use these terms consistently to ensure shared understanding across the team.
+This document defines the core domain terminology used throughout the Project Manager system. All documentation, code, and communication should use these terms consistently to ensure shared understanding across the community.
 
 ## Core Entities
 
@@ -223,7 +223,7 @@ User confirmation steps required before AI executes potentially destructive oper
 Structured document capturing technical approach, alternatives, and rationale before implementation.
 
 **Components**: Approach, rationale, alternatives, validation status
-**Process**: Creation → AI Review → Team Review → Implementation
+**Process**: Creation → AI Review → Community Review → Implementation
 **Context**: AI Integration
 
 ### AI Session
@@ -296,10 +296,106 @@ When interfacing with external systems, these mappings apply:
 
 ### Architecture Decision Record (ADR) Terminology
 
-- **ADR**: Document capturing important architectural decisions with context and consequences
-- **Decision Status**: Proposed, Accepted, Deprecated, Superseded
-- **Decision Evolution**: Timeline and dependency relationships between ADRs
-- **ADR Template**: Standardized format for consistent decision documentation
+#### Core ADR Concepts
+
+**Architecture Decision Record (ADR)**
+A document that captures an important architectural decision along with its context, rationale, and consequences. ADRs preserve the reasoning behind architectural choices for future reference.
+
+**Context**: Documentation and Decision Tracking
+**Purpose**: Decision preservation, knowledge sharing, architectural governance
+**Format**: Standardized template with Status, Context, Decision, Consequences, etc.
+
+**Decision Status**
+The current state of an architectural decision record.
+
+**Valid Values**: `Accepted`, `Superseded by ADR-XXXX`
+**Note**: `Proposed` and `Deprecated` statuses are not used in this project
+**Principle**: ADRs document decisions already made, not proposals under consideration
+
+#### ADR Lifecycle and Processes
+
+**Pre-ADR Phase**
+The discussion and consensus-building process that occurs before creating an ADR.
+
+**Location**: GitHub Issues, Pull Requests, Community Discussions
+**Activities**: Discussion → Proposal → Community Review → Consensus
+**Outcome**: Architectural decision ready for documentation
+
+**ADR Management Phase**
+The Git-managed phase where decisions are documented and tracked.
+
+**Location**: Git Repository (docs/architecture/adr/)
+**Activities**: Document Creation → Status Management → Evolution Tracking
+**Principle**: All ADRs start with "Accepted" status
+
+**Community Review**
+The process of evaluating architectural proposals through open source collaboration.
+
+**Participants**: Community members, maintainers, domain experts
+**Channels**: GitHub Issues, Pull Requests, Architecture discussions
+**Note**: Uses "Community" rather than "Team" to reflect OSS nature
+
+#### ADR Status and Transitions
+
+**Accepted**
+The decision has been agreed upon and should be implemented. This is the initial and primary status for all ADRs.
+
+**Context**: All new ADRs
+**Meaning**: Decision is valid and should guide implementation
+**Transition**: Can move to "Superseded" when replaced
+
+**Superseded by ADR-XXXX**
+The decision has been replaced by a newer ADR. Includes reference to the replacement.
+
+**Context**: Decision evolution
+**Meaning**: Decision is no longer current but preserved for historical context
+**Format**: Must include reference to the superseding ADR
+
+#### Decision vs Implementation Separation
+
+**Decision Record**
+The architectural choice and its rationale, independent of implementation status.
+
+**Tracked in**: ADR documents
+**Lifecycle**: Accepted → Superseded
+**Principle**: Records "what" and "why" decisions were made
+
+**Implementation Status**
+The current state of implementing an architectural decision.
+
+**Tracked in**: Project management tools, GitHub Issues, development workflows
+**Lifecycle**: Planned → In Progress → Completed → Migrated → Retired
+**Principle**: Separate from decision validity
+
+#### ADR Integration Patterns
+
+**ADR-First Development**
+Approach where significant architectural decisions are documented before implementation.
+
+**Process**: Identify Need → Community Discussion → ADR Creation → Implementation
+**Benefits**: Preserved rationale, improved onboarding, better decision quality
+
+**Decision Traceability**
+The ability to track the evolution and relationships of architectural decisions.
+
+**Methods**: ADR numbering, cross-references, dependency graphs
+**Tools**: Mermaid diagrams, ADR index tables
+**Purpose**: Understanding decision history and impacts
+
+#### Template and Standards
+
+**ADR Template**
+Standardized format ensuring consistent structure across all decision records.
+
+**Sections**: Status, Context, Decision, Consequences, Alternatives, Implementation Notes
+**Location**: docs/architecture/adr/TEMPLATE.md
+**Purpose**: Consistency, completeness, ease of use
+
+**ADR Numbering**
+Sequential numbering system for ADR identification and ordering.
+
+**Format**: NNNN-short-decision-title.md (e.g., 0001-record-architecture-decisions.md)
+**Purpose**: Unique identification, chronological ordering, easy reference
 
 ## Anti-Patterns to Avoid
 
@@ -308,20 +404,25 @@ When interfacing with external systems, these mappings apply:
 - ❌ Don't use "Issue" and "Ticket" interchangeably in internal documentation
 - ❌ Don't use "Task" to refer to Tickets (Task is a specific Ticket Type)
 - ❌ Don't use "Story" to refer to Tickets (Stories are in USER_STORIES.md)
+- ❌ Don't use "Proposed" status for ADRs (use Pre-ADR Phase instead)
+- ❌ Don't use "Deprecated" status for ADRs (use "Superseded" instead)
+- ❌ Don't use "Team" when referring to OSS community (use "Community" instead)
 
 ### Context Mixing
 
 - ❌ Don't mix AI Integration concepts in Ticket Management documentation
 - ❌ Don't put External Sync requirements in AI Integration context
 - ❌ Don't reference implementation details in domain documentation
+- ❌ Don't track implementation status in ADR status (use separate systems)
+- ❌ Don't mix decision rationale with implementation concerns in ADRs
 
 ## Evolution and Maintenance
 
 This ubiquitous language should evolve as the domain understanding deepens. Changes should be:
 
-1. **Discussed** with the core team before implementation
+1. **Discussed** with the core community before implementation
 2. **Documented** with rationale for the change
 3. **Propagated** across all documentation and code
 4. **Validated** through usage in real scenarios
 
-All team members are responsible for maintaining consistency with this language in their communication and contributions.
+All community members are responsible for maintaining consistency with this language in their communication and contributions.

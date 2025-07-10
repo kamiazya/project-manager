@@ -32,6 +32,7 @@ Project Manager is a local-first ticket management system designed to enable eff
 - **Document-Driven Development**: Specifications and design decisions captured before implementation
 - **Test-Driven Development**: Comprehensive testing strategy from unit to integration levels
 - **Domain-Driven Design**: Clear domain model with ubiquitous language
+- **Separation of Concerns**: Clear distinction between architectural decisions and implementation status
 
 ## 4. System Architecture
 
@@ -332,7 +333,14 @@ This diagram illustrates the CLI-first architecture where the CLI serves as the 
 - **Standards-First Development**: Adopt industry standards over custom implementations
 - **CLI-First Implementation**: Build CLI as primary interface to core business logic
 
-### 8.2. Quality Assurance
+### 8.2. Documentation and Decision Tracking
+
+- **Architecture Decision Records (ADRs)**: Document significant architectural decisions
+- **Decision-Implementation Separation**: ADRs track decisions, not implementation status
+- **Implementation Tracking**: Use project management tools for implementation lifecycle
+- **Clear Documentation Hierarchy**: Separate concerns across appropriate documents
+
+### 8.3. Quality Assurance
 
 - Comprehensive test coverage (unit, integration, E2E)
 - Static analysis and linting
