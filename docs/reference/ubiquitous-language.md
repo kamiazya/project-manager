@@ -60,7 +60,7 @@ The relative importance and urgency of a ticket.
 
 The category of work represented by a ticket.
 
-**Valid Values**: `feature`, `bug`, `task`, `epic`, `research`, `design`, `chore`
+**Valid Values**: `feature`, `bug`, `task`, `research`, `design`, `chore`
 **Context**: Ticket Management
 
 ### Privacy Level
