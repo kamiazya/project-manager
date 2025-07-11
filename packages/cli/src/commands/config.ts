@@ -50,6 +50,34 @@ export function configCommand(): Command {
         // Define the possible types for configuration values
         type ConfigValue = string | boolean | number
 
+        // All valid configuration keys
+        const validKeys = [
+          // Default values for CLI operations
+          'defaultPriority',
+          'defaultType',
+          'defaultPrivacy',
+          'defaultStatus',
+          'defaultOutputFormat',
+          // Storage configuration
+          'storagePath',
+          // CLI behavior
+          'confirmDeletion',
+          'showHelpOnError',
+          // Display preferences
+          'maxTitleLength',
+          'dateFormat',
+          // Feature flags
+          'enableInteractiveMode',
+          'enableColorOutput',
+        ] as const
+
+        // Validate that the key is allowed
+        if (!validKeys.includes(key as (typeof validKeys)[number])) {
+          console.error(`Invalid configuration key: ${key}`)
+          console.error(`Valid keys are: ${validKeys.join(', ')}`)
+          process.exit(1)
+        }
+
         // Parse the value based on the key
         let parsedValue: ConfigValue = value
 
@@ -84,6 +112,26 @@ export function configCommand(): Command {
           parsedValue = parseInt(value, 10)
           if (Number.isNaN(parsedValue)) {
             console.error(`Invalid numeric value for ${key}: ${value}`)
+            process.exit(1)
+          }
+        }
+
+        // Validate string union types
+        const stringUnionValidation = {
+          defaultPriority: ['high', 'medium', 'low'],
+          defaultType: ['feature', 'bug', 'task'],
+          defaultPrivacy: ['local-only', 'shareable', 'public'],
+          defaultStatus: ['pending', 'in_progress'],
+          defaultOutputFormat: ['table', 'json', 'compact'],
+          dateFormat: ['iso', 'short', 'relative'],
+        } as const
+
+        const unionKey = key as keyof typeof stringUnionValidation
+        if (unionKey in stringUnionValidation) {
+          const validValues = stringUnionValidation[unionKey] as readonly string[]
+          if (!validValues.includes(value)) {
+            console.error(`Invalid value for ${key}: ${value}`)
+            console.error(`Valid values are: ${validValues.join(', ')}`)
             process.exit(1)
           }
         }
