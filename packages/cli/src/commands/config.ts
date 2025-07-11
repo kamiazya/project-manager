@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { getConfig, validateConfig } from '@project-manager/shared'
@@ -47,25 +47,42 @@ export function configCommand(): Command {
     .option('--global', 'Set in global config (~/.pmrc.json)')
     .action((key: string, value: string, options) => {
       try {
-        // Parse the value based on the key
-        let parsedValue: any = value
+        // Define the possible types for configuration values
+        type ConfigValue = string | boolean | number
 
-        // Boolean values
-        if (
-          [
-            'confirmDeletion',
-            'showHelpOnError',
-            'enableInteractiveMode',
-            'enableColorOutput',
-          ].includes(key)
-        ) {
+        // Parse the value based on the key
+        let parsedValue: ConfigValue = value
+
+        // Boolean configuration keys
+        const booleanKeys = [
+          'confirmDeletion',
+          'showHelpOnError',
+          'enableInteractiveMode',
+          'enableColorOutput',
+        ] as const
+
+        // Numeric configuration keys
+        const numericKeys = ['maxTitleLength'] as const
+
+        // Type guard for boolean keys
+        const isBooleanKey = (key: string): key is (typeof booleanKeys)[number] => {
+          return booleanKeys.includes(key as (typeof booleanKeys)[number])
+        }
+
+        // Type guard for numeric keys
+        const isNumericKey = (key: string): key is (typeof numericKeys)[number] => {
+          return numericKeys.includes(key as (typeof numericKeys)[number])
+        }
+
+        // Parse boolean values
+        if (isBooleanKey(key)) {
           parsedValue = value.toLowerCase() === 'true'
         }
 
-        // Numeric values
-        if (key === 'maxTitleLength') {
+        // Parse numeric values
+        if (isNumericKey(key)) {
           parsedValue = parseInt(value, 10)
-          if (isNaN(parsedValue)) {
+          if (Number.isNaN(parsedValue)) {
             console.error(`Invalid numeric value for ${key}: ${value}`)
             process.exit(1)
           }
@@ -89,7 +106,7 @@ export function configCommand(): Command {
         let existingConfig = {}
         if (existsSync(configPath)) {
           try {
-            existingConfig = JSON.parse(require('fs').readFileSync(configPath, 'utf-8'))
+            existingConfig = JSON.parse(readFileSync(configPath, 'utf-8'))
           } catch (error) {
             console.error(`Failed to read existing config: ${error}`)
             process.exit(1)
