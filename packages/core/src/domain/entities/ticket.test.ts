@@ -1,5 +1,5 @@
 import { DEFAULTS } from '@project-manager/shared'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { type CreateTicketData, type ReconstituteTicketData, Ticket } from './ticket.js'
 
 describe('Ticket', () => {
@@ -97,16 +97,22 @@ describe('Ticket', () => {
 
   describe('updateTitle', () => {
     it('should update title and timestamp', () => {
+      vi.useFakeTimers()
+      const initialTime = new Date('2023-01-01T10:00:00Z')
+      vi.setSystemTime(initialTime)
+
       const ticket = Ticket.create(validCreateData)
       const originalUpdatedAt = ticket.updatedAt
 
-      // Wait a bit to ensure timestamp changes
-      setTimeout(() => {
-        ticket.updateTitle('New title')
+      // Advance time by 2ms to ensure timestamp difference
+      vi.advanceTimersByTime(2)
 
-        expect(ticket.title.value).toBe('New title')
-        expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
-      }, 1)
+      ticket.updateTitle('New title')
+
+      expect(ticket.title.value).toBe('New title')
+      expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
+
+      vi.useRealTimers()
     })
 
     it('should throw error for invalid title', () => {
@@ -118,15 +124,22 @@ describe('Ticket', () => {
 
   describe('updateDescription', () => {
     it('should update description and timestamp', () => {
+      vi.useFakeTimers()
+      const initialTime = new Date('2023-01-01T10:00:00Z')
+      vi.setSystemTime(initialTime)
+
       const ticket = Ticket.create(validCreateData)
       const originalUpdatedAt = ticket.updatedAt
 
-      setTimeout(() => {
-        ticket.updateDescription('New description')
+      // Advance time by 2ms to ensure timestamp difference
+      vi.advanceTimersByTime(2)
 
-        expect(ticket.description.value).toBe('New description')
-        expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
-      }, 1)
+      ticket.updateDescription('New description')
+
+      expect(ticket.description.value).toBe('New description')
+      expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
+
+      vi.useRealTimers()
     })
 
     it('should throw error for invalid description', () => {
@@ -155,27 +168,41 @@ describe('Ticket', () => {
     })
 
     it('should update timestamp when status changes', () => {
+      vi.useFakeTimers()
+      const initialTime = new Date('2023-01-01T10:00:00Z')
+      vi.setSystemTime(initialTime)
+
       const ticket = Ticket.create(validCreateData)
       const originalUpdatedAt = ticket.updatedAt
 
-      setTimeout(() => {
-        ticket.changeStatus('in_progress')
-        expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
-      }, 1)
+      // Advance time by 2ms to ensure timestamp difference
+      vi.advanceTimersByTime(2)
+
+      ticket.changeStatus('in_progress')
+      expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
+
+      vi.useRealTimers()
     })
   })
 
   describe('changePriority', () => {
     it('should change priority and update timestamp', () => {
+      vi.useFakeTimers()
+      const initialTime = new Date('2023-01-01T10:00:00Z')
+      vi.setSystemTime(initialTime)
+
       const ticket = Ticket.create(validCreateData)
       const originalUpdatedAt = ticket.updatedAt
 
-      setTimeout(() => {
-        ticket.changePriority('low')
+      // Advance time by 2ms to ensure timestamp difference
+      vi.advanceTimersByTime(2)
 
-        expect(ticket.priority.value).toBe('low')
-        expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
-      }, 1)
+      ticket.changePriority('low')
+
+      expect(ticket.priority.value).toBe('low')
+      expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
+
+      vi.useRealTimers()
     })
 
     it('should throw error for invalid priority', () => {
