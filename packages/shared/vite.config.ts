@@ -17,7 +17,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['node:crypto'],
+      external: [/node:.+/],
     },
     outDir: 'dist',
     sourcemap: true,
