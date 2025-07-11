@@ -20,6 +20,7 @@ import {
   isValidTicketPriority,
   isValidTicketStatus,
   SUCCESS_MESSAGES,
+  TicketNotFoundError,
 } from '@project-manager/shared'
 import { formatStats, formatTicketResponse, formatTicketSummaryList } from './output.js'
 import {
@@ -289,7 +290,7 @@ export async function showTicketAction(id: string, options: { json?: boolean }):
 
     console.log(output)
   } catch (error) {
-    if (error instanceof Error && error.message.includes('not found')) {
+    if (error instanceof TicketNotFoundError) {
       console.error(`Ticket not found: ${id}`)
       process.exit(1)
     }
@@ -326,6 +327,11 @@ export async function deleteTicketAction(id: string, options: { force?: boolean 
     await deleteTicketUseCase.execute(deleteRequest)
     console.log(`Ticket ${id} deleted successfully.`)
   } catch (error) {
+    if (error instanceof TicketNotFoundError) {
+      console.error(`Ticket not found: ${id}`)
+      process.exit(1)
+    }
+
     console.error(
       'Failed to delete ticket:',
       error instanceof Error ? error.message : String(error)
@@ -400,6 +406,11 @@ export async function updateTicketAction(
     console.log(output)
     console.log(`\nUpdated ${updates.join(' and ')}.`)
   } catch (error) {
+    if (error instanceof TicketNotFoundError) {
+      console.error(`Ticket not found: ${id}`)
+      process.exit(1)
+    }
+
     console.error(
       'Failed to update ticket:',
       error instanceof Error ? error.message : String(error)
