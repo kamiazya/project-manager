@@ -49,9 +49,18 @@ export class TicketTitle extends ValueObject<TicketTitleProps> {
    * @param maxLength - Maximum length for display (default from constants)
    */
   public toDisplay(maxLength: number = VALIDATION.TITLE_DISPLAY_MAX_LENGTH): string {
+    if (maxLength <= 0) {
+      return ''
+    }
+
     if (this.value.length <= maxLength) {
       return this.value
     }
+
+    if (maxLength <= 3) {
+      return this.value.substring(0, maxLength)
+    }
+
     return `${this.value.substring(0, maxLength - 3)}...`
   }
 

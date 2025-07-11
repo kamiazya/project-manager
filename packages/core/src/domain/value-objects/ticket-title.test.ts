@@ -71,6 +71,60 @@ describe('TicketTitle', () => {
       expect(displayed).toBe('Custom ...')
       expect(displayed).toHaveLength(customLength)
     })
+
+    it('should return empty string when maxLength is 0', () => {
+      const title = 'Any title'
+      const ticketTitle = TicketTitle.create(title)
+
+      const displayed = ticketTitle.toDisplay(0)
+      expect(displayed).toBe('')
+      expect(displayed).toHaveLength(0)
+    })
+
+    it('should return single character when maxLength is 1', () => {
+      const title = 'Long title'
+      const ticketTitle = TicketTitle.create(title)
+
+      const displayed = ticketTitle.toDisplay(1)
+      expect(displayed).toBe('L')
+      expect(displayed).toHaveLength(1)
+    })
+
+    it('should return two characters when maxLength is 2', () => {
+      const title = 'Long title'
+      const ticketTitle = TicketTitle.create(title)
+
+      const displayed = ticketTitle.toDisplay(2)
+      expect(displayed).toBe('Lo')
+      expect(displayed).toHaveLength(2)
+    })
+
+    it('should return three characters when maxLength is 3', () => {
+      const title = 'Long title'
+      const ticketTitle = TicketTitle.create(title)
+
+      const displayed = ticketTitle.toDisplay(3)
+      expect(displayed).toBe('Lon')
+      expect(displayed).toHaveLength(3)
+    })
+
+    it('should handle maxLength exactly equal to title length', () => {
+      const title = 'Exact'
+      const ticketTitle = TicketTitle.create(title)
+
+      const displayed = ticketTitle.toDisplay(5)
+      expect(displayed).toBe('Exact')
+      expect(displayed).toHaveLength(5)
+    })
+
+    it('should handle negative maxLength', () => {
+      const title = 'Any title'
+      const ticketTitle = TicketTitle.create(title)
+
+      const displayed = ticketTitle.toDisplay(-1)
+      expect(displayed).toBe('')
+      expect(displayed).toHaveLength(0)
+    })
   })
 
   describe('equals', () => {
