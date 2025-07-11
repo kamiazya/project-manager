@@ -1,10 +1,34 @@
-import 'reflect-metadata'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import 'reflect-metadata'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createCLI } from './cli.js'
 import { resetServiceContainer } from './utils/service-factory.js'
+
+/**
+ * Helper function to safely extract ticket ID from console log calls
+ * @param consoleCalls - The mock console.log calls array
+ * @param searchText - The text to search for in the console output (default: 'Ticket created successfully with ID:')
+ * @returns The extracted ticket ID or throws an error if not found
+ */
+function extractTicketIdFromConsole(
+  consoleCalls: any[][],
+  searchText: string = 'Ticket created successfully with ID:'
+): string {
+  const createOutput = consoleCalls.find((call: any[]) => call[0]?.includes(searchText))
+
+  if (!createOutput || !createOutput[0]) {
+    throw new Error(`Could not find console output containing: "${searchText}"`)
+  }
+
+  const match = createOutput[0].match(/ID: ([a-f0-9]{8})/)
+  if (!match || !match[1]) {
+    throw new Error(`Could not extract ticket ID from output: "${createOutput[0]}"`)
+  }
+
+  return match[1]
+}
 
 describe('CLI', () => {
   let tempDir: string
@@ -209,10 +233,7 @@ describe('CLI', () => {
 
       // Extract ticket ID from console output
       const consoleLogs = (console.log as any).mock.calls
-      const createOutput = consoleLogs.find((call: any[]) =>
-        call[0]?.includes('Ticket created successfully with ID:')
-      )
-      ticketId = createOutput[0].match(/ID: ([a-f0-9]{8})/)[1]
+      ticketId = extractTicketIdFromConsole(consoleLogs)
 
       vi.clearAllMocks()
     })
@@ -271,10 +292,7 @@ describe('CLI', () => {
 
       // Extract ticket ID from console output
       const consoleLogs = (console.log as any).mock.calls
-      const createOutput = consoleLogs.find((call: any[]) =>
-        call[0]?.includes('Ticket created successfully with ID:')
-      )
-      ticketId = createOutput[0].match(/ID: ([a-f0-9]{8})/)[1]
+      ticketId = extractTicketIdFromConsole(consoleLogs)
 
       vi.clearAllMocks()
     })
@@ -335,10 +353,7 @@ describe('CLI', () => {
 
       // Extract ticket ID from console output
       const consoleLogs = (console.log as any).mock.calls
-      const createOutput = consoleLogs.find((call: any[]) =>
-        call[0]?.includes('Ticket created successfully with ID:')
-      )
-      ticketId = createOutput[0].match(/ID: ([a-f0-9]{8})/)[1]
+      ticketId = extractTicketIdFromConsole(consoleLogs)
 
       vi.clearAllMocks()
     })
