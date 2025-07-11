@@ -22,7 +22,7 @@ describe('GetTicketByIdUseCase', () => {
   describe('execute', () => {
     it('should return ticket when found', async () => {
       // Arrange
-      const ticketId = 'test-id-12345'
+      const ticketId = '12345678' // 8 hex characters
       const request = new GetTicketByIdRequest(ticketId)
       const mockTicket = Ticket.create({
         title: 'Test Ticket',
@@ -46,7 +46,7 @@ describe('GetTicketByIdUseCase', () => {
 
     it('should return null when ticket not found', async () => {
       // Arrange
-      const ticketId = 'non-existent-id-12345'
+      const ticketId = '87654321' // 8 hex characters
       const request = new GetTicketByIdRequest(ticketId)
 
       mockTicketRepository.findById.mockResolvedValue(null)
@@ -61,7 +61,7 @@ describe('GetTicketByIdUseCase', () => {
 
     it('should call repository with correct TicketId', async () => {
       // Arrange
-      const ticketId = 'test-id-12345'
+      const ticketId = '12345678' // 8 hex characters
       const request = new GetTicketByIdRequest(ticketId)
 
       mockTicketRepository.findById.mockResolvedValue(null)

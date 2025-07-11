@@ -16,7 +16,8 @@ export const ERROR_MESSAGES = {
   ID_EMPTY: 'Ticket ID cannot be empty',
   ID_TOO_SHORT: (minLength: number) => `Ticket ID must be at least ${minLength} characters long`,
   ID_TOO_LONG: (maxLength: number) => `Ticket ID cannot exceed ${maxLength} characters`,
-  ID_INVALID_FORMAT: 'Ticket ID can only contain alphanumeric characters',
+  ID_INVALID_FORMAT: 'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)',
+  INVALID_ID_FORMAT: 'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)',
   INVALID_DATE_FORMAT: 'Invalid date format in JSON data',
   OPERATION_FAILED: {
     CREATE: 'Failed to create ticket:',

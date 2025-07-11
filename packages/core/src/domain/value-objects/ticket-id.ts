@@ -1,4 +1,10 @@
-import { ERROR_MESSAGES, generateId, VALIDATION, ValueObject } from '@project-manager/shared'
+import {
+  ERROR_MESSAGES,
+  generateId,
+  isValidId,
+  VALIDATION,
+  ValueObject,
+} from '@project-manager/shared'
 
 interface TicketIdProps {
   value: string
@@ -25,12 +31,9 @@ export class TicketId extends ValueObject<TicketIdProps> {
   public static create(id?: string): TicketId {
     const value = id || generateId()
 
-    if (value.length < VALIDATION.TICKET_ID_MIN_LENGTH) {
-      throw new Error(ERROR_MESSAGES.ID_TOO_SHORT(VALIDATION.TICKET_ID_MIN_LENGTH))
-    }
-
-    if (value.length > VALIDATION.TICKET_ID_MAX_LENGTH) {
-      throw new Error(ERROR_MESSAGES.ID_TOO_LONG(VALIDATION.TICKET_ID_MAX_LENGTH))
+    // Check if the ID matches the expected format (8 hex characters)
+    if (!isValidId(value)) {
+      throw new Error(ERROR_MESSAGES.INVALID_ID_FORMAT)
     }
 
     return new TicketId({ value })

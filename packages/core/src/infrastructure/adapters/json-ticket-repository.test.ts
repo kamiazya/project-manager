@@ -97,13 +97,13 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should return null for non-existent ticket', async () => {
-      const nonExistentId = TicketId.create('non-existent-id')
+      const nonExistentId = TicketId.create('abcdef12') // 8 hex characters
       const foundTicket = await repository.findById(nonExistentId)
       expect(foundTicket).toBeNull()
     })
 
     it('should return null when file does not exist', async () => {
-      const id = TicketId.create('some-valid-id-123')
+      const id = TicketId.create('fedcba98') // 8 hex characters
       const foundTicket = await repository.findById(id)
       expect(foundTicket).toBeNull()
     })
@@ -181,7 +181,7 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should throw error when trying to delete non-existent ticket', async () => {
-      const nonExistentId = TicketId.create('non-existent-id')
+      const nonExistentId = TicketId.create('11223344') // 8 hex characters
 
       await expect(repository.delete(nonExistentId)).rejects.toThrow(TicketNotFoundError)
     })

@@ -14,25 +14,29 @@ describe('TicketId', () => {
     })
 
     it('should create a TicketId with provided valid id', () => {
-      const validId = 'valid-ticket-id-123'
+      const validId = 'a1b2c3d4' // 8 hex characters
       const ticketId = TicketId.create(validId)
 
       expect(ticketId.value).toBe(validId)
     })
 
-    it('should throw error when id is too short', () => {
-      const shortId = 'abc'
+    it('should throw error when id has invalid format', () => {
+      const invalidId1 = 'abc' // Too short
+      const invalidId2 = 'abcd12345' // Too long
+      const invalidId3 = 'abcd123g' // Contains non-hex character
+      const invalidId4 = 'ABCD1234' // Contains uppercase (not allowed)
 
-      expect(() => TicketId.create(shortId)).toThrow(
-        `Ticket ID must be at least ${VALIDATION.TICKET_ID_MIN_LENGTH} characters long`
+      expect(() => TicketId.create(invalidId1)).toThrow(
+        'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
       )
-    })
-
-    it('should throw error when id is too long', () => {
-      const longId = 'a'.repeat(VALIDATION.TICKET_ID_MAX_LENGTH + 1)
-
-      expect(() => TicketId.create(longId)).toThrow(
-        `Ticket ID cannot exceed ${VALIDATION.TICKET_ID_MAX_LENGTH} characters`
+      expect(() => TicketId.create(invalidId2)).toThrow(
+        'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+      )
+      expect(() => TicketId.create(invalidId3)).toThrow(
+        'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+      )
+      expect(() => TicketId.create(invalidId4)).toThrow(
+        'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
       )
     })
   })
@@ -48,7 +52,7 @@ describe('TicketId', () => {
 
   describe('equals', () => {
     it('should return true for equal TicketIds', () => {
-      const id = 'same-ticket-id-123'
+      const id = '12345678' // 8 hex characters
       const ticketId1 = TicketId.create(id)
       const ticketId2 = TicketId.create(id)
 
@@ -56,8 +60,8 @@ describe('TicketId', () => {
     })
 
     it('should return false for different TicketIds', () => {
-      const ticketId1 = TicketId.create('ticket-id-123')
-      const ticketId2 = TicketId.create('ticket-id-456')
+      const ticketId1 = TicketId.create('12345678')
+      const ticketId2 = TicketId.create('87654321')
 
       expect(ticketId1.equals(ticketId2)).toBe(false)
     })
@@ -77,7 +81,7 @@ describe('TicketId', () => {
 
   describe('toString', () => {
     it('should return the id value as string', () => {
-      const id = 'ticket-id-123'
+      const id = 'abc12345' // 8 hex characters
       const ticketId = TicketId.create(id)
 
       expect(ticketId.toString()).toBe(id)
