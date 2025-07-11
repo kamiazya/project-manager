@@ -285,4 +285,96 @@ describe('JsonTicketRepository', () => {
       expect(titles).toContain('Concurrent 2')
     })
   })
+
+  describe('getStatistics', () => {
+    it('should return empty statistics when no tickets exist', async () => {
+      const stats = await repository.getStatistics()
+
+      expect(stats).toEqual({
+        total: 0,
+        pending: 0,
+        inProgress: 0,
+        completed: 0,
+        archived: 0,
+        byPriority: {
+          high: 0,
+          medium: 0,
+          low: 0,
+        },
+        byType: {
+          feature: 0,
+          bug: 0,
+          task: 0,
+        },
+      })
+    })
+
+    it('should calculate statistics correctly for multiple tickets', async () => {
+      // Create tickets with different properties
+      const tickets = [
+        Ticket.create({
+          title: 'High Priority Bug',
+          description: 'Critical bug',
+          priority: 'high',
+          type: 'bug',
+          status: 'pending',
+        }),
+        Ticket.create({
+          title: 'Medium Priority Feature',
+          description: 'New feature',
+          priority: 'medium',
+          type: 'feature',
+          status: 'in_progress',
+        }),
+        Ticket.create({
+          title: 'Low Priority Task',
+          description: 'Simple task',
+          priority: 'low',
+          type: 'task',
+          status: 'completed',
+        }),
+        Ticket.create({
+          title: 'Another High Priority Bug',
+          description: 'Another bug',
+          priority: 'high',
+          type: 'bug',
+          status: 'archived',
+        }),
+      ]
+
+      // Save all tickets
+      for (const ticket of tickets) {
+        await repository.save(ticket)
+      }
+
+      const stats = await repository.getStatistics()
+
+      expect(stats).toEqual({
+        total: 4,
+        pending: 1,
+        inProgress: 1,
+        completed: 1,
+        archived: 1,
+        byPriority: {
+          high: 2,
+          medium: 1,
+          low: 1,
+        },
+        byType: {
+          feature: 1,
+          bug: 2,
+          task: 1,
+        },
+      })
+    })
+
+    it('should handle file not existing gracefully', async () => {
+      // Using a non-existent file path
+      const emptyRepo = new JsonTicketRepository(join(tempDir, 'non-existent.json'))
+      const stats = await emptyRepo.getStatistics()
+
+      expect(stats.total).toBe(0)
+      expect(stats.pending).toBe(0)
+    })
+  })
 })

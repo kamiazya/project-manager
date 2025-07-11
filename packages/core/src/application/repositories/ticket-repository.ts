@@ -1,3 +1,4 @@
+import type { TicketStats } from '@project-manager/shared'
 import type { Ticket } from '../../domain/entities/ticket.js'
 import type { TicketId } from '../../domain/value-objects/ticket-id.js'
 
@@ -10,6 +11,7 @@ export interface TicketRepository {
   findById(id: TicketId): Promise<Ticket | null>
   findAll(): Promise<Ticket[]>
   delete(id: TicketId): Promise<void>
+  getStatistics(): Promise<TicketStats>
 }
 
 export const TicketRepository = Symbol('TicketRepository')

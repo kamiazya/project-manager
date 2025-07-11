@@ -15,6 +15,7 @@ describe('GetTicketByIdUseCase', () => {
       findById: vi.fn(),
       findAll: vi.fn(),
       delete: vi.fn(),
+      getStatistics: vi.fn(),
     }
     useCase = new GetTicketByIdUseCase(mockTicketRepository)
   })

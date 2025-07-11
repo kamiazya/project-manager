@@ -14,6 +14,7 @@ describe('CreateTicketUseCase', () => {
       findById: vi.fn(),
       findAll: vi.fn(),
       delete: vi.fn(),
+      getStatistics: vi.fn(),
     }
     useCase = new CreateTicketUseCase(mockTicketRepository)
   })
