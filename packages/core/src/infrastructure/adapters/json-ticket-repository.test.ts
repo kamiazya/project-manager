@@ -1,5 +1,7 @@
 import { existsSync } from 'node:fs'
 import { unlink } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { TicketNotFoundError } from '@project-manager/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Ticket } from '../../domain/entities/ticket.js'
@@ -11,7 +13,7 @@ describe('JsonTicketRepository', () => {
   let testFilePath: string
 
   beforeEach(() => {
-    testFilePath = `./test-tickets-${Date.now()}.json`
+    testFilePath = join(tmpdir(), `test-tickets-${Date.now()}.json`)
     repository = new JsonTicketRepository(testFilePath)
   })
 
