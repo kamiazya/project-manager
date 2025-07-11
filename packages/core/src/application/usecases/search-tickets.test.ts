@@ -104,14 +104,35 @@ describe('SearchTicketsUseCase', () => {
   })
 
   it('should filter tickets by privacy', async () => {
-    const criteria: TicketSearchCriteria = { privacy: 'public' }
-    const request = new SearchTicketsRequest(criteria)
+    // Test public privacy filter
+    const publicCriteria: TicketSearchCriteria = { privacy: 'public' }
+    const publicRequest = new SearchTicketsRequest(publicCriteria)
+    const publicResponse = await searchTicketsUseCase.execute(publicRequest)
 
-    const response = await searchTicketsUseCase.execute(request)
+    // Should return only the public ticket (Update documentation)
+    expect(publicResponse.tickets).toHaveLength(1)
+    expect(publicResponse.tickets[0].title).toBe('Update documentation')
 
-    expect(response.tickets).toHaveLength(1)
-    // Note: TicketSummary doesn't include privacy field, but filtering works correctly
-    expect(response.tickets[0].title).toBe('Update documentation')
+    // Test shareable privacy filter
+    const shareableCriteria: TicketSearchCriteria = { privacy: 'shareable' }
+    const shareableRequest = new SearchTicketsRequest(shareableCriteria)
+    const shareableResponse = await searchTicketsUseCase.execute(shareableRequest)
+
+    // Should return only the shareable ticket (Add new feature)
+    expect(shareableResponse.tickets).toHaveLength(1)
+    expect(shareableResponse.tickets[0].title).toBe('Add new feature')
+
+    // Test local-only privacy filter
+    const localOnlyCriteria: TicketSearchCriteria = { privacy: 'local-only' }
+    const localOnlyRequest = new SearchTicketsRequest(localOnlyCriteria)
+    const localOnlyResponse = await searchTicketsUseCase.execute(localOnlyRequest)
+
+    // Should return only the local-only ticket (Fix login bug)
+    expect(localOnlyResponse.tickets).toHaveLength(1)
+    expect(localOnlyResponse.tickets[0].title).toBe('Fix login bug')
+
+    // Verify repository was called for each filter
+    expect(vi.mocked(mockTicketRepository.findAll)).toHaveBeenCalledTimes(3)
   })
 
   it('should filter tickets by text search in title', async () => {
