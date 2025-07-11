@@ -634,12 +634,12 @@ describe('Ticket', () => {
 // Test use case with mocked repository
 describe('TicketUseCase', () => {
   it('should create and save ticket', async () => {
-    const mockRepo = { save: jest.fn() } as jest.Mocked<TicketRepository>;
+    const mockRepo: TicketRepository = { save: vi.fn() };
     const useCase = new TicketUseCase(mockRepo);
 
     await useCase.createTicket({ title: 'Test', description: 'Test' });
 
-    expect(mockRepo.save).toHaveBeenCalledWith(expect.any(Ticket));
+    expect(vi.mocked(mockRepo.save)).toHaveBeenCalledWith(expect.any(Ticket));
   });
 });
 ```

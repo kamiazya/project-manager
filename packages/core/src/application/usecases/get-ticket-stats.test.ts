@@ -5,7 +5,7 @@ import { GetTicketStatsUseCase } from './get-ticket-stats.js'
 
 describe('GetTicketStatsUseCase', () => {
   let useCase: GetTicketStatsUseCase
-  let mockTicketRepository: jest.Mocked<TicketRepository>
+  let mockTicketRepository: TicketRepository
 
   beforeEach(() => {
     mockTicketRepository = {
@@ -40,7 +40,7 @@ describe('GetTicketStatsUseCase', () => {
         },
       }
 
-      mockTicketRepository.getStatistics.mockResolvedValue(mockStats)
+      vi.mocked(mockTicketRepository.getStatistics).mockResolvedValue(mockStats)
 
       // Act
       const result = await useCase.execute(request)
@@ -67,7 +67,7 @@ describe('GetTicketStatsUseCase', () => {
         byType: { feature: 0, bug: 0, task: 0 },
       }
 
-      mockTicketRepository.getStatistics.mockResolvedValue(mockStats)
+      vi.mocked(mockTicketRepository.getStatistics).mockResolvedValue(mockStats)
 
       // Act
       await useCase.execute(request)

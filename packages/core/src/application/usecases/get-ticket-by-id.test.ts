@@ -7,7 +7,7 @@ import { GetTicketByIdUseCase } from './get-ticket-by-id.js'
 
 describe('GetTicketByIdUseCase', () => {
   let useCase: GetTicketByIdUseCase
-  let mockTicketRepository: jest.Mocked<TicketRepository>
+  let mockTicketRepository: TicketRepository
 
   beforeEach(() => {
     mockTicketRepository = {
@@ -33,7 +33,7 @@ describe('GetTicketByIdUseCase', () => {
         privacy: 'local-only',
       })
 
-      mockTicketRepository.findById.mockResolvedValue(mockTicket)
+      vi.mocked(mockTicketRepository.findById).mockResolvedValue(mockTicket)
 
       // Act
       const result = await useCase.execute(request)
@@ -50,7 +50,7 @@ describe('GetTicketByIdUseCase', () => {
       const ticketId = '87654321' // 8 hex characters
       const request = new GetTicketByIdRequest(ticketId)
 
-      mockTicketRepository.findById.mockResolvedValue(null)
+      vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 
       // Act
       const result = await useCase.execute(request)
@@ -65,7 +65,7 @@ describe('GetTicketByIdUseCase', () => {
       const ticketId = '12345678' // 8 hex characters
       const request = new GetTicketByIdRequest(ticketId)
 
-      mockTicketRepository.findById.mockResolvedValue(null)
+      vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 
       // Act
       await useCase.execute(request)

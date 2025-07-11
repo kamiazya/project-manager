@@ -6,7 +6,7 @@ import { CreateTicketUseCase } from './create-ticket.js'
 
 describe('CreateTicketUseCase', () => {
   let useCase: CreateTicketUseCase
-  let mockTicketRepository: jest.Mocked<TicketRepository>
+  let mockTicketRepository: TicketRepository
 
   beforeEach(() => {
     mockTicketRepository = {
