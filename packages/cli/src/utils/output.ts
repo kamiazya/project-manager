@@ -1,4 +1,4 @@
-import type { Ticket } from '@project-manager/core'
+import type { Ticket, TicketResponse, TicketSummary } from '@project-manager/core'
 import type { TicketStats } from '@project-manager/shared'
 import { INFO_MESSAGES, VALIDATION } from '@project-manager/shared'
 import chalk from 'chalk'
@@ -39,6 +39,43 @@ export function formatTicket(ticket: Ticket, options: OutputOptions = { format: 
     `${chalk.bold('Privacy:')} ${ticket.privacy}`,
     `${chalk.bold('Created:')} ${ticket.createdAt.toLocaleString()}`,
     `${chalk.bold('Updated:')} ${ticket.updatedAt.toLocaleString()}`,
+  ].join('\n')
+}
+
+export function formatTicketResponse(
+  response: TicketResponse,
+  options: OutputOptions = { format: 'table' }
+): string {
+  if (options.format === 'json') {
+    const json = {
+      id: response.id,
+      title: response.title,
+      description: response.description,
+      status: response.status,
+      priority: response.priority,
+      type: response.type,
+      privacy: response.privacy,
+      createdAt: response.createdAt,
+      updatedAt: response.updatedAt,
+    }
+    return JSON.stringify(json, null, 2)
+  }
+
+  if (options.format === 'compact') {
+    return `${chalk.blue(response.id)} ${getPriorityIcon(response.priority)} ${response.title} (${getStatusColor(response.status)})`
+  }
+
+  // Table format (default)
+  return [
+    `${chalk.bold('ID:')} ${chalk.blue(response.id)}`,
+    `${chalk.bold('Title:')} ${response.title}`,
+    `${chalk.bold('Description:')} ${response.description}`,
+    `${chalk.bold('Status:')} ${getStatusColor(response.status)}`,
+    `${chalk.bold('Priority:')} ${getPriorityColor(response.priority)}`,
+    `${chalk.bold('Type:')} ${response.type}`,
+    `${chalk.bold('Privacy:')} ${response.privacy}`,
+    `${chalk.bold('Created:')} ${new Date(response.createdAt).toLocaleString()}`,
+    `${chalk.bold('Updated:')} ${new Date(response.updatedAt).toLocaleString()}`,
   ].join('\n')
 }
 
@@ -86,6 +123,60 @@ export function formatTicketList(
         : ticket.title.value,
       getStatusColor(ticket.status.value),
       getPriorityColor(ticket.priority.value),
+      ticket.type,
+    ].join('\t')
+  )
+
+  return [header, ...rows].join('\n')
+}
+
+export function formatTicketSummaryList(
+  tickets: TicketSummary[],
+  options: OutputOptions = { format: 'table' }
+): string {
+  if (options.format === 'json') {
+    const jsonTickets = tickets.map(t => ({
+      id: t.id,
+      title: t.title,
+      status: t.status,
+      priority: t.priority,
+      type: t.type,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+    }))
+    return JSON.stringify(jsonTickets, null, 2)
+  }
+
+  if (tickets.length === 0) {
+    return chalk.gray(INFO_MESSAGES.NO_TICKETS_FOUND)
+  }
+
+  if (options.format === 'compact') {
+    return tickets
+      .map(
+        ticket =>
+          `${chalk.blue(ticket.id)} ${getPriorityIcon(ticket.priority)} ${ticket.title} (${getStatusColor(ticket.status)})`
+      )
+      .join('\n')
+  }
+
+  // Table format (default)
+  const header = [
+    chalk.bold('ID'),
+    chalk.bold('Title'),
+    chalk.bold('Status'),
+    chalk.bold('Priority'),
+    chalk.bold('Type'),
+  ].join('\t')
+
+  const rows = tickets.map(ticket =>
+    [
+      chalk.blue(ticket.id),
+      ticket.title.length > VALIDATION.TITLE_DISPLAY_MAX_LENGTH
+        ? `${ticket.title.substring(0, VALIDATION.TITLE_TRUNCATE_LENGTH)}...`
+        : ticket.title,
+      getStatusColor(ticket.status),
+      getPriorityColor(ticket.priority),
       ticket.type,
     ].join('\t')
   )

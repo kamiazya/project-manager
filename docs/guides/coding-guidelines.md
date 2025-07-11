@@ -130,7 +130,7 @@ export class TicketPriorityService {
     // Complex business logic that spans multiple entities
     const daysUntilDeadline = this.calculateDaysUntil(projectDeadline);
     const blockingCount = dependencies.filter(d => d.isBlocking()).length;
-    
+
     if (daysUntilDeadline < 7 && blockingCount > 0) {
       return Priority.high();
     }
@@ -206,6 +206,41 @@ export class Project {
 
 ## TypeScript Guidelines
 
+### Naming Conventions
+
+**Interface Naming**
+
+- Do NOT use the "I" prefix for interfaces
+- Use descriptive names that clearly indicate purpose
+- Prefer noun phrases that describe the contract
+
+```typescript
+// Good: Clean interface names
+interface UseCase<TRequest, TResponse> {
+  execute(request: TRequest): Promise<TResponse>
+}
+
+interface TicketRepository {
+  findById(id: TicketId): Promise<Ticket | null>
+  save(ticket: Ticket): Promise<void>
+}
+
+// Bad: Hungarian notation with I prefix
+interface IUseCase<TRequest, TResponse> {
+  execute(request: TRequest): Promise<TResponse>
+}
+
+interface ITicketRepository {
+  findById(id: TicketId): Promise<Ticket | null>
+}
+```
+
+**Class Naming**
+
+- Use PascalCase for class names
+- Include meaningful suffixes for specific patterns
+- Examples: `CreateTicketUseCase`, `JsonTicketRepository`, `TicketValidationError`
+
 ### Type Safety
 
 ```typescript
@@ -261,44 +296,44 @@ graph TB
         EXT[External Interfaces]
         DB[Database/Storage]
     end
-    
+
     subgraph "Interface Adapters"
         CTRL[Controllers]
         GATE[Gateways]
         REPO_IMPL[Repository Implementations]
     end
-    
+
     subgraph "Use Cases"
         APP[Application Services]
         REPO_INT[Repository Interfaces]
     end
-    
+
     subgraph "Entities"
         ENT[Domain Entities]
         VO[Value Objects]
         DS[Domain Services]
     end
-    
+
     %% Dependencies flow inward
     UI --> CTRL
     EXT --> GATE
     DB --> REPO_IMPL
-    
+
     CTRL --> APP
     GATE --> APP
     REPO_IMPL --> REPO_INT
-    
+
     APP --> ENT
     APP --> VO
     APP --> DS
     REPO_INT --> ENT
-    
+
     %% Styling
     classDef outer fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px
     classDef adapter fill:#fff3e0,stroke:#f57c00,stroke-width:2px
     classDef usecase fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
     classDef entity fill:#e3f2fd,stroke:#2196f3,stroke-width:3px
-    
+
     class UI,EXT,DB outer
     class CTRL,GATE,REPO_IMPL adapter
     class APP,REPO_INT usecase
@@ -486,6 +521,102 @@ export class Ticket {
 }
 ```
 
+### Single Use Case Pattern
+
+Following Clean Architecture principles, each use case should be implemented as a separate class with a single responsibility.
+
+```typescript
+// Good: Single responsibility use case
+@injectable()
+export class CreateTicketUseCase implements UseCase<CreateTicketRequest, CreateTicketResponse> {
+  constructor(
+    @inject(TicketRepositorySymbol)
+    private readonly ticketRepository: TicketRepository
+  ) {}
+
+  async execute(request: CreateTicketRequest): Promise<CreateTicketResponse> {
+    // Single focused responsibility
+    const ticket = Ticket.create(request.toCreateTicketData())
+    await this.ticketRepository.save(ticket)
+    return TicketResponse.fromTicket(ticket) as CreateTicketResponse
+  }
+}
+
+// Bad: Multiple responsibilities in one class
+export class TicketUseCase {
+  async createTicket(data: CreateTicketData): Promise<Ticket> { }
+  async updateTicket(id: string, data: UpdateTicketData): Promise<Ticket> { }
+  async deleteTicket(id: string): Promise<void> { }
+  // ... many more methods
+}
+```
+
+**Single Use Case Guidelines:**
+
+- Each use case class handles exactly one business operation
+- Use descriptive class names that clearly indicate the operation (e.g., `CreateTicketUseCase`)
+- Implement `UseCase<TRequest, TResponse>` interface for consistency
+- Use dependency injection for repository and service dependencies
+- Follow the Command/Query Responsibility Segregation (CQRS) pattern
+
+### Data Transfer Objects (DTOs)
+
+DTOs facilitate clean data exchange between architectural layers:
+
+```typescript
+// Good: Layer-specific DTOs
+export interface CreateTicketDto {
+  title: string;
+  description: string;
+  priority?: 'high' | 'medium' | 'low';
+  type?: 'feature' | 'bug' | 'task';
+}
+
+export interface TicketResponseDto {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Good: DTO mapping in adapters
+export class TicketDtoMapper {
+  static toCreateData(dto: CreateTicketDto): CreateTicketData {
+    return {
+      title: dto.title,
+      description: dto.description,
+      priority: dto.priority || 'medium',
+      type: dto.type || 'task'
+    };
+  }
+
+  static toResponseDto(ticket: Ticket): TicketResponseDto {
+    return {
+      id: ticket.id.value,
+      title: ticket.title.value,
+      description: ticket.description.value,
+      status: ticket.status.value,
+      priority: ticket.priority.value,
+      type: ticket.type,
+      createdAt: ticket.createdAt.toISOString(),
+      updatedAt: ticket.updatedAt.toISOString()
+    };
+  }
+}
+```
+
+**DTO Guidelines:**
+
+- Keep DTOs simple and serializable (plain objects)
+- Use different DTOs for different layer boundaries (API vs Domain)
+- Include only data needed for specific operations
+- Validate DTOs at layer boundaries
+- Use mapper classes for DTO transformations
+
 ### Testing Strategy
 
 Test each layer independently:
@@ -505,9 +636,9 @@ describe('TicketUseCase', () => {
   it('should create and save ticket', async () => {
     const mockRepo = { save: jest.fn() } as jest.Mocked<TicketRepository>;
     const useCase = new TicketUseCase(mockRepo);
-    
+
     await useCase.createTicket({ title: 'Test', description: 'Test' });
-    
+
     expect(mockRepo.save).toHaveBeenCalledWith(expect.any(Ticket));
   });
 });
@@ -590,10 +721,10 @@ async function updateTicket(id: string, data: UpdateTicketDto): Promise<Result<T
     if (!ticket) {
       return Result.fail(new TicketNotFoundError(id));
     }
-    
+
     ticket.update(data);
     await repository.save(ticket);
-    
+
     return Result.ok(ticket);
   } catch (error) {
     if (error instanceof ValidationError) {
@@ -613,10 +744,10 @@ async function updateTicket(id: string, data: UpdateTicketDto): Promise<Result<T
 ```typescript
 /**
  * Represents a development task or issue in the project management system.
- * 
+ *
  * Tickets follow a defined lifecycle: pending -> in_progress -> completed
  * and enforce business rules for valid state transitions.
- * 
+ *
  * @example
  * const ticket = Ticket.create('Fix login bug', 'Users cannot login');
  * ticket.startProgress();
@@ -675,6 +806,89 @@ import { Ticket, TicketStatus } from '@project-manager/core';
 import { validateInput } from './validators';
 import type { Config } from './types';
 ```
+
+### File Organization Anti-patterns
+
+**Avoid index.ts Files (Except Package Entry Points)**
+
+Do NOT create `index.ts` files in internal directories as they create maintenance overhead and token waste in AI-driven development.
+
+**Problems with index.ts files:**
+
+- **Maintenance Burden**: Every new file requires updating multiple index files
+- **Token Waste**: AI tools process unnecessary re-export code
+- **Circular Dependencies**: Can create complex dependency chains
+- **Build Complexity**: Increases build time and complexity
+- **Refactoring Friction**: Makes moving files more difficult
+
+```typescript
+// ❌ Bad: Internal index.ts files
+// packages/core/src/application/usecases/index.ts
+export * from './create-ticket.usecase.js'
+export * from './get-ticket-by-id.usecase.js'
+export * from './update-ticket-status.usecase.js'
+// ... 15 more lines to maintain
+
+// ✅ Good: Direct imports from specific files
+import { CreateTicketUseCase } from './usecases/create-ticket.js'
+import { GetTicketByIdUseCase } from './usecases/get-ticket-by-id.js'
+```
+
+**Exceptions (When index.ts is acceptable):**
+
+- **Package Entry Points**: Main package exports (`packages/core/src/index.ts`)
+- **Public API Boundaries**: When creating a deliberate public API surface
+- **Large Utility Collections**: When you have 20+ related utilities that are commonly used together
+
+**Avoid Redundant File Suffixes**
+
+Do NOT use redundant suffixes when the directory context already provides the information.
+
+**Problems with redundant suffixes:**
+
+- **Token Waste**: AI tools process unnecessary repetitive text
+- **Verbose Paths**: Longer import paths and file names
+- **Redundant Information**: Directory already indicates the file type
+- **Maintenance Overhead**: More text to type and maintain
+
+```typescript
+// ❌ Bad: Redundant suffixes
+// usecases/create-ticket.usecase.ts
+// usecases/get-ticket-by-id.usecase.ts
+// requests/create-ticket.request.ts
+// responses/create-ticket.response.ts
+
+// ✅ Good: Context-aware naming
+// usecases/create-ticket.ts
+// usecases/get-ticket-by-id.ts
+// requests/create-ticket.ts
+// responses/create-ticket.ts
+```
+
+**Directory Context Provides Sufficient Information:**
+
+- `usecases/` directory → files are use cases
+- `requests/` directory → files are request DTOs
+- `responses/` directory → files are response DTOs
+- `entities/` directory → files are domain entities
+- `services/` directory → files are services
+
+**Class Names Remain Descriptive:**
+
+```typescript
+// File: usecases/create-ticket.ts
+export class CreateTicketUseCase { /* ... */ }
+
+// File: requests/create-ticket.ts
+export class CreateTicketRequest { /* ... */ }
+```
+
+**Benefits:**
+
+- **Reduced Token Usage**: Shorter file names and import paths
+- **Better Readability**: Less visual noise in import statements
+- **Faster Development**: Less typing and shorter auto-complete results
+- **Cleaner File Trees**: Directory structure is more scannable
 
 ## Continuous Improvement
 

@@ -10,9 +10,9 @@ import {
   TicketNotFoundError,
 } from '@project-manager/shared'
 import { injectable } from 'inversify'
-import type { TicketRepository } from '../../application/repositories/ticket-repository.interface.js'
+import type { TicketRepository } from '../../application/repositories/ticket-repository.js'
 import { Ticket } from '../../domain/entities/ticket.js'
-import type { TicketId } from '../../domain/value-objects/index.js'
+import type { TicketId } from '../../domain/value-objects/ticket-id.js'
 import { TicketMapper } from './mappers/ticket-mapper.js'
 
 /**

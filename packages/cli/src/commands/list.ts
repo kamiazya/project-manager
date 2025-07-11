@@ -1,3 +1,4 @@
+import { SearchTicketsRequest } from '@project-manager/core'
 import type {
   TicketPriority,
   TicketSearchCriteria,
@@ -6,8 +7,8 @@ import type {
 } from '@project-manager/shared'
 import { DEFAULTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '@project-manager/shared'
 import { Command } from 'commander'
-import { formatTicketList } from '../utils/output.js'
-import { getTicketUseCase } from '../utils/service-factory.js'
+import { formatTicketSummaryList } from '../utils/output.js'
+import { getSearchTicketsUseCase } from '../utils/service-factory.js'
 
 export function listTicketCommand(): Command {
   const command = new Command('list')
@@ -20,7 +21,7 @@ export function listTicketCommand(): Command {
     .option('-f, --format <format>', 'Output format (table, json, compact)', DEFAULTS.OUTPUT_FORMAT)
     .action(async options => {
       try {
-        const ticketUseCase = getTicketUseCase()
+        const searchTicketsUseCase = getSearchTicketsUseCase()
 
         const criteria: TicketSearchCriteria = {}
 
@@ -37,13 +38,14 @@ export function listTicketCommand(): Command {
           criteria.search = options.title
         }
 
-        const tickets = await ticketUseCase.searchTickets(criteria)
+        const request = new SearchTicketsRequest(criteria)
+        const response = await searchTicketsUseCase.execute(request)
 
-        const output = formatTicketList(tickets, { format: options.format })
+        const output = formatTicketSummaryList(response.tickets, { format: options.format })
         console.log(output)
 
-        if (tickets.length > 0) {
-          console.log(`\n${SUCCESS_MESSAGES.TICKETS_FOUND(tickets.length)}`)
+        if (response.tickets.length > 0) {
+          console.log(`\n${SUCCESS_MESSAGES.TICKETS_FOUND(response.tickets.length)}`)
         }
       } catch (error) {
         console.error(

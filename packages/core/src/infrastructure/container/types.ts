@@ -7,8 +7,20 @@ export const TYPES = {
   // Repository layer
   TicketRepository: Symbol.for('TicketRepository'),
 
-  // Use case layer
-  TicketUseCase: Symbol.for('TicketUseCase'),
+  // Individual use cases
+  CreateTicketUseCase: Symbol.for('CreateTicketUseCase'),
+  GetTicketByIdUseCase: Symbol.for('GetTicketByIdUseCase'),
+  GetAllTicketsUseCase: Symbol.for('GetAllTicketsUseCase'),
+  UpdateTicketTitleUseCase: Symbol.for('UpdateTicketTitleUseCase'),
+  UpdateTicketDescriptionUseCase: Symbol.for('UpdateTicketDescriptionUseCase'),
+  UpdateTicketStatusUseCase: Symbol.for('UpdateTicketStatusUseCase'),
+  UpdateTicketPriorityUseCase: Symbol.for('UpdateTicketPriorityUseCase'),
+  StartTicketProgressUseCase: Symbol.for('StartTicketProgressUseCase'),
+  CompleteTicketUseCase: Symbol.for('CompleteTicketUseCase'),
+  ArchiveTicketUseCase: Symbol.for('ArchiveTicketUseCase'),
+  DeleteTicketUseCase: Symbol.for('DeleteTicketUseCase'),
+  GetTicketStatsUseCase: Symbol.for('GetTicketStatsUseCase'),
+  SearchTicketsUseCase: Symbol.for('SearchTicketsUseCase'),
 
   // Configuration
   StoragePath: Symbol.for('StoragePath'),

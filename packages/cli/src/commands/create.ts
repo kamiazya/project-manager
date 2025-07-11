@@ -1,8 +1,9 @@
-import type { TicketData, TicketPriority, TicketPrivacy, TicketType } from '@project-manager/shared'
+import { CreateTicketRequest } from '@project-manager/core'
+import type { TicketPriority, TicketPrivacy, TicketType } from '@project-manager/shared'
 import { DEFAULTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '@project-manager/shared'
 import { Command } from 'commander'
-import { formatTicket } from '../utils/output.js'
-import { getTicketUseCase } from '../utils/service-factory.js'
+import { formatTicketResponse } from '../utils/output.js'
+import { getCreateTicketUseCase } from '../utils/service-factory.js'
 
 export function createTicketCommand(): Command {
   const command = new Command('create')
@@ -20,25 +21,24 @@ export function createTicketCommand(): Command {
     .option('--json', 'Output in JSON format')
     .action(async (title: string, description: string, options) => {
       try {
-        const ticketUseCase = getTicketUseCase()
+        const createTicketUseCase = getCreateTicketUseCase()
 
-        const ticketData: TicketData = {
-          title: title.trim(),
-          description: description.trim(),
-          priority: options.priority as TicketPriority,
-          type: options.type as TicketType,
-          privacy: options.privacy as TicketPrivacy,
-          status: options.status,
-        }
+        const request = new CreateTicketRequest(
+          title.trim(),
+          description.trim(),
+          options.priority as TicketPriority,
+          options.type as TicketType,
+          options.privacy as TicketPrivacy
+        )
 
-        const ticket = await ticketUseCase.createTicket(ticketData)
+        const response = await createTicketUseCase.execute(request)
 
-        const output = formatTicket(ticket, {
+        const output = formatTicketResponse(response, {
           format: options.json ? 'json' : 'table',
         })
 
         console.log(output)
-        console.log(`\n${SUCCESS_MESSAGES.TICKET_CREATED(ticket.id.value)}`)
+        console.log(`\n${SUCCESS_MESSAGES.TICKET_CREATED(response.id)}`)
       } catch (error) {
         console.error(
           ERROR_MESSAGES.OPERATION_FAILED.CREATE,

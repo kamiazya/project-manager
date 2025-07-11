@@ -39,50 +39,50 @@ graph TB
         DB[Database/Storage]
         WEB[Web Framework]
     end
-    
+
     subgraph "Interface Adapters"
         CTRL[Controllers]
         GATE[Gateways]
         PRES[Presenters]
         REPO_IMPL[Repository Implementations]
     end
-    
+
     subgraph "Use Cases"
         APP[Application Services]
         REPO_INT[Repository Interfaces]
         PORTS[Ports/Boundaries]
     end
-    
+
     subgraph "Entities"
         ENT[Domain Entities]
         VO[Value Objects]
         DS[Domain Services]
         DR[Domain Rules]
     end
-    
+
     %% Dependencies flow inward
     UI --> CTRL
     EXT --> GATE
     DB --> REPO_IMPL
     WEB --> PRES
-    
+
     CTRL --> APP
     GATE --> APP
     PRES --> APP
     REPO_IMPL --> REPO_INT
-    
+
     APP --> ENT
     APP --> VO
     APP --> DS
     REPO_INT --> ENT
     PORTS --> ENT
-    
+
     %% Styling
     classDef outer fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px
     classDef adapter fill:#fff3e0,stroke:#f57c00,stroke-width:2px
     classDef usecase fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
     classDef entity fill:#e3f2fd,stroke:#2196f3,stroke-width:3px
-    
+
     class UI,EXT,DB,WEB outer
     class CTRL,GATE,PRES,REPO_IMPL adapter
     class APP,REPO_INT,PORTS usecase
@@ -219,6 +219,44 @@ Clean Architecture layers align with DDD concepts:
 2. Create use cases that orchestrate domain operations (Use Cases Layer)
 3. Implement adapters for external systems (Interface Adapters Layer)
 4. Add user interface components (Frameworks & Drivers Layer)
+
+**Single Use Case Pattern**
+
+Following the Single Responsibility Principle, each use case should be implemented as an individual class:
+
+- **One Class Per Use Case**: Each use case class handles exactly one business operation
+- **Request/Response Pattern**: Use DTOs for input and output to maintain layer separation
+- **Interface Implementation**: Implement `UseCase<TRequest, TResponse>` interface for consistency
+- **Dependency Injection**: Use DI container for repository and service dependencies
+- **Descriptive Naming**: Use clear, operation-specific class names (e.g., `CreateTicketUseCase`)
+
+This approach provides better testability, maintainability, and follows CQRS principles.
+
+### Implementation Patterns
+
+**Use Case Definition Pattern**
+
+All use cases are defined by implementing the `UseCase<TRequest, TResponse>` interface rather than extending a base class.
+
+**Rationale**: This approach provides greater flexibility by allowing a class to implement multiple interfaces and promotes composition over inheritance for sharing common logic, leading to a more decoupled and testable system.
+
+**Example Implementation**:
+
+```typescript
+@injectable()
+export class CreateTicketUseCase implements UseCase<CreateTicketRequest, CreateTicketResponse> {
+  constructor(
+    @inject(TicketRepositorySymbol)
+    private readonly ticketRepository: TicketRepository
+  ) {}
+
+  async execute(request: CreateTicketRequest): Promise<CreateTicketResponse> {
+    const ticket = Ticket.create(request.toCreateTicketData())
+    await this.ticketRepository.save(ticket)
+    return TicketResponse.fromTicket(ticket) as CreateTicketResponse
+  }
+}
+```
 
 ### Testing Strategy
 

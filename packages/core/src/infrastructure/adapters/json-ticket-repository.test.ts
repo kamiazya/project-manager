@@ -3,7 +3,7 @@ import { unlink } from 'node:fs/promises'
 import { TicketNotFoundError } from '@project-manager/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Ticket } from '../../domain/entities/ticket.js'
-import { TicketId } from '../../domain/value-objects/index.js'
+import { TicketId } from '../../domain/value-objects/ticket-id.js'
 import { JsonTicketRepository } from './json-ticket-repository.js'
 
 describe('JsonTicketRepository', () => {

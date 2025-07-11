@@ -1,7 +1,16 @@
+import {
+  GetTicketByIdRequest,
+  UpdateTicketPriorityRequest,
+  UpdateTicketStatusRequest,
+} from '@project-manager/core'
 import type { TicketPriority, TicketStatus } from '@project-manager/shared'
 import { Command } from 'commander'
-import { formatTicket } from '../utils/output.js'
-import { getTicketUseCase } from '../utils/service-factory.js'
+import { formatTicketResponse } from '../utils/output.js'
+import {
+  getGetTicketByIdUseCase,
+  getUpdateTicketPriorityUseCase,
+  getUpdateTicketStatusUseCase,
+} from '../utils/service-factory.js'
 
 export function updateTicketCommand(): Command {
   const command = new Command('update')
@@ -12,11 +21,15 @@ export function updateTicketCommand(): Command {
     .option('--json', 'Output in JSON format')
     .action(async (id: string, options) => {
       try {
-        const ticketUseCase = getTicketUseCase()
+        const getTicketByIdUseCase = getGetTicketByIdUseCase()
+        const updateTicketStatusUseCase = getUpdateTicketStatusUseCase()
+        const updateTicketPriorityUseCase = getUpdateTicketPriorityUseCase()
 
-        let ticket = await ticketUseCase.getTicketById(id)
+        // Check if ticket exists
+        const getRequest = new GetTicketByIdRequest(id)
+        let response = await getTicketByIdUseCase.execute(getRequest)
 
-        if (!ticket) {
+        if (!response) {
           console.error(`Ticket not found: ${id}`)
           process.exit(1)
         }
@@ -26,13 +39,18 @@ export function updateTicketCommand(): Command {
 
         // Update status if provided
         if (options.status) {
-          ticket = await ticketUseCase.updateTicketStatus(id, options.status as TicketStatus)
+          const statusRequest = new UpdateTicketStatusRequest(id, options.status as TicketStatus)
+          response = await updateTicketStatusUseCase.execute(statusRequest)
           updates.push(`status to ${options.status}`)
         }
 
         // Update priority if provided
         if (options.priority) {
-          ticket = await ticketUseCase.updateTicketPriority(id, options.priority as TicketPriority)
+          const priorityRequest = new UpdateTicketPriorityRequest(
+            id,
+            options.priority as TicketPriority
+          )
+          response = await updateTicketPriorityUseCase.execute(priorityRequest)
           updates.push(`priority to ${options.priority}`)
         }
 
@@ -41,7 +59,7 @@ export function updateTicketCommand(): Command {
           process.exit(1)
         }
 
-        const output = formatTicket(ticket, {
+        const output = formatTicketResponse(response, {
           format: options.json ? 'json' : 'table',
         })
 

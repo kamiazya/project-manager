@@ -1,6 +1,7 @@
+import { GetTicketByIdRequest } from '@project-manager/core'
 import { Command } from 'commander'
-import { formatTicket } from '../utils/output.js'
-import { getTicketUseCase } from '../utils/service-factory.js'
+import { formatTicketResponse } from '../utils/output.js'
+import { getGetTicketByIdUseCase } from '../utils/service-factory.js'
 
 export function showTicketCommand(): Command {
   const command = new Command('show')
@@ -9,15 +10,16 @@ export function showTicketCommand(): Command {
     .option('--json', 'Output in JSON format')
     .action(async (id: string, options) => {
       try {
-        const ticketUseCase = getTicketUseCase()
-        const ticket = await ticketUseCase.getTicketById(id)
+        const getTicketByIdUseCase = getGetTicketByIdUseCase()
+        const request = new GetTicketByIdRequest(id)
+        const response = await getTicketByIdUseCase.execute(request)
 
-        if (!ticket) {
+        if (!response) {
           console.error(`Ticket not found: ${id}`)
           process.exit(1)
         }
 
-        const output = formatTicket(ticket, {
+        const output = formatTicketResponse(response, {
           format: options.json ? 'json' : 'table',
         })
 

@@ -3,10 +3,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  type ITicketRepository,
+  type TicketRepository,
   TicketRepository as TicketRepositorySymbol,
-} from '../../application/repositories/ticket-repository.interface.js'
-import { TicketUseCase } from '../../application/usecases/ticket-usecase.js'
+} from '../../application/repositories/ticket-repository.js'
+import { CreateTicketUseCase } from '../../application/usecases/create-ticket.js'
 import { createContainer, getContainer, resetContainer } from './inversify.config.js'
 import { TYPES } from './types.js'
 
@@ -35,7 +35,7 @@ describe('Inversify Container Configuration', () => {
 
       expect(container.isBound(TYPES.StoragePath)).toBe(true)
       expect(container.isBound(TicketRepositorySymbol)).toBe(true)
-      expect(container.isBound(TYPES.TicketUseCase)).toBe(true)
+      expect(container.isBound(TYPES.CreateTicketUseCase)).toBe(true)
     })
 
     it('should create container without storage path', () => {
@@ -43,36 +43,35 @@ describe('Inversify Container Configuration', () => {
 
       expect(container.isBound(TYPES.StoragePath)).toBe(false)
       expect(container.isBound(TicketRepositorySymbol)).toBe(true)
-      expect(container.isBound(TYPES.TicketUseCase)).toBe(true)
+      expect(container.isBound(TYPES.CreateTicketUseCase)).toBe(true)
     })
 
     it('should resolve TicketRepository correctly', () => {
       const container = createContainer(tempFilePath)
-      const repository = container.get<ITicketRepository>(TicketRepositorySymbol)
+      const repository = container.get<TicketRepository>(TicketRepositorySymbol)
 
       expect(repository).toBeDefined()
       expect(typeof repository.save).toBe('function')
       expect(typeof repository.findById).toBe('function')
     })
 
-    it('should resolve TicketUseCase correctly', () => {
+    it('should resolve CreateTicketUseCase correctly', () => {
       const container = createContainer(tempFilePath)
-      const useCase = container.get<TicketUseCase>(TYPES.TicketUseCase)
+      const useCase = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
 
       expect(useCase).toBeDefined()
-      expect(typeof useCase.createTicket).toBe('function')
-      expect(typeof useCase.getTicketById).toBe('function')
+      expect(typeof useCase.execute).toBe('function')
     })
 
     it('should use singleton scope for services', () => {
       const container = createContainer(tempFilePath)
 
-      const repository1 = container.get<ITicketRepository>(TicketRepositorySymbol)
-      const repository2 = container.get<ITicketRepository>(TicketRepositorySymbol)
+      const repository1 = container.get<TicketRepository>(TicketRepositorySymbol)
+      const repository2 = container.get<TicketRepository>(TicketRepositorySymbol)
       expect(repository1).toBe(repository2)
 
-      const useCase1 = container.get<TicketUseCase>(TYPES.TicketUseCase)
-      const useCase2 = container.get<TicketUseCase>(TYPES.TicketUseCase)
+      const useCase1 = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
+      const useCase2 = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
       expect(useCase1).toBe(useCase2)
     })
   })
@@ -106,19 +105,24 @@ describe('Inversify Container Configuration', () => {
   describe('Integration', () => {
     it('should create and use ticket through the container', async () => {
       const container = createContainer(tempFilePath)
-      const useCase = container.get<TicketUseCase>(TYPES.TicketUseCase)
+      const useCase = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
 
-      const ticketData = {
-        title: 'Test Ticket',
-        description: 'Test Description',
-        priority: 'high' as const,
-      }
+      const { CreateTicketRequest } = await import(
+        '../../application/dtos/requests/create-ticket.js'
+      )
+      const request = new CreateTicketRequest(
+        'Test Ticket',
+        'Test Description',
+        'high',
+        'task',
+        'local-only'
+      )
 
-      const ticket = await useCase.createTicket(ticketData)
+      const response = await useCase.execute(request)
 
-      expect(ticket.id.value).toBeTruthy()
-      expect(ticket.title.value).toBe('Test Ticket')
-      expect(ticket.priority.value).toBe('high')
+      expect(response.id).toBeTruthy()
+      expect(response.title).toBe('Test Ticket')
+      expect(response.priority).toBe('high')
     })
   })
 })

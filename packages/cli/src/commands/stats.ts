@@ -1,6 +1,7 @@
+import { GetTicketStatsRequest } from '@project-manager/core'
 import { Command } from 'commander'
 import { formatStats } from '../utils/output.js'
-import { getTicketUseCase } from '../utils/service-factory.js'
+import { getGetTicketStatsUseCase } from '../utils/service-factory.js'
 
 export function statsCommand(): Command {
   const command = new Command('stats')
@@ -8,13 +9,14 @@ export function statsCommand(): Command {
     .option('--json', 'Output in JSON format')
     .action(async options => {
       try {
-        const ticketUseCase = getTicketUseCase()
-        const stats = await ticketUseCase.getTicketStats()
+        const getTicketStatsUseCase = getGetTicketStatsUseCase()
+        const request = new GetTicketStatsRequest()
+        const response = await getTicketStatsUseCase.execute(request)
 
         if (options.json) {
-          console.log(JSON.stringify(stats, null, 2))
+          console.log(JSON.stringify(response.stats, null, 2))
         } else {
-          console.log(formatStats(stats))
+          console.log(formatStats(response.stats))
         }
       } catch (error) {
         console.error(

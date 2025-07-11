@@ -1,0 +1,76 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Ticket } from '../../domain/entities/ticket.js'
+import { TicketId } from '../../domain/value-objects/ticket-id.js'
+import { GetTicketByIdRequest } from '../dtos/requests/get-ticket-by-id.js'
+import type { TicketRepository } from '../repositories/ticket-repository.js'
+import { GetTicketByIdUseCase } from './get-ticket-by-id.js'
+
+describe('GetTicketByIdUseCase', () => {
+  let useCase: GetTicketByIdUseCase
+  let mockTicketRepository: jest.Mocked<TicketRepository>
+
+  beforeEach(() => {
+    mockTicketRepository = {
+      save: vi.fn(),
+      findById: vi.fn(),
+      findAll: vi.fn(),
+      delete: vi.fn(),
+    }
+    useCase = new GetTicketByIdUseCase(mockTicketRepository)
+  })
+
+  describe('execute', () => {
+    it('should return ticket when found', async () => {
+      // Arrange
+      const ticketId = 'test-id-12345'
+      const request = new GetTicketByIdRequest(ticketId)
+      const mockTicket = Ticket.create({
+        title: 'Test Ticket',
+        description: 'Test Description',
+        priority: 'medium',
+        type: 'task',
+        privacy: 'local-only',
+      })
+
+      mockTicketRepository.findById.mockResolvedValue(mockTicket)
+
+      // Act
+      const result = await useCase.execute(request)
+
+      // Assert
+      expect(result).toBeDefined()
+      expect(result!.title).toBe('Test Ticket')
+      expect(result!.description).toBe('Test Description')
+      expect(mockTicketRepository.findById).toHaveBeenCalledWith(expect.any(TicketId))
+    })
+
+    it('should return null when ticket not found', async () => {
+      // Arrange
+      const ticketId = 'non-existent-id-12345'
+      const request = new GetTicketByIdRequest(ticketId)
+
+      mockTicketRepository.findById.mockResolvedValue(null)
+
+      // Act
+      const result = await useCase.execute(request)
+
+      // Assert
+      expect(result).toBeNull()
+      expect(mockTicketRepository.findById).toHaveBeenCalledWith(expect.any(TicketId))
+    })
+
+    it('should call repository with correct TicketId', async () => {
+      // Arrange
+      const ticketId = 'test-id-12345'
+      const request = new GetTicketByIdRequest(ticketId)
+
+      mockTicketRepository.findById.mockResolvedValue(null)
+
+      // Act
+      await useCase.execute(request)
+
+      // Assert
+      expect(mockTicketRepository.findById).toHaveBeenCalledWith(expect.any(TicketId))
+    })
+  })
+})

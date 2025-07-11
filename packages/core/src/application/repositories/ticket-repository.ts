@@ -1,5 +1,5 @@
 import type { Ticket } from '../../domain/entities/ticket.js'
-import type { TicketId } from '../../domain/value-objects/index.js'
+import type { TicketId } from '../../domain/value-objects/ticket-id.js'
 
 /**
  * Repository interface for Ticket aggregate
