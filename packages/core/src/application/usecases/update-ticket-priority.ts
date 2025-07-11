@@ -1,4 +1,4 @@
-import { TicketNotFoundError } from '@project-manager/shared'
+import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
 import { inject, injectable } from 'inversify'
 import { TicketId } from '../../domain/value-objects/ticket-id.js'
 import type { UseCase } from '../common/base-usecase.js'
@@ -27,7 +27,7 @@ export class UpdateTicketPriorityUseCase
     const ticket = await this.ticketRepository.findById(ticketId)
 
     if (!ticket) {
-      throw new TicketNotFoundError(request.id)
+      throw new TicketNotFoundError(ERROR_MESSAGES.TICKET_NOT_FOUND(request.id))
     }
 
     // Use domain method for business logic
