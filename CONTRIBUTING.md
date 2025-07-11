@@ -458,7 +458,7 @@ Every Task-level issue must include:
 - **Purpose**: Validate real-world usage patterns and identify usability issues
 - **Implementation**: All development work tracked through project-manager system itself
 - **Benefits**: Authentic user experience validation, early detection of usability issues, continuous improvement through practical application
-- **Practical Guide**: See [Dogfooding Workflow Guide](./docs/guides/dogfooding-workflow.md) for step-by-step implementation using development aliases
+- **Practical Guide**: See [Dogfooding Workflow Guide](./docs/guides/dogfooding-workflow.md) for step-by-step implementation using development aliases (note: `pm comment` is not yet implemented, use the workaround of creating new tickets for comments)
 
 ### Test Environment Setup
 

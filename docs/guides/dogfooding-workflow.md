@@ -89,11 +89,11 @@ For larger development initiatives, create epics and features:
 
 ```bash
 # Create an epic for major feature development
-pm-new "Authentication System Overhaul" -d "Complete redesign of user authentication" -p h --type epic
+pnpm dev new "Authentication System Overhaul" -d "Complete redesign of user authentication" -p h --type epic
 
 # Create feature tickets under the epic
-pm-new "OAuth 2.0 Integration" -d "Implement OAuth providers" -p h --type feature --parent <epic-id>
-pm-new "Password Reset Flow" -d "Add password reset functionality" -p m --type feature --parent <epic-id>
+pnpm dev new "OAuth 2.0 Integration" -d "Implement OAuth providers" -p h --type feature --parent <epic-id>
+pnpm dev new "Password Reset Flow" -d "Add password reset functionality" -p m --type feature --parent <epic-id>
 ```
 
 ### Cross-cutting Feature Testing
@@ -102,13 +102,13 @@ Test comments, attachments, and labels through actual use:
 
 ```bash
 # Add labels to categorize tickets
-pm-new "API Rate Limiting" -d "Implement rate limiting" -p h --labels backend,security
+pnpm dev new "API Rate Limiting" -d "Implement rate limiting" -p h --labels backend,security
 
-# Add comments to tickets for progress updates
-pm comment <ticket-id> "Started implementation, researching best practices"
+# Add progress updates (comment command not yet implemented - use workaround)
+pnpm dev new "Progress on #<ticket-id>: Started implementation" -d "Started implementation, researching best practices" -p l --type task
 
-# Attach relevant files
-pm attach <ticket-id> docs/api-design.md
+# File attachments (attach command not yet implemented)
+# Note: File attachment functionality is planned but not yet available
 ```
 
 ### Relationship Management
@@ -117,8 +117,8 @@ Use ticket relationships for dependency tracking:
 
 ```bash
 # Create dependent tickets
-pm-new "Database Schema Design" -d "Design user tables" -p h
-pm-new "API Endpoints" -d "Create auth endpoints" -p h --depends-on <schema-ticket-id>
+pnpm dev new "Database Schema Design" -d "Design user tables" -p h
+pnpm dev new "API Endpoints" -d "Create auth endpoints" -p h --depends-on <schema-ticket-id>
 ```
 
 ## Validation Through Real Use
@@ -129,31 +129,31 @@ pm-new "API Endpoints" -d "Create auth endpoints" -p h --depends-on <schema-tick
 
    ```bash
    # Check work queue
-   pm-todo
-   pm-wip
+   pnpm dev todo
+   pnpm dev wip
    
    # Start work on priority ticket
-   pm-start <ticket-id>
+   pnpm dev start <ticket-id>
    ```
 
 2. **During Development**
 
    ```bash
-   # Add progress comments
-   pm comment <ticket-id> "Implemented login endpoint, testing validation"
+   # Add progress updates (comment command not yet implemented - use workaround)
+   pnpm dev new "Progress on #<ticket-id>: Login endpoint implemented" -d "Implemented login endpoint, testing validation" -p l --type task
    
    # Create new tickets for discovered issues
-   pm-new "Fix validation error messages" -d "Error messages not user-friendly" -p m
+   pnpm dev new "Fix validation error messages" -d "Error messages not user-friendly" -p m
    ```
 
 3. **End of Day**
 
    ```bash
    # Complete finished work
-   pm-done <ticket-id>
+   pnpm dev done <ticket-id>
    
    # Review tomorrow's queue
-   pm-todo
+   pnpm dev todo
    ```
 
 ### Feature Validation
@@ -162,13 +162,13 @@ Test new features by actually using them:
 
 ```bash
 # Test search functionality
-pm search "authentication"
+pnpm dev search "authentication"
 
 # Test filtering
-pm list --status in_progress --priority high
+pnpm dev list --status in_progress --priority high
 
 # Test bulk operations
-pm bulk-update --status completed --ids 123,456,789
+pnpm dev bulk-update --status completed --ids 123,456,789
 ```
 
 ## Performance and Usability Testing
@@ -180,11 +180,11 @@ Create realistic data volumes:
 ```bash
 # Create multiple tickets to test performance
 for i in {1..50}; do
-  pm-new "Test ticket $i" -d "Performance testing ticket" -p l
+  pnpm dev new "Test ticket $i" -d "Performance testing ticket" -p l
 done
 
 # Test list performance
-time pm-all
+time pnpm dev all
 ```
 
 ### Usability Testing
@@ -193,13 +193,13 @@ Document pain points and improvements:
 
 ```bash
 # Test command discoverability
-pm help
+pnpm dev help
 
 # Test error handling
-pm-start invalid-id
+pnpm dev start invalid-id
 
 # Test auto-completion (if implemented)
-pm-start <tab><tab>
+pnpm dev start <tab><tab>
 ```
 
 ## Data Collection and Analysis
@@ -210,13 +210,13 @@ Track actual usage patterns:
 
 ```bash
 # Count tickets by status
-pm stats --by-status
+pnpm dev stats --by-status
 
 # Count tickets by priority
-pm stats --by-priority
+pnpm dev stats --by-priority
 
 # Show development velocity
-pm stats --velocity --timeframe week
+pnpm dev stats --velocity --timeframe week
 ```
 
 ### Issue Identification
@@ -225,10 +225,10 @@ Document usability issues through tickets:
 
 ```bash
 # Create tickets for UX improvements
-pm-new "Improve command output formatting" -d "List output hard to read" -p l --labels ux
+pnpm dev new "Improve command output formatting" -d "List output hard to read" -p l --labels ux
 
 # Track feature requests
-pm-new "Add ticket templates" -d "Common ticket types need templates" -p m --labels feature-request
+pnpm dev new "Add ticket templates" -d "Common ticket types need templates" -p m --labels feature-request
 ```
 
 ## Best Practices
@@ -257,13 +257,13 @@ Use appropriate aliases for different scenarios:
 
 ```bash
 # Fast development (recommended for daily use)
-pm-new "My task" -d "Description" -p h
+pnpm dev new "My task" -d "Description" -p h
 
 # Production testing (when validating built version)
-pm-build-todo
+pnpm run build && node packages/cli/dist/bin/pm.js todo
 
 # Legacy quick commands (for backwards compatibility)
-pm-quick-new "Legacy task"
+pnpm dev quick new "Legacy task"
 ```
 
 ## Troubleshooting

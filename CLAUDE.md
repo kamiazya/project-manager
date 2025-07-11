@@ -92,13 +92,13 @@ The project is in early development phase with comprehensive requirements and ar
 - Local temporary issue management before promoting to GitHub Issues
 - Purpose: Organize and batch issues before creating permanent GitHub Issues
 
-#### AI Self-Management Through Dogfooding
+#### AI Dogfooding and Integration with Project Manager
 
-**Mandatory AI Workflow**: AI assistants working on this project MUST use the project-manager system itself for task management and planning.
+AI assistants working on this project MUST use the project-manager system itself for task management and planning. This ensures that the AI systems are effectively integrated into the development workflow and can self-manage their tasks while providing real-time updates to human collaborators.
 
 **Definition of Non-Trivial Work**: Tasks requiring multiple steps, file modifications, or taking more than 5 minutes to complete.
 
-**AI Task Management Requirements**:
+**AI Task Management and Integration Requirements**:
 
 1. **Create Tickets for All Non-Trivial Work**
    - Before starting any complex task, create a ticket using the CLI
@@ -107,19 +107,18 @@ The project is in early development phase with comprehensive requirements and ar
 
 2. **Use Development Aliases for Efficiency**
    - Load aliases: `source pm-dev-alias.sh`
-   - Use `pm-new` for ticket creation
-   - Use `pm-start` when beginning work
-   - Use `pm-done` when completing work
+   - Use `pnpm dev` commands directly for reliability
+   - Note: Aliases may not persist in all environments
 
 3. **Real-time Status Updates**
    - Mark tickets as in_progress when starting work
-   - Add comments for progress updates and discoveries
+   - Add progress updates via new tickets (comment command not yet implemented)
    - Create new tickets for unexpected issues or requirements
    - Complete tickets promptly when work is finished
 
 4. **Planning and Coordination**
-   - Use `pm-todo` to check work queue before starting
-   - Use `pm-wip` to track current active work
+   - Use `pnpm dev todo` to check work queue before starting
+   - Use `pnpm dev wip` to track current active work
    - Create dependent tickets for complex multi-step tasks
    - Use epics for large initiatives requiring multiple tickets
 
@@ -127,20 +126,20 @@ The project is in early development phase with comprehensive requirements and ar
 
 ```bash
 # Before starting feature implementation
-pm-new "Implement user authentication system" -d "Add login/logout with JWT tokens" -p h --type feature
+pnpm dev new "Implement user authentication system" -d "Add login/logout with JWT tokens" -p h --type feature
 # Note: Capture the ticket ID from the output for use in subsequent commands
 
 # Start work on the ticket (use actual ticket ID from above)
-pm-start 1751764474
+pnpm dev start 1751764474
 
-# Add progress updates
-pm comment 1751764474 "Researched JWT libraries, selected jsonwebtoken"
+# Add progress updates (comment command not yet implemented - use workaround)
+pnpm dev new "Progress on #1751764474: JWT library research" -d "Researched JWT libraries, selected jsonwebtoken for implementation" -p l --type task
 
 # Create dependent tickets as needed
-pm-new "Design authentication middleware" -d "Create Express middleware for JWT validation" -p m --depends-on 1751764474
+pnpm dev new "Design authentication middleware" -d "Create Express middleware for JWT validation" -p m --depends-on 1751764474
 
 # Complete when finished
-pm-done 1751764474
+pnpm dev done 1751764474
 ```
 
 **AI Self-Validation Process**:
@@ -152,7 +151,7 @@ pm-done 1751764474
 
 2. **Implementation Tracking**
    - Update ticket status as work progresses
-   - Document decisions and learnings in comments
+   - Document decisions and learnings in progress tickets (comment command not yet implemented)
    - Create new tickets for discovered issues
 
 3. **Completion Validation**
@@ -245,58 +244,7 @@ For detailed guidelines and examples, see [Asynchronous Delegation Best Practice
 
 **Remember:** Well-structured tasks lead to higher success rates and less rework, regardless of who executes them.
 
-### AI Integration with Project Manager
-
-**Mandatory AI Workflow Integration**: All AI assistants working on this project must integrate with the project-manager system for authentic dogfooding and quality assurance.
-
-#### AI Development Workflow - Validated Process
-
-**Important Note**: Based on validation testing, development aliases may not persist across different bash command executions in some environments. Use direct `pnpm dev` commands as fallback.
-
-1. **Session Initialization**
-
-   ```bash
-   # Load development aliases at start of session
-   source pm-dev-alias.sh
-   
-   # Check current work queue (use fallback if aliases don't work)
-   pnpm dev todo  # Use direct command as primary method
-   pnpm dev wip   # Use direct command as primary method
-   ```
-
-2. **Before Starting Any Task**
-
-   ```bash
-   # Create ticket for non-trivial work
-   pnpm dev new "Task title" -d "Detailed description" -p [h|m|l]
-   # Note: Capture ticket ID from output for subsequent commands
-   
-   # Start work on ticket (use actual ticket ID)
-   pnpm dev start <ticket-id>
-   ```
-
-3. **During Implementation**
-
-   ```bash
-   # Progress tracking (comment command not yet implemented)
-   # Temporary workaround: Create follow-up tickets for progress tracking
-   pnpm dev new "Progress update: <task-name>" -d "Implementation progress or discoveries" -p l --type task
-   
-   # Create additional tickets for discovered issues
-   pnpm dev new "Fix discovered issue" -d "Issue details" -p m
-   ```
-
-4. **Upon Completion**
-
-   ```bash
-   # Mark ticket as done
-   pnpm dev done <ticket-id>
-   
-   # Create follow-up tickets if needed
-   pnpm dev new "Follow-up task" -d "Next steps" -p l
-   ```
-
-#### AI Feedback Mechanism
+**AI Feedback Mechanism**:
 
 When encountering usability issues or improvement opportunities, create specific improvement tickets:
 
@@ -308,7 +256,7 @@ pnpm dev new "Improve clarity of pm-todo output" -d "Current output format diffi
 pnpm dev new "Add ticket template support" -d "Common ticket patterns need templates for efficiency" -p l --type enhancement
 ```
 
-#### Error Handling Protocol
+**Error Handling Protocol**:
 
 If project-manager CLI commands fail during the workflow:
 
@@ -317,7 +265,7 @@ If project-manager CLI commands fail during the workflow:
 3. **Use fallback method**: Continue with manual tracking until the issue is resolved
 4. **Report to human developer**: Mention the error and ticket ID for immediate attention
 
-#### Known Limitations (From Validation Testing)
+**Known Limitations (From Validation Testing)**:
 
 1. **Development Aliases**: May not persist across bash sessions in some environments
 2. **Comment Command**: Not yet implemented - use progress tickets as workaround
