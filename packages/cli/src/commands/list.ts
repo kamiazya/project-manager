@@ -1,14 +1,12 @@
-import { SearchTicketsRequest } from '@project-manager/core'
 import type {
   TicketPriority,
   TicketSearchCriteria,
   TicketStatus,
   TicketType,
 } from '@project-manager/shared'
-import { ERROR_MESSAGES, getConfig, SUCCESS_MESSAGES } from '@project-manager/shared'
+import { getConfig } from '@project-manager/shared'
 import { Command } from 'commander'
-import { formatTicketSummaryList } from '../utils/output.js'
-import { getSearchTicketsUseCase } from '../utils/service-factory.js'
+import { searchTicketsAction } from '../utils/cli-helpers.js'
 
 export function listTicketCommand(): Command {
   const config = getConfig()
@@ -26,40 +24,22 @@ export function listTicketCommand(): Command {
       config.defaultOutputFormat
     )
     .action(async options => {
-      try {
-        const searchTicketsUseCase = getSearchTicketsUseCase()
+      const criteria: TicketSearchCriteria = {}
 
-        const criteria: TicketSearchCriteria = {}
-
-        if (options.status) {
-          criteria.status = options.status as TicketStatus
-        }
-        if (options.priority) {
-          criteria.priority = options.priority as TicketPriority
-        }
-        if (options.type) {
-          criteria.type = options.type as TicketType
-        }
-        if (options.title) {
-          criteria.search = options.title
-        }
-
-        const request = new SearchTicketsRequest(criteria)
-        const response = await searchTicketsUseCase.execute(request)
-
-        const output = formatTicketSummaryList(response.tickets, { format: options.format })
-        console.log(output)
-
-        if (response.tickets.length > 0) {
-          console.log(`\n${SUCCESS_MESSAGES.TICKETS_FOUND(response.tickets.length)}`)
-        }
-      } catch (error) {
-        console.error(
-          ERROR_MESSAGES.OPERATION_FAILED.LIST,
-          error instanceof Error ? error.message : String(error)
-        )
-        process.exit(1)
+      if (options.status) {
+        criteria.status = options.status as TicketStatus
       }
+      if (options.priority) {
+        criteria.priority = options.priority as TicketPriority
+      }
+      if (options.type) {
+        criteria.type = options.type as TicketType
+      }
+      if (options.title) {
+        criteria.search = options.title
+      }
+
+      await searchTicketsAction(criteria, { format: options.format })
     })
 
   return command

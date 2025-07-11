@@ -1,9 +1,7 @@
-import { CreateTicketRequest } from '@project-manager/core'
 import type { TicketPriority, TicketPrivacy, TicketType } from '@project-manager/shared'
-import { ERROR_MESSAGES, getConfig, SUCCESS_MESSAGES } from '@project-manager/shared'
+import { getConfig } from '@project-manager/shared'
 import { Command } from 'commander'
-import { formatTicketResponse } from '../utils/output.js'
-import { getCreateTicketUseCase } from '../utils/service-factory.js'
+import { createDetailedTicketAction } from '../utils/cli-helpers.js'
 
 export function createTicketCommand(): Command {
   const config = getConfig()
@@ -27,32 +25,12 @@ export function createTicketCommand(): Command {
     .option('-s, --status <status>', 'Initial status (pending, in_progress)', config.defaultStatus)
     .option('--json', 'Output in JSON format')
     .action(async (title: string, description: string, options) => {
-      try {
-        const createTicketUseCase = getCreateTicketUseCase()
-
-        const request = new CreateTicketRequest(
-          title.trim(),
-          description.trim(),
-          options.priority as TicketPriority,
-          options.type as TicketType,
-          options.privacy as TicketPrivacy
-        )
-
-        const response = await createTicketUseCase.execute(request)
-
-        const output = formatTicketResponse(response, {
-          format: options.json ? 'json' : config.defaultOutputFormat,
-        })
-
-        console.log(output)
-        console.log(`\n${SUCCESS_MESSAGES.TICKET_CREATED(response.id)}`)
-      } catch (error) {
-        console.error(
-          ERROR_MESSAGES.OPERATION_FAILED.CREATE,
-          error instanceof Error ? error.message : String(error)
-        )
-        process.exit(1)
-      }
+      await createDetailedTicketAction(title, description, {
+        priority: options.priority as TicketPriority,
+        type: options.type as TicketType,
+        privacy: options.privacy as TicketPrivacy,
+        json: options.json,
+      })
     })
 
   return command
