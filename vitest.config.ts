@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
@@ -22,9 +23,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@project-manager/shared': new URL('./packages/shared/src', import.meta.url).pathname,
-      '@project-manager/core': new URL('./packages/core/src', import.meta.url).pathname,
-      '@project-manager/cli': new URL('./packages/cli/src', import.meta.url).pathname,
+      '@project-manager/shared': fileURLToPath(new URL('./packages/shared/src', import.meta.url)),
+      '@project-manager/core': fileURLToPath(new URL('./packages/core/src', import.meta.url)),
+      '@project-manager/cli': fileURLToPath(new URL('./packages/cli/src', import.meta.url)),
     },
   },
 })
