@@ -4,7 +4,7 @@
 
 This directory contains Architecture Decision Records (ADRs) for the Project Manager system. ADRs document the significant architectural decisions made during development, including the context, rationale, and consequences of each decision.
 
-## What are ADRs?
+## What are ADRs
 
 An Architecture Decision Record (ADR) is a document that captures an important architectural decision made along with its context and consequences. ADRs help preserve the reasoning behind architectural choices and provide future developers with the context needed to understand why certain decisions were made.
 
@@ -148,27 +148,35 @@ graph TD
     %% Process and Organization
     ADR_006[ADR-0006: Adopt Diátaxis Documentation Framework<br/>📋 Documentation Organization]
 
+    %% Architecture Design
+    ADR_007[ADR-0007: Domain-Driven Design<br/>🎯 Domain Modeling]
+
     %% Dependencies
     ADR_003 --> ADR_004
     ADR_003 --> ADR_005
     ADR_001 --> ADR_002
     ADR_003 --> ADR_006
     ADR_004 --> ADR_005
+    ADR_001 --> ADR_007
+    ADR_003 --> ADR_007
 
     %% Influences (dotted lines)
     ADR_002 -.-> ADR_005
     ADR_001 -.-> ADR_005
+    ADR_002 -.-> ADR_007
 
     %% Styling
     classDef foundation fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
     classDef standards fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
     classDef implementation fill:#fff3e0,stroke:#ff9800,stroke-width:2px
     classDef process fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+    classDef architecture fill:#fce4ec,stroke:#e91e63,stroke-width:2px
 
     class ADR_001,ADR_002 foundation
     class ADR_003,ADR_004 standards
     class ADR_005 implementation
     class ADR_006 process
+    class ADR_007 architecture
 ```
 
 ### ADR Index
@@ -181,6 +189,7 @@ graph TD
 | [0004](./0004-diagrams-first-documentation.md) | Accepted | Diagrams-First Documentation | Use Mermaid for visual specification documentation |
 | [0005](./0005-cli-first-interface-architecture.md) | Accepted | CLI-First Interface Architecture | Command-line interface as foundation for all other interfaces |
 | [0006](./0006-adopt-diataxis-documentation-framework.md) | Accepted | Adopt Diátaxis Documentation Framework | Organize documentation using user-centered categories |
+| [0007](./0007-domain-driven-design-adoption.md) | Accepted | Domain-Driven Design (DDD) Adoption | Model complex business logic with DDD principles and patterns |
 
 **Legend:**
 
@@ -190,6 +199,7 @@ graph TD
 - 📐 Standards and conventions
 - 📊 Documentation and communication
 - 💻 Interface and user experience
+- 🎯 Architecture design patterns
 
 ## Tools and Resources
 

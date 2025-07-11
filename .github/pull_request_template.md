@@ -2,7 +2,7 @@
 
 <!-- Provide a brief description of the changes in this PR -->
 
-## Why is this change needed?
+## Why is this change needed
 
 <!-- Explain the motivation behind this change -->
 
@@ -33,7 +33,7 @@
 - [ ] All new and existing tests passed locally
 - [ ] Any dependent changes have been merged and published
 
-## How has this been tested?
+## How has this been tested
 
 <!-- 
 Please describe the tests that you ran to verify your changes. 

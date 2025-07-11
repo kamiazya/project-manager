@@ -1,0 +1,53 @@
+{
+  "name": "@project-manager/cli",
+  "version": "0.0.0",
+  "description": "CLI interface for project-manager",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "bin": {
+    "pm": "src/bin/pm.ts"
+  },
+  "exports": {
+    ".": {
+      "@project-manager/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "bin": {
+      "pm": "dist/bin/pm.js"
+    },
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    },
+    "executableFiles": [
+      "dist/bin/pm.js"
+    ]
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@project-manager/core": "workspace:*",
+    "@project-manager/shared": "workspace:*",
+    "commander": "catalog:",
+    "chalk": "catalog:",
+    "inversify": "catalog:",
+    "reflect-metadata": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "@types/node": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:"
+  }
+}

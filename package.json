@@ -1,0 +1,49 @@
+{
+  "name": "project-manager",
+  "version": "0.0.0",
+  "description": "Local-first ticket management system designed for AI-assisted development workflows",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "typecheck": "pnpm -r typecheck",
+    "markdownlint": "markdownlint-cli2",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "prepare": "husky",
+    "dev": "tsx packages/cli/src/bin/pm.ts",
+    "dev:quick": "tsx packages/cli/src/bin/pm.ts quick"
+  },
+  "keywords": [
+    "cli",
+    "ticket-management",
+    "ai-development",
+    "local-first"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "^2.1.1",
+    "@types/node": "catalog:",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "markdownlint-cli2": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-mcp": "^0.0.14",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vitest": "catalog:"
+  },
+  "packageManager": "pnpm@10.11.0",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,jsonc}": [
+      "biome check --write"
+    ],
+    "*.md": [
+      "markdownlint-cli2 --fix"
+    ]
+  }
+}

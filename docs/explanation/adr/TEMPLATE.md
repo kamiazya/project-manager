@@ -51,7 +51,6 @@
 
 [Any additional context, follow-up actions, or implementation guidelines. Include:]
 
-- **Timeline:** When this decision should be implemented
 - **Dependencies:** Prerequisites or blocking factors
 - **Migration Strategy:** How to transition from previous approaches
 - **Success Metrics:** How to measure successful implementation

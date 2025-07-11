@@ -206,6 +206,24 @@ This project follows an integrated AI-driven development approach. See the [Cont
 
 The system follows a local-first architecture with AI integration capabilities. See @docs/reference/architecture.md for comprehensive architectural details.
 
+### Domain-Driven Design (DDD) Approach
+
+The project adopts DDD principles for modeling complex business logic:
+
+- **Bounded Context**: "Ticket Management" as the primary context
+- **Entities**: Rich domain objects with encapsulated business rules (Ticket, Epic, Project)
+- **Value Objects**: Domain-specific types replacing primitives for better type safety
+- **Domain Services**: Stateless operations for cross-entity logic
+- **Repository Pattern**: Clean abstractions shielding domain from infrastructure
+
+When implementing features:
+
+1. Focus on domain language - use business terms consistently
+2. Encapsulate business rules within entities, not in services
+3. Use factory methods for entity creation
+4. Keep infrastructure concerns out of domain layer
+5. See @docs/guides/coding-guidelines.md for detailed implementation guidelines
+
 ## Use Cases and Target Users
 
 The framework serves multiple personas from package developers to team leads.
@@ -251,6 +269,53 @@ pnpm run build
 # Type check all packages
 pnpm run typecheck
 ```
+
+### CLI Development
+
+**Fast Development (tsx - no build required)**
+
+```bash
+# Direct tsx execution (recommended for development)
+pnpm dev <command>                    # Run CLI directly
+pnpm dev new "Task" -p h              # Create high-priority task
+pnpm dev todo                         # List pending tickets
+pnpm dev wip                          # List work-in-progress
+pnpm dev start <ticket-id>            # Start working on ticket
+pnpm dev done <ticket-id>             # Complete ticket
+```
+
+**Production Testing (build required)**
+
+```bash
+# Build and run (slower but matches production)
+pnpm run build
+node packages/cli/dist/bin/pm.js <command>
+```
+
+**Development Aliases**
+
+For maximum productivity, use the development aliases:
+
+```bash
+# Load development aliases
+source pm-dev-alias.sh
+
+# Fast development commands (tsx) - Simplified shortcuts
+pm new "Task" -p h                   # Create task
+pm-todo                              # List pending
+pm-wip                               # List in-progress
+pm-start <id>                        # Start ticket
+pm-done <id>                         # Complete ticket
+
+# Production testing (build)
+pm-build todo                        # Test built version
+```
+
+**Performance Comparison**
+
+- **tsx execution**: ~1 second (development)
+- **build + run**: ~11 seconds (production testing)
+- **Speed improvement**: 10x faster for development
 
 ## README.md Maintenance Guidelines
 

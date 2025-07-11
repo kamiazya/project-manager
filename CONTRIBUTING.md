@@ -84,6 +84,35 @@ The project integrates four key methodologies:
 - Clear communication through ubiquitous language
 - Manage complexity through bounded contexts
 
+**DDD Implementation Guidelines:**
+
+1. **Entities**
+   - Use factory methods (`Entity.create()`) for controlled creation
+   - Encapsulate all business rules within the entity
+   - Never expose setters that break invariants
+
+2. **Value Objects**
+   - Create domain-specific types instead of primitives
+   - Ensure immutability with TypeScript `readonly`
+   - Include validation in constructor
+
+3. **Domain Services**
+   - Use for operations that don't belong to a single entity
+   - Keep stateless and focused on domain logic
+   - Name clearly to express business intent
+
+4. **Repository Pattern**
+   - Define interfaces in domain layer
+   - Implement mapping logic in infrastructure layer
+   - Keep domain objects free from persistence concerns
+
+5. **Ubiquitous Language**
+   - Use business terms consistently in code
+   - Align naming with domain expert terminology
+   - Document domain concepts in code comments
+
+For comprehensive coding standards and examples, see [Coding Guidelines](./docs/guides/coding-guidelines.md).
+
 #### 3. Document-Driven Development
 
 - Clarify specifications through documentation before implementation
