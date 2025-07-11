@@ -10,10 +10,10 @@ import {
   TicketNotFoundError,
 } from '@project-manager/shared'
 import { injectable } from 'inversify'
-import { Ticket } from '../entities/ticket.js'
-import { TicketMapper } from '../infrastructure/mappers/ticket-mapper.js'
-import type { TicketRepository } from '../repositories/ticket-repository.interface.js'
-import type { TicketId } from '../value-objects/index.js'
+import type { TicketRepository } from '../../application/repositories/ticket-repository.interface.js'
+import { Ticket } from '../../domain/entities/ticket.js'
+import type { TicketId } from '../../domain/value-objects/index.js'
+import { TicketMapper } from './mappers/ticket-mapper.js'
 
 /**
  * JSON file-based implementation of the ticket repository using DDD principles.

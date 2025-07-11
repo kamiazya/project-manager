@@ -1,9 +1,12 @@
 import type { TicketSearchCriteria, TicketStats } from '@project-manager/shared'
 import { inject, injectable } from 'inversify'
-import { TYPES } from '../container/types.js'
-import { type CreateTicketData, Ticket } from '../entities/ticket.js'
-import type { TicketRepository } from '../repositories/ticket-repository.interface.js'
-import { TicketId } from '../value-objects/index.js'
+// TYPES インポートを削除 - DIコンテナがデコレータを正しく解決します
+import { type CreateTicketData, Ticket } from '../../domain/entities/ticket.js'
+import { TicketId } from '../../domain/value-objects/index.js'
+import {
+  type TicketRepository,
+  TicketRepository as TicketRepositorySymbol,
+} from '../repositories/ticket-repository.interface.js'
 
 /**
  * Use case implementation for ticket operations following DDD principles.
@@ -19,7 +22,7 @@ import { TicketId } from '../value-objects/index.js'
 @injectable()
 export class TicketUseCase {
   constructor(
-    @inject(TYPES.TicketRepository)
+    @inject(TicketRepositorySymbol)
     private readonly ticketRepository: TicketRepository
   ) {}
 

@@ -2,8 +2,11 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import type { ITicketRepository } from '../ports/ticket-repository.js'
-import { TicketUseCase } from '../usecases/ticket-usecase.js'
+import {
+  type ITicketRepository,
+  TicketRepository as TicketRepositorySymbol,
+} from '../../application/repositories/ticket-repository.interface.js'
+import { TicketUseCase } from '../../application/usecases/ticket-usecase.js'
 import { createContainer, getContainer, resetContainer } from './inversify.config.js'
 import { TYPES } from './types.js'
 
@@ -31,7 +34,7 @@ describe('Inversify Container Configuration', () => {
       const container = createContainer(tempFilePath)
 
       expect(container.isBound(TYPES.StoragePath)).toBe(true)
-      expect(container.isBound(TYPES.TicketRepository)).toBe(true)
+      expect(container.isBound(TicketRepositorySymbol)).toBe(true)
       expect(container.isBound(TYPES.TicketUseCase)).toBe(true)
     })
 
@@ -39,13 +42,13 @@ describe('Inversify Container Configuration', () => {
       const container = createContainer()
 
       expect(container.isBound(TYPES.StoragePath)).toBe(false)
-      expect(container.isBound(TYPES.TicketRepository)).toBe(true)
+      expect(container.isBound(TicketRepositorySymbol)).toBe(true)
       expect(container.isBound(TYPES.TicketUseCase)).toBe(true)
     })
 
     it('should resolve TicketRepository correctly', () => {
       const container = createContainer(tempFilePath)
-      const repository = container.get<ITicketRepository>(TYPES.TicketRepository)
+      const repository = container.get<ITicketRepository>(TicketRepositorySymbol)
 
       expect(repository).toBeDefined()
       expect(typeof repository.save).toBe('function')
@@ -64,8 +67,8 @@ describe('Inversify Container Configuration', () => {
     it('should use singleton scope for services', () => {
       const container = createContainer(tempFilePath)
 
-      const repository1 = container.get<ITicketRepository>(TYPES.TicketRepository)
-      const repository2 = container.get<ITicketRepository>(TYPES.TicketRepository)
+      const repository1 = container.get<ITicketRepository>(TicketRepositorySymbol)
+      const repository2 = container.get<ITicketRepository>(TicketRepositorySymbol)
       expect(repository1).toBe(repository2)
 
       const useCase1 = container.get<TicketUseCase>(TYPES.TicketUseCase)

@@ -242,6 +242,277 @@ Always use strict TypeScript configuration:
 }
 ```
 
+## Clean Architecture
+
+Clean Architecture provides the structural framework for implementing our Domain-Driven Design. It defines explicit layers with clear dependency rules that complement DDD concepts.
+
+### Architectural Layers
+
+Clean Architecture defines four main layers with strict dependency rules:
+
+```mermaid
+---
+title: Clean Architecture Layers
+---
+%%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#4caf50", "primaryTextColor": "#2e7d32", "primaryBorderColor": "#2e7d32"}}}%%
+graph TB
+    subgraph "Frameworks & Drivers"
+        UI[User Interfaces]
+        EXT[External Interfaces]
+        DB[Database/Storage]
+    end
+    
+    subgraph "Interface Adapters"
+        CTRL[Controllers]
+        GATE[Gateways]
+        REPO_IMPL[Repository Implementations]
+    end
+    
+    subgraph "Use Cases"
+        APP[Application Services]
+        REPO_INT[Repository Interfaces]
+    end
+    
+    subgraph "Entities"
+        ENT[Domain Entities]
+        VO[Value Objects]
+        DS[Domain Services]
+    end
+    
+    %% Dependencies flow inward
+    UI --> CTRL
+    EXT --> GATE
+    DB --> REPO_IMPL
+    
+    CTRL --> APP
+    GATE --> APP
+    REPO_IMPL --> REPO_INT
+    
+    APP --> ENT
+    APP --> VO
+    APP --> DS
+    REPO_INT --> ENT
+    
+    %% Styling
+    classDef outer fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px
+    classDef adapter fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef usecase fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef entity fill:#e3f2fd,stroke:#2196f3,stroke-width:3px
+    
+    class UI,EXT,DB outer
+    class CTRL,GATE,REPO_IMPL adapter
+    class APP,REPO_INT usecase
+    class ENT,VO,DS entity
+```
+
+### Layer Responsibilities
+
+**Entities Layer (Inner Layer)**
+
+- Domain entities and value objects
+- Enterprise business rules
+- Core business logic
+- No dependencies on outer layers
+
+```typescript
+// Good: Pure domain entity
+export class Ticket {
+  private constructor(props: TicketProps) {
+    this.props = props;
+  }
+
+  static create(data: CreateTicketData): Ticket {
+    const ticket = new Ticket({
+      id: TicketId.create(),
+      title: TicketTitle.create(data.title),
+      status: TicketStatus.pending(),
+      // ... other properties
+    });
+    return ticket;
+  }
+
+  // Business operations
+  startProgress(): void {
+    if (!this.status.canTransitionTo('in_progress')) {
+      throw new InvalidStatusTransition();
+    }
+    this.status = TicketStatus.inProgress();
+  }
+}
+```
+
+**Use Cases Layer (Application Layer)**
+
+- Application-specific business rules
+- Orchestrates data flow between entities
+- Depends only on inner layers and interfaces
+
+```typescript
+// Good: Use case with dependency inversion
+@injectable()
+export class TicketUseCase {
+  constructor(
+    @inject(TYPES.TicketRepository)
+    private readonly ticketRepository: TicketRepository
+  ) {}
+
+  async createTicket(data: CreateTicketData): Promise<Ticket> {
+    const ticket = Ticket.create(data);
+    await this.ticketRepository.save(ticket);
+    return ticket;
+  }
+}
+```
+
+**Interface Adapters Layer**
+
+- Converts data between use cases and external systems
+- Repository implementations
+- External service adapters
+
+```typescript
+// Good: Repository implementation
+@injectable()
+export class JsonTicketRepository implements TicketRepository {
+  async save(ticket: Ticket): Promise<void> {
+    // Convert domain object to persistence format
+    const ticketJson = TicketMapper.toPersistence(ticket);
+    await this.writeToFile(ticketJson);
+  }
+
+  async findById(id: TicketId): Promise<Ticket | null> {
+    const data = await this.readFromFile(id.value);
+    return data ? TicketMapper.toDomain(data) : null;
+  }
+}
+```
+
+**Frameworks & Drivers Layer (Outer Layer)**
+
+- External frameworks and tools
+- CLI commands, web controllers
+- Database drivers
+
+```typescript
+// Good: CLI command
+export function createTicketCommand(): Command {
+  return new Command('create')
+    .action(async (title: string, description: string) => {
+      const ticketUseCase = getTicketUseCase();
+      const ticket = await ticketUseCase.createTicket({ title, description });
+      console.log(formatTicket(ticket));
+    });
+}
+```
+
+### Dependency Rules
+
+1. **Dependency Direction**: Dependencies point inward only
+2. **Interface Segregation**: Outer layers depend on inner layer interfaces
+3. **Stable Dependencies**: Inner layers are more stable than outer layers
+4. **Framework Independence**: Business logic independent of frameworks
+
+```typescript
+// Good: Interface in inner layer
+export interface TicketRepository {
+  save(ticket: Ticket): Promise<void>;
+  findById(id: TicketId): Promise<Ticket | null>;
+}
+
+// Good: Implementation in outer layer
+export class JsonTicketRepository implements TicketRepository {
+  // Implementation details
+}
+
+// Bad: Direct dependency on implementation
+export class TicketUseCase {
+  constructor(private repo: JsonTicketRepository) {} // ❌ Depends on concrete class
+}
+
+// Good: Dependency on interface
+export class TicketUseCase {
+  constructor(private repo: TicketRepository) {} // ✅ Depends on abstraction
+}
+```
+
+### Integration with DDD
+
+Clean Architecture layers map naturally to DDD concepts:
+
+- **Entities Layer**: Domain entities, value objects, domain services
+- **Use Cases Layer**: Application services, repository interfaces
+- **Interface Adapters Layer**: Repository implementations, anti-corruption layers
+- **Frameworks & Drivers Layer**: User interfaces, external APIs
+
+### Common Mistakes to Avoid
+
+**Violating Dependency Direction**
+
+```typescript
+// Bad: Inner layer depending on outer layer
+export class Ticket {
+  save(): void {
+    const repo = new JsonTicketRepository(); // ❌ Domain depends on infrastructure
+    repo.save(this);
+  }
+}
+
+// Good: Outer layer depends on inner layer
+export class TicketUseCase {
+  constructor(private repo: TicketRepository) {} // ✅ Application depends on abstraction
+}
+```
+
+**Mixing Layer Concerns**
+
+```typescript
+// Bad: Business logic in repository
+export class JsonTicketRepository {
+  async save(ticket: Ticket): Promise<void> {
+    if (ticket.priority === 'high') {
+      await this.sendUrgentNotification(); // ❌ Business logic in infrastructure
+    }
+    // ... save logic
+  }
+}
+
+// Good: Business logic in domain
+export class Ticket {
+  markAsUrgent(): void {
+    if (this.priority.isHigh()) {
+      this.addDomainEvent(new UrgentTicketCreated(this.id)); // ✅ Business logic in domain
+    }
+  }
+}
+```
+
+### Testing Strategy
+
+Test each layer independently:
+
+```typescript
+// Test domain layer in isolation
+describe('Ticket', () => {
+  it('should transition to in_progress when started', () => {
+    const ticket = Ticket.create({ title: 'Test', description: 'Test' });
+    ticket.startProgress();
+    expect(ticket.status.value).toBe('in_progress');
+  });
+});
+
+// Test use case with mocked repository
+describe('TicketUseCase', () => {
+  it('should create and save ticket', async () => {
+    const mockRepo = { save: jest.fn() } as jest.Mocked<TicketRepository>;
+    const useCase = new TicketUseCase(mockRepo);
+    
+    await useCase.createTicket({ title: 'Test', description: 'Test' });
+    
+    expect(mockRepo.save).toHaveBeenCalledWith(expect.any(Ticket));
+  });
+});
+```
+
 ## Testing Guidelines
 
 ### Test-Driven Development (TDD)

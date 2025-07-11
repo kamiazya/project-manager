@@ -1,8 +1,11 @@
 import 'reflect-metadata'
 import { Container } from 'inversify'
+import {
+  type TicketRepository,
+  TicketRepository as TicketRepositorySymbol,
+} from '../../application/repositories/ticket-repository.interface.js'
+import { TicketUseCase } from '../../application/usecases/ticket-usecase.js'
 import { JsonTicketRepository } from '../adapters/json-ticket-repository.js'
-import type { TicketRepository } from '../repositories/ticket-repository.interface.js'
-import { TicketUseCase } from '../usecases/ticket-usecase.js'
 import { TYPES } from './types.js'
 
 /**
@@ -20,7 +23,7 @@ export function createContainer(storagePath?: string): Container {
 
   // Bind repository
   container
-    .bind<TicketRepository>(TYPES.TicketRepository)
+    .bind<TicketRepository>(TicketRepositorySymbol)
     .toDynamicValue(() => {
       const path = container.isBound(TYPES.StoragePath)
         ? container.get<string>(TYPES.StoragePath)

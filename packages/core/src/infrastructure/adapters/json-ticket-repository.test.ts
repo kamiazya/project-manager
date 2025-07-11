@@ -2,8 +2,8 @@ import { existsSync } from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import { TicketNotFoundError } from '@project-manager/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { Ticket } from '../entities/ticket.js'
-import { TicketId } from '../value-objects/index.js'
+import { Ticket } from '../../domain/entities/ticket.js'
+import { TicketId } from '../../domain/value-objects/index.js'
 import { JsonTicketRepository } from './json-ticket-repository.js'
 
 describe('JsonTicketRepository', () => {

@@ -1,5 +1,5 @@
 import type { TicketJSON } from '@project-manager/shared'
-import { type ReconstituteTicketData, Ticket } from '../../entities/ticket.js'
+import { type ReconstituteTicketData, Ticket } from '../../../domain/entities/ticket.js'
 
 /**
  * Mapper class for converting between Ticket domain objects and persistence format
