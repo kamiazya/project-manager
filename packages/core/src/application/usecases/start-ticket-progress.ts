@@ -1,3 +1,4 @@
+import { TicketNotFoundError } from '@project-manager/shared'
 import { inject, injectable } from 'inversify'
 import { TicketId } from '../../domain/value-objects/ticket-id.js'
 import type { UseCase } from '../common/base-usecase.js'
@@ -26,7 +27,7 @@ export class StartTicketProgressUseCase
     const ticket = await this.ticketRepository.findById(ticketId)
 
     if (!ticket) {
-      throw new Error(`Ticket not found: ${request.id}`)
+      throw new TicketNotFoundError(request.id)
     }
 
     // Use domain business operation
