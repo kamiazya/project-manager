@@ -216,6 +216,8 @@ export class Ticket {
   }
 
   private updateTimestamp(): void {
-    this.props.updatedAt = new Date()
+    const now = new Date()
+    const minTimestamp = new Date(this.props.updatedAt.getTime() + 1)
+    this.props.updatedAt = now > minTimestamp ? now : minTimestamp
   }
 }
