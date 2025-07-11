@@ -31,16 +31,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run linting
-        run: pnpm run check
+        run: pnpm check
 
       - name: Run markdown linting
-        run: pnpm run markdownlint
+        run: pnpm markdownlint
 
       - name: Run type checking
-        run: pnpm run typecheck
+        run: pnpm typecheck
 
       - name: Run tests
-        run: pnpm run test
+        run: pnpm test
 
       - name: Build packages
-        run: pnpm run build
+        run: pnpm build
