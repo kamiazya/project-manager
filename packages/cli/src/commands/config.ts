@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { type Config, getConfig, validateConfig } from '@project-manager/shared'
+import { getConfig, validateConfig } from '@project-manager/shared'
 import { Command } from 'commander'
 
 export function configCommand(): Command {

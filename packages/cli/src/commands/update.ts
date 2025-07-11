@@ -3,12 +3,7 @@ import {
   UpdateTicketPriorityRequest,
   UpdateTicketStatusRequest,
 } from '@project-manager/core'
-import {
-  isValidTicketPriority,
-  isValidTicketStatus,
-  type TicketPriority,
-  type TicketStatus,
-} from '@project-manager/shared'
+import { isValidTicketPriority, isValidTicketStatus } from '@project-manager/shared'
 import { Command } from 'commander'
 import { formatTicketResponse } from '../utils/output.js'
 import {

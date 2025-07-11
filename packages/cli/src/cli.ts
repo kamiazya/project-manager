@@ -17,6 +17,7 @@ import { createQuickCommands } from './commands/quick.js'
 import { showTicketCommand } from './commands/show.js'
 import { statsCommand } from './commands/stats.js'
 import { updateTicketCommand } from './commands/update.js'
+import { expandPriority, expandType } from './utils/cli-helpers.js'
 import { formatTicketSummaryList } from './utils/output.js'
 import {
   getCreateTicketUseCase,
@@ -202,43 +203,5 @@ async function listTicketsByStatus(status: string, format: 'table' | 'json' | 'c
   } catch (error) {
     console.error('Failed to list tickets:', error instanceof Error ? error.message : String(error))
     process.exit(1)
-  }
-}
-
-/**
- * Expand priority short forms
- */
-function expandPriority(short: string): 'high' | 'medium' | 'low' {
-  switch (short.toLowerCase()) {
-    case 'h':
-    case 'high':
-      return 'high'
-    case 'l':
-    case 'low':
-      return 'low'
-    case 'm':
-    case 'medium':
-      return 'medium'
-    default:
-      return 'medium'
-  }
-}
-
-/**
- * Expand type short forms
- */
-function expandType(short: string): 'feature' | 'bug' | 'task' {
-  switch (short.toLowerCase()) {
-    case 'f':
-    case 'feature':
-      return 'feature'
-    case 'b':
-    case 'bug':
-      return 'bug'
-    case 't':
-    case 'task':
-      return 'task'
-    default:
-      return 'task'
   }
 }

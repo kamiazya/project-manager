@@ -1,10 +1,4 @@
-import {
-  ERROR_MESSAGES,
-  generateId,
-  isValidId,
-  VALIDATION,
-  ValueObject,
-} from '@project-manager/shared'
+import { ERROR_MESSAGES, generateId, isValidId, ValueObject } from '@project-manager/shared'
 
 interface TicketIdProps {
   value: string

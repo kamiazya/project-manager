@@ -1,4 +1,3 @@
-import type { TicketStats } from '@project-manager/shared'
 import { inject, injectable } from 'inversify'
 import type { UseCase } from '../common/base-usecase.js'
 import { GetTicketStatsRequest } from '../dtos/requests/get-ticket-stats.js'
