@@ -92,6 +92,91 @@ The project is in early development phase with comprehensive requirements and ar
 - Local temporary issue management before promoting to GitHub Issues
 - Purpose: Organize and batch issues before creating permanent GitHub Issues
 
+#### AI Dogfooding and Integration with Project Manager
+
+AI assistants working on this project MUST use the project-manager system itself for task management and planning. This ensures that the AI systems are effectively integrated into the development workflow and can self-manage their tasks while providing real-time updates to human collaborators.
+
+**Definition of Non-Trivial Work**: Tasks requiring multiple steps, file modifications, or taking more than 5 minutes to complete.
+
+**AI Task Management and Integration Requirements**:
+
+1. **Create Tickets for All Non-Trivial Work**
+   - Before starting any complex task, create a ticket using the CLI
+   - Document the purpose, background, and success criteria
+   - Use appropriate priority and complexity levels
+
+2. **Use Development Aliases for Efficiency**
+   - Load aliases: `source pm-dev-alias.sh`
+   - Use `pnpm dev` commands directly for reliability
+   - Note: Aliases may not persist in all environments
+
+3. **Real-time Status Updates**
+   - Mark tickets as in_progress when starting work
+   - Add progress updates via new tickets (comment command not yet implemented)
+   - Create new tickets for unexpected issues or requirements
+   - Complete tickets promptly when work is finished
+
+4. **Planning and Coordination**
+   - Use `pnpm dev todo` to check work queue before starting
+   - Use `pnpm dev wip` to track current active work
+   - Create dependent tickets for complex multi-step tasks
+   - Use epics for large initiatives requiring multiple tickets
+
+**AI Dogfooding Examples**:
+
+```bash
+# Before starting feature implementation
+pnpm dev new "Implement user authentication system" -d "Add login/logout with JWT tokens" -p h --type feature
+# Note: Capture the ticket ID from the output for use in subsequent commands
+
+# Start work on the ticket (use actual ticket ID from above)
+pnpm dev start 1751764474
+
+# Add progress updates (comment command not yet implemented - use workaround)
+pnpm dev new "Progress on #1751764474: JWT library research" -d "Researched JWT libraries, selected jsonwebtoken for implementation" -p l --type task
+
+# Create dependent tickets as needed
+pnpm dev new "Design authentication middleware" -d "Create Express middleware for JWT validation" -p m --depends-on 1751764474
+
+# Complete when finished
+pnpm dev done 1751764474
+```
+
+**AI Self-Validation Process**:
+
+1. **Pre-Implementation Planning**
+   - Create ticket with clear success criteria
+   - Document approach and alternatives considered
+   - Identify potential risks and dependencies
+
+2. **Implementation Tracking**
+   - Update ticket status as work progresses
+   - Document decisions and learnings in progress tickets (comment command not yet implemented)
+   - Create new tickets for discovered issues
+
+3. **Completion Validation**
+   - Verify all success criteria met
+   - Document results and any deviations
+   - Create follow-up tickets if needed
+
+**AI Responsibility for Dogfooding**:
+
+As an AI assistant working on this project, you are responsible for:
+
+1. **Using the system consistently** - Don't bypass project-manager for task management
+2. **Providing authentic feedback** - Report usability issues and improvement opportunities through tickets
+3. **Maintaining real data** - Create realistic tickets with proper context and complexity
+4. **Following actual workflows** - Use the system as intended users would
+5. **Contributing to improvement** - Create tickets for system enhancements based on usage experience
+
+**Benefits of AI Self-Management**:
+
+- **Authentic Testing**: AI experiences the system as actual users would
+- **Continuous Improvement**: AI identifies usability issues through real use
+- **Knowledge Retention**: Important decisions and context preserved in tickets
+- **Collaboration**: Human developers can track AI progress and provide feedback
+- **Quality Assurance**: Systematic approach ensures nothing is overlooked
+
 #### When to Use Issue Management
 
 **Always Use Issues For:**
@@ -159,6 +244,33 @@ For detailed guidelines and examples, see [Asynchronous Delegation Best Practice
 
 **Remember:** Well-structured tasks lead to higher success rates and less rework, regardless of who executes them.
 
+**AI Feedback Mechanism**:
+
+When encountering usability issues or improvement opportunities, create specific improvement tickets:
+
+```bash
+# Report usability issues
+pnpm dev new "Improve clarity of pm-todo output" -d "Current output format difficult to scan quickly" -p m --type improvement
+
+# Suggest enhancements
+pnpm dev new "Add ticket template support" -d "Common ticket patterns need templates for efficiency" -p l --type enhancement
+```
+
+**Error Handling Protocol**:
+
+If project-manager CLI commands fail during the workflow:
+
+1. **Document the error**: Note the exact command and error message
+2. **Create a bug ticket**: `pnpm dev new "CLI command error: [command]" -d "Error details and reproduction steps" -p h --type bug`
+3. **Use fallback method**: Continue with manual tracking until the issue is resolved
+4. **Report to human developer**: Mention the error and ticket ID for immediate attention
+
+**Known Limitations (From Validation Testing)**:
+
+1. **Development Aliases**: May not persist across bash sessions in some environments
+2. **Comment Command**: Not yet implemented - use progress tickets as workaround
+3. **Ticket ID Management**: Must manually capture and track ticket IDs from command output
+
 ### Local Development Workflow
 
 TODO: Define local development workflow for project-manager
@@ -201,6 +313,14 @@ This project follows an integrated AI-driven development approach. See the [Cont
 - **Operation Risk Assessment**: Operations are categorized by risk level to determine appropriate safeguards
 - **Co-authorship Model**: All AI operations record both the AI agent and human instructor following Git-style co-authorship
 - **AI-Optional Design**: All core functionality works without AI assistance
+
+**AI Dogfooding Integration**:
+
+- **Mandatory Self-Use**: AI assistants must use project-manager for their own task management
+- **Authentic Testing**: AI experiences system limitations and benefits firsthand
+- **Continuous Feedback**: AI creates tickets for usability improvements based on real usage
+- **Knowledge Retention**: AI preserves context and decisions through ticket documentation
+- **Quality Validation**: AI validates system quality through consistent practical application
 
 ## Architecture and Design
 
@@ -254,6 +374,10 @@ TODO: Update development status for project-manager
 ## Testing Strategy
 
 Comprehensive Test-Driven Development approach with AI-assisted testing. See @docs/guides/testing-strategy.md for detailed testing guidelines and implementation.
+
+### Dogfooding Testing
+
+The project uses dogfooding as a core testing strategy - using project-manager to manage its own development. This validates real-world usage patterns and ensures the system meets actual developer needs through practical application.
 
 ## Development Commands
 

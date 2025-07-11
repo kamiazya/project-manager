@@ -72,6 +72,46 @@ describe('TicketManager', () => {
 > TODO: Define E2E test scenarios based on user stories
 > Not sure how to implement E2E tests yet.
 
+### 3.4. Dogfooding Testing
+
+**Scope**: Using the project manager system to manage its own development
+
+**Purpose**: Validate real-world usage patterns and identify usability issues through self-hosted development workflows
+
+**Implementation Strategy**:
+
+- Use project-manager to track its own development issues
+- Create tickets for new features, bugs, and improvements
+- Utilize AI integration features during development
+- Exercise all CLI commands and workflows in actual development
+- Document pain points and improvement opportunities
+
+**Test Categories**:
+
+- **Self-Management**: Using the system to manage project-manager development
+- **AI Workflow Integration**: Testing AI-assisted development through actual usage
+- **CLI Usability**: Validating command-line interface through daily use
+- **Cross-cutting Features**: Testing comments, attachments, labels, and relationships in real scenarios
+- **Performance Under Load**: Handling increasing ticket volumes over time
+
+**Validation Criteria**:
+
+- All core features used successfully in self-development
+- Development productivity improvements demonstrated
+- AI integration enhances actual development workflows
+- CLI commands provide efficient development experience
+- Issues identified and resolved through self-use
+
+**Benefits**:
+
+- Authentic user experience validation
+- Early detection of usability issues
+- Continuous improvement through real-world usage
+- Team alignment on product value
+- Quality assurance through practical application
+
+**Implementation Guide**: See [Dogfooding Workflow Guide](./dogfooding-workflow.md) for detailed practical steps using development aliases and CLI commands.
+
 ## 4. Test Environment Setup
 
 ### 4.1. Local Development
