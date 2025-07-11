@@ -1,19 +1,24 @@
 import { existsSync } from 'node:fs'
-import { unlink } from 'node:fs/promises'
+import { mkdtemp, rm, unlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { TicketNotFoundError } from '@project-manager/shared'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { Ticket } from '../../domain/entities/ticket.js'
 import { TicketId } from '../../domain/value-objects/ticket-id.js'
 import { JsonTicketRepository } from './json-ticket-repository.js'
 
 describe('JsonTicketRepository', () => {
   let repository: JsonTicketRepository
+  let tempDir: string
   let testFilePath: string
 
+  beforeAll(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'json-ticket-repo-test-'))
+  })
+
   beforeEach(() => {
-    testFilePath = join(tmpdir(), `test-tickets-${Date.now()}.json`)
+    testFilePath = join(tempDir, `${Date.now()}.json`)
     repository = new JsonTicketRepository(testFilePath)
   })
 
@@ -22,6 +27,11 @@ describe('JsonTicketRepository', () => {
     if (existsSync(testFilePath)) {
       await unlink(testFilePath)
     }
+  })
+
+  afterAll(async () => {
+    // Clean up temporary directory
+    await rm(tempDir, { recursive: true, force: true })
   })
 
   describe('save', () => {
