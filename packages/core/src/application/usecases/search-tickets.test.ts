@@ -33,8 +33,8 @@ describe('SearchTicketsUseCase', () => {
         priority: 'high',
         type: 'bug',
         privacy: 'local-only',
-        createdAt: new Date('2023-01-01'),
-        updatedAt: new Date('2023-01-01'),
+        createdAt: '2023-01-01T00:00:00.000Z',
+        updatedAt: '2023-01-01T00:00:00.000Z',
       }),
       Ticket.reconstitute({
         id: '87654321',
@@ -44,8 +44,8 @@ describe('SearchTicketsUseCase', () => {
         priority: 'medium',
         type: 'feature',
         privacy: 'shareable',
-        createdAt: new Date('2023-01-02'),
-        updatedAt: new Date('2023-01-02'),
+        createdAt: '2023-01-02T00:00:00.000Z',
+        updatedAt: '2023-01-02T00:00:00.000Z',
       }),
       Ticket.reconstitute({
         id: 'abcdef01',
@@ -55,8 +55,8 @@ describe('SearchTicketsUseCase', () => {
         priority: 'low',
         type: 'task',
         privacy: 'public',
-        createdAt: new Date('2023-01-03'),
-        updatedAt: new Date('2023-01-03'),
+        createdAt: '2023-01-03T00:00:00.000Z',
+        updatedAt: '2023-01-03T00:00:00.000Z',
       }),
     ]
 
