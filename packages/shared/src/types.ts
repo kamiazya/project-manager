@@ -30,6 +30,7 @@ export interface TicketSearchCriteria {
   priority?: TicketPriority
   type?: TicketType
   privacy?: TicketPrivacy
+  search?: string
 }
 
 export interface TicketStats {

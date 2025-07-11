@@ -38,7 +38,7 @@ export function createTicketCommand(): Command {
         })
 
         console.log(output)
-        console.log(`\n${SUCCESS_MESSAGES.TICKET_CREATED(ticket.id)}`)
+        console.log(`\n${SUCCESS_MESSAGES.TICKET_CREATED(ticket.id.value)}`)
       } catch (error) {
         console.error(
           ERROR_MESSAGES.OPERATION_FAILED.CREATE,

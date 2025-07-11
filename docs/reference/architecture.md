@@ -188,6 +188,44 @@ graph TB
 
 ## Data Model and Storage
 
+### Domain-Driven Design Approach
+
+The system follows Domain-Driven Design principles to model complex business logic:
+
+**Bounded Context**
+
+- Starting with a single "Ticket Management" bounded context
+- Future expansions (user management, analytics) designed as separate contexts
+- Clear boundaries prevent concept pollution across domains
+
+**DDD Building Blocks**
+
+1. **Entities**: Objects with identity and lifecycle (Ticket, Epic, Project)
+   - Encapsulate business rules and invariants
+   - Use factory methods for controlled creation
+   - Maintain clear identity throughout lifecycle
+
+2. **Value Objects**: Immutable objects without identity
+   - Replace primitive types with domain-specific types
+   - Encapsulate validation and business constraints
+   - Examples: Status, Priority, Type, future: TicketTitle, Description
+
+3. **Domain Services**: Stateless operations spanning multiple entities
+   - Handle cross-entity calculations and operations
+   - Keep infrastructure concerns separate
+   - Examples: Statistics calculation, progress tracking
+
+4. **Repositories**: Abstractions for persistence
+   - Shield domain from infrastructure details
+   - Handle domain object reconstruction
+   - Provide domain-focused query methods
+
+5. **Aggregates**: Consistency boundaries
+   - Currently treating entities as independent aggregate roots
+   - Introduce when transactional consistency needed across entities
+
+For detailed implementation guidelines and code examples, see [Coding Guidelines](../guides/coding-guidelines.md).
+
 ### Domain Model Relationships
 
 ```mermaid

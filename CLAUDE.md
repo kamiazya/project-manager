@@ -206,6 +206,24 @@ This project follows an integrated AI-driven development approach. See the [Cont
 
 The system follows a local-first architecture with AI integration capabilities. See @docs/reference/architecture.md for comprehensive architectural details.
 
+### Domain-Driven Design (DDD) Approach
+
+The project adopts DDD principles for modeling complex business logic:
+
+- **Bounded Context**: "Ticket Management" as the primary context
+- **Entities**: Rich domain objects with encapsulated business rules (Ticket, Epic, Project)
+- **Value Objects**: Domain-specific types replacing primitives for better type safety
+- **Domain Services**: Stateless operations for cross-entity logic
+- **Repository Pattern**: Clean abstractions shielding domain from infrastructure
+
+When implementing features:
+
+1. Focus on domain language - use business terms consistently
+2. Encapsulate business rules within entities, not in services
+3. Use factory methods for entity creation
+4. Keep infrastructure concerns out of domain layer
+5. See @docs/guides/coding-guidelines.md for detailed implementation guidelines
+
 ## Use Cases and Target Users
 
 The framework serves multiple personas from package developers to team leads.

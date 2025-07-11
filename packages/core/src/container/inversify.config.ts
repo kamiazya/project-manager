@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { Container } from 'inversify'
 import { JsonTicketRepository } from '../adapters/json-ticket-repository.js'
-import type { ITicketRepository } from '../ports/ticket-repository.js'
+import type { TicketRepository } from '../repositories/ticket-repository.interface.js'
 import { TicketUseCase } from '../usecases/ticket-usecase.js'
 import { TYPES } from './types.js'
 
@@ -20,7 +20,7 @@ export function createContainer(storagePath?: string): Container {
 
   // Bind repository
   container
-    .bind<ITicketRepository>(TYPES.TicketRepository)
+    .bind<TicketRepository>(TYPES.TicketRepository)
     .toDynamicValue(() => {
       const path = container.isBound(TYPES.StoragePath)
         ? container.get<string>(TYPES.StoragePath)
@@ -30,13 +30,7 @@ export function createContainer(storagePath?: string): Container {
     .inSingletonScope()
 
   // Bind use case
-  container
-    .bind<TicketUseCase>(TYPES.TicketUseCase)
-    .toDynamicValue(() => {
-      const repository = container.get<ITicketRepository>(TYPES.TicketRepository)
-      return new TicketUseCase(repository)
-    })
-    .inSingletonScope()
+  container.bind<TicketUseCase>(TYPES.TicketUseCase).to(TicketUseCase).inSingletonScope()
 
   return container
 }

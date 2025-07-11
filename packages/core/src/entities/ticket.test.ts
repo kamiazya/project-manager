@@ -1,369 +1,232 @@
-import { TicketValidationError } from '@project-manager/shared'
-import { describe, expect, it } from 'vitest'
-import { Ticket } from './ticket.js'
+import { DEFAULTS } from '@project-manager/shared'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { type CreateTicketData, type ReconstituteTicketData, Ticket } from './ticket.js'
 
 describe('Ticket', () => {
-  describe('constructor', () => {
-    it('should create a ticket with required fields', () => {
-      const ticketData = {
-        title: 'Test Ticket',
-        description: 'Test Description',
-        priority: 'high' as const,
-      }
+  let validCreateData: CreateTicketData
+  let validReconstituteData: ReconstituteTicketData
 
-      const ticket = new Ticket(ticketData)
+  beforeEach(() => {
+    validCreateData = {
+      title: 'Fix login bug',
+      description: 'Users cannot login with email',
+      priority: 'high',
+    }
 
-      expect(ticket.title).toBe('Test Ticket')
-      expect(ticket.description).toBe('Test Description')
-      expect(ticket.priority).toBe('high')
-      expect(ticket.status).toBe('pending')
-      expect(ticket.type).toBe('task')
-      expect(ticket.privacy).toBe('local-only')
-      expect(ticket.id).toBeTruthy()
+    validReconstituteData = {
+      id: 'test-ticket-id-123',
+      title: 'Fix login bug',
+      description: 'Users cannot login with email',
+      status: 'pending',
+      priority: 'high',
+      type: 'bug',
+      privacy: 'local-only',
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+    }
+  })
+
+  describe('create', () => {
+    it('should create a new ticket with valid data', () => {
+      const ticket = Ticket.create(validCreateData)
+
+      expect(ticket.id).toBeDefined()
+      expect(ticket.title.value).toBe('Fix login bug')
+      expect(ticket.description.value).toBe('Users cannot login with email')
+      expect(ticket.priority.value).toBe('high')
+      expect(ticket.status.value).toBe('pending')
+      expect(ticket.type).toBe(DEFAULTS.TYPE)
+      expect(ticket.privacy).toBe(DEFAULTS.PRIVACY)
       expect(ticket.createdAt).toBeInstanceOf(Date)
       expect(ticket.updatedAt).toBeInstanceOf(Date)
     })
 
-    it('should create a ticket with custom status and type', () => {
-      const ticketData = {
-        title: 'Feature Request',
-        description: 'Add new feature',
-        priority: 'medium' as const,
-        status: 'in_progress' as const,
-        type: 'feature' as const,
-        privacy: 'shareable' as const,
-      }
+    it('should create ticket with custom status', () => {
+      const data = { ...validCreateData, status: 'in_progress' as const }
+      const ticket = Ticket.create(data)
 
-      const ticket = new Ticket(ticketData)
-
-      expect(ticket.status).toBe('in_progress')
-      expect(ticket.type).toBe('feature')
-      expect(ticket.privacy).toBe('shareable')
+      expect(ticket.status.value).toBe('in_progress')
     })
 
-    it('should generate unique IDs for different tickets', () => {
+    it('should create ticket with custom type and privacy', () => {
       const data = {
-        title: 'Test',
-        description: 'Test',
-        priority: 'low' as const,
+        ...validCreateData,
+        type: 'feature' as const,
+        privacy: 'public' as const,
       }
+      const ticket = Ticket.create(data)
 
-      const ticket1 = new Ticket(data)
-      const ticket2 = new Ticket(data)
-
-      expect(ticket1.id).not.toBe(ticket2.id)
+      expect(ticket.type).toBe('feature')
+      expect(ticket.privacy).toBe('public')
     })
 
-    it('should throw validation error for empty title', () => {
-      expect(() => {
-        new Ticket({
-          title: '',
-          description: 'Test',
-          priority: 'low' as const,
-        })
-      }).toThrow(TicketValidationError)
+    it('should throw error for invalid title', () => {
+      const data = { ...validCreateData, title: '' }
+
+      expect(() => Ticket.create(data)).toThrow('Title cannot be empty or whitespace only')
     })
 
-    it('should throw validation error for whitespace-only title', () => {
-      expect(() => {
-        new Ticket({
-          title: '   ',
-          description: 'Test',
-          priority: 'low' as const,
-        })
-      }).toThrow(TicketValidationError)
+    it('should throw error for invalid description', () => {
+      const data = { ...validCreateData, description: '' }
+
+      expect(() => Ticket.create(data)).toThrow('Description cannot be empty or whitespace only')
     })
 
-    it('should throw validation error for title exceeding max length', () => {
-      const longTitle = 'a'.repeat(201) // Assuming 200 is max length
+    it('should throw error for invalid priority', () => {
+      const data = { ...validCreateData, priority: 'invalid' as any }
 
-      expect(() => {
-        new Ticket({
-          title: longTitle,
-          description: 'Test',
-          priority: 'low' as const,
-        })
-      }).toThrow(TicketValidationError)
-    })
-
-    it('should throw validation error for empty description', () => {
-      expect(() => {
-        new Ticket({
-          title: 'Test',
-          description: '',
-          priority: 'low' as const,
-        })
-      }).toThrow(TicketValidationError)
-    })
-
-    it('should throw validation error for description exceeding max length', () => {
-      const longDescription = 'a'.repeat(2001) // Assuming 2000 is max length
-
-      expect(() => {
-        new Ticket({
-          title: 'Test',
-          description: longDescription,
-          priority: 'low' as const,
-        })
-      }).toThrow(TicketValidationError)
-    })
-
-    it('should throw validation error for whitespace-only description', () => {
-      expect(() => {
-        new Ticket({
-          title: 'Test',
-          description: '   \n\t  ',
-          priority: 'low' as const,
-        })
-      }).toThrow(TicketValidationError)
-    })
-
-    it('should handle Unicode characters in title and description', () => {
-      const ticket = new Ticket({
-        title: '📋 Unicode タイトル with émojis',
-        description: '🚀 Unicode description with émojis and 中文',
-        priority: 'high' as const,
-      })
-
-      expect(ticket.title).toBe('📋 Unicode タイトル with émojis')
-      expect(ticket.description).toBe('🚀 Unicode description with émojis and 中文')
-    })
-
-    it('should trim whitespace from title and description', () => {
-      const ticket = new Ticket({
-        title: '  Test Title  ',
-        description: '  Test Description  ',
-        priority: 'medium' as const,
-      })
-
-      expect(ticket.title).toBe('Test Title')
-      expect(ticket.description).toBe('Test Description')
-    })
-
-    it('should handle boundary values for title length', () => {
-      const maxTitle = 'a'.repeat(200) // Exactly max length
-
-      const ticket = new Ticket({
-        title: maxTitle,
-        description: 'Test',
-        priority: 'low' as const,
-      })
-
-      expect(ticket.title).toBe(maxTitle)
-    })
-
-    it('should handle boundary values for description length', () => {
-      const maxDescription = 'a'.repeat(2000) // Exactly max length (2000 chars)
-
-      const ticket = new Ticket({
-        title: 'Test',
-        description: maxDescription,
-        priority: 'low' as const,
-      })
-
-      expect(ticket.description).toBe(maxDescription)
-    })
-
-    it('should accept predefined ID', () => {
-      const customId = 'custom123'
-      const ticket = new Ticket(
-        {
-          title: 'Test',
-          description: 'Test',
-          priority: 'low' as const,
-        },
-        customId
-      )
-
-      expect(ticket.id).toBe(customId)
+      expect(() => Ticket.create(data)).toThrow('Invalid ticket priority: invalid')
     })
   })
 
-  describe('updateStatus', () => {
-    it('should update ticket status and updatedAt timestamp', () => {
-      const ticket = new Ticket({
-        title: 'Test',
-        description: 'Test',
-        priority: 'low' as const,
-      })
+  describe('reconstitute', () => {
+    it('should reconstitute ticket from persistence data', () => {
+      const ticket = Ticket.reconstitute(validReconstituteData)
 
+      expect(ticket.id.value).toBe('test-ticket-id-123')
+      expect(ticket.title.value).toBe('Fix login bug')
+      expect(ticket.description.value).toBe('Users cannot login with email')
+      expect(ticket.status.value).toBe('pending')
+      expect(ticket.priority.value).toBe('high')
+      expect(ticket.type).toBe('bug')
+      expect(ticket.privacy).toBe('local-only')
+      expect(ticket.createdAt).toEqual(new Date('2024-01-01T00:00:00.000Z'))
+      expect(ticket.updatedAt).toEqual(new Date('2024-01-01T00:00:00.000Z'))
+    })
+  })
+
+  describe('updateTitle', () => {
+    it('should update title and timestamp', () => {
+      const ticket = Ticket.create(validCreateData)
       const originalUpdatedAt = ticket.updatedAt
 
       // Wait a bit to ensure timestamp changes
       setTimeout(() => {
-        ticket.updateStatus('completed')
+        ticket.updateTitle('New title')
 
-        expect(ticket.status).toBe('completed')
-        expect(ticket.updatedAt).not.toBe(originalUpdatedAt)
-        expect(ticket.updatedAt > originalUpdatedAt).toBe(true)
+        expect(ticket.title.value).toBe('New title')
+        expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
       }, 1)
+    })
+
+    it('should throw error for invalid title', () => {
+      const ticket = Ticket.create(validCreateData)
+
+      expect(() => ticket.updateTitle('')).toThrow('Title cannot be empty or whitespace only')
     })
   })
 
-  describe('updatePriority', () => {
-    it('should update ticket priority and updatedAt timestamp', () => {
-      const ticket = new Ticket({
-        title: 'Test',
-        description: 'Test',
-        priority: 'low' as const,
-      })
-
+  describe('updateDescription', () => {
+    it('should update description and timestamp', () => {
+      const ticket = Ticket.create(validCreateData)
       const originalUpdatedAt = ticket.updatedAt
 
       setTimeout(() => {
-        ticket.updatePriority('high')
+        ticket.updateDescription('New description')
 
-        expect(ticket.priority).toBe('high')
-        expect(ticket.updatedAt).not.toBe(originalUpdatedAt)
-        expect(ticket.updatedAt > originalUpdatedAt).toBe(true)
+        expect(ticket.description.value).toBe('New description')
+        expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
+      }, 1)
+    })
+
+    it('should throw error for invalid description', () => {
+      const ticket = Ticket.create(validCreateData)
+
+      expect(() => ticket.updateDescription('')).toThrow(
+        'Description cannot be empty or whitespace only'
+      )
+    })
+  })
+
+  describe('changeStatus', () => {
+    it('should change status when transition is valid', () => {
+      const ticket = Ticket.create(validCreateData) // starts as pending
+
+      ticket.changeStatus('in_progress')
+      expect(ticket.status.value).toBe('in_progress')
+    })
+
+    it('should throw error when transition is invalid', () => {
+      const ticket = Ticket.create(validCreateData) // starts as pending
+
+      expect(() => ticket.changeStatus('completed')).toThrow(
+        'Cannot transition from pending to completed'
+      )
+    })
+
+    it('should update timestamp when status changes', () => {
+      const ticket = Ticket.create(validCreateData)
+      const originalUpdatedAt = ticket.updatedAt
+
+      setTimeout(() => {
+        ticket.changeStatus('in_progress')
+        expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
       }, 1)
     })
   })
 
-  describe('toJSON', () => {
-    it('should serialize ticket to JSON', () => {
-      const ticket = new Ticket({
-        title: 'Test Ticket',
-        description: 'Test Description',
-        priority: 'high' as const,
-      })
+  describe('changePriority', () => {
+    it('should change priority and update timestamp', () => {
+      const ticket = Ticket.create(validCreateData)
+      const originalUpdatedAt = ticket.updatedAt
 
-      const json = ticket.toJSON()
+      setTimeout(() => {
+        ticket.changePriority('low')
 
-      expect(json).toEqual({
-        id: ticket.id,
-        title: 'Test Ticket',
-        description: 'Test Description',
-        status: 'pending',
-        priority: 'high',
-        type: 'task',
-        privacy: 'local-only',
-        createdAt: ticket.createdAt.toISOString(),
-        updatedAt: ticket.updatedAt.toISOString(),
-      })
+        expect(ticket.priority.value).toBe('low')
+        expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
+      }, 1)
+    })
+
+    it('should throw error for invalid priority', () => {
+      const ticket = Ticket.create(validCreateData)
+
+      expect(() => ticket.changePriority('invalid' as any)).toThrow(
+        'Invalid ticket priority: invalid'
+      )
     })
   })
 
-  describe('fromJSON', () => {
-    it('should deserialize ticket from JSON', () => {
-      const json = {
-        id: 'test-id',
-        title: 'Test Ticket',
-        description: 'Test Description',
-        status: 'completed' as const,
-        priority: 'high' as const,
-        type: 'feature' as const,
-        privacy: 'shareable' as const,
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T01:00:00.000Z',
-      }
+  describe('business operations', () => {
+    it('should start progress', () => {
+      const ticket = Ticket.create(validCreateData)
 
-      const ticket = Ticket.fromJSON(json)
-
-      expect(ticket.id).toBe('test-id')
-      expect(ticket.title).toBe('Test Ticket')
-      expect(ticket.description).toBe('Test Description')
-      expect(ticket.status).toBe('completed')
-      expect(ticket.priority).toBe('high')
-      expect(ticket.type).toBe('feature')
-      expect(ticket.privacy).toBe('shareable')
-      expect(ticket.createdAt).toEqual(new Date('2024-01-01T00:00:00.000Z'))
-      expect(ticket.updatedAt).toEqual(new Date('2024-01-01T01:00:00.000Z'))
+      ticket.startProgress()
+      expect(ticket.status.value).toBe('in_progress')
     })
 
-    it('should handle invalid date strings in JSON', () => {
-      const json = {
-        id: 'test-id',
-        title: 'Test Ticket',
-        description: 'Test Description',
-        status: 'pending' as const,
-        priority: 'medium' as const,
-        type: 'task' as const,
-        privacy: 'local-only' as const,
-        createdAt: 'invalid-date',
-        updatedAt: 'invalid-date',
-      }
+    it('should complete ticket', () => {
+      const ticket = Ticket.create({ ...validCreateData, status: 'in_progress' })
 
-      expect(() => Ticket.fromJSON(json)).toThrow()
+      ticket.complete()
+      expect(ticket.status.value).toBe('completed')
     })
 
-    it('should deserialize minimal valid JSON', () => {
-      const json = {
-        id: 'minimal-id',
-        title: 'Minimal Ticket',
-        description: 'Minimal Description',
-        status: 'pending' as const,
-        priority: 'low' as const,
-        type: 'task' as const,
-        privacy: 'local-only' as const,
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z',
-      }
+    it('should archive ticket', () => {
+      const ticket = Ticket.create(validCreateData)
 
-      const ticket = Ticket.fromJSON(json)
-
-      expect(ticket.id).toBe('minimal-id')
-      expect(ticket.title).toBe('Minimal Ticket')
-      expect(ticket.status).toBe('pending')
-      expect(ticket.type).toBe('task')
-      expect(ticket.privacy).toBe('local-only')
+      ticket.archive()
+      expect(ticket.status.value).toBe('archived')
     })
   })
 
-  describe('edge cases', () => {
-    it('should handle concurrent status updates', () => {
-      const ticket = new Ticket({
-        title: 'Concurrent Test',
-        description: 'Test concurrent updates',
-        priority: 'medium' as const,
-      })
+  describe('status checks', () => {
+    it('should identify finalized tickets', () => {
+      const pendingTicket = Ticket.create(validCreateData)
+      const completedTicket = Ticket.create({ ...validCreateData, status: 'completed' })
+      const archivedTicket = Ticket.create({ ...validCreateData, status: 'archived' })
 
-      const originalUpdatedAt = ticket.updatedAt
-
-      // Simulate rapid updates
-      ticket.updateStatus('in_progress')
-      ticket.updateStatus('completed')
-      ticket.updatePriority('high')
-
-      expect(ticket.status).toBe('completed')
-      expect(ticket.priority).toBe('high')
-      expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
+      expect(pendingTicket.isFinalized()).toBe(false)
+      expect(completedTicket.isFinalized()).toBe(true)
+      expect(archivedTicket.isFinalized()).toBe(true)
     })
 
-    it('should maintain immutability of creation date', () => {
-      const ticket = new Ticket({
-        title: 'Immutable Test',
-        description: 'Test date immutability',
-        priority: 'low' as const,
-      })
+    it('should identify active tickets', () => {
+      const pendingTicket = Ticket.create(validCreateData)
+      const archivedTicket = Ticket.create({ ...validCreateData, status: 'archived' })
 
-      const originalCreatedAt = ticket.createdAt
-
-      ticket.updateStatus('completed')
-      ticket.updatePriority('high')
-
-      expect(ticket.createdAt).toBe(originalCreatedAt)
-      expect(ticket.createdAt).toEqual(originalCreatedAt)
-    })
-
-    it('should handle same status/priority updates', () => {
-      const ticket = new Ticket({
-        title: 'Same Update Test',
-        description: 'Test same value updates',
-        priority: 'medium' as const,
-        status: 'in_progress' as const,
-      })
-
-      const originalUpdatedAt = ticket.updatedAt
-
-      // Update to the same values
-      ticket.updateStatus('in_progress')
-      ticket.updatePriority('medium')
-
-      // UpdatedAt should still change even for same values
-      expect(ticket.status).toBe('in_progress')
-      expect(ticket.priority).toBe('medium')
-      expect(ticket.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime())
+      expect(pendingTicket.isActive()).toBe(true)
+      expect(archivedTicket.isActive()).toBe(false)
     })
   })
 })

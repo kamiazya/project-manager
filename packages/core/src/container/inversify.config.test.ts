@@ -58,7 +58,7 @@ describe('Inversify Container Configuration', () => {
 
       expect(useCase).toBeDefined()
       expect(typeof useCase.createTicket).toBe('function')
-      expect(typeof useCase.getTicket).toBe('function')
+      expect(typeof useCase.getTicketById).toBe('function')
     })
 
     it('should use singleton scope for services', () => {
@@ -113,9 +113,9 @@ describe('Inversify Container Configuration', () => {
 
       const ticket = await useCase.createTicket(ticketData)
 
-      expect(ticket.id).toBeTruthy()
-      expect(ticket.title).toBe('Test Ticket')
-      expect(ticket.priority).toBe('high')
+      expect(ticket.id.value).toBeTruthy()
+      expect(ticket.title.value).toBe('Test Ticket')
+      expect(ticket.priority.value).toBe('high')
     })
   })
 })

@@ -1,0 +1,58 @@
+import type { TicketJSON } from '@project-manager/shared'
+import { type ReconstituteTicketData, Ticket } from '../../entities/ticket.js'
+
+/**
+ * Mapper class for converting between Ticket domain objects and persistence format
+ * Implements the mapping logic to keep domain objects pure
+ */
+export class TicketMapper {
+  /**
+   * Convert a domain Ticket to persistence format (JSON)
+   */
+  public static toPersistence(ticket: Ticket): TicketJSON {
+    return {
+      id: ticket.id.value,
+      title: ticket.title.value,
+      description: ticket.description.value,
+      status: ticket.status.value,
+      priority: ticket.priority.value,
+      type: ticket.type,
+      privacy: ticket.privacy,
+      createdAt: ticket.createdAt.toISOString(),
+      updatedAt: ticket.updatedAt.toISOString(),
+    }
+  }
+
+  /**
+   * Convert persistence format (JSON) to domain Ticket
+   */
+  public static toDomain(json: TicketJSON): Ticket {
+    const data: ReconstituteTicketData = {
+      id: json.id,
+      title: json.title,
+      description: json.description,
+      status: json.status,
+      priority: json.priority,
+      type: json.type,
+      privacy: json.privacy,
+      createdAt: json.createdAt,
+      updatedAt: json.updatedAt,
+    }
+
+    return Ticket.reconstitute(data)
+  }
+
+  /**
+   * Convert an array of persistence format to domain objects
+   */
+  public static toDomainList(jsonList: TicketJSON[]): Ticket[] {
+    return jsonList.map(json => TicketMapper.toDomain(json))
+  }
+
+  /**
+   * Convert an array of domain objects to persistence format
+   */
+  public static toPersistenceList(tickets: Ticket[]): TicketJSON[] {
+    return tickets.map(ticket => TicketMapper.toPersistence(ticket))
+  }
+}

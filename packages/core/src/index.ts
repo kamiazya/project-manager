@@ -1,12 +1,9 @@
-// Domain Layer
-
-// Infrastructure Layer (Adapters)
-export * from './adapters/json-ticket-repository.js'
+export { JsonTicketRepository } from './adapters/json-ticket-repository.js'
 export * from './container/inversify.config.js'
-// Container (Dependency Injection)
 export * from './container/types.js'
-export * from './entities/ticket.js'
-// Ports (Interfaces)
-export * from './ports/ticket-repository.js'
-// Application Layer (Use Cases)
-export * from './usecases/ticket-usecase.js'
+export type { CreateTicketData, ReconstituteTicketData } from './entities/ticket.js'
+export { Ticket } from './entities/ticket.js'
+export type { TicketRepository as ITicketRepository } from './repositories/ticket-repository.interface.js'
+export { TicketRepository } from './repositories/ticket-repository.interface.js'
+export { TicketUseCase } from './usecases/ticket-usecase.js'
+export * from './value-objects/index.js'

@@ -34,10 +34,10 @@ export function listTicketCommand(): Command {
           criteria.type = options.type as TicketType
         }
         if (options.title) {
-          criteria.title = options.title
+          criteria.search = options.title
         }
 
-        const tickets = await ticketUseCase.listTickets(criteria)
+        const tickets = await ticketUseCase.searchTickets(criteria)
 
         const output = formatTicketList(tickets, { format: options.format })
         console.log(output)

@@ -10,7 +10,12 @@ export function showTicketCommand(): Command {
     .action(async (id: string, options) => {
       try {
         const ticketUseCase = getTicketUseCase()
-        const ticket = await ticketUseCase.getTicket(id)
+        const ticket = await ticketUseCase.getTicketById(id)
+
+        if (!ticket) {
+          console.error(`Ticket not found: ${id}`)
+          process.exit(1)
+        }
 
         const output = formatTicket(ticket, {
           format: options.json ? 'json' : 'table',

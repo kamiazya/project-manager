@@ -14,16 +14,11 @@ export function updateTicketCommand(): Command {
       try {
         const ticketUseCase = getTicketUseCase()
 
-        let ticket: any
+        let ticket = await ticketUseCase.getTicketById(id)
 
-        try {
-          ticket = await ticketUseCase.getTicket(id)
-        } catch (error) {
-          if (error instanceof Error && error.message.includes('not found')) {
-            console.error(`Ticket not found: ${id}`)
-            process.exit(1)
-          }
-          throw error
+        if (!ticket) {
+          console.error(`Ticket not found: ${id}`)
+          process.exit(1)
         }
 
         // Track what was updated

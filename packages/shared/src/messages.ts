@@ -39,4 +39,5 @@ export const SUCCESS_MESSAGES = {
 export const INFO_MESSAGES = {
   NO_TICKETS_FOUND: 'No tickets found.',
   TICKET_STATISTICS: 'Ticket Statistics',
+  TICKETS_FOUND: (count: number) => `Found ${count} ticket(s)`,
 } as const

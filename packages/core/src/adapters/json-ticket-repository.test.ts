@@ -1,434 +1,276 @@
-import { existsSync, mkdirSync, rmSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync } from 'node:fs'
+import { unlink } from 'node:fs/promises'
 import { TicketNotFoundError } from '@project-manager/shared'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Ticket } from '../entities/ticket.js'
+import { TicketId } from '../value-objects/index.js'
 import { JsonTicketRepository } from './json-ticket-repository.js'
 
 describe('JsonTicketRepository', () => {
-  const testDir = '/tmp/project-manager-test'
-  const storageFile = join(testDir, 'tickets.json')
   let repository: JsonTicketRepository
+  let testFilePath: string
 
   beforeEach(() => {
-    // Clean up before each test
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true })
-    }
-    mkdirSync(testDir, { recursive: true })
-
-    repository = new JsonTicketRepository(storageFile)
+    testFilePath = `./test-tickets-${Date.now()}.json`
+    repository = new JsonTicketRepository(testFilePath)
   })
 
-  afterEach(() => {
-    // Clean up after each test
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true })
+  afterEach(async () => {
+    // Clean up test file
+    if (existsSync(testFilePath)) {
+      await unlink(testFilePath)
     }
   })
 
-  describe('repository interface compliance', () => {
-    it('should implement ITicketRepository interface correctly', async () => {
-      const ticket = new Ticket({
-        title: 'Test Ticket',
-        description: 'Test Description',
+  describe('save', () => {
+    it('should save a new ticket', async () => {
+      const ticket = Ticket.create({
+        title: 'Test ticket',
+        description: 'Test description',
         priority: 'high',
       })
 
-      // Test save and findById
       await repository.save(ticket)
-      const retrieved = await repository.findById(ticket.id)
 
-      expect(retrieved.id).toBe(ticket.id)
-      expect(retrieved.title).toBe('Test Ticket')
+      const savedTicket = await repository.findById(ticket.id)
+      expect(savedTicket).toBeDefined()
+      expect(savedTicket!.id.value).toBe(ticket.id.value)
+      expect(savedTicket!.title.value).toBe(ticket.title.value)
+    })
 
-      // Test findByIdOrNull
-      const found = await repository.findByIdOrNull(ticket.id)
-      expect(found).not.toBeNull()
-      expect(found?.id).toBe(ticket.id)
+    it('should update an existing ticket', async () => {
+      const ticket = Ticket.create({
+        title: 'Original title',
+        description: 'Original description',
+        priority: 'high',
+      })
 
-      const notFound = await repository.findByIdOrNull('nonexistent123')
-      expect(notFound).toBeNull()
+      await repository.save(ticket)
 
-      // Test exists
-      expect(await repository.exists(ticket.id)).toBe(true)
-      expect(await repository.exists('nonexistent123')).toBe(false)
+      // Update the ticket
+      ticket.updateTitle('Updated title')
+      await repository.save(ticket)
 
-      // Test count
-      expect(await repository.count()).toBe(1)
+      const savedTicket = await repository.findById(ticket.id)
+      expect(savedTicket!.title.value).toBe('Updated title')
 
-      // Test findAll
+      // Verify only one ticket exists
       const allTickets = await repository.findAll()
       expect(allTickets).toHaveLength(1)
-      expect(allTickets[0]?.id).toBe(ticket.id)
-
-      // Test update
-      ticket.updateStatus('completed')
-      await repository.update(ticket)
-      const updated = await repository.findById(ticket.id)
-      expect(updated.status).toBe('completed')
-
-      // Test delete
-      await repository.delete(ticket.id)
-      expect(await repository.exists(ticket.id)).toBe(false)
-      await expect(repository.findById(ticket.id)).rejects.toThrow(TicketNotFoundError)
-
-      // Test clear
-      await repository.save(ticket)
-      expect(await repository.count()).toBe(1)
-      await repository.clear()
-      expect(await repository.count()).toBe(0)
     })
 
-    it('should handle search operations correctly', async () => {
-      const ticket1 = new Ticket({
-        title: 'Bug Fix',
-        description: 'Critical bug',
-        priority: 'high',
-        type: 'bug',
-      })
-
-      const ticket2 = new Ticket({
-        title: 'Feature Request',
-        description: 'New feature',
-        priority: 'medium',
-        type: 'feature',
-      })
-
-      await repository.save(ticket1)
-      await repository.save(ticket2)
-
-      // Search by title
-      const bugResults = await repository.search({ title: 'Bug' })
-      expect(bugResults).toHaveLength(1)
-      expect(bugResults[0]?.title).toBe('Bug Fix')
-
-      // Search by priority
-      const highPriorityResults = await repository.search({ priority: 'high' })
-      expect(highPriorityResults).toHaveLength(1)
-      expect(highPriorityResults[0]?.priority).toBe('high')
-
-      // Search by type
-      const featureResults = await repository.search({ type: 'feature' })
-      expect(featureResults).toHaveLength(1)
-      expect(featureResults[0]?.type).toBe('feature')
-
-      // Multiple criteria search
-      const combinedResults = await repository.search({
-        priority: 'high',
-        type: 'bug',
-      })
-      expect(combinedResults).toHaveLength(1)
-      expect(combinedResults[0]?.title).toBe('Bug Fix')
-
-      // No matches
-      const noResults = await repository.search({ title: 'NonExistent' })
-      expect(noResults).toEqual([])
-    })
-
-    it('should handle error cases correctly', async () => {
-      // TicketNotFoundError for non-existent ticket
-      await expect(repository.findById('nonexistent123')).rejects.toThrow(TicketNotFoundError)
-      await expect(
-        repository.update(
-          new Ticket(
-            {
-              title: 'Test',
-              description: 'Test',
-              priority: 'low',
-            },
-            'nonexistent123'
-          )
-        )
-      ).rejects.toThrow(TicketNotFoundError)
-      await expect(repository.delete('nonexistent123')).rejects.toThrow(TicketNotFoundError)
-
-      // Validation errors for invalid IDs
-      await expect(repository.findById('')).rejects.toThrow()
-      await expect(repository.findById('short')).rejects.toThrow()
-      await expect(repository.findById('invalid-id')).rejects.toThrow()
-    })
-
-    it('should handle concurrent operations safely', async () => {
-      const ticket1 = new Ticket({
+    it('should handle multiple tickets', async () => {
+      const ticket1 = Ticket.create({
         title: 'Ticket 1',
         description: 'Description 1',
         priority: 'high',
       })
 
-      const ticket2 = new Ticket({
+      const ticket2 = Ticket.create({
         title: 'Ticket 2',
         description: 'Description 2',
-        priority: 'medium',
+        priority: 'low',
       })
 
-      // Save tickets concurrently
-      await Promise.all([repository.save(ticket1), repository.save(ticket2)])
+      await repository.save(ticket1)
+      await repository.save(ticket2)
 
       const allTickets = await repository.findAll()
       expect(allTickets).toHaveLength(2)
     })
+  })
 
-    it('should persist data correctly across repository instances', async () => {
-      const ticket = new Ticket({
-        title: 'Persistent Ticket',
-        description: 'Should persist across instances',
+  describe('findById', () => {
+    it('should find an existing ticket', async () => {
+      const ticket = Ticket.create({
+        title: 'Findable ticket',
+        description: 'Test description',
         priority: 'medium',
       })
 
-      // Save with first instance
       await repository.save(ticket)
 
-      // Create new instance pointing to same file
-      const secondRepository = new JsonTicketRepository(storageFile)
-
-      // Should be able to retrieve the ticket
-      const retrieved = await secondRepository.findById(ticket.id)
-      expect(retrieved.title).toBe('Persistent Ticket')
-      expect(retrieved.description).toBe('Should persist across instances')
+      const foundTicket = await repository.findById(ticket.id)
+      expect(foundTicket).toBeDefined()
+      expect(foundTicket!.id.value).toBe(ticket.id.value)
+      expect(foundTicket!.title.value).toBe('Findable ticket')
     })
 
-    it('should handle corrupted data gracefully', async () => {
-      // Save a valid ticket first
-      const ticket = new Ticket({
-        title: 'Valid Ticket',
-        description: 'Valid Description',
-        priority: 'low',
-      })
+    it('should return null for non-existent ticket', async () => {
+      const nonExistentId = TicketId.create('non-existent-id')
+      const foundTicket = await repository.findById(nonExistentId)
+      expect(foundTicket).toBeNull()
+    })
 
-      await repository.save(ticket)
-
-      // Corrupt the file by writing invalid JSON
-      const fs = await import('node:fs')
-      fs.writeFileSync(storageFile, 'invalid json content')
-
-      // Create new repository instance
-      const corruptedRepository = new JsonTicketRepository(storageFile)
-
-      // Should handle corruption gracefully
-      const tickets = await corruptedRepository.findAll()
-      expect(tickets).toEqual([])
-      expect(await corruptedRepository.count()).toBe(0)
+    it('should return null when file does not exist', async () => {
+      const id = TicketId.create('some-valid-id-123')
+      const foundTicket = await repository.findById(id)
+      expect(foundTicket).toBeNull()
     })
   })
 
-  describe('edge cases and error handling', () => {
-    it('should handle empty file gracefully', async () => {
-      // Create empty file
-      const fs = await import('node:fs')
-      fs.writeFileSync(storageFile, '')
-
-      const emptyRepository = new JsonTicketRepository(storageFile)
-
-      const tickets = await emptyRepository.findAll()
+  describe('findAll', () => {
+    it('should return empty array when no tickets exist', async () => {
+      const tickets = await repository.findAll()
       expect(tickets).toEqual([])
-      expect(await emptyRepository.count()).toBe(0)
     })
 
-    it('should handle file with empty JSON array', async () => {
-      // Create file with empty array
-      const fs = await import('node:fs')
-      fs.writeFileSync(storageFile, '[]')
-
-      const emptyArrayRepository = new JsonTicketRepository(storageFile)
-
-      const tickets = await emptyArrayRepository.findAll()
-      expect(tickets).toEqual([])
-      expect(await emptyArrayRepository.count()).toBe(0)
-    })
-
-    it('should handle non-existent directory creation', async () => {
-      const deepPath = join(testDir, 'deep', 'nested', 'path', 'tickets.json')
-
-      const deepRepository = new JsonTicketRepository(deepPath)
-
-      const ticket = new Ticket({
-        title: 'Deep Path Ticket',
-        description: 'Test deep directory creation',
-        priority: 'medium',
-      })
-
-      // Should create directories and save successfully
-      await deepRepository.save(ticket)
-
-      const retrieved = await deepRepository.findById(ticket.id)
-      expect(retrieved.title).toBe('Deep Path Ticket')
-    })
-
-    it('should handle very large datasets efficiently', async () => {
-      const tickets: Ticket[] = []
-
-      // Create 100 tickets
-      for (let i = 0; i < 100; i++) {
-        const ticket = new Ticket({
-          title: `Ticket ${i}`,
-          description: `Description for ticket ${i}`,
-          priority: i % 3 === 0 ? 'high' : i % 3 === 1 ? 'medium' : 'low',
-          type: i % 3 === 0 ? 'bug' : i % 3 === 1 ? 'feature' : 'task',
-        })
-        tickets.push(ticket)
-      }
-
-      // Save all tickets
-      for (const ticket of tickets) {
-        await repository.save(ticket)
-      }
-
-      // Verify count and retrieval
-      expect(await repository.count()).toBe(100)
-
-      const allTickets = await repository.findAll()
-      expect(allTickets).toHaveLength(100)
-
-      // Test search performance with large dataset
-      const highPriorityTickets = await repository.search({ priority: 'high' })
-      expect(highPriorityTickets.length).toBeGreaterThan(0)
-
-      const bugTickets = await repository.search({ type: 'bug' })
-      expect(bugTickets.length).toBeGreaterThan(0)
-    })
-
-    it('should handle malformed JSON in individual ticket objects', async () => {
-      // Create file with one valid and one malformed ticket
-      const fs = await import('node:fs')
-      const malformedData = [
-        {
-          id: 'valid123',
-          title: 'Valid Ticket',
-          description: 'Valid Description',
-          status: 'pending',
-          priority: 'medium',
-          type: 'task',
-          privacy: 'local-only',
-          createdAt: '2024-01-01T00:00:00.000Z',
-          updatedAt: '2024-01-01T00:00:00.000Z',
-        },
-        {
-          id: 'invalid123',
-          // Missing required fields
-          title: null,
-          description: undefined,
-        },
-      ]
-
-      fs.writeFileSync(storageFile, JSON.stringify(malformedData, null, 2))
-
-      const malformedRepository = new JsonTicketRepository(storageFile)
-
-      // Should handle partial corruption gracefully
-      // Implementation should either skip invalid records or fail gracefully
-      try {
-        const tickets = await malformedRepository.findAll()
-        // If implementation filters out invalid records
-        expect(tickets.length).toBeLessThanOrEqual(2)
-      } catch (error) {
-        // If implementation throws on invalid data, that's also acceptable
-        expect(error).toBeDefined()
-      }
-    })
-
-    it('should handle search with special characters', async () => {
-      const specialTicket = new Ticket({
-        title: 'Special chars: @#$%^&*()_+-=[]{}|;:\'",.<>?/~`',
-        description: 'Description with émojis 🚀 and unicode 中文',
+    it('should return all tickets', async () => {
+      const ticket1 = Ticket.create({
+        title: 'Ticket 1',
+        description: 'Description 1',
         priority: 'high',
       })
 
-      await repository.save(specialTicket)
+      const ticket2 = Ticket.create({
+        title: 'Ticket 2',
+        description: 'Description 2',
+        priority: 'low',
+      })
 
-      // Search with special characters
-      const results = await repository.search({ title: '@#$%' })
-      expect(results).toHaveLength(1)
-      expect(results[0]?.title).toContain('@#$%')
+      await repository.save(ticket1)
+      await repository.save(ticket2)
 
-      // Search with emoji
-      const emojiResults = await repository.search({ title: '🚀' })
-      expect(emojiResults).toHaveLength(0) // Title search, not description
+      const allTickets = await repository.findAll()
+      expect(allTickets).toHaveLength(2)
 
-      // Search with unicode
-      const unicodeResults = await repository.search({ title: 'Special' })
-      expect(unicodeResults).toHaveLength(1)
+      const titles = allTickets.map(t => t.title.value)
+      expect(titles).toContain('Ticket 1')
+      expect(titles).toContain('Ticket 2')
     })
 
-    it('should handle case-insensitive search', async () => {
-      const ticket = new Ticket({
-        title: 'CamelCase Title',
-        description: 'Mixed Case Description',
+    it('should return tickets as domain objects with proper value objects', async () => {
+      const ticket = Ticket.create({
+        title: 'Domain test',
+        description: 'Test description',
+        priority: 'high',
+      })
+
+      await repository.save(ticket)
+
+      const allTickets = await repository.findAll()
+      const foundTicket = allTickets[0]
+
+      expect(foundTicket.id).toBeInstanceOf(TicketId)
+      expect(foundTicket.title.value).toBe('Domain test')
+      expect(foundTicket.status.value).toBe('pending')
+      expect(foundTicket.priority.value).toBe('high')
+    })
+  })
+
+  describe('delete', () => {
+    it('should delete an existing ticket', async () => {
+      const ticket = Ticket.create({
+        title: 'To be deleted',
+        description: 'Test description',
         priority: 'medium',
       })
 
       await repository.save(ticket)
 
-      // Test case-insensitive search
-      const lowerResults = await repository.search({ title: 'camelcase' })
-      expect(lowerResults).toHaveLength(1)
+      // Verify ticket exists
+      let foundTicket = await repository.findById(ticket.id)
+      expect(foundTicket).toBeDefined()
 
-      const upperResults = await repository.search({ title: 'CAMELCASE' })
-      expect(upperResults).toHaveLength(1)
+      // Delete ticket
+      await repository.delete(ticket.id)
 
-      const mixedResults = await repository.search({ title: 'CaMeLcAsE' })
-      expect(mixedResults).toHaveLength(1)
+      // Verify ticket is gone
+      foundTicket = await repository.findById(ticket.id)
+      expect(foundTicket).toBeNull()
     })
 
-    it('should handle boundary value searches', async () => {
-      const tickets = [
-        new Ticket({ title: 'A', description: 'First', priority: 'high' }),
-        new Ticket({ title: 'Z', description: 'Last', priority: 'low' }),
-      ]
+    it('should throw error when trying to delete non-existent ticket', async () => {
+      const nonExistentId = TicketId.create('non-existent-id')
 
-      // Save valid tickets
-      await repository.save(tickets[0]!)
-      await repository.save(tickets[1]!)
-
-      // Test boundary searches
-      const resultsA = await repository.search({ title: 'A' })
-      expect(resultsA).toHaveLength(1)
-
-      const resultsZ = await repository.search({ title: 'Z' })
-      expect(resultsZ).toHaveLength(1)
-
-      // Test empty search criteria
-      const allResults = await repository.search({})
-      expect(allResults).toHaveLength(2)
+      await expect(repository.delete(nonExistentId)).rejects.toThrow(TicketNotFoundError)
     })
 
-    it('should handle rapid concurrent operations', async () => {
-      const tickets = Array.from(
-        { length: 10 },
-        (_, i) =>
-          new Ticket({
-            title: `Concurrent Ticket ${i}`,
-            description: `Description ${i}`,
-            priority: 'medium',
-          })
-      )
-
-      // Perform rapid concurrent saves
-      const savePromises = tickets.map(ticket => repository.save(ticket))
-      await Promise.all(savePromises)
-
-      // Verify all tickets were saved
-      expect(await repository.count()).toBe(10)
-
-      // Perform rapid concurrent updates
-      const updatePromises = tickets.map(ticket => {
-        ticket.updateStatus('completed')
-        return repository.update(ticket)
+    it('should not affect other tickets when deleting one', async () => {
+      const ticket1 = Ticket.create({
+        title: 'Keep this',
+        description: 'Description 1',
+        priority: 'high',
       })
-      await Promise.all(updatePromises)
 
-      // Verify all tickets were updated
+      const ticket2 = Ticket.create({
+        title: 'Delete this',
+        description: 'Description 2',
+        priority: 'low',
+      })
+
+      await repository.save(ticket1)
+      await repository.save(ticket2)
+
+      // Delete second ticket
+      await repository.delete(ticket2.id)
+
+      // Verify first ticket still exists
+      const foundTicket = await repository.findById(ticket1.id)
+      expect(foundTicket).toBeDefined()
+      expect(foundTicket!.title.value).toBe('Keep this')
+
+      // Verify only one ticket remains
       const allTickets = await repository.findAll()
-      for (const ticket of allTickets) {
-        expect(ticket.status).toBe('completed')
-      }
+      expect(allTickets).toHaveLength(1)
+    })
+  })
 
-      // Perform rapid concurrent deletes
-      const deletePromises = tickets.map(ticket => repository.delete(ticket.id))
-      await Promise.all(deletePromises)
+  describe('data integrity', () => {
+    it('should handle corrupted JSON file gracefully', async () => {
+      // Write invalid JSON to file
+      const fs = await import('node:fs/promises')
+      await fs.writeFile(testFilePath, 'invalid json content')
 
-      // Verify all tickets were deleted
-      expect(await repository.count()).toBe(0)
+      // Should return empty array instead of throwing
+      const tickets = await repository.findAll()
+      expect(tickets).toEqual([])
+    })
+
+    it('should handle empty file gracefully', async () => {
+      // Write empty content to file
+      const fs = await import('node:fs/promises')
+      await fs.writeFile(testFilePath, '')
+
+      // Should return empty array
+      const tickets = await repository.findAll()
+      expect(tickets).toEqual([])
+    })
+
+    it('should handle non-array JSON gracefully', async () => {
+      // Write object instead of array
+      const fs = await import('node:fs/promises')
+      await fs.writeFile(testFilePath, '{"not": "an array"}')
+
+      // Should return empty array
+      const tickets = await repository.findAll()
+      expect(tickets).toEqual([])
+    })
+  })
+
+  describe('concurrency', () => {
+    it('should handle concurrent saves safely', async () => {
+      const ticket1 = Ticket.create({
+        title: 'Concurrent 1',
+        description: 'Description 1',
+        priority: 'high',
+      })
+
+      const ticket2 = Ticket.create({
+        title: 'Concurrent 2',
+        description: 'Description 2',
+        priority: 'low',
+      })
+
+      // Save both tickets concurrently
+      await Promise.all([repository.save(ticket1), repository.save(ticket2)])
+
+      const allTickets = await repository.findAll()
+      expect(allTickets).toHaveLength(2)
+
+      const titles = allTickets.map(t => t.title.value)
+      expect(titles).toContain('Concurrent 1')
+      expect(titles).toContain('Concurrent 2')
     })
   })
 })

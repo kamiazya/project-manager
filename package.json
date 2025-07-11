@@ -30,6 +30,7 @@
     "markdownlint-cli2": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
+    "typescript-mcp": "^0.0.14",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
     "vitest": "catalog:"

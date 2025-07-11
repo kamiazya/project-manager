@@ -12,20 +12,15 @@ export function deleteTicketCommand(): Command {
         const ticketUseCase = getTicketUseCase()
 
         // Verify ticket exists
-        let ticket: any
-        try {
-          ticket = await ticketUseCase.getTicket(id)
-        } catch (error) {
-          if (error instanceof Error && error.message.includes('not found')) {
-            console.error(`Ticket not found: ${id}`)
-            process.exit(1)
-          }
-          throw error
+        const ticket = await ticketUseCase.getTicketById(id)
+        if (!ticket) {
+          console.error(`Ticket not found: ${id}`)
+          process.exit(1)
         }
 
         // Show confirmation unless force flag is used
         if (!options.force) {
-          console.log(`About to delete ticket: ${ticket.title}`)
+          console.log(`About to delete ticket: ${ticket.title.value}`)
           console.log('Use --force flag to skip this confirmation.')
           process.exit(0)
         }

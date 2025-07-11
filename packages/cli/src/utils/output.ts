@@ -9,20 +9,32 @@ export interface OutputOptions {
 
 export function formatTicket(ticket: Ticket, options: OutputOptions = { format: 'table' }): string {
   if (options.format === 'json') {
-    return JSON.stringify(ticket.toJSON(), null, 2)
+    // Create a JSON representation manually since toJSON() doesn't exist
+    const json = {
+      id: ticket.id.value,
+      title: ticket.title.value,
+      description: ticket.description.value,
+      status: ticket.status.value,
+      priority: ticket.priority.value,
+      type: ticket.type,
+      privacy: ticket.privacy,
+      createdAt: ticket.createdAt.toISOString(),
+      updatedAt: ticket.updatedAt.toISOString(),
+    }
+    return JSON.stringify(json, null, 2)
   }
 
   if (options.format === 'compact') {
-    return `${chalk.blue(ticket.id)} ${getPriorityIcon(ticket.priority)} ${ticket.title} (${getStatusColor(ticket.status)})`
+    return `${chalk.blue(ticket.id.value)} ${getPriorityIcon(ticket.priority.value)} ${ticket.title.value} (${getStatusColor(ticket.status.value)})`
   }
 
   // Table format (default)
   return [
-    `${chalk.bold('ID:')} ${chalk.blue(ticket.id)}`,
-    `${chalk.bold('Title:')} ${ticket.title}`,
-    `${chalk.bold('Description:')} ${ticket.description}`,
-    `${chalk.bold('Status:')} ${getStatusColor(ticket.status)}`,
-    `${chalk.bold('Priority:')} ${getPriorityColor(ticket.priority)}`,
+    `${chalk.bold('ID:')} ${chalk.blue(ticket.id.value)}`,
+    `${chalk.bold('Title:')} ${ticket.title.value}`,
+    `${chalk.bold('Description:')} ${ticket.description.value}`,
+    `${chalk.bold('Status:')} ${getStatusColor(ticket.status.value)}`,
+    `${chalk.bold('Priority:')} ${getPriorityColor(ticket.priority.value)}`,
     `${chalk.bold('Type:')} ${ticket.type}`,
     `${chalk.bold('Privacy:')} ${ticket.privacy}`,
     `${chalk.bold('Created:')} ${ticket.createdAt.toLocaleString()}`,
@@ -35,11 +47,18 @@ export function formatTicketList(
   options: OutputOptions = { format: 'table' }
 ): string {
   if (options.format === 'json') {
-    return JSON.stringify(
-      tickets.map(t => t.toJSON()),
-      null,
-      2
-    )
+    const jsonTickets = tickets.map(t => ({
+      id: t.id.value,
+      title: t.title.value,
+      description: t.description.value,
+      status: t.status.value,
+      priority: t.priority.value,
+      type: t.type,
+      privacy: t.privacy,
+      createdAt: t.createdAt.toISOString(),
+      updatedAt: t.updatedAt.toISOString(),
+    }))
+    return JSON.stringify(jsonTickets, null, 2)
   }
 
   if (tickets.length === 0) {
@@ -61,12 +80,12 @@ export function formatTicketList(
 
   const rows = tickets.map(ticket =>
     [
-      chalk.blue(ticket.id),
-      ticket.title.length > VALIDATION.TITLE_DISPLAY_MAX_LENGTH
-        ? `${ticket.title.substring(0, VALIDATION.TITLE_TRUNCATE_LENGTH)}...`
-        : ticket.title,
-      getStatusColor(ticket.status),
-      getPriorityColor(ticket.priority),
+      chalk.blue(ticket.id.value),
+      ticket.title.value.length > VALIDATION.TITLE_DISPLAY_MAX_LENGTH
+        ? `${ticket.title.value.substring(0, VALIDATION.TITLE_TRUNCATE_LENGTH)}...`
+        : ticket.title.value,
+      getStatusColor(ticket.status.value),
+      getPriorityColor(ticket.priority.value),
       ticket.type,
     ].join('\t')
   )

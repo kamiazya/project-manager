@@ -115,7 +115,10 @@ describe('CLI', () => {
         // Expected to throw due to process.exit mock
       }
 
-      expect(console.error).toHaveBeenCalledWith('Failed to create ticket:', 'Title is required')
+      expect(console.error).toHaveBeenCalledWith(
+        'Failed to create ticket:',
+        'Title cannot be empty or whitespace only'
+      )
       expect(exitSpy).toHaveBeenCalledWith(1)
     })
   })

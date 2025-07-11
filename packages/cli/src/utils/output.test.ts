@@ -4,12 +4,11 @@ import { describe, expect, it } from 'vitest'
 import { formatStats, formatTicket, formatTicketList } from './output.js'
 
 describe('output', () => {
-  const sampleTicket = new Ticket({
+  const sampleTicket = Ticket.create({
     title: 'Test Ticket',
     description: 'Test Description',
     priority: 'high',
     type: 'bug',
-    status: 'pending',
     privacy: 'local-only',
   })
 
@@ -46,17 +45,19 @@ describe('output', () => {
 
   describe('formatTicketList', () => {
     const tickets = [
-      new Ticket({
+      Ticket.create({
         title: 'Bug Fix',
         description: 'Fix issue',
         priority: 'high',
         type: 'bug',
+        privacy: 'local-only',
       }),
-      new Ticket({
+      Ticket.create({
         title: 'Feature Request',
         description: 'Add feature',
         priority: 'medium',
         type: 'feature',
+        privacy: 'local-only',
       }),
     ]
 
@@ -98,10 +99,12 @@ describe('output', () => {
     })
 
     it('should truncate long titles in table format', () => {
-      const longTitleTicket = new Ticket({
+      const longTitleTicket = Ticket.create({
         title: 'This is a very long ticket title that should be truncated',
         description: 'Description',
         priority: 'low',
+        type: 'feature',
+        privacy: 'local-only',
       })
 
       const output = formatTicketList([longTitleTicket])
@@ -168,10 +171,12 @@ describe('output', () => {
 
   describe('edge cases and special characters', () => {
     it('should handle tickets with special characters in title', () => {
-      const specialTicket = new Ticket({
+      const specialTicket = Ticket.create({
         title: 'Special chars: @#$%^&*()_+-=[]{}|;:\'",.<>?/~`',
         description: 'Description with émojis 🚀 and unicode 中文',
         priority: 'medium',
+        type: 'feature',
+        privacy: 'local-only',
       })
 
       const tableOutput = formatTicket(specialTicket, { format: 'table' })
@@ -187,10 +192,12 @@ describe('output', () => {
     })
 
     it('should handle very long descriptions', () => {
-      const longDescriptionTicket = new Ticket({
+      const longDescriptionTicket = Ticket.create({
         title: 'Normal Title',
         description: 'A'.repeat(1000), // Very long description
         priority: 'low',
+        type: 'feature',
+        privacy: 'local-only',
       })
 
       const tableOutput = formatTicket(longDescriptionTicket, { format: 'table' })
@@ -201,31 +208,32 @@ describe('output', () => {
       expect(() => JSON.parse(jsonOutput)).not.toThrow()
     })
 
-    it('should handle empty title and description', () => {
-      // Note: This should not happen in normal operation due to validation,
-      // but we test the formatter's robustness
-      const ticket = new Ticket({
-        title: 'Valid Title', // Can't test empty due to validation
-        description: 'Valid Description',
+    it('should handle minimal title and description', () => {
+      // Test with minimal but valid content (DDD validation prevents empty)
+      const ticket = Ticket.create({
+        title: 'T', // Minimal valid title
+        description: 'D', // Minimal valid description
         priority: 'medium',
+        type: 'feature',
+        privacy: 'local-only',
       })
-
-      // Directly modify the ticket properties for testing (bypass validation)
-      Object.defineProperty(ticket, 'title', { value: '', writable: true })
-      Object.defineProperty(ticket, 'description', { value: '', writable: true })
 
       const tableOutput = formatTicket(ticket, { format: 'table' })
       const jsonOutput = formatTicket(ticket, { format: 'json' })
 
       expect(tableOutput).toBeDefined()
+      expect(tableOutput).toContain('T')
+      expect(tableOutput).toContain('D')
       expect(() => JSON.parse(jsonOutput)).not.toThrow()
     })
 
     it('should handle newlines and tabs in content', () => {
-      const multilineTicket = new Ticket({
+      const multilineTicket = Ticket.create({
         title: 'Title\nWith\nNewlines',
         description: 'Description\twith\ttabs\nand\nnewlines',
         priority: 'high',
+        type: 'feature',
+        privacy: 'local-only',
       })
 
       const tableOutput = formatTicket(multilineTicket, { format: 'table' })
@@ -236,15 +244,14 @@ describe('output', () => {
     })
 
     it('should handle large ticket lists efficiently', () => {
-      const largeTicketList = Array.from(
-        { length: 100 },
-        (_, i) =>
-          new Ticket({
-            title: `Ticket ${i}`,
-            description: `Description ${i}`,
-            priority: i % 3 === 0 ? 'high' : i % 3 === 1 ? 'medium' : 'low',
-            type: i % 3 === 0 ? 'bug' : i % 3 === 1 ? 'feature' : 'task',
-          })
+      const largeTicketList = Array.from({ length: 100 }, (_, i) =>
+        Ticket.create({
+          title: `Ticket ${i}`,
+          description: `Description ${i}`,
+          priority: i % 3 === 0 ? 'high' : i % 3 === 1 ? 'medium' : 'low',
+          type: i % 3 === 0 ? 'bug' : i % 3 === 1 ? 'feature' : 'task',
+          privacy: 'local-only',
+        })
       )
 
       const tableOutput = formatTicketList(largeTicketList, { format: 'table' })
@@ -296,10 +303,12 @@ describe('output', () => {
 
     it('should maintain consistent formatting across different locales', () => {
       // Test with tickets containing various unicode characters
-      const unicodeTicket = new Ticket({
+      const unicodeTicket = Ticket.create({
         title: '测试 Тест परीक्षण テスト',
         description: 'العربية русский 한국어 日本語',
         priority: 'medium',
+        type: 'feature',
+        privacy: 'local-only',
       })
 
       const output = formatTicket(unicodeTicket, { format: 'json' })
