@@ -5,12 +5,14 @@ import type {
   TicketStatus,
   TicketType,
 } from '@project-manager/shared'
-import { DEFAULTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '@project-manager/shared'
+import { ERROR_MESSAGES, getConfig, SUCCESS_MESSAGES } from '@project-manager/shared'
 import { Command } from 'commander'
 import { formatTicketSummaryList } from '../utils/output.js'
 import { getSearchTicketsUseCase } from '../utils/service-factory.js'
 
 export function listTicketCommand(): Command {
+  const config = getConfig()
+
   const command = new Command('list')
     .alias('ls')
     .description('List tickets')
@@ -18,7 +20,11 @@ export function listTicketCommand(): Command {
     .option('-p, --priority <priority>', 'Filter by priority (high, medium, low)')
     .option('-t, --type <type>', 'Filter by type (feature, bug, task)')
     .option('--title <title>', 'Search by title (partial match)')
-    .option('-f, --format <format>', 'Output format (table, json, compact)', DEFAULTS.OUTPUT_FORMAT)
+    .option(
+      '-f, --format <format>',
+      'Output format (table, json, compact)',
+      config.defaultOutputFormat
+    )
     .action(async options => {
       try {
         const searchTicketsUseCase = getSearchTicketsUseCase()

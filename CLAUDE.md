@@ -270,6 +270,53 @@ pnpm run build
 pnpm run typecheck
 ```
 
+### CLI Development
+
+**Fast Development (tsx - no build required)**
+
+```bash
+# Direct tsx execution (recommended for development)
+pnpm dev <command>                    # Run CLI directly
+pnpm dev new "Task" -p h              # Create high-priority task
+pnpm dev todo                         # List pending tickets
+pnpm dev wip                          # List work-in-progress
+pnpm dev start <ticket-id>            # Start working on ticket
+pnpm dev done <ticket-id>             # Complete ticket
+```
+
+**Production Testing (build required)**
+
+```bash
+# Build and run (slower but matches production)
+pnpm run build
+node packages/cli/dist/bin/pm.js <command>
+```
+
+**Development Aliases**
+
+For maximum productivity, use the development aliases:
+
+```bash
+# Load development aliases
+source pm-dev-alias.sh
+
+# Fast development commands (tsx) - Simplified shortcuts
+pm new "Task" -p h                   # Create task
+pm-todo                              # List pending
+pm-wip                               # List in-progress
+pm-start <id>                        # Start ticket
+pm-done <id>                         # Complete ticket
+
+# Production testing (build)
+pm-build todo                        # Test built version
+```
+
+**Performance Comparison**
+
+- **tsx execution**: ~1 second (development)
+- **build + run**: ~11 seconds (production testing)
+- **Speed improvement**: 10x faster for development
+
 ## README.md Maintenance Guidelines
 
 **Marketing and User-Facing Content Policy**: README.md serves as both technical documentation and marketing material. It must always contain the most current and user-valuable information.

@@ -12,7 +12,9 @@
     "markdownlint": "markdownlint-cli2",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev": "tsx packages/cli/src/bin/pm.ts",
+    "dev:quick": "tsx packages/cli/src/bin/pm.ts quick"
   },
   "keywords": [
     "cli",
