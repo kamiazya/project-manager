@@ -4,7 +4,7 @@ import {
   SearchTicketsRequest,
   UpdateTicketStatusRequest,
 } from '@project-manager/core'
-import { getConfig } from '@project-manager/shared'
+import { getConfig, isValidTicketStatus } from '@project-manager/shared'
 import { Command } from 'commander'
 import { formatTicketSummaryList } from '../utils/output.js'
 import {
@@ -133,8 +133,15 @@ export function createQuickCommands(): Command {
  */
 async function updateTicketStatus(id: string, status: string, action: string) {
   try {
+    if (!isValidTicketStatus(status)) {
+      console.error(
+        `Invalid status: ${status}. Valid statuses are: pending, in_progress, completed, archived`
+      )
+      process.exit(1)
+    }
+
     const updateTicketStatusUseCase = getUpdateTicketStatusUseCase()
-    const request = new UpdateTicketStatusRequest(id, status as any)
+    const request = new UpdateTicketStatusRequest(id, status)
     const response = await updateTicketStatusUseCase.execute(request)
     console.log(`✓ ${action} ticket ${response.id}: ${response.title}`)
   } catch (error) {
@@ -151,8 +158,15 @@ async function updateTicketStatus(id: string, status: string, action: string) {
  */
 async function listTicketsByStatus(status: string, format: 'table' | 'json' | 'compact') {
   try {
+    if (!isValidTicketStatus(status)) {
+      console.error(
+        `Invalid status: ${status}. Valid statuses are: pending, in_progress, completed, archived`
+      )
+      process.exit(1)
+    }
+
     const searchTicketsUseCase = getSearchTicketsUseCase()
-    const request = new SearchTicketsRequest({ status: status as any })
+    const request = new SearchTicketsRequest({ status })
     const response = await searchTicketsUseCase.execute(request)
 
     const output = formatTicketSummaryList(response.tickets, { format })

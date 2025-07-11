@@ -3,7 +3,12 @@ import {
   UpdateTicketPriorityRequest,
   UpdateTicketStatusRequest,
 } from '@project-manager/core'
-import type { TicketPriority, TicketStatus } from '@project-manager/shared'
+import {
+  isValidTicketPriority,
+  isValidTicketStatus,
+  type TicketPriority,
+  type TicketStatus,
+} from '@project-manager/shared'
 import { Command } from 'commander'
 import { formatTicketResponse } from '../utils/output.js'
 import {
@@ -40,17 +45,26 @@ export function updateTicketCommand(): Command {
 
         // Update status if provided
         if (options.status) {
-          const statusRequest = new UpdateTicketStatusRequest(id, options.status as TicketStatus)
+          if (!isValidTicketStatus(options.status)) {
+            console.error(
+              `Invalid status: ${options.status}. Valid statuses are: pending, in_progress, completed, archived`
+            )
+            process.exit(1)
+          }
+          const statusRequest = new UpdateTicketStatusRequest(id, options.status)
           response = await updateTicketStatusUseCase.execute(statusRequest)
           updates.push(`status to ${options.status}`)
         }
 
         // Update priority if provided
         if (options.priority) {
-          const priorityRequest = new UpdateTicketPriorityRequest(
-            id,
-            options.priority as TicketPriority
-          )
+          if (!isValidTicketPriority(options.priority)) {
+            console.error(
+              `Invalid priority: ${options.priority}. Valid priorities are: high, medium, low`
+            )
+            process.exit(1)
+          }
+          const priorityRequest = new UpdateTicketPriorityRequest(id, options.priority)
           response = await updateTicketPriorityUseCase.execute(priorityRequest)
           updates.push(`priority to ${options.priority}`)
         }
