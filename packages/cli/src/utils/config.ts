@@ -7,7 +7,7 @@ import { ENV_VARS, FILE_SYSTEM } from '@project-manager/shared'
  * Get the default storage file path following XDG Base Directory specification
  */
 export function getDefaultStoragePath(): string {
-  const homeDir = process.env[ENV_VARS.HOME] || homedir()
+  const homeDir = homedir()
   const configHome = process.env[ENV_VARS.XDG_CONFIG_HOME] || join(homeDir, '.config')
   const projectManagerDir = join(configHome, FILE_SYSTEM.CONFIG_DIR_NAME)
 

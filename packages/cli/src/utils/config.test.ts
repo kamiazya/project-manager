@@ -36,15 +36,14 @@ describe('config', () => {
 
     it('should return path in home/.config when XDG_CONFIG_HOME not set', () => {
       delete process.env.XDG_CONFIG_HOME
-      const originalHome = process.env.HOME
-      process.env.HOME = tempDir
 
       const path = getDefaultStoragePath()
 
-      expect(path).toBe(join(tempDir, '.config', 'project-manager', 'tickets.json'))
-
-      // Restore original HOME
-      process.env.HOME = originalHome
+      // Should use os.homedir() directly
+      expect(path).toContain('.config')
+      expect(path).toContain('project-manager')
+      expect(path).toContain('tickets.json')
+      expect(path).toMatch(/\/.+\.config\/project-manager\/tickets\.json$/)
     })
   })
 
@@ -87,18 +86,20 @@ describe('config', () => {
   })
 
   describe('edge cases and error handling', () => {
-    it('should handle missing HOME environment variable', () => {
+    it('should handle missing environment variables gracefully', () => {
       delete process.env.XDG_CONFIG_HOME
       delete process.env.HOME
       delete process.env.PM_STORAGE_PATH
 
-      // Should not throw and return a valid path
+      // Should not throw and return a valid path using os.homedir()
       expect(() => getDefaultStoragePath()).not.toThrow()
       expect(() => getStoragePath()).not.toThrow()
 
       const path = getStoragePath()
       expect(path).toContain('project-manager')
       expect(path).toContain('tickets.json')
+      // Should use os.homedir() as fallback
+      expect(path).toMatch(/^\//)
     })
 
     it('should handle special characters in paths', () => {

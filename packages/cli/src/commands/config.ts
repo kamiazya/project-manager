@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { type Config, getConfig, validateConfig } from '@project-manager/shared'
 import { Command } from 'commander'
@@ -81,7 +82,7 @@ export function configCommand(): Command {
 
         // Determine config file path
         const configPath = options.global
-          ? join(process.env.HOME || process.env.USERPROFILE || '', '.pmrc.json')
+          ? join(homedir(), '.pmrc.json')
           : join(process.cwd(), '.pmrc.json')
 
         // Load existing config or create new one
