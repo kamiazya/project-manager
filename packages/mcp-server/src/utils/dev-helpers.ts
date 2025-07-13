@@ -3,7 +3,23 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const pidFile = join(__dirname, '../../.dev-server.pid')
+
+function getPidFilePath(): string {
+  // Use environment variable if available, otherwise use a stable location
+  if (process.env.PM_PID_FILE) {
+    return process.env.PM_PID_FILE
+  }
+
+  // Try process.cwd() first (more stable for bundled/different directory structures)
+  try {
+    return join(process.cwd(), '.dev-server.pid')
+  } catch {
+    // Fallback to relative path if process.cwd() fails
+    return join(__dirname, '../../.dev-server.pid')
+  }
+}
+
+const pidFile = getPidFilePath()
 
 export function isDevelopment(): boolean {
   return process.env.NODE_ENV === 'development'

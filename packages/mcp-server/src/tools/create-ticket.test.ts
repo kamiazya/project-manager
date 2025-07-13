@@ -1,5 +1,5 @@
 import { CreateTicketUseCase, TYPES } from '@project-manager/core'
-import { Container } from 'inversify'
+import type { Container } from 'inversify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as containerModule from '../utils/container.js'
 import { createTicketTool } from './create-ticket.js'
@@ -9,13 +9,15 @@ describe('createTicketTool', () => {
   let mockUseCase: CreateTicketUseCase
 
   beforeEach(() => {
-    mockContainer = new Container()
     mockUseCase = {
       execute: vi.fn(),
     } as unknown as CreateTicketUseCase
 
-    mockContainer.bind<CreateTicketUseCase>(TYPES.CreateTicketUseCase).toConstantValue(mockUseCase)
-    vi.spyOn(containerModule, 'getContainer').mockReturnValue(mockContainer)
+    mockContainer = {
+      get: vi.fn().mockReturnValue(mockUseCase),
+    } as any
+
+    vi.spyOn(containerModule, 'getContainer').mockReturnValue(mockContainer as any)
   })
 
   it('should have correct metadata', () => {
@@ -32,6 +34,7 @@ describe('createTicketTool', () => {
       status: 'pending',
       priority: 'medium',
       type: 'task',
+      privacy: 'public',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -62,7 +65,7 @@ describe('createTicketTool', () => {
 
     // Verify the use case was called with CreateTicketRequest instance
     expect(mockUseCase.execute).toHaveBeenCalled()
-    const callArg = mockUseCase.execute.mock.calls[0][0]
+    const callArg = vi.mocked(mockUseCase.execute).mock.calls[0][0]
     expect(callArg.toCreateTicketData()).toMatchObject({
       title: 'Test Ticket',
       description: 'Test Description',

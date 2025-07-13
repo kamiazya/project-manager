@@ -641,7 +641,7 @@ pnpm run typecheck --watch
 
 ### VitePress Optimization Techniques
 
-During investigation, we tested VitePress performance optimizations but found they are **not compatible with ES modules**:
+During investigation, we tested VitePress performance optimizations but found they are **incompatible with ES modules**:
 
 #### Incompatible Techniques (CommonJS only)
 

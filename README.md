@@ -17,7 +17,7 @@ Project Manager is an open-source tool that enables effective collaboration betw
 ### Current
 
 - ✅ Local ticket management (CRUD operations)
-- ✅ CLI interface for developer productivity
+- ✅ CLI for developer productivity
 - ✅ MCP (Model Context Protocol) server for AI integration
   - Ticket management tools
   - Project configuration management
@@ -65,7 +65,7 @@ Project Manager is an open-source tool that enables effective collaboration betw
 ### Completed Features
 
 - ✅ Local ticket management system
-- ✅ CLI interface with full CRUD operations
+- ✅ CLI with full CRUD operations
 - ✅ MCP server for AI integration (9 tools available)
 - ✅ Project configuration management
 - ✅ Hot reload development workflow

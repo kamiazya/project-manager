@@ -87,7 +87,7 @@ async function main() {
         // Give it a moment to cleanup, then force kill
         setTimeout(() => {
           mcpProcess.kill('SIGKILL')
-        }, 3000)
+        }, 10000) // 10 seconds for graceful shutdown
       }
 
       process.on('SIGINT', cleanup)
