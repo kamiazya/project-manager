@@ -1,12 +1,11 @@
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 import type { TicketJSON, TicketStats } from '@project-manager/shared'
 import {
-  ENV_VARS,
   ERROR_MESSAGES,
   FILE_SYSTEM,
+  getStoragePath,
   StorageError,
   TicketNotFoundError,
 } from '@project-manager/shared'
@@ -23,32 +22,14 @@ import { TicketMapper } from './mappers/ticket-mapper.js'
  * - Uses value objects (TicketId) instead of primitive strings
  * - Delegates mapping logic to TicketMapper
  * - Domain objects remain pure without persistence concerns
+ * - Receives storage path through constructor for better testability and configuration
  */
 export class JsonTicketRepository implements TicketRepository {
   private readonly filePath: string
   private readonly writeLock = new Map<string, Promise<void>>()
 
   constructor(filePath?: string) {
-    this.filePath = filePath || this.getDefaultPath()
-  }
-
-  private getDefaultPath(): string {
-    const envPath = process.env[ENV_VARS.STORAGE_PATH]
-    if (envPath) {
-      return envPath
-    }
-
-    // Use default location following XDG Base Directory specification
-    const homeDir = homedir()
-    const configHome = process.env[ENV_VARS.XDG_CONFIG_HOME] || join(homeDir, '.config')
-
-    // Use separate directory for development environment
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    const dirName = isDevelopment
-      ? `${FILE_SYSTEM.CONFIG_DIR_NAME}-dev`
-      : FILE_SYSTEM.CONFIG_DIR_NAME
-
-    return join(configHome, dirName, FILE_SYSTEM.DEFAULT_TICKETS_FILE)
+    this.filePath = filePath || getStoragePath()
   }
 
   async save(ticket: Ticket): Promise<void> {
