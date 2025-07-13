@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process'
+import { type ChildProcess, spawn } from 'node:child_process'
 import { createCLI } from '../cli.js'
 
 async function main() {
@@ -36,7 +36,7 @@ async function main() {
         `Starting MCP server in ${envMode} mode (${transportMode}${transportMode === 'http' ? `:${httpPort}${isStateless ? ':stateless' : ''}` : ''})...`
       )
 
-      let mcpProcess: any
+      let mcpProcess: ChildProcess
       let mcpArgs: string[] = []
 
       if (transportMode === 'http') {

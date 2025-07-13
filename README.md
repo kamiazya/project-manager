@@ -101,8 +101,21 @@ pnpm pm done <ticket-id>
 
 ```bash
 # Start MCP server for AI integration
+
+# Unix/Linux/macOS
 NODE_ENV=development pm --mcp  # Development mode with hot reload
-pm --mcp                       # Production mode
+
+# Windows (Command Prompt)
+set NODE_ENV=development && pm --mcp
+
+# Windows (PowerShell)
+$env:NODE_ENV="development"; pm --mcp
+
+# Cross-platform (using cross-env - recommended)
+npx cross-env NODE_ENV=development pm --mcp
+
+# Production mode (all platforms)
+pm --mcp
 
 # Or from the MCP server package
 cd packages/mcp-server
