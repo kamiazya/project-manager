@@ -28,22 +28,9 @@ knowledge_base:
   code_guidelines:
     enabled: true
     filePatterns:
-      # Core project documentation
-      - 'README.md'
-      - 'CONTRIBUTING.md'
-      # Architecture and design documents
-      - 'docs/architecture/ARCHITECTURE.md'
-      - 'docs/architecture/CONTEXT_MAP.md'
-      - 'docs/architecture/TECHNICAL_DATA_MODEL.md'
-      - 'docs/adr/[0-9][0-9][0-9][0-9]*.md'
-      # Domain knowledge
-      - 'docs/domain/REQUIREMENTS.md'
-      - 'docs/domain/UBIQUITOUS_LANGUAGE.md'
-      # Context-specific domain models and workflows
-      - 'docs/contexts/*/*.md'
-      # Development practices
-      - 'docs/TEST_STRATEGY.md'
-      - 'docs/best-practices/*.md'
+      - '*.md'
+      - 'docs/**/*.md'
+      - 'packages/**/*.md'
   learnings:
     scope: local
   issues:
@@ -57,10 +44,10 @@ code_generation:
   docstrings:
     language: en-US
     path_instructions:
-      - path: "src/**"
+      - path: "**/src/**"
         instructions: "Generate JSDoc comments following TypeScript documentation standards"
 
   unit_tests:
     path_instructions:
-      - path: "src/**"
+      - path: "**/src/**"
         instructions: "Generate Vitest unit tests following TDD patterns with comprehensive coverage"
