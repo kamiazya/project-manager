@@ -1,8 +1,8 @@
 import { CreateTicketUseCase, TYPES } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import * as containerModule from '../utils/container.js'
-import { createTicketTool } from './create-ticket.js'
+import * as containerModule from '../utils/container.ts'
+import { createTicketTool } from './create-ticket.ts'
 
 describe('createTicketTool', () => {
   let mockContainer: Container

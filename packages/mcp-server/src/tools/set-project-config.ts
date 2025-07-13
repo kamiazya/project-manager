@@ -1,9 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { validateConfig } from '@project-manager/shared'
+import { type Config, DEFAULT_CONFIG, validateConfig } from '@project-manager/shared'
 import { z } from 'zod'
-import { handleError } from '../utils/error-handler.js'
+import type { McpTool } from '../types/mcp-tool.ts'
+import { handleError } from '../utils/error-handler.ts'
 
 const setProjectConfigSchema = z.object({
   key: z.string().describe('Configuration key to set'),
@@ -15,7 +16,7 @@ const setProjectConfigSchema = z.object({
     .describe('Set in global config instead of project config'),
 })
 
-export const setProjectConfigTool = {
+export const setProjectConfigTool: McpTool = {
   name: 'set_project_config',
   title: 'Set Project Config',
   description: 'Set a project configuration value',
@@ -24,21 +25,10 @@ export const setProjectConfigTool = {
     try {
       const { key, value, global } = input
 
-      // All valid configuration keys
-      const validKeys = [
-        'defaultPriority',
-        'defaultType',
-        'defaultPrivacy',
-        'defaultStatus',
-        'defaultOutputFormat',
-        'storagePath',
-        'confirmDeletion',
-        'showHelpOnError',
-        'maxTitleLength',
-        'dateFormat',
-        'enableInteractiveMode',
-        'enableColorOutput',
-      ] as const
+      // Derive valid configuration keys from the Config interface
+      const validKeys = Object.keys(DEFAULT_CONFIG) as (keyof Config)[]
+      // Add optional keys that aren't in DEFAULT_CONFIG but are part of Config interface
+      validKeys.push('storagePath')
 
       // Validate that the key is allowed
       if (!validKeys.includes(key as (typeof validKeys)[number])) {
@@ -56,20 +46,22 @@ export const setProjectConfigTool = {
       // Parse the value based on the key
       let parsedValue: string | boolean | number = value
 
-      // Boolean configuration keys
-      const booleanKeys = [
-        'confirmDeletion',
-        'showHelpOnError',
-        'enableInteractiveMode',
-        'enableColorOutput',
-      ] as const
+      // Derive boolean configuration keys from DEFAULT_CONFIG
+      const booleanKeys = Object.keys(DEFAULT_CONFIG).filter(
+        key => typeof DEFAULT_CONFIG[key as keyof typeof DEFAULT_CONFIG] === 'boolean'
+      ) as (keyof Config)[]
 
-      // Numeric configuration keys
-      const numericKeys = ['maxTitleLength'] as const
+      // Derive numeric configuration keys from DEFAULT_CONFIG
+      const numericKeys = Object.keys(DEFAULT_CONFIG).filter(
+        key => typeof DEFAULT_CONFIG[key as keyof typeof DEFAULT_CONFIG] === 'number'
+      ) as (keyof Config)[]
 
-      // Parse boolean values
+      // Parse boolean values (case-insensitive and flexible)
       if (booleanKeys.includes(key as (typeof booleanKeys)[number])) {
-        parsedValue = value.toLowerCase() === 'true'
+        const lowerValue = value.toLowerCase().trim()
+        // Accept various truthy values: true, 1, yes, on
+        // Accept various falsy values: false, 0, no, off (all others default to false)
+        parsedValue = ['true', '1', 'yes', 'on'].includes(lowerValue)
       }
 
       // Parse numeric values
@@ -88,31 +80,8 @@ export const setProjectConfigTool = {
         }
       }
 
-      // Validate string union types
-      const stringUnionValidation = {
-        defaultPriority: ['high', 'medium', 'low'],
-        defaultType: ['feature', 'bug', 'task'],
-        defaultPrivacy: ['local-only', 'shareable', 'public'],
-        defaultStatus: ['pending', 'in_progress'],
-        defaultOutputFormat: ['table', 'json', 'compact'],
-        dateFormat: ['iso', 'short', 'relative'],
-      } as const
-
-      const unionKey = key as keyof typeof stringUnionValidation
-      if (unionKey in stringUnionValidation) {
-        const validValues = stringUnionValidation[unionKey] as readonly string[]
-        if (!validValues.includes(value)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `Invalid value for ${key}: ${value}. Valid values are: ${validValues.join(', ')}`,
-              },
-            ],
-            isError: true,
-          }
-        }
-      }
+      // Note: String union validation is handled by the validateConfig function below
+      // This removes the need to hardcode valid values for each configuration key
 
       // Validate the configuration
       const testConfig = { [key]: parsedValue }

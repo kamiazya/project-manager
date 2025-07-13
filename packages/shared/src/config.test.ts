@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getDefaultStorageDir, getDefaultStoragePath, getStoragePath } from './config.js'
+import { getDefaultStorageDir, getDefaultStoragePath, getStoragePath } from './config.ts'
 
 describe('Shared Storage Path Functions', () => {
   const originalEnv = process.env

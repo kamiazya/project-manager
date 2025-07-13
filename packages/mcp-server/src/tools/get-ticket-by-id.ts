@@ -1,14 +1,15 @@
 import type { GetTicketByIdUseCase } from '@project-manager/core'
 import { TYPES } from '@project-manager/core'
 import { z } from 'zod'
-import { getContainer } from '../utils/container.js'
-import { handleError } from '../utils/error-handler.js'
+import type { McpTool } from '../types/mcp-tool.ts'
+import { getContainer } from '../utils/container.ts'
+import { handleError } from '../utils/error-handler.ts'
 
 const getTicketByIdSchema = z.object({
   id: z.string().min(1).describe('The ticket ID'),
 })
 
-export const getTicketByIdTool = {
+export const getTicketByIdTool: McpTool = {
   name: 'get_ticket',
   title: 'Get Ticket',
   description: 'Get a ticket by ID',

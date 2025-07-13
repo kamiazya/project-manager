@@ -1,9 +1,10 @@
 import type { CreateTicketUseCase } from '@project-manager/core'
 import { CreateTicketRequest, TYPES } from '@project-manager/core'
 import { z } from 'zod'
-import { getContainer } from '../utils/container.js'
-import { handleError } from '../utils/error-handler.js'
-import { formatErrorResponse, formatSuccessResponse } from '../utils/response-formatter.js'
+import type { McpTool } from '../types/mcp-tool.ts'
+import { getContainer } from '../utils/container.ts'
+import { handleError } from '../utils/error-handler.ts'
+import { formatErrorResponse, formatSuccessResponse } from '../utils/response-formatter.ts'
 
 const createTicketSchema = z.object({
   title: z.string().min(1).describe('The ticket title'),
@@ -16,7 +17,7 @@ const createTicketSchema = z.object({
   type: z.enum(['feature', 'bug', 'task']).optional().default('task').describe('The ticket type'),
 })
 
-export const createTicketTool = {
+export const createTicketTool: McpTool = {
   name: 'create_ticket',
   title: 'Create Ticket',
   description: 'Create a new ticket',

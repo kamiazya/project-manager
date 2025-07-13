@@ -1,14 +1,55 @@
 import { randomUUID } from 'node:crypto'
-import { createServer } from 'node:http'
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
-import { createMcpServer } from '../index.js'
+import packageJson from '../../package.json' with { type: 'json' }
+import { createMcpServer } from '../index.ts'
 import {
   isDevelopment,
   logDevelopmentInfo,
   setupDevelopmentSignalHandlers,
   writePidFile,
-} from '../utils/dev-helpers.js'
+} from '../utils/dev-helpers.ts'
+
+/**
+ * Helper function to parse request body as JSON
+ */
+async function parseRequestBody(req: IncomingMessage): Promise<any> {
+  return new Promise((resolve, reject) => {
+    let body = ''
+    req.on('data', (chunk: Buffer) => {
+      body += chunk.toString()
+    })
+    req.on('end', () => {
+      try {
+        const requestData = JSON.parse(body)
+        resolve(requestData)
+      } catch (parseError) {
+        reject(parseError)
+      }
+    })
+    req.on('error', (error: Error) => {
+      reject(error)
+    })
+  })
+}
+
+/**
+ * Helper function to send JSON-RPC parse error response
+ */
+function sendParseErrorResponse(res: ServerResponse, error: unknown): void {
+  console.error('Error parsing request body:', error)
+  if (!res.headersSent) {
+    res.writeHead(400, { 'Content-Type': 'application/json' })
+    res.end(
+      JSON.stringify({
+        jsonrpc: '2.0',
+        error: { code: -32700, message: 'Parse error' },
+        id: null,
+      })
+    )
+  }
+}
 
 async function main() {
   try {
@@ -16,7 +57,19 @@ async function main() {
     const args = process.argv.slice(2)
     const isHttpMode = args.includes('--http')
     const isStateless = args.includes('--stateless')
-    const port = parseInt(args.find((_, i) => args[i - 1] === '--port') || '3000')
+    const portArg = args.find((_, i) => args[i - 1] === '--port') || '3000'
+    const parsedPort = parseInt(portArg, 10)
+
+    // Validate port range (1-65535) and handle invalid values
+    let port: number
+    if (Number.isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
+      console.error(
+        `Invalid port: ${portArg}. Port must be a number between 1 and 65535. Using default port 3000.`
+      )
+      port = 3000
+    } else {
+      port = parsedPort
+    }
 
     if (args.includes('--help') || args.includes('-h')) {
       console.log('project-manager MCP Server')
@@ -31,7 +84,7 @@ async function main() {
     }
 
     if (args.includes('--version') || args.includes('-v')) {
-      console.log('0.0.0')
+      console.log(packageJson.version)
       process.exit(0)
     }
 
@@ -69,42 +122,25 @@ async function main() {
           if (req.method === 'POST') {
             // Handle main MCP communication
             if (isStateless) {
-              // Stateless mode: create new server and transport for each request
-              const newServer = await createMcpServer()
+              // Stateless mode: reuse server instance, create new transport for each request
               const transport = new StreamableHTTPServerTransport({
                 sessionIdGenerator: undefined, // Disable sessions for stateless mode
               })
 
+              // Clean up transport when response is finished
               res.on('close', () => {
                 transport.close()
-                newServer.close()
               })
 
-              await newServer.connect(transport)
+              await server.connect(transport)
 
-              // Read request body
-              let body = ''
-              req.on('data', chunk => {
-                body += chunk
-              })
-              req.on('end', async () => {
-                try {
-                  const requestData = JSON.parse(body)
-                  await transport.handleRequest(req, res, requestData)
-                } catch (parseError) {
-                  console.error('Error parsing request body:', parseError)
-                  if (!res.headersSent) {
-                    res.writeHead(400, { 'Content-Type': 'application/json' })
-                    res.end(
-                      JSON.stringify({
-                        jsonrpc: '2.0',
-                        error: { code: -32700, message: 'Parse error' },
-                        id: null,
-                      })
-                    )
-                  }
-                }
-              })
+              // Parse request body and handle request
+              try {
+                const requestData = await parseRequestBody(req)
+                await transport.handleRequest(req, res, requestData)
+              } catch (parseError) {
+                sendParseErrorResponse(res, parseError)
+              }
             } else {
               // Stateful mode: reuse or create transport by session ID
               const sessionId = req.headers['mcp-session-id'] as string
@@ -132,29 +168,13 @@ async function main() {
                 await server.connect(transport)
               }
 
-              // Read request body
-              let body = ''
-              req.on('data', chunk => {
-                body += chunk
-              })
-              req.on('end', async () => {
-                try {
-                  const requestData = JSON.parse(body)
-                  await transport.handleRequest(req, res, requestData)
-                } catch (parseError) {
-                  console.error('Error parsing request body:', parseError)
-                  if (!res.headersSent) {
-                    res.writeHead(400, { 'Content-Type': 'application/json' })
-                    res.end(
-                      JSON.stringify({
-                        jsonrpc: '2.0',
-                        error: { code: -32700, message: 'Parse error' },
-                        id: null,
-                      })
-                    )
-                  }
-                }
-              })
+              // Parse request body and handle request
+              try {
+                const requestData = await parseRequestBody(req)
+                await transport.handleRequest(req, res, requestData)
+              } catch (parseError) {
+                sendParseErrorResponse(res, parseError)
+              }
             }
           } else if (req.method === 'GET') {
             // Handle SSE notifications for stateful mode

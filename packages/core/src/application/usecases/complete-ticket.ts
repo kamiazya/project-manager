@@ -1,10 +1,10 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
-import { TicketId } from '../../domain/value-objects/ticket-id.js'
-import type { UseCase } from '../common/base-usecase.js'
-import { CompleteTicketRequest } from '../dtos/requests/complete-ticket.js'
-import { CompleteTicketResponse } from '../dtos/responses/complete-ticket.js'
-import { TicketResponse } from '../dtos/responses/ticket.js'
-import type { TicketRepository } from '../repositories/ticket-repository.js'
+import { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import type { UseCase } from '../common/base-usecase.ts'
+import { CompleteTicketRequest } from '../dtos/requests/complete-ticket.ts'
+import { CompleteTicketResponse } from '../dtos/responses/complete-ticket.ts'
+import { TicketResponse } from '../dtos/responses/ticket.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for completing a ticket.

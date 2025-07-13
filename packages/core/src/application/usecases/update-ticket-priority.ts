@@ -1,10 +1,10 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
-import { TicketId } from '../../domain/value-objects/ticket-id.js'
-import type { UseCase } from '../common/base-usecase.js'
-import { UpdateTicketPriorityRequest } from '../dtos/requests/update-ticket-priority.js'
-import { TicketResponse } from '../dtos/responses/ticket.js'
-import { UpdateTicketPriorityResponse } from '../dtos/responses/update-ticket-priority.js'
-import type { TicketRepository } from '../repositories/ticket-repository.js'
+import { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import type { UseCase } from '../common/base-usecase.ts'
+import { UpdateTicketPriorityRequest } from '../dtos/requests/update-ticket-priority.ts'
+import { TicketResponse } from '../dtos/responses/ticket.ts'
+import { UpdateTicketPriorityResponse } from '../dtos/responses/update-ticket-priority.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for updating a ticket's priority.

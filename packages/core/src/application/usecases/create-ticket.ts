@@ -1,9 +1,9 @@
-import { Ticket } from '../../domain/entities/ticket.js'
-import type { UseCase } from '../common/base-usecase.js'
-import { CreateTicketRequest } from '../dtos/requests/create-ticket.js'
-import { CreateTicketResponse } from '../dtos/responses/create-ticket.js'
-import { TicketResponse } from '../dtos/responses/ticket.js'
-import type { TicketRepository } from '../repositories/ticket-repository.js'
+import { Ticket } from '../../domain/entities/ticket.ts'
+import type { UseCase } from '../common/base-usecase.ts'
+import { CreateTicketRequest } from '../dtos/requests/create-ticket.ts'
+import { CreateTicketResponse } from '../dtos/responses/create-ticket.ts'
+import { TicketResponse } from '../dtos/responses/ticket.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for creating a new ticket.

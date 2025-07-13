@@ -1,9 +1,9 @@
-import { TicketId } from '../../domain/value-objects/ticket-id.js'
-import type { UseCase } from '../common/base-usecase.js'
-import { GetTicketByIdRequest } from '../dtos/requests/get-ticket-by-id.js'
-import { GetTicketByIdResponse } from '../dtos/responses/get-ticket-by-id.js'
-import { TicketResponse } from '../dtos/responses/ticket.js'
-import type { TicketRepository } from '../repositories/ticket-repository.js'
+import { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import type { UseCase } from '../common/base-usecase.ts'
+import { GetTicketByIdRequest } from '../dtos/requests/get-ticket-by-id.ts'
+import { GetTicketByIdResponse } from '../dtos/responses/get-ticket-by-id.ts'
+import { TicketResponse } from '../dtos/responses/ticket.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for retrieving a ticket by its ID.

@@ -39,7 +39,7 @@ Use tsx-based development wrappers that automatically set environment variables 
 /**
  * Development wrapper for {command}.
  * This script automatically sets NODE_ENV=development before executing the main command.
- * 
+ *
  * In production, this file is not included (see package.json publishConfig).
  * The production binary uses {command}.ts directly.
  */
@@ -48,7 +48,7 @@ Use tsx-based development wrappers that automatically set environment variables 
 process.env.NODE_ENV = 'development'
 
 // Import and execute the main command
-import './{command}.js'
+import './{command}.ts'
 ```
 
 **2. Configure package.json**
@@ -103,7 +103,7 @@ pnpm's `publishConfig` allows you to have different configurations for developme
   "name": "@project-manager/cli",
   "version": "0.0.0",
   "type": "module",
-  
+
   // Development configuration (used during local development)
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -117,7 +117,7 @@ pnpm's `publishConfig` allows you to have different configurations for developme
       "import": "./dist/index.js"
     }
   },
-  
+
   // Production configuration (used when publishing to npm)
   "publishConfig": {
     "main": "dist/index.js",
@@ -158,7 +158,7 @@ Export conditions allow different module resolution based on environment or cons
   "exports": {
     ".": {
       "@project-manager/source": "./src/index.ts",
-      "types": "./dist/index.d.ts", 
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
   }
@@ -189,7 +189,7 @@ import { Ticket } from '@project-manager/core'
 // ↑ Resolves to: @project-manager/core/src/index.ts
 
 // In packages without custom conditions
-import { Ticket } from '@project-manager/core'  
+import { Ticket } from '@project-manager/core'
 // ↑ Resolves to: @project-manager/core/dist/index.js
 ```
 
@@ -321,7 +321,7 @@ This project uses these patterns extensively:
 # Test development configuration
 pnpm pm --help                   # Should execute quickly via tsx
 
-# Test production configuration  
+# Test production configuration
 pnpm pack                        # Create production package
 tar -tf package.tgz              # Verify only dist/ files included
 
@@ -374,8 +374,8 @@ Use NODE_ENV-based configuration for development/production separation:
 
 ```typescript
 const isDevelopment = process.env.NODE_ENV === 'development'
-const configPath = isDevelopment 
-  ? `${baseDir}-dev` 
+const configPath = isDevelopment
+  ? `${baseDir}-dev`
   : baseDir
 ```
 
@@ -619,7 +619,7 @@ When testing hot-reload development:
 # Quick syntax check
 pnpm run typecheck
 
-# Quick execution test  
+# Quick execution test
 tsx src/bin/command.ts --version
 
 # Watch mode startup test
@@ -659,14 +659,14 @@ if ('enableCompileCache' in module && typeof module.enableCompileCache === 'func
 Since VitePress techniques don't apply to ES modules, focus on these alternatives:
 
 1. **tsx Direct Execution**: ~1 second vs ~11 seconds build time
-2. **Development Wrappers**: Automatic NODE_ENV configuration  
+2. **Development Wrappers**: Automatic NODE_ENV configuration
 3. **Hot Reload**: File watching with automatic restart
 4. **Selective Imports**: Use tree-shaking friendly imports
 
 ```typescript
 // ✅ ES module compatible optimizations
 import { specific } from 'large-library/specific'  // Tree-shaking friendly
-const { dynamic } = await import('./heavy-module.js')  // Lazy loading
+const { dynamic } = await import('./heavy-module.ts')  // Lazy loading
 ```
 
 #### Lesson Learned

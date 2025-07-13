@@ -6,7 +6,7 @@ import type {
 } from '@project-manager/shared'
 import { getConfig } from '@project-manager/shared'
 import { Command } from 'commander'
-import { searchTicketsAction } from '../utils/cli-helpers.js'
+import { searchTicketsAction } from '../utils/cli-helpers.ts'
 
 export function listTicketCommand(): Command {
   const config = getConfig()

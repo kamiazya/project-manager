@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { McpConfig } from './pm.js'
-import { validateMcpMode } from './pm.js'
+import type { McpConfig } from './pm.ts'
+import { validateMcpMode } from './pm.ts'
 
 // Mock console methods to capture output
 const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {})

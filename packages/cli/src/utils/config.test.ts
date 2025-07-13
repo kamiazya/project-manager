@@ -2,7 +2,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getDefaultStoragePath, getStoragePath } from './config.js'
+import { getDefaultStoragePath, getStoragePath } from './config.ts'
 
 describe('config', () => {
   let tempDir: string

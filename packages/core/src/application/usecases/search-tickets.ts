@@ -1,7 +1,7 @@
-import type { UseCase } from '../common/base-usecase.js'
-import { SearchTicketsRequest } from '../dtos/requests/search-tickets.js'
-import { SearchTicketsResponse } from '../dtos/responses/search-tickets.js'
-import type { TicketRepository } from '../repositories/ticket-repository.js'
+import type { UseCase } from '../common/base-usecase.ts'
+import { SearchTicketsRequest } from '../dtos/requests/search-tickets.ts'
+import { SearchTicketsResponse } from '../dtos/responses/search-tickets.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for searching tickets by criteria.
@@ -37,10 +37,23 @@ export class SearchTicketsUseCase implements UseCase<SearchTicketsRequest, Searc
       // Filter by text search in title/description
       if ('search' in criteria && criteria.search && typeof criteria.search === 'string') {
         const searchLower = criteria.search.toLowerCase()
-        const titleMatch = ticket.title.value.toLowerCase().includes(searchLower)
-        const descriptionMatch = ticket.description.value.toLowerCase().includes(searchLower)
+        const searchIn = criteria.searchIn || ['title', 'description'] // Default to both fields
 
-        if (!titleMatch && !descriptionMatch) {
+        let hasMatch = false
+
+        // Check title if included in searchIn
+        if (searchIn.includes('title')) {
+          const titleMatch = ticket.title.value.toLowerCase().includes(searchLower)
+          if (titleMatch) hasMatch = true
+        }
+
+        // Check description if included in searchIn
+        if (searchIn.includes('description')) {
+          const descriptionMatch = ticket.description.value.toLowerCase().includes(searchLower)
+          if (descriptionMatch) hasMatch = true
+        }
+
+        if (!hasMatch) {
           return false
         }
       }

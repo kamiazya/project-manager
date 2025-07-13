@@ -1,10 +1,10 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
-import { TicketId } from '../../domain/value-objects/ticket-id.js'
-import type { UseCase } from '../common/base-usecase.js'
-import { UpdateTicketDescriptionRequest } from '../dtos/requests/update-ticket-description.js'
-import { TicketResponse } from '../dtos/responses/ticket.js'
-import { UpdateTicketDescriptionResponse } from '../dtos/responses/update-ticket-description.js'
-import type { TicketRepository } from '../repositories/ticket-repository.js'
+import { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import type { UseCase } from '../common/base-usecase.ts'
+import { UpdateTicketDescriptionRequest } from '../dtos/requests/update-ticket-description.ts'
+import { TicketResponse } from '../dtos/responses/ticket.ts'
+import { UpdateTicketDescriptionResponse } from '../dtos/responses/update-ticket-description.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for updating a ticket's description.

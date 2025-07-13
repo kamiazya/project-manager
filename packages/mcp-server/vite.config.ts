@@ -25,8 +25,8 @@ export default defineConfig({
     rollupOptions: {
       external: [
         '@modelcontextprotocol/sdk',
-        '@modelcontextprotocol/sdk/server/index.js',
-        '@modelcontextprotocol/sdk/server/stdio.js',
+        '@modelcontextprotocol/sdk/server/index.ts',
+        '@modelcontextprotocol/sdk/server/stdio.ts',
         'zod',
         '@project-manager/core',
         '@project-manager/shared',

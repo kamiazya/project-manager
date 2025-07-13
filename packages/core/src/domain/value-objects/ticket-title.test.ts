@@ -1,6 +1,6 @@
 import { VALIDATION } from '@project-manager/shared'
 import { describe, expect, it } from 'vitest'
-import { TicketTitle } from './ticket-title.js'
+import { TicketTitle } from './ticket-title.ts'
 
 describe('TicketTitle', () => {
   describe('create', () => {

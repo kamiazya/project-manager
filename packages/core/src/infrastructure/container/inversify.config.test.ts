@@ -5,10 +5,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   type TicketRepository,
   TicketRepository as TicketRepositorySymbol,
-} from '../../application/repositories/ticket-repository.js'
-import { CreateTicketUseCase } from '../../application/usecases/create-ticket.js'
-import { createContainer, getContainer, resetContainer } from './inversify.config.js'
-import { TYPES } from './types.js'
+} from '../../application/repositories/ticket-repository.ts'
+import { CreateTicketUseCase } from '../../application/usecases/create-ticket.ts'
+import { createContainer, getContainer, resetContainer } from './inversify.config.ts'
+import { TYPES } from './types.ts'
 
 describe('Inversify Container Configuration', () => {
   let tempDir: string
@@ -108,7 +108,7 @@ describe('Inversify Container Configuration', () => {
       const useCase = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
 
       const { CreateTicketRequest } = await import(
-        '../../application/dtos/requests/create-ticket.js'
+        '../../application/dtos/requests/create-ticket.ts'
       )
       const request = new CreateTicketRequest(
         'Test Ticket',

@@ -127,17 +127,6 @@ Once connected to Claude, you can use commands like:
 - **Project Insights**: Get real-time project statistics and progress tracking
 - **Configuration Management**: Adjust project settings through natural language
 
-## Available Tools
-
-### Ticket Management
-
-- `create_ticket` - Create a new ticket
-- `get_ticket` - Get ticket by ID
-- `list_tickets` - List all tickets with optional filters
-- `update_ticket_status` - Update ticket status
-- `search_tickets` - Search tickets by query
-- `get_ticket_stats` - Get project statistics
-
 ### Tool Parameters
 
 All tools use Zod validation for type-safe parameters. See individual tool files in `src/tools/` for detailed schemas.

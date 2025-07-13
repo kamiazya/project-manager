@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { ID_GENERATION } from './constants.js'
+import { ID_GENERATION } from './constants.ts'
 
 /**
  * Generates a unique ID using crypto.randomBytes

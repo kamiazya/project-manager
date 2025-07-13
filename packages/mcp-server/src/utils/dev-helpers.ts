@@ -37,7 +37,14 @@ export function cleanupPidFile(): void {
     try {
       const pidContent = readFileSync(pidFile, 'utf8')
       const pid = parseInt(pidContent.trim(), 10)
-      if (pid === process.pid) {
+
+      // Validate that the parsed PID is a valid number
+      if (Number.isNaN(pid)) {
+        console.error(`[DEV] Invalid PID in file ${pidFile}: "${pidContent.trim()}"`)
+        // Remove the invalid PID file to prevent future issues
+        unlinkSync(pidFile)
+        console.error(`[DEV] Removed invalid PID file: ${pidFile}`)
+      } else if (pid === process.pid) {
         // Remove the PID file only if it belongs to this process
         unlinkSync(pidFile)
         console.error(`[DEV] Cleaned up PID file: ${pidFile}`)
@@ -54,7 +61,7 @@ export function setupDevelopmentSignalHandlers(): void {
   const cleanup = () => {
     console.error('[DEV] Shutting down MCP server...')
     cleanupPidFile()
-    process.exit(0)
+    process.exit(0) // Exit with success code for graceful shutdown
   }
 
   // Handle process termination signals
@@ -66,11 +73,13 @@ export function setupDevelopmentSignalHandlers(): void {
   process.on('uncaughtException', error => {
     console.error('[DEV] Uncaught Exception:', error)
     cleanup()
+    process.exit(1) // Exit with error code to indicate failure
   })
 
   process.on('unhandledRejection', (reason, promise) => {
     console.error('[DEV] Unhandled Rejection at:', promise, 'reason:', reason)
     cleanup()
+    process.exit(1) // Exit with error code to indicate failure
   })
 }
 

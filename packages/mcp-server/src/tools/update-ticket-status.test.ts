@@ -1,8 +1,8 @@
 import { TYPES, UpdateTicketStatusUseCase } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import * as containerModule from '../utils/container.js'
-import { updateTicketStatusTool } from './update-ticket-status.js'
+import * as containerModule from '../utils/container.ts'
+import { updateTicketStatusTool } from './update-ticket-status.ts'
 
 describe('updateTicketStatusTool', () => {
   let mockContainer: Container

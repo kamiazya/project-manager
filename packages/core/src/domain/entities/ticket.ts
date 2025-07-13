@@ -1,11 +1,11 @@
 import type { TicketPrivacy, TicketType } from '@project-manager/shared'
 import { DEFAULTS, TicketValidationError } from '@project-manager/shared'
-import type { DomainEvent } from '../domain-events/domain-event.js'
-import { TicketDescription } from '../value-objects/ticket-description.js'
-import { TicketId } from '../value-objects/ticket-id.js'
-import { TicketPriority } from '../value-objects/ticket-priority.js'
-import { TicketStatus } from '../value-objects/ticket-status.js'
-import { TicketTitle } from '../value-objects/ticket-title.js'
+import type { DomainEvent } from '../domain-events/domain-event.ts'
+import { TicketDescription } from '../value-objects/ticket-description.ts'
+import { TicketId } from '../value-objects/ticket-id.ts'
+import { TicketPriority } from '../value-objects/ticket-priority.ts'
+import { TicketStatus } from '../value-objects/ticket-status.ts'
+import { TicketTitle } from '../value-objects/ticket-title.ts'
 
 export interface TicketProps {
   id: TicketId

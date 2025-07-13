@@ -1,10 +1,11 @@
 import { getConfig } from '@project-manager/shared'
 import { z } from 'zod'
-import { handleError } from '../utils/error-handler.js'
+import type { McpTool } from '../types/mcp-tool.ts'
+import { handleError } from '../utils/error-handler.ts'
 
 const getProjectConfigSchema = z.object({})
 
-export const getProjectConfigTool = {
+export const getProjectConfigTool: McpTool = {
   name: 'get_project_config',
   title: 'Get Project Config',
   description: 'Get the current project configuration settings',

@@ -1,12 +1,13 @@
 import type { GetTicketStatsUseCase } from '@project-manager/core'
 import { TYPES } from '@project-manager/core'
 import { z } from 'zod'
-import { getContainer } from '../utils/container.js'
-import { handleError } from '../utils/error-handler.js'
+import type { McpTool } from '../types/mcp-tool.ts'
+import { getContainer } from '../utils/container.ts'
+import { handleError } from '../utils/error-handler.ts'
 
 const getTicketStatsSchema = z.object({})
 
-export const getTicketStatsTool = {
+export const getTicketStatsTool: McpTool = {
   name: 'get_ticket_stats',
   title: 'Get Ticket Statistics',
   description: 'Get statistics about tickets',

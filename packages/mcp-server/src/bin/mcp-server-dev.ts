@@ -12,4 +12,4 @@
 process.env.NODE_ENV = 'development'
 
 // Import and execute the main MCP server
-import './mcp-server.js'
+import './mcp-server.ts'

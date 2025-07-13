@@ -1,7 +1,7 @@
 import type { TicketPriority, TicketPrivacy, TicketType } from '@project-manager/shared'
 import { getConfig } from '@project-manager/shared'
 import { Command } from 'commander'
-import { createDetailedTicketAction } from '../utils/cli-helpers.js'
+import { createDetailedTicketAction } from '../utils/cli-helpers.ts'
 
 export function createTicketCommand(): Command {
   const config = getConfig()

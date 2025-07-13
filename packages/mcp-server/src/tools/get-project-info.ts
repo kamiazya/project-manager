@@ -1,7 +1,22 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { z } from 'zod'
-import { handleError } from '../utils/error-handler.js'
+import type { McpTool } from '../types/mcp-tool.ts'
+import { handleError } from '../utils/error-handler.ts'
+
+/**
+ * Safely extracts a string property from an object, returning a default value if not found or invalid
+ */
+function safeStringProperty(obj: any, key: string, defaultValue: string = 'N/A'): string {
+  return typeof obj?.[key] === 'string' ? obj[key] : defaultValue
+}
+
+/**
+ * Safely checks if a property is a valid object (not null, not array)
+ */
+function isValidObject(value: any): boolean {
+  return value && typeof value === 'object' && !Array.isArray(value)
+}
 
 const getProjectInfoSchema = z.object({
   includePackageInfo: z
@@ -11,7 +26,7 @@ const getProjectInfoSchema = z.object({
     .describe('Include package.json information'),
 })
 
-export const getProjectInfoTool = {
+export const getProjectInfoTool: McpTool = {
   name: 'get_project_info',
   title: 'Get Project Info',
   description: 'Get basic project information including README and package.json if available',
@@ -53,21 +68,46 @@ export const getProjectInfoTool = {
             const packageJsonContent = readFileSync(packageJsonPath, 'utf-8')
             const packageJson = JSON.parse(packageJsonContent)
 
-            projectInfo += `Package Information:\n`
-            projectInfo += `Name: ${packageJson.name || 'N/A'}\n`
-            projectInfo += `Version: ${packageJson.version || 'N/A'}\n`
-            projectInfo += `Description: ${packageJson.description || 'N/A'}\n`
+            // Validate that packageJson is an object and not null
+            if (!isValidObject(packageJson)) {
+              projectInfo += `Package.json found but contains invalid data.\n`
+            } else {
+              projectInfo += `Package Information:\n`
 
-            if (packageJson.scripts) {
-              projectInfo += `Scripts: ${Object.keys(packageJson.scripts).join(', ')}\n`
-            }
+              // Safe access with type checking and default values
+              projectInfo += `Name: ${safeStringProperty(packageJson, 'name')}\n`
+              projectInfo += `Version: ${safeStringProperty(packageJson, 'version')}\n`
+              projectInfo += `Description: ${safeStringProperty(packageJson, 'description')}\n`
 
-            if (packageJson.dependencies) {
-              projectInfo += `Dependencies: ${Object.keys(packageJson.dependencies).length} packages\n`
-            }
+              // Safe access to scripts object
+              if (isValidObject(packageJson.scripts)) {
+                try {
+                  const scriptKeys = Object.keys(packageJson.scripts)
+                  projectInfo += `Scripts: ${scriptKeys.join(', ')}\n`
+                } catch {
+                  projectInfo += `Scripts: Error reading scripts\n`
+                }
+              }
 
-            if (packageJson.devDependencies) {
-              projectInfo += `Dev Dependencies: ${Object.keys(packageJson.devDependencies).length} packages\n`
+              // Safe access to dependencies object
+              if (isValidObject(packageJson.dependencies)) {
+                try {
+                  const depCount = Object.keys(packageJson.dependencies).length
+                  projectInfo += `Dependencies: ${depCount} packages\n`
+                } catch {
+                  projectInfo += `Dependencies: Error reading dependencies\n`
+                }
+              }
+
+              // Safe access to devDependencies object
+              if (isValidObject(packageJson.devDependencies)) {
+                try {
+                  const devDepCount = Object.keys(packageJson.devDependencies).length
+                  projectInfo += `Dev Dependencies: ${devDepCount} packages\n`
+                } catch {
+                  projectInfo += `Dev Dependencies: Error reading dev dependencies\n`
+                }
+              }
             }
           } catch (_error) {
             projectInfo += `Package.json found but could not be parsed.\n`

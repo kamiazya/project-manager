@@ -1,5 +1,5 @@
 import { type ChildProcess, spawn } from 'node:child_process'
-import { createCLI } from '../cli.js'
+import { createCLI } from '../cli.ts'
 
 export interface McpConfig {
   transportMode: 'stdio' | 'http'
@@ -138,7 +138,7 @@ async function main() {
         mcpProcess = spawn(
           'node',
           [
-            new URL('../../../mcp-server/dist/bin/mcp-server.js', import.meta.url).pathname,
+            new URL('../../../mcp-server/dist/bin/mcp-server.ts', import.meta.url).pathname,
             ...mcpArgs,
           ],
           {

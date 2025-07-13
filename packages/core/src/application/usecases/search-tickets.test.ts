@@ -1,9 +1,9 @@
 import type { TicketSearchCriteria } from '@project-manager/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Ticket } from '../../domain/entities/ticket.js'
-import { SearchTicketsRequest } from '../dtos/requests/search-tickets.js'
-import type { TicketRepository } from '../repositories/ticket-repository.js'
-import { SearchTicketsUseCase } from './search-tickets.js'
+import { Ticket } from '../../domain/entities/ticket.ts'
+import { SearchTicketsRequest } from '../dtos/requests/search-tickets.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import { SearchTicketsUseCase } from './search-tickets.ts'
 
 describe('SearchTicketsUseCase', () => {
   let searchTicketsUseCase: SearchTicketsUseCase

@@ -1,4 +1,4 @@
-import type { Ticket } from '../../../domain/entities/ticket.js'
+import type { Ticket } from '../../../domain/entities/ticket.ts'
 
 export class TicketSummary {
   constructor(

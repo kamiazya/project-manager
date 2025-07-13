@@ -2,8 +2,8 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createCLI } from './cli.js'
-import { resetServiceContainer } from './utils/service-factory.js'
+import { createCLI } from './cli.ts'
+import { resetServiceContainer } from './utils/service-factory.ts'
 
 /**
  * Helper function to safely extract ticket ID from console log calls

@@ -1,8 +1,9 @@
 import type { GetAllTicketsUseCase } from '@project-manager/core'
-import { TYPES } from '@project-manager/core'
+import { type GetAllTicketsFilters, GetAllTicketsRequest, TYPES } from '@project-manager/core'
 import { z } from 'zod'
-import { getContainer } from '../utils/container.js'
-import { handleError } from '../utils/error-handler.js'
+import type { McpTool } from '../types/mcp-tool.ts'
+import { getContainer } from '../utils/container.ts'
+import { handleError } from '../utils/error-handler.ts'
 
 const listTicketsSchema = z.object({
   status: z
@@ -14,7 +15,7 @@ const listTicketsSchema = z.object({
   limit: z.number().optional().default(100).describe('Maximum number of tickets to return'),
 })
 
-export const listTicketsTool = {
+export const listTicketsTool: McpTool = {
   name: 'list_tickets',
   title: 'List Tickets',
   description: 'List all tickets with optional filters',
@@ -24,23 +25,17 @@ export const listTicketsTool = {
       const container = getContainer()
       const useCase = container.get<GetAllTicketsUseCase>(TYPES.GetAllTicketsUseCase)
 
-      const response = await useCase.execute({})
+      // Pass filters directly to the use case, filtering out undefined values
+      const filters: GetAllTicketsFilters = {}
+      if (input.status !== undefined) filters.status = input.status
+      if (input.priority !== undefined) filters.priority = input.priority
+      if (input.type !== undefined) filters.type = input.type
+      if (input.limit !== undefined) filters.limit = input.limit
 
-      let tickets = response.tickets
+      const request = new GetAllTicketsRequest(filters)
 
-      // Apply filters
-      if (input.status) {
-        tickets = tickets.filter(ticket => ticket.status === input.status)
-      }
-      if (input.priority) {
-        tickets = tickets.filter(ticket => ticket.priority === input.priority)
-      }
-      if (input.type) {
-        tickets = tickets.filter(ticket => ticket.type === input.type)
-      }
-
-      // Apply limit
-      tickets = tickets.slice(0, input.limit)
+      const response = await useCase.execute(request)
+      const tickets = response.tickets
 
       return {
         content: [

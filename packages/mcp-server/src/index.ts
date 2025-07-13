@@ -1,23 +1,15 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
-import { createTicketTool } from './tools/create-ticket.js'
-import { getProjectConfigTool } from './tools/get-project-config.js'
-import { getProjectInfoTool } from './tools/get-project-info.js'
-import { getTicketByIdTool } from './tools/get-ticket-by-id.js'
-import { getTicketStatsTool } from './tools/get-ticket-stats.js'
-import { listTicketsTool } from './tools/list-tickets.js'
-import { searchTicketsTool } from './tools/search-tickets.js'
-import { setProjectConfigTool } from './tools/set-project-config.js'
-import { updateTicketStatusTool } from './tools/update-ticket-status.js'
-
-// Define tool interface for type safety
-interface McpTool {
-  name: string
-  title: string
-  description: string
-  inputSchema: any
-  handler: (input: any) => Promise<any>
-}
+import packageJson from '../package.json' with { type: 'json' }
+import { createTicketTool } from './tools/create-ticket.ts'
+import { getProjectConfigTool } from './tools/get-project-config.ts'
+import { getProjectInfoTool } from './tools/get-project-info.ts'
+import { getTicketByIdTool } from './tools/get-ticket-by-id.ts'
+import { getTicketStatsTool } from './tools/get-ticket-stats.ts'
+import { listTicketsTool } from './tools/list-tickets.ts'
+import { searchTicketsTool } from './tools/search-tickets.ts'
+import { setProjectConfigTool } from './tools/set-project-config.ts'
+import { updateTicketStatusTool } from './tools/update-ticket-status.ts'
+import type { McpTool } from './types/mcp-tool.ts'
 
 // Define all tools in a central registry
 const tools: McpTool[] = [
@@ -50,7 +42,7 @@ function registerTools(server: McpServer, tools: McpTool[]) {
 export async function createMcpServer() {
   const server = new McpServer({
     name: 'project-manager-mcp',
-    version: '0.0.0',
+    version: packageJson.version,
   })
 
   // Register all tools using the helper function
@@ -58,9 +50,3 @@ export async function createMcpServer() {
 
   return server
 }
-
-// Start server if run directly
-createMcpServer().then(async server => {
-  const transport = new StdioServerTransport()
-  await server.connect(transport)
-})

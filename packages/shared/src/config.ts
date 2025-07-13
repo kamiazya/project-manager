@@ -6,7 +6,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { DEFAULTS, ENV_VARS, FILE_SYSTEM } from './constants.js'
+import { DEFAULTS, ENV_VARS, FILE_SYSTEM } from './constants.ts'
 
 // Configuration interface
 export interface Config {

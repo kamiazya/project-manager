@@ -12,4 +12,4 @@
 process.env.NODE_ENV = 'development'
 
 // Import and execute the main CLI
-import './pm.js'
+import './pm.ts'

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { TicketPriority } from './ticket-priority.js'
+import { TicketPriority } from './ticket-priority.ts'
 
 describe('TicketPriority', () => {
   describe('create', () => {

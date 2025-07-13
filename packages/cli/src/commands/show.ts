@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { showTicketAction } from '../utils/cli-helpers.js'
+import { showTicketAction } from '../utils/cli-helpers.ts'
 
 export function showTicketCommand(): Command {
   const command = new Command('show')
