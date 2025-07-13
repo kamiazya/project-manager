@@ -143,7 +143,7 @@ async function main() {
         mcpProcess = spawn(
           'node',
           [
-            new URL('../../../mcp-server/dist/bin/mcp-server.ts', import.meta.url).pathname,
+            new URL('../../../mcp-server/dist/bin/mcp-server.js', import.meta.url).pathname,
             ...mcpArgs,
           ],
           {
