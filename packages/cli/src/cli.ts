@@ -27,6 +27,9 @@ export function createCLI(): Command {
 
   program.name(CLI.COMMAND_NAME).description(CLI.DESCRIPTION).version(packageJson.version)
 
+  // Add MCP server options
+  program.option('--mcp [mode]', 'Start MCP server (stdio|http:port[:stateless])', 'stdio')
+
   // Add core subcommands
   program.addCommand(configCommand())
   program.addCommand(createTicketCommand())
