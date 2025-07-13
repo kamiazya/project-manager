@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "inversify": "^6.2.1",
+    "inversify": "catalog:",
     "ts-node": "^10.9.2",
     "typescript": "catalog:",
     "vite": "catalog:",
