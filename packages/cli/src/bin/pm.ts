@@ -14,10 +14,13 @@ async function main() {
       let mcpMode = 'stdio'
 
       // Parse MCP mode if provided
-      if (mcpArg.includes('=')) {
-        mcpMode = mcpArg.split('=')[1]
-      } else if (mcpIndex + 1 < args.length && !args[mcpIndex + 1].startsWith('-')) {
-        mcpMode = args[mcpIndex + 1]
+      if (mcpArg && mcpArg.includes('=')) {
+        mcpMode = mcpArg.split('=')[1] || 'stdio'
+      } else if (mcpIndex + 1 < args.length) {
+        const nextArg = args[mcpIndex + 1]
+        if (nextArg && !nextArg.startsWith('-')) {
+          mcpMode = nextArg
+        }
       }
 
       const isDev = process.env.NODE_ENV === 'development'

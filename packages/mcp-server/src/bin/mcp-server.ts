@@ -16,7 +16,7 @@ async function main() {
     const args = process.argv.slice(2)
     const isHttpMode = args.includes('--http')
     const isStateless = args.includes('--stateless')
-    const port = parseInt(args.find((arg, i) => args[i - 1] === '--port') || '3000')
+    const port = parseInt(args.find((_, i) => args[i - 1] === '--port') || '3000')
 
     if (args.includes('--help') || args.includes('-h')) {
       console.log('project-manager MCP Server')

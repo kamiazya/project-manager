@@ -35,7 +35,7 @@ export const getProjectInfoTool = {
             projectInfo += `${filename}:\n${content.substring(0, 1000)}${content.length > 1000 ? '...' : ''}\n\n`
             readmeFound = true
             break
-          } catch (error) {
+          } catch (_error) {
             // Continue to next file
           }
         }
@@ -69,7 +69,7 @@ export const getProjectInfoTool = {
             if (packageJson.devDependencies) {
               projectInfo += `Dev Dependencies: ${Object.keys(packageJson.devDependencies).length} packages\n`
             }
-          } catch (error) {
+          } catch (_error) {
             projectInfo += `Package.json found but could not be parsed.\n`
           }
         } else {

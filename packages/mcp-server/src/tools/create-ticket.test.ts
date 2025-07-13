@@ -45,9 +45,25 @@ describe('createTicketTool', () => {
       type: 'task',
     })
 
-    expect(result.success).toBe(true)
-    expect(result.ticket).toEqual(mockResponse)
-    expect(mockUseCase.execute).toHaveBeenCalledWith({
+    // MCP tools return content array
+    expect(result.content).toBeDefined()
+    expect(result.content[0].type).toBe('text')
+
+    const responseData = JSON.parse(result.content[0].text)
+    expect(responseData.success).toBe(true)
+    expect(responseData.ticket).toMatchObject({
+      id: mockResponse.id,
+      title: mockResponse.title,
+      description: mockResponse.description,
+      status: mockResponse.status,
+      priority: mockResponse.priority,
+      type: mockResponse.type,
+    })
+
+    // Verify the use case was called with CreateTicketRequest instance
+    expect(mockUseCase.execute).toHaveBeenCalled()
+    const callArg = mockUseCase.execute.mock.calls[0][0]
+    expect(callArg.toCreateTicketData()).toMatchObject({
       title: 'Test Ticket',
       description: 'Test Description',
       priority: 'medium',
@@ -65,7 +81,12 @@ describe('createTicketTool', () => {
       type: 'task',
     })
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBe('Test error')
+    // MCP tools return content array
+    expect(result.content).toBeDefined()
+    expect(result.content[0].type).toBe('text')
+
+    const responseData = JSON.parse(result.content[0].text)
+    expect(responseData.success).toBe(false)
+    expect(responseData.error).toBe('Test error')
   })
 })
