@@ -32,10 +32,9 @@ When suggesting changes, always reference these files for context:
 ### When Suggesting Code
 
 1. **Follow existing patterns**: Look at similar implementations in the codebase
-2. **Use proper error handling**: Always use Result types, never throw
-3. **Add comprehensive tests**: Include unit and integration tests
-4. **Update documentation**: Modify relevant docs when adding features
-5. **Consider AI integration**: Think about MCP tool exposure for new features
+2. **Add comprehensive tests**: Include unit and integration tests
+3. **Update documentation**: Modify relevant docs when adding features
+4. **Consider AI integration**: Think about MCP tool exposure for new features
 
 ### Common Patterns to Follow
 
