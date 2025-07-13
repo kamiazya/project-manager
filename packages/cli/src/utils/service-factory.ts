@@ -17,7 +17,7 @@ import {
   UpdateTicketTitleUseCase,
 } from '@project-manager/core'
 import type { Container } from 'inversify'
-import { getStoragePath } from './config.js'
+import { getStoragePath } from './config.ts'
 
 let _container: Container | null = null
 

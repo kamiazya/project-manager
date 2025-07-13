@@ -2,6 +2,8 @@
 
 This document provides coding standards and best practices for the Project Manager codebase. These guidelines ensure consistency, maintainability, and quality across all packages.
 
+**AI-Driven Development Focus**: These guidelines are specifically designed to reduce AI assistant failures and improve collaboration efficiency in AI-assisted development workflows.
+
 ## Table of Contents
 
 1. [General Principles](#general-principles)
@@ -807,6 +809,52 @@ import { validateInput } from './validators';
 import type { Config } from './types';
 ```
 
+### Import Extensions
+
+**TypeScript Import Extension Guidelines**
+
+This project uses `moduleResolution: "Bundler"` with `allowImportingTsExtensions: true` which allows `.ts` extensions:
+
+**Standard Pattern (All Files)**
+
+Use `.ts` extensions in import statements for TypeScript files:
+
+```typescript
+// ✅ Good: Use .ts extension for TypeScript imports
+import { createTicket } from './ticket-service.ts'
+import { TicketRepository } from '../repositories/ticket-repository.ts'
+
+// ❌ Bad: Missing extension or .js extension
+import { createTicket } from './ticket-service'
+import { TicketRepository } from '../repositories/ticket-repository.js'
+```
+
+**Development Wrapper Exception**
+
+Development wrapper files (e.g., `*-dev.ts`) that use tsx for direct TypeScript execution should import `.ts` files:
+
+```typescript
+// Development wrapper pattern: packages/*/src/bin/*-dev.ts
+#!/usr/bin/env tsx
+
+// Force development environment
+process.env.NODE_ENV = 'development'
+
+// ✅ Good: Import .ts for direct tsx execution
+import './main-file.ts'
+
+// ❌ Bad: .js doesn't exist during development
+import './main-file.ts'
+```
+
+**Rationale**
+
+- **ES Modules**: Node.js requires explicit extensions for ES module resolution
+- **TypeScript Bundler Mode**: Aligns with bundler expectations for import paths
+- **Development Efficiency**: tsx can execute `.ts` files directly in development
+- **Production Compatibility**: Compiled JavaScript uses `.js` extensions as expected
+- **AI Assistant Reliability**: Consistent `.ts` extension pattern reduces AI confusion and import resolution failures during development tasks
+
 ### File Organization Anti-patterns
 
 **Avoid index.ts Files (Except Package Entry Points)**
@@ -817,6 +865,7 @@ Do NOT create `index.ts` files in internal directories as they create maintenanc
 
 - **Maintenance Burden**: Every new file requires updating multiple index files
 - **Token Waste**: AI tools process unnecessary re-export code
+- **AI Task Failure**: AI assistants frequently fail to maintain index files correctly, leading to broken imports
 - **Circular Dependencies**: Can create complex dependency chains
 - **Build Complexity**: Increases build time and complexity
 - **Refactoring Friction**: Makes moving files more difficult
@@ -824,14 +873,14 @@ Do NOT create `index.ts` files in internal directories as they create maintenanc
 ```typescript
 // ❌ Bad: Internal index.ts files
 // packages/core/src/application/usecases/index.ts
-export * from './create-ticket.usecase.js'
-export * from './get-ticket-by-id.usecase.js'
-export * from './update-ticket-status.usecase.js'
+export * from './create-ticket.usecase.ts'
+export * from './get-ticket-by-id.usecase.ts'
+export * from './update-ticket-status.usecase.ts'
 // ... 15 more lines to maintain
 
 // ✅ Good: Direct imports from specific files
-import { CreateTicketUseCase } from './usecases/create-ticket.js'
-import { GetTicketByIdUseCase } from './usecases/get-ticket-by-id.js'
+import { CreateTicketUseCase } from './usecases/create-ticket.ts'
+import { GetTicketByIdUseCase } from './usecases/get-ticket-by-id.ts'
 ```
 
 **Exceptions (When index.ts is acceptable):**

@@ -3,17 +3,16 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import type { TicketJSON, TicketStats } from '@project-manager/shared'
 import {
-  ENV_VARS,
   ERROR_MESSAGES,
   FILE_SYSTEM,
+  getStoragePath,
   StorageError,
   TicketNotFoundError,
 } from '@project-manager/shared'
-import { injectable } from 'inversify'
-import type { TicketRepository } from '../../application/repositories/ticket-repository.js'
-import { Ticket } from '../../domain/entities/ticket.js'
-import type { TicketId } from '../../domain/value-objects/ticket-id.js'
-import { TicketMapper } from './mappers/ticket-mapper.js'
+import type { TicketRepository } from '../../application/repositories/ticket-repository.ts'
+import { Ticket } from '../../domain/entities/ticket.ts'
+import type { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import { TicketMapper } from './mappers/ticket-mapper.ts'
 
 /**
  * JSON file-based implementation of the ticket repository using DDD principles.
@@ -23,18 +22,14 @@ import { TicketMapper } from './mappers/ticket-mapper.js'
  * - Uses value objects (TicketId) instead of primitive strings
  * - Delegates mapping logic to TicketMapper
  * - Domain objects remain pure without persistence concerns
+ * - Receives storage path through constructor for better testability and configuration
  */
-@injectable()
 export class JsonTicketRepository implements TicketRepository {
   private readonly filePath: string
   private readonly writeLock = new Map<string, Promise<void>>()
 
   constructor(filePath?: string) {
-    this.filePath = filePath || this.getDefaultPath()
-  }
-
-  private getDefaultPath(): string {
-    return process.env[ENV_VARS.STORAGE_PATH] || FILE_SYSTEM.DEFAULT_TICKETS_FILE
+    this.filePath = filePath || getStoragePath()
   }
 
   async save(ticket: Ticket): Promise<void> {

@@ -4,7 +4,7 @@
 
 # Function to run CLI with tsx (no build required)
 run_tsx() {
-    pnpm --silent --no-progress dev "$@" 2>/dev/null
+    pnpm --silent --no-progress pm "$@" 2>/dev/null
 }
 
 # Function to run CLI with build (for production testing)
@@ -48,6 +48,10 @@ alias pm-build-all='pm-build all'
 alias pm-build-start='pm-build start'
 alias pm-build-done='pm-build done'
 
+# MCP server aliases
+alias pm-mcp='run_tsx --mcp'
+alias pm-mcp-dev='env NODE_ENV=development run_tsx --mcp'
+
 echo "Development aliases created:"
 echo "📦 Fast development (tsx - no build required):"
 echo "  pm              - Run CLI directly with tsx"
@@ -66,6 +70,10 @@ echo "🏗️  Production testing (build required):"
 echo "  pm-build        - Build and run CLI"
 echo "  pm-build-*      - Build-based versions of above"
 echo ""
+echo "🤖 MCP server (AI integration):"
+echo "  pm-mcp          - Start MCP server (production)"
+echo "  pm-mcp-dev      - Start MCP server (development with hot reload)"
+echo ""
 echo "To use these aliases, run: source pm-dev-alias.sh"
 echo "💡 Example usage:"
 echo "  pm-new 'My task' -d 'Description' -p h"
@@ -75,7 +83,7 @@ echo "  pm-done <ticket-id>"
 echo ""
 echo "⚠️  Note: In some environments, aliases may not persist across different"
 echo "    bash command executions. If aliases don't work, use direct commands:"
-echo "    pnpm dev new 'My task' -d 'Description' -p h"
-echo "    pnpm dev todo"
-echo "    pnpm dev start <ticket-id>"
-echo "    pnpm dev done <ticket-id>"
+echo "    pnpm pm new 'My task' -d 'Description' -p h"
+echo "    pnpm pm todo"
+echo "    pnpm pm start <ticket-id>"
+echo "    pnpm pm done <ticket-id>"

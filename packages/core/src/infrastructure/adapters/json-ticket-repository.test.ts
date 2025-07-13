@@ -4,9 +4,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { TicketNotFoundError } from '@project-manager/shared'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { Ticket } from '../../domain/entities/ticket.js'
-import { TicketId } from '../../domain/value-objects/ticket-id.js'
-import { JsonTicketRepository } from './json-ticket-repository.js'
+import { Ticket } from '../../domain/entities/ticket.ts'
+import { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import { JsonTicketRepository } from './json-ticket-repository.ts'
 
 describe('JsonTicketRepository', () => {
   let repository: JsonTicketRepository

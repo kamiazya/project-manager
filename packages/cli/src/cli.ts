@@ -3,20 +3,20 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { CLI } from '@project-manager/shared'
 import { Command } from 'commander'
-import { configCommand } from './commands/config.js'
-import { createTicketCommand } from './commands/create.js'
-import { deleteTicketCommand } from './commands/delete.js'
-import { listTicketCommand } from './commands/list.js'
-import { createQuickCommands } from './commands/quick.js'
-import { showTicketCommand } from './commands/show.js'
-import { statsCommand } from './commands/stats.js'
-import { updateTicketCommand } from './commands/update.js'
+import { configCommand } from './commands/config.ts'
+import { createTicketCommand } from './commands/create.ts'
+import { deleteTicketCommand } from './commands/delete.ts'
+import { listTicketCommand } from './commands/list.ts'
+import { createQuickCommands } from './commands/quick.ts'
+import { showTicketCommand } from './commands/show.ts'
+import { statsCommand } from './commands/stats.ts'
+import { updateTicketCommand } from './commands/update.ts'
 import {
   createTicketAction,
   listAllTicketsAction,
   listTicketsByStatus,
   updateTicketStatus,
-} from './utils/cli-helpers.js'
+} from './utils/cli-helpers.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const packageJsonPath = join(__dirname, '../package.json')
@@ -26,6 +26,9 @@ export function createCLI(): Command {
   const program = new Command()
 
   program.name(CLI.COMMAND_NAME).description(CLI.DESCRIPTION).version(packageJson.version)
+
+  // Add MCP server options
+  program.option('--mcp [mode]', 'Start MCP server (stdio|http:port[:stateless])', 'stdio')
 
   // Add core subcommands
   program.addCommand(configCommand())

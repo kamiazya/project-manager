@@ -13,8 +13,7 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "prepare": "husky",
-    "dev": "tsx packages/cli/src/bin/pm.ts",
-    "dev:quick": "tsx packages/cli/src/bin/pm.ts quick"
+    "pm": "pm"
   },
   "keywords": [
     "cli",
@@ -27,6 +26,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.1.1",
     "@types/node": "catalog:",
+    "@project-manager/cli": "workspace:*",
+    "@project-manager/mcp-server": "workspace:*",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "markdownlint-cli2": "catalog:",

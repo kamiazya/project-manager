@@ -4,7 +4,7 @@ import {
   listAllTicketsAction,
   listTicketsByStatus,
   updateTicketStatus,
-} from '../utils/cli-helpers.js'
+} from '../utils/cli-helpers.ts'
 
 /**
  * Creates quick commands for frequently used operations

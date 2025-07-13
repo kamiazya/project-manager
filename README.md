@@ -16,19 +16,24 @@ Project Manager is an open-source tool that enables effective collaboration betw
 
 ### Current
 
-- Local ticket, epic, and roadmap management
-- CLI interface for developer productivity
-- MCP (Model Context Protocol) server for AI integration
+- ✅ Local ticket management (CRUD operations)
+- ✅ CLI for developer productivity
+- ✅ MCP (Model Context Protocol) server for AI integration
+  - Ticket management tools
+  - Project configuration management
+  - Hot reload development mode
+- ✅ Project configuration management
 - Language-aware workflows (local native language, remote project language)
 - AI-powered language bridging (through MCP and integrated AI services)
 
 ### Planned
 
-- Multi-AI collaboration protocols
-- External ticket system synchronization (GitHub Issues, Jira, etc.)
-- Implementation plan templates and review workflows
-- Project milestone and priority visualization
-- Native language workflow support (translation capabilities through AI integration, not built-in)
+- 🔄 Epic and roadmap management
+- 🔄 Multi-AI collaboration protocols
+- 🔄 External ticket system synchronization (GitHub Issues, Jira, etc.)
+- 🔄 Implementation plan templates and review workflows
+- 🔄 Project milestone and priority visualization
+- 🔄 Native language workflow support (translation capabilities through AI integration, not built-in)
 
 ## Target Users
 
@@ -49,12 +54,82 @@ Project Manager is an open-source tool that enables effective collaboration betw
 ### Development Guidelines
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - **Start here for contributors** - Development process, coding standards, and workflow guidelines
+- [Development Tips](./docs/guides/development-tips.md) - Efficiency tips, hot-reload setup, and performance optimization
 - [CLAUDE.md](./CLAUDE.md) - AI assistant project instructions
 - [Architecture Decision Records](./docs/explanation/adr/README.md) - Architectural decisions and rationale
 
 ## Development Status
 
-🚧 **Early Development** - This project is in initial planning and design phase
+🔨 **Active Development** - Core features implemented and functional
+
+### Completed Features
+
+- ✅ Local ticket management system
+- ✅ CLI with full CRUD operations
+- ✅ MCP server for AI integration (9 tools available)
+- ✅ Project configuration management
+- ✅ Hot reload development workflow
+
+### Current Focus
+
+- Expanding MCP tool capabilities
+- Improving AI integration workflows
+- Documentation and usability enhancements
+
+## Quick Start
+
+### Basic CLI Usage
+
+```bash
+# Install dependencies
+pnpm install
+
+# Create a new ticket
+pnpm pm new "Fix login bug" -d "Users cannot login with email" -p h
+
+# List tickets
+pnpm pm todo
+
+# Start working on a ticket
+pnpm pm start <ticket-id>
+
+# Complete a ticket
+pnpm pm done <ticket-id>
+```
+
+### MCP Server for AI Integration
+
+```bash
+# Start MCP server for AI integration
+
+# Unix/Linux/macOS
+NODE_ENV=development pm --mcp  # Development mode with hot reload
+
+# Windows (Command Prompt)
+set NODE_ENV=development && pm --mcp
+
+# Windows (PowerShell)
+$env:NODE_ENV="development"; pm --mcp
+
+# Cross-platform (using cross-env - recommended)
+npx cross-env NODE_ENV=development pm --mcp
+
+# Production mode (all platforms)
+pm --mcp
+
+# Or from the MCP server package
+cd packages/mcp-server
+pnpm dev                       # Development mode
+pnpm build && node dist/bin/mcp-server.js  # Production mode
+```
+
+The MCP server provides 9 tools for AI integration:
+
+- Ticket management (create, read, update, search, stats)
+- Project configuration management
+- Project information retrieval
+
+See [MCP Server README](./packages/mcp-server/README.md) for detailed usage instructions.
 
 ## Contributing
 

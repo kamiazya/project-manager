@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { showStatsAction } from '../utils/cli-helpers.js'
+import { showStatsAction } from '../utils/cli-helpers.ts'
 
 export function statsCommand(): Command {
   const command = new Command('stats')

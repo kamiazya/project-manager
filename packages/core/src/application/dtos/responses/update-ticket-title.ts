@@ -1,3 +1,3 @@
-import { TicketResponse } from './ticket.js'
+import { TicketResponse } from './ticket.ts'
 
 export class UpdateTicketTitleResponse extends TicketResponse {}

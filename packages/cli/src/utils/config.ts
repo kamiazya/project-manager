@@ -1,28 +1,25 @@
 import { existsSync, mkdirSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
-import { ENV_VARS, FILE_SYSTEM } from '@project-manager/shared'
+import { dirname } from 'node:path'
+import { getStoragePath as getSharedStoragePath } from '@project-manager/shared'
 
 /**
- * Get the default storage file path following XDG Base Directory specification
+ * Get storage path and ensure the directory exists
  */
-export function getDefaultStoragePath(): string {
-  const homeDir = homedir()
-  const configHome = process.env[ENV_VARS.XDG_CONFIG_HOME] || join(homeDir, '.config')
-  const projectManagerDir = join(configHome, FILE_SYSTEM.CONFIG_DIR_NAME)
+export function getStoragePath(): string {
+  const storagePath = getSharedStoragePath()
 
   // Ensure directory exists
-  if (!existsSync(projectManagerDir)) {
-    mkdirSync(projectManagerDir, { recursive: true })
+  const storageDir = dirname(storagePath)
+  if (!existsSync(storageDir)) {
+    mkdirSync(storageDir, { recursive: true })
   }
 
-  return join(projectManagerDir, FILE_SYSTEM.DEFAULT_TICKETS_FILE)
+  return storagePath
 }
 
 /**
- * Get storage path from environment variable or default
+ * @deprecated Use getStoragePath() instead
  */
-export function getStoragePath(): string {
-  const envPath = process.env[ENV_VARS.STORAGE_PATH]?.trim()
-  return envPath && envPath.length > 0 ? envPath : getDefaultStoragePath()
+export function getDefaultStoragePath(): string {
+  return getStoragePath()
 }

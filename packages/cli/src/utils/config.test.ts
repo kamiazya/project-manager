@@ -2,7 +2,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getDefaultStoragePath, getStoragePath } from './config.js'
+import { getDefaultStoragePath, getStoragePath } from './config.ts'
 
 describe('config', () => {
   let tempDir: string
@@ -45,6 +45,40 @@ describe('config', () => {
       expect(path).toContain('tickets.json')
       expect(path).toMatch(/\/.+\.config\/project-manager\/tickets\.json$/)
     })
+
+    it('should use project-manager-dev directory when NODE_ENV=development', () => {
+      const configHome = join(tempDir, '.config')
+      process.env.XDG_CONFIG_HOME = configHome
+      process.env.NODE_ENV = 'development'
+
+      const path = getDefaultStoragePath()
+
+      expect(path).toBe(join(configHome, 'project-manager-dev', 'tickets.json'))
+      expect(path).toContain('project-manager-dev')
+      expect(path).not.toMatch(/\/project-manager\//)
+    })
+
+    it('should use regular project-manager directory when NODE_ENV is not development', () => {
+      const configHome = join(tempDir, '.config')
+      process.env.XDG_CONFIG_HOME = configHome
+      process.env.NODE_ENV = 'production'
+
+      const path = getDefaultStoragePath()
+
+      expect(path).toBe(join(configHome, 'project-manager', 'tickets.json'))
+      expect(path).not.toContain('project-manager-dev')
+    })
+
+    it('should use regular project-manager directory when NODE_ENV is not set', () => {
+      const configHome = join(tempDir, '.config')
+      process.env.XDG_CONFIG_HOME = configHome
+      delete process.env.NODE_ENV
+
+      const path = getDefaultStoragePath()
+
+      expect(path).toBe(join(configHome, 'project-manager', 'tickets.json'))
+      expect(path).not.toContain('project-manager-dev')
+    })
   })
 
   describe('getStoragePath', () => {
@@ -82,6 +116,28 @@ describe('config', () => {
       const path = getStoragePath()
 
       expect(path).toBe(join(tempDir, '.config', 'project-manager', 'tickets.json'))
+    })
+
+    it('should use project-manager-dev when NODE_ENV=development and PM_STORAGE_PATH not set', () => {
+      delete process.env.PM_STORAGE_PATH
+      process.env.XDG_CONFIG_HOME = join(tempDir, '.config')
+      process.env.NODE_ENV = 'development'
+
+      const path = getStoragePath()
+
+      expect(path).toBe(join(tempDir, '.config', 'project-manager-dev', 'tickets.json'))
+      expect(path).toContain('project-manager-dev')
+    })
+
+    it('should ignore NODE_ENV when PM_STORAGE_PATH is set', () => {
+      const customPath = join(tempDir, 'custom-tickets.json')
+      process.env.PM_STORAGE_PATH = customPath
+      process.env.NODE_ENV = 'development'
+
+      const path = getStoragePath()
+
+      expect(path).toBe(customPath)
+      expect(path).not.toContain('project-manager-dev')
     })
   })
 

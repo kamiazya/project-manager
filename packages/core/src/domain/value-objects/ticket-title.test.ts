@@ -1,6 +1,6 @@
 import { VALIDATION } from '@project-manager/shared'
 import { describe, expect, it } from 'vitest'
-import { TicketTitle } from './ticket-title.js'
+import { TicketTitle } from './ticket-title.ts'
 
 describe('TicketTitle', () => {
   describe('create', () => {
@@ -58,7 +58,7 @@ describe('TicketTitle', () => {
       expect(displayed).toHaveLength(VALIDATION.TITLE_DISPLAY_MAX_LENGTH)
       expect(displayed.endsWith('...')).toBe(true)
       expect(displayed).toBe(
-        longTitle.substring(0, VALIDATION.TITLE_DISPLAY_MAX_LENGTH - 3) + '...'
+        `${longTitle.substring(0, VALIDATION.TITLE_DISPLAY_MAX_LENGTH - 3)}...`
       )
     })
 

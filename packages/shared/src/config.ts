@@ -6,7 +6,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { DEFAULTS, ENV_VARS, FILE_SYSTEM } from './constants.js'
+import { DEFAULTS, ENV_VARS, FILE_SYSTEM } from './constants.ts'
 
 // Configuration interface
 export interface Config {
@@ -70,6 +70,10 @@ const ENV_MAPPINGS = {
 function getConfigPaths(): string[] {
   const paths: string[] = []
 
+  // Use separate directory for development environment
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const dirName = isDevelopment ? `${FILE_SYSTEM.CONFIG_DIR_NAME}-dev` : FILE_SYSTEM.CONFIG_DIR_NAME
+
   // 1. Current directory
   paths.push(join(process.cwd(), '.pmrc.json'))
 
@@ -79,11 +83,11 @@ function getConfigPaths(): string[] {
   // 3. XDG config directory
   const xdgConfigHome = process.env[ENV_VARS.XDG_CONFIG_HOME]
   if (xdgConfigHome) {
-    paths.push(join(xdgConfigHome, FILE_SYSTEM.CONFIG_DIR_NAME, 'config.json'))
+    paths.push(join(xdgConfigHome, dirName, 'config.json'))
   }
 
   // 4. Default config directory
-  paths.push(join(homedir(), '.config', FILE_SYSTEM.CONFIG_DIR_NAME, 'config.json'))
+  paths.push(join(homedir(), '.config', dirName, 'config.json'))
 
   return paths
 }
@@ -106,7 +110,7 @@ function loadConfigFromFile(filePath: string): Partial<Config> {
     }
 
     return parsed
-  } catch (error) {
+  } catch (_error) {
     // Silently ignore file reading errors
     return {}
   }
@@ -131,7 +135,7 @@ function loadConfigFromEnv(): Partial<Config> {
         ;(config as any)[configKey] = value.toLowerCase() === 'true'
       } else if (configKey === 'maxTitleLength') {
         const parsed = parseInt(value, 10)
-        if (!isNaN(parsed) && parsed > 0) {
+        if (!Number.isNaN(parsed) && parsed > 0) {
           ;(config as any)[configKey] = parsed
         }
       } else {
@@ -181,6 +185,35 @@ export function getConfig(): Config {
  */
 export function resetConfig(): void {
   cachedConfig = null
+}
+
+/**
+ * Get the default storage directory path following XDG Base Directory specification
+ */
+export function getDefaultStorageDir(): string {
+  const homeDir = homedir()
+  const configHome = process.env[ENV_VARS.XDG_CONFIG_HOME] || join(homeDir, '.config')
+
+  // Use separate directory for development environment
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const dirName = isDevelopment ? `${FILE_SYSTEM.CONFIG_DIR_NAME}-dev` : FILE_SYSTEM.CONFIG_DIR_NAME
+
+  return join(configHome, dirName)
+}
+
+/**
+ * Get the default storage file path
+ */
+export function getDefaultStoragePath(): string {
+  return join(getDefaultStorageDir(), FILE_SYSTEM.DEFAULT_TICKETS_FILE)
+}
+
+/**
+ * Get storage path from environment variable or default
+ */
+export function getStoragePath(): string {
+  const envPath = process.env[ENV_VARS.STORAGE_PATH]?.trim()
+  return envPath && envPath.length > 0 ? envPath : getDefaultStoragePath()
 }
 
 /**

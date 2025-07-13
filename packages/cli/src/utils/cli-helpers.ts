@@ -21,7 +21,7 @@ import {
   SUCCESS_MESSAGES,
   TicketNotFoundError,
 } from '@project-manager/shared'
-import { formatStats, formatTicketResponse, formatTicketSummaryList } from './output.js'
+import { formatStats, formatTicketResponse, formatTicketSummaryList } from './output.ts'
 import {
   getCreateTicketUseCase,
   getDeleteTicketUseCase,
@@ -31,7 +31,7 @@ import {
   getSearchTicketsUseCase,
   getUpdateTicketPriorityUseCase,
   getUpdateTicketStatusUseCase,
-} from './service-factory.js'
+} from './service-factory.ts'
 
 /**
  * CLI helper functions for expanding short-form input values and shared command logic

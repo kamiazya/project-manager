@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { GetTicketStatsRequest } from '../dtos/requests/get-ticket-stats.js'
-import type { TicketRepository } from '../repositories/ticket-repository.js'
-import { GetTicketStatsUseCase } from './get-ticket-stats.js'
+import { GetTicketStatsRequest } from '../dtos/requests/get-ticket-stats.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import { GetTicketStatsUseCase } from './get-ticket-stats.ts'
 
 describe('GetTicketStatsUseCase', () => {
   let useCase: GetTicketStatsUseCase

@@ -107,7 +107,7 @@ AI assistants working on this project MUST use the project-manager system itself
 
 2. **Use Development Aliases for Efficiency**
    - Load aliases: `source pm-dev-alias.sh`
-   - Use `pnpm dev` commands directly for reliability
+   - Use `pnpm pm` commands directly for reliability
    - Note: Aliases may not persist in all environments
 
 3. **Real-time Status Updates**
@@ -117,8 +117,8 @@ AI assistants working on this project MUST use the project-manager system itself
    - Complete tickets promptly when work is finished
 
 4. **Planning and Coordination**
-   - Use `pnpm dev todo` to check work queue before starting
-   - Use `pnpm dev wip` to track current active work
+   - Use `pnpm pm todo` to check work queue before starting
+   - Use `pnpm pm wip` to track current active work
    - Create dependent tickets for complex multi-step tasks
    - Use epics for large initiatives requiring multiple tickets
 
@@ -126,20 +126,20 @@ AI assistants working on this project MUST use the project-manager system itself
 
 ```bash
 # Before starting feature implementation
-pnpm dev new "Implement user authentication system" -d "Add login/logout with JWT tokens" -p h --type feature
+pnpm pm new "Implement user authentication system" -d "Add login/logout with JWT tokens" -p h --type feature
 # Note: Capture the ticket ID from the output for use in subsequent commands
 
 # Start work on the ticket (use actual ticket ID from above)
-pnpm dev start 1751764474
+pnpm pm start 1751764474
 
 # Add progress updates (comment command not yet implemented - use workaround)
-pnpm dev new "Progress on #1751764474: JWT library research" -d "Researched JWT libraries, selected jsonwebtoken for implementation" -p l --type task
+pnpm pm new "Progress on #1751764474: JWT library research" -d "Researched JWT libraries, selected jsonwebtoken for implementation" -p l --type task
 
 # Create dependent tickets as needed
-pnpm dev new "Design authentication middleware" -d "Create Express middleware for JWT validation" -p m --depends-on 1751764474
+pnpm pm new "Design authentication middleware" -d "Create Express middleware for JWT validation" -p m --depends-on 1751764474
 
 # Complete when finished
-pnpm dev done 1751764474
+pnpm pm done 1751764474
 ```
 
 **AI Self-Validation Process**:
@@ -250,10 +250,10 @@ When encountering usability issues or improvement opportunities, create specific
 
 ```bash
 # Report usability issues
-pnpm dev new "Improve clarity of pm-todo output" -d "Current output format difficult to scan quickly" -p m --type improvement
+pnpm pm new "Improve clarity of pm-todo output" -d "Current output format difficult to scan quickly" -p m --type improvement
 
 # Suggest enhancements
-pnpm dev new "Add ticket template support" -d "Common ticket patterns need templates for efficiency" -p l --type enhancement
+pnpm pm new "Add ticket template support" -d "Common ticket patterns need templates for efficiency" -p l --type enhancement
 ```
 
 **Error Handling Protocol**:
@@ -261,7 +261,7 @@ pnpm dev new "Add ticket template support" -d "Common ticket patterns need templ
 If project-manager CLI commands fail during the workflow:
 
 1. **Document the error**: Note the exact command and error message
-2. **Create a bug ticket**: `pnpm dev new "CLI command error: [command]" -d "Error details and reproduction steps" -p h --type bug`
+2. **Create a bug ticket**: `pnpm pm new "CLI command error: [command]" -d "Error details and reproduction steps" -p h --type bug`
 3. **Use fallback method**: Continue with manual tracking until the issue is resolved
 4. **Report to human developer**: Mention the error and ticket ID for immediate attention
 
@@ -381,6 +381,8 @@ The project uses dogfooding as a core testing strategy - using project-manager t
 
 ## Development Commands
 
+> **Development Tips**: For advanced development efficiency tips including hot-reload setup and performance optimization, see @docs/guides/development-tips.md
+
 ### Package Management
 
 ```bash
@@ -400,12 +402,26 @@ pnpm run typecheck
 
 ```bash
 # Direct tsx execution (recommended for development)
-pnpm dev <command>                    # Run CLI directly
-pnpm dev new "Task" -p h              # Create high-priority task
-pnpm dev todo                         # List pending tickets
-pnpm dev wip                          # List work-in-progress
-pnpm dev start <ticket-id>            # Start working on ticket
-pnpm dev done <ticket-id>             # Complete ticket
+pnpm pm <command>                     # Run CLI directly
+pnpm pm new "Task" -p h               # Create high-priority task
+pnpm pm todo                          # List pending tickets
+pnpm pm wip                           # List work-in-progress
+pnpm pm start <ticket-id>             # Start working on ticket
+pnpm pm done <ticket-id>              # Complete ticket
+```
+
+### MCP Server Development
+
+**Hot Reload Development (recommended for MCP server development)**
+
+```bash
+# Start MCP server with hot reload (automatic restart on file changes)
+pm-mcp-server                         # Direct hot-reload execution (tsx)
+NODE_ENV=development pm --mcp         # Start in development mode via CLI
+pnpm dev                              # Or run directly from mcp-server package
+
+# Alternative development methods
+pnpm dev:build                        # TypeScript watch mode compilation
 ```
 
 **Production Testing (build required)**

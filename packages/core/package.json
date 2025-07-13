@@ -28,8 +28,7 @@
   },
   "dependencies": {
     "@project-manager/shared": "workspace:*",
-    "inversify": "catalog:",
-    "reflect-metadata": "catalog:"
+    "inversify": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:",

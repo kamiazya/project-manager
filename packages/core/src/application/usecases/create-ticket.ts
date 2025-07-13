@@ -1,24 +1,16 @@
-import { inject, injectable } from 'inversify'
-import { Ticket } from '../../domain/entities/ticket.js'
-import type { UseCase } from '../common/base-usecase.js'
-import { CreateTicketRequest } from '../dtos/requests/create-ticket.js'
-import { CreateTicketResponse } from '../dtos/responses/create-ticket.js'
-import { TicketResponse } from '../dtos/responses/ticket.js'
-import {
-  type TicketRepository,
-  TicketRepository as TicketRepositorySymbol,
-} from '../repositories/ticket-repository.js'
+import { Ticket } from '../../domain/entities/ticket.ts'
+import type { UseCase } from '../common/base-usecase.ts'
+import { CreateTicketRequest } from '../dtos/requests/create-ticket.ts'
+import { CreateTicketResponse } from '../dtos/responses/create-ticket.ts'
+import { TicketResponse } from '../dtos/responses/ticket.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for creating a new ticket.
  * Follows the Single Responsibility Principle with focused responsibility.
  */
-@injectable()
 export class CreateTicketUseCase implements UseCase<CreateTicketRequest, CreateTicketResponse> {
-  constructor(
-    @inject(TicketRepositorySymbol)
-    private readonly ticketRepository: TicketRepository
-  ) {}
+  constructor(private readonly ticketRepository: TicketRepository) {}
 
   async execute(request: CreateTicketRequest): Promise<CreateTicketResponse> {
     // Use domain entity factory method

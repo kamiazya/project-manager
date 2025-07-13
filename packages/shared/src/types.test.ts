@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isValidTicketPriority, isValidTicketStatus } from './types.js'
+import { isValidTicketPriority, isValidTicketStatus } from './types.ts'
 
 describe('Type Validation Functions', () => {
   describe('isValidTicketStatus', () => {

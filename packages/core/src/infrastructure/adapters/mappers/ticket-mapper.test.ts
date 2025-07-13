@@ -1,7 +1,7 @@
 import type { TicketJSON } from '@project-manager/shared'
 import { describe, expect, it } from 'vitest'
-import { Ticket } from '../../../domain/entities/ticket.js'
-import { TicketMapper } from './ticket-mapper.js'
+import { Ticket } from '../../../domain/entities/ticket.ts'
+import { TicketMapper } from './ticket-mapper.ts'
 
 describe('TicketMapper', () => {
   const sampleTicketJSON: TicketJSON = {

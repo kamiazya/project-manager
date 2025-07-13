@@ -1,4 +1,4 @@
-import type { Ticket } from '../../../domain/entities/ticket.js'
+import type { Ticket } from '../../../domain/entities/ticket.ts'
 
 /**
  * Standard ticket response DTO used across multiple use cases

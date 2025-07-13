@@ -1,4 +1,4 @@
-import type { CreateTicketData } from '../../../domain/entities/ticket.js'
+import type { CreateTicketData } from '../../../domain/entities/ticket.ts'
 
 export class CreateTicketRequest {
   constructor(

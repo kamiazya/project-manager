@@ -1,24 +1,16 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
-import { inject, injectable } from 'inversify'
-import { TicketId } from '../../domain/value-objects/ticket-id.js'
-import type { UseCase } from '../common/base-usecase.js'
-import { ArchiveTicketRequest } from '../dtos/requests/archive-ticket.js'
-import { ArchiveTicketResponse } from '../dtos/responses/archive-ticket.js'
-import { TicketResponse } from '../dtos/responses/ticket.js'
-import {
-  type TicketRepository,
-  TicketRepository as TicketRepositorySymbol,
-} from '../repositories/ticket-repository.js'
+import { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import type { UseCase } from '../common/base-usecase.ts'
+import { ArchiveTicketRequest } from '../dtos/requests/archive-ticket.ts'
+import { ArchiveTicketResponse } from '../dtos/responses/archive-ticket.ts'
+import { TicketResponse } from '../dtos/responses/ticket.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for archiving a ticket.
  */
-@injectable()
 export class ArchiveTicketUseCase implements UseCase<ArchiveTicketRequest, ArchiveTicketResponse> {
-  constructor(
-    @inject(TicketRepositorySymbol)
-    private readonly ticketRepository: TicketRepository
-  ) {}
+  constructor(private readonly ticketRepository: TicketRepository) {}
 
   async execute(request: ArchiveTicketRequest): Promise<ArchiveTicketResponse> {
     const ticketId = TicketId.create(request.id)

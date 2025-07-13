@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { deleteTicketAction } from '../utils/cli-helpers.js'
+import { deleteTicketAction } from '../utils/cli-helpers.ts'
 
 export function deleteTicketCommand(): Command {
   const command = new Command('delete')

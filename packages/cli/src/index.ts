@@ -1,3 +1,3 @@
-export * from './cli.js'
-export * from './utils/config.js'
-export * from './utils/output.js'
+export * from './cli.ts'
+export * from './utils/config.ts'
+export * from './utils/output.ts'

@@ -1,26 +1,18 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
-import { inject, injectable } from 'inversify'
-import { TicketId } from '../../domain/value-objects/ticket-id.js'
-import type { UseCase } from '../common/base-usecase.js'
-import { StartTicketProgressRequest } from '../dtos/requests/start-ticket-progress.js'
-import { StartTicketProgressResponse } from '../dtos/responses/start-ticket-progress.js'
-import { TicketResponse } from '../dtos/responses/ticket.js'
-import {
-  type TicketRepository,
-  TicketRepository as TicketRepositorySymbol,
-} from '../repositories/ticket-repository.js'
+import { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import type { UseCase } from '../common/base-usecase.ts'
+import { StartTicketProgressRequest } from '../dtos/requests/start-ticket-progress.ts'
+import { StartTicketProgressResponse } from '../dtos/responses/start-ticket-progress.ts'
+import { TicketResponse } from '../dtos/responses/ticket.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for starting progress on a ticket.
  */
-@injectable()
 export class StartTicketProgressUseCase
   implements UseCase<StartTicketProgressRequest, StartTicketProgressResponse>
 {
-  constructor(
-    @inject(TicketRepositorySymbol)
-    private readonly ticketRepository: TicketRepository
-  ) {}
+  constructor(private readonly ticketRepository: TicketRepository) {}
 
   async execute(request: StartTicketProgressRequest): Promise<StartTicketProgressResponse> {
     const ticketId = TicketId.create(request.id)

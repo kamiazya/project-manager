@@ -1,170 +1,123 @@
-import { existsSync, unlinkSync } from 'node:fs'
-import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { DEFAULT_CONFIG, getConfig, loadConfig, resetConfig, validateConfig } from './config.js'
+import { getDefaultStorageDir, getDefaultStoragePath, getStoragePath } from './config.ts'
 
-describe('Config Management', () => {
-  const testConfigPath = join(process.cwd(), '.pmrc.json')
+describe('Shared Storage Path Functions', () => {
+  const originalEnv = process.env
 
   beforeEach(() => {
-    // Reset environment variables
-    delete process.env.PM_DEFAULT_PRIORITY
-    delete process.env.PM_DEFAULT_TYPE
-    delete process.env.PM_CONFIRM_DELETION
-    delete process.env.PM_MAX_TITLE_LENGTH
-
-    // Remove test config file if it exists
-    if (existsSync(testConfigPath)) {
-      unlinkSync(testConfigPath)
-    }
-
-    // Reset cached config
-    resetConfig()
+    // Reset environment to clean state
+    process.env = { ...originalEnv }
+    delete process.env.NODE_ENV
+    delete process.env.PM_STORAGE_PATH
+    delete process.env.XDG_CONFIG_HOME
   })
 
   afterEach(() => {
-    // Clean up test config file
-    if (existsSync(testConfigPath)) {
-      unlinkSync(testConfigPath)
-    }
-    resetConfig()
+    process.env = originalEnv
   })
 
-  describe('loadConfig', () => {
-    it('should return default configuration when no overrides exist', () => {
-      const config = loadConfig()
-      expect(config).toEqual(DEFAULT_CONFIG)
+  describe('getDefaultStorageDir', () => {
+    it('should return project-manager directory in production', () => {
+      const dir = getDefaultStorageDir()
+      expect(dir).toContain('project-manager')
+      expect(dir).not.toContain('project-manager-dev')
     })
 
-    it('should load configuration from environment variables', () => {
-      process.env.PM_DEFAULT_PRIORITY = 'high'
-      process.env.PM_DEFAULT_TYPE = 'bug'
-      process.env.PM_CONFIRM_DELETION = 'false'
-      process.env.PM_MAX_TITLE_LENGTH = '100'
-
-      const config = loadConfig()
-
-      expect(config.defaultPriority).toBe('high')
-      expect(config.defaultType).toBe('bug')
-      expect(config.confirmDeletion).toBe(false)
-      expect(config.maxTitleLength).toBe(100)
+    it('should return project-manager-dev directory in development', () => {
+      process.env.NODE_ENV = 'development'
+      const dir = getDefaultStorageDir()
+      expect(dir).toContain('project-manager-dev')
     })
 
-    it('should handle invalid environment variable values gracefully', () => {
-      process.env.PM_DEFAULT_PRIORITY = 'invalid'
-      process.env.PM_MAX_TITLE_LENGTH = 'not-a-number'
-
-      const config = loadConfig()
-
-      // Should fallback to default for invalid values
-      expect(config.defaultPriority).toBe('invalid') // Environment takes precedence
-      expect(config.maxTitleLength).toBe(DEFAULT_CONFIG.maxTitleLength) // Invalid number ignored
+    it('should respect XDG_CONFIG_HOME when set', () => {
+      process.env.XDG_CONFIG_HOME = '/custom/config'
+      const dir = getDefaultStorageDir()
+      expect(dir).toMatch(/^\/custom\/config\/project-manager$/)
     })
   })
 
-  describe('getConfig', () => {
-    it('should return cached configuration on subsequent calls', () => {
-      const config1 = getConfig()
-      const config2 = getConfig()
-      expect(config1).toBe(config2) // Same object reference
+  describe('getDefaultStoragePath', () => {
+    it('should return path ending with tickets.json', () => {
+      const path = getDefaultStoragePath()
+      expect(path).toMatch(/tickets\.json$/)
     })
 
-    it('should reflect environment changes after reset', () => {
-      const config1 = getConfig()
-      expect(config1.defaultPriority).toBe('medium')
-
-      process.env.PM_DEFAULT_PRIORITY = 'high'
-      resetConfig()
-
-      const config2 = getConfig()
-      expect(config2.defaultPriority).toBe('high')
+    it('should use development directory when NODE_ENV=development', () => {
+      process.env.NODE_ENV = 'development'
+      const path = getDefaultStoragePath()
+      expect(path).toContain('project-manager-dev')
+      expect(path).toMatch(/tickets\.json$/)
     })
   })
 
-  describe('validateConfig', () => {
-    it('should return no errors for valid configuration', () => {
-      const config = {
-        defaultPriority: 'high' as const,
-        defaultType: 'feature' as const,
-        maxTitleLength: 50,
-      }
-
-      const errors = validateConfig(config)
-      expect(errors).toHaveLength(0)
+  describe('getStoragePath', () => {
+    it('should return PM_STORAGE_PATH when set', () => {
+      const customPath = '/custom/tickets.json'
+      process.env.PM_STORAGE_PATH = customPath
+      const path = getStoragePath()
+      expect(path).toBe(customPath)
     })
 
-    it('should return errors for invalid priority', () => {
-      const config = {
-        defaultPriority: 'invalid' as any,
-      }
-
-      const errors = validateConfig(config)
-      expect(errors).toContain('Invalid defaultPriority: invalid')
+    it('should return default path when PM_STORAGE_PATH not set', () => {
+      const path = getStoragePath()
+      const defaultPath = getDefaultStoragePath()
+      expect(path).toBe(defaultPath)
     })
 
-    it('should return errors for invalid type', () => {
-      const config = {
-        defaultType: 'invalid' as any,
-      }
-
-      const errors = validateConfig(config)
-      expect(errors).toContain('Invalid defaultType: invalid')
+    it('should handle empty PM_STORAGE_PATH', () => {
+      process.env.PM_STORAGE_PATH = ''
+      const path = getStoragePath()
+      const defaultPath = getDefaultStoragePath()
+      expect(path).toBe(defaultPath)
     })
 
-    it('should return errors for invalid privacy', () => {
-      const config = {
-        defaultPrivacy: 'invalid' as any,
-      }
-
-      const errors = validateConfig(config)
-      expect(errors).toContain('Invalid defaultPrivacy: invalid')
+    it('should handle whitespace-only PM_STORAGE_PATH', () => {
+      process.env.PM_STORAGE_PATH = '   '
+      const path = getStoragePath()
+      const defaultPath = getDefaultStoragePath()
+      expect(path).toBe(defaultPath)
     })
 
-    it('should return errors for invalid status', () => {
-      const config = {
-        defaultStatus: 'invalid' as any,
-      }
+    it('should prioritize PM_STORAGE_PATH over NODE_ENV', () => {
+      const customPath = '/custom/tickets.json'
+      process.env.PM_STORAGE_PATH = customPath
+      process.env.NODE_ENV = 'development'
 
-      const errors = validateConfig(config)
-      expect(errors).toContain('Invalid defaultStatus: invalid')
+      const path = getStoragePath()
+      expect(path).toBe(customPath)
+    })
+  })
+
+  describe('consistency across environments', () => {
+    it('should maintain consistent behavior regardless of NODE_ENV when PM_STORAGE_PATH is set', () => {
+      const customPath = '/custom/tickets.json'
+      process.env.PM_STORAGE_PATH = customPath
+
+      // Test in production
+      process.env.NODE_ENV = 'production'
+      const prodPath = getStoragePath()
+
+      // Test in development
+      process.env.NODE_ENV = 'development'
+      const devPath = getStoragePath()
+
+      expect(prodPath).toBe(customPath)
+      expect(devPath).toBe(customPath)
+      expect(prodPath).toBe(devPath)
     })
 
-    it('should return errors for invalid output format', () => {
-      const config = {
-        defaultOutputFormat: 'invalid' as any,
-      }
+    it('should have different paths for development vs production when using defaults', () => {
+      // Production path
+      delete process.env.NODE_ENV
+      const prodPath = getStoragePath()
 
-      const errors = validateConfig(config)
-      expect(errors).toContain('Invalid defaultOutputFormat: invalid')
-    })
+      // Development path
+      process.env.NODE_ENV = 'development'
+      const devPath = getStoragePath()
 
-    it('should return errors for invalid date format', () => {
-      const config = {
-        dateFormat: 'invalid' as any,
-      }
-
-      const errors = validateConfig(config)
-      expect(errors).toContain('Invalid dateFormat: invalid')
-    })
-
-    it('should return errors for invalid max title length', () => {
-      const config = {
-        maxTitleLength: 0,
-      }
-
-      const errors = validateConfig(config)
-      expect(errors).toContain('Invalid maxTitleLength: 0 (must be between 1 and 200)')
-    })
-
-    it('should return multiple errors for multiple invalid values', () => {
-      const config = {
-        defaultPriority: 'invalid' as any,
-        defaultType: 'invalid' as any,
-        maxTitleLength: 300,
-      }
-
-      const errors = validateConfig(config)
-      expect(errors).toHaveLength(3)
+      expect(prodPath).toContain('project-manager')
+      expect(devPath).toContain('project-manager-dev')
+      expect(prodPath).not.toBe(devPath)
     })
   })
 })

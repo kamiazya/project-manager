@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { expandPriority, expandType } from './cli-helpers.js'
+import { expandPriority, expandType } from './cli-helpers.ts'
 
 describe('CLI Helper Functions', () => {
   describe('expandPriority', () => {

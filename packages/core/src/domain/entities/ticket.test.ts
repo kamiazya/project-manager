@@ -1,6 +1,6 @@
 import { DEFAULTS } from '@project-manager/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { type CreateTicketData, type ReconstituteTicketData, Ticket } from './ticket.js'
+import { type CreateTicketData, type ReconstituteTicketData, Ticket } from './ticket.ts'
 
 describe('Ticket', () => {
   let validCreateData: CreateTicketData

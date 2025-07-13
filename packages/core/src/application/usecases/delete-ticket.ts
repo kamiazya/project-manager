@@ -1,22 +1,14 @@
-import { inject, injectable } from 'inversify'
-import { TicketId } from '../../domain/value-objects/ticket-id.js'
-import type { UseCase } from '../common/base-usecase.js'
-import { DeleteTicketRequest } from '../dtos/requests/delete-ticket.js'
-import { DeleteTicketResponse } from '../dtos/responses/delete-ticket.js'
-import {
-  type TicketRepository,
-  TicketRepository as TicketRepositorySymbol,
-} from '../repositories/ticket-repository.js'
+import { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import type { UseCase } from '../common/base-usecase.ts'
+import { DeleteTicketRequest } from '../dtos/requests/delete-ticket.ts'
+import { DeleteTicketResponse } from '../dtos/responses/delete-ticket.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 /**
  * Use case for deleting a ticket.
  */
-@injectable()
 export class DeleteTicketUseCase implements UseCase<DeleteTicketRequest, DeleteTicketResponse> {
-  constructor(
-    @inject(TicketRepositorySymbol)
-    private readonly ticketRepository: TicketRepository
-  ) {}
+  constructor(private readonly ticketRepository: TicketRepository) {}
 
   async execute(request: DeleteTicketRequest): Promise<DeleteTicketResponse> {
     const ticketId = TicketId.create(request.id)

@@ -45,6 +45,7 @@ export interface TicketSearchCriteria {
   type?: TicketType
   privacy?: TicketPrivacy
   search?: string
+  searchIn?: ('title' | 'description')[]
 }
 
 export interface TicketStats {

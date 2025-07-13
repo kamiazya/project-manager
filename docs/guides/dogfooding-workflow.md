@@ -33,16 +33,16 @@ Track actual development work as tickets:
 
 ```bash
 # Create a new feature ticket (use direct command for reliability)
-pnpm dev new "Implement user authentication" -d "Add login/logout functionality" -p h
+pnpm pm new "Implement user authentication" -d "Add login/logout functionality" -p h
 
 # Create a bug fix ticket
-pnpm dev new "Fix CLI command validation" -d "Commands should validate input parameters" -p m
+pnpm pm new "Fix CLI command validation" -d "Commands should validate input parameters" -p m
 
 # Create a documentation ticket
-pnpm dev new "Update README with installation steps" -d "Add clear setup instructions" -p l
+pnpm pm new "Update README with installation steps" -d "Add clear setup instructions" -p l
 ```
 
-**Note**: Development aliases may not persist in all environments. Use `pnpm dev` directly for consistent results.
+**Note**: Development aliases may not persist in all environments. Use `pnpm pm` directly for consistent results.
 
 ### 3. Check Your Work Queue
 
@@ -50,13 +50,13 @@ View pending and active work:
 
 ```bash
 # List pending tickets
-pnpm dev todo
+pnpm pm todo
 
 # List work in progress
-pnpm dev wip
+pnpm pm wip
 
 # List all tickets
-pnpm dev all
+pnpm pm all
 ```
 
 ### 4. Start Working on a Ticket
@@ -65,7 +65,7 @@ Begin work on a specific ticket:
 
 ```bash
 # Start working on ticket (replace with actual ticket ID)
-pnpm dev start 1751764474
+pnpm pm start 1751764474
 
 # This marks the ticket as 'in_progress'
 ```
@@ -76,7 +76,7 @@ Mark tickets as done when work is finished:
 
 ```bash
 # Complete a ticket (replace with actual ticket ID)
-pnpm dev done 1751764474
+pnpm pm done 1751764474
 
 # This marks the ticket as 'completed'
 ```
@@ -89,11 +89,11 @@ For larger development initiatives, create epics and features:
 
 ```bash
 # Create an epic for major feature development
-pnpm dev new "Authentication System Overhaul" -d "Complete redesign of user authentication" -p h --type epic
+pnpm pm new "Authentication System Overhaul" -d "Complete redesign of user authentication" -p h --type epic
 
 # Create feature tickets under the epic
-pnpm dev new "OAuth 2.0 Integration" -d "Implement OAuth providers" -p h --type feature --parent <epic-id>
-pnpm dev new "Password Reset Flow" -d "Add password reset functionality" -p m --type feature --parent <epic-id>
+pnpm pm new "OAuth 2.0 Integration" -d "Implement OAuth providers" -p h --type feature --parent <epic-id>
+pnpm pm new "Password Reset Flow" -d "Add password reset functionality" -p m --type feature --parent <epic-id>
 ```
 
 ### Cross-cutting Feature Testing
@@ -102,10 +102,10 @@ Test comments, attachments, and labels through actual use:
 
 ```bash
 # Add labels to categorize tickets
-pnpm dev new "API Rate Limiting" -d "Implement rate limiting" -p h --labels backend,security
+pnpm pm new "API Rate Limiting" -d "Implement rate limiting" -p h --labels backend,security
 
 # Add progress updates (comment command not yet implemented - use workaround)
-pnpm dev new "Progress on #<ticket-id>: Started implementation" -d "Started implementation, researching best practices" -p l --type task
+pnpm pm new "Progress on #<ticket-id>: Started implementation" -d "Started implementation, researching best practices" -p l --type task
 
 # File attachments (attach command not yet implemented)
 # Note: File attachment functionality is planned but not yet available
@@ -117,8 +117,8 @@ Use ticket relationships for dependency tracking:
 
 ```bash
 # Create dependent tickets
-pnpm dev new "Database Schema Design" -d "Design user tables" -p h
-pnpm dev new "API Endpoints" -d "Create auth endpoints" -p h --depends-on <schema-ticket-id>
+pnpm pm new "Database Schema Design" -d "Design user tables" -p h
+pnpm pm new "API Endpoints" -d "Create auth endpoints" -p h --depends-on <schema-ticket-id>
 ```
 
 ## Validation Through Real Use
@@ -129,31 +129,31 @@ pnpm dev new "API Endpoints" -d "Create auth endpoints" -p h --depends-on <schem
 
    ```bash
    # Check work queue
-   pnpm dev todo
-   pnpm dev wip
+   pnpm pm todo
+   pnpm pm wip
    
    # Start work on priority ticket
-   pnpm dev start <ticket-id>
+   pnpm pm start <ticket-id>
    ```
 
 2. **During Development**
 
    ```bash
    # Add progress updates (comment command not yet implemented - use workaround)
-   pnpm dev new "Progress on #<ticket-id>: Login endpoint implemented" -d "Implemented login endpoint, testing validation" -p l --type task
+   pnpm pm new "Progress on #<ticket-id>: Login endpoint implemented" -d "Implemented login endpoint, testing validation" -p l --type task
    
    # Create new tickets for discovered issues
-   pnpm dev new "Fix validation error messages" -d "Error messages not user-friendly" -p m
+   pnpm pm new "Fix validation error messages" -d "Error messages not user-friendly" -p m
    ```
 
 3. **End of Day**
 
    ```bash
    # Complete finished work
-   pnpm dev done <ticket-id>
+   pnpm pm done <ticket-id>
    
    # Review tomorrow's queue
-   pnpm dev todo
+   pnpm pm todo
    ```
 
 ### Feature Validation
@@ -162,13 +162,13 @@ Test new features by actually using them:
 
 ```bash
 # Test search functionality
-pnpm dev search "authentication"
+pnpm pm search "authentication"
 
 # Test filtering
-pnpm dev list --status in_progress --priority high
+pnpm pm list --status in_progress --priority high
 
 # Test bulk operations
-pnpm dev bulk-update --status completed --ids 123,456,789
+pnpm pm bulk-update --status completed --ids 123,456,789
 ```
 
 ## Performance and Usability Testing
@@ -180,11 +180,11 @@ Create realistic data volumes:
 ```bash
 # Create multiple tickets to test performance
 for i in {1..50}; do
-  pnpm dev new "Test ticket $i" -d "Performance testing ticket" -p l
+  pnpm pm new "Test ticket $i" -d "Performance testing ticket" -p l
 done
 
 # Test list performance
-time pnpm dev all
+time pnpm pm all
 ```
 
 ### Usability Testing
@@ -193,13 +193,13 @@ Document pain points and improvements:
 
 ```bash
 # Test command discoverability
-pnpm dev help
+pnpm pm help
 
 # Test error handling
-pnpm dev start invalid-id
+pnpm pm start invalid-id
 
 # Test auto-completion (if implemented)
-pnpm dev start <tab><tab>
+pnpm pm start <tab><tab>
 ```
 
 ## Data Collection and Analysis
@@ -210,13 +210,13 @@ Track actual usage patterns:
 
 ```bash
 # Count tickets by status
-pnpm dev stats --by-status
+pnpm pm stats --by-status
 
 # Count tickets by priority
-pnpm dev stats --by-priority
+pnpm pm stats --by-priority
 
 # Show development velocity
-pnpm dev stats --velocity --timeframe week
+pnpm pm stats --velocity --timeframe week
 ```
 
 ### Issue Identification
@@ -225,10 +225,10 @@ Document usability issues through tickets:
 
 ```bash
 # Create tickets for UX improvements
-pnpm dev new "Improve command output formatting" -d "List output hard to read" -p l --labels ux
+pnpm pm new "Improve command output formatting" -d "List output hard to read" -p l --labels ux
 
 # Track feature requests
-pnpm dev new "Add ticket templates" -d "Common ticket types need templates" -p m --labels feature-request
+pnpm pm new "Add ticket templates" -d "Common ticket types need templates" -p m --labels feature-request
 ```
 
 ## Best Practices
@@ -257,13 +257,13 @@ Use appropriate aliases for different scenarios:
 
 ```bash
 # Fast development (recommended for daily use)
-pnpm dev new "My task" -d "Description" -p h
+pnpm pm new "My task" -d "Description" -p h
 
 # Production testing (when validating built version)
 pnpm run build && node packages/cli/dist/bin/pm.js todo
 
 # Legacy quick commands (for backwards compatibility)
-pnpm dev quick new "Legacy task"
+pnpm pm quick new "Legacy task"
 ```
 
 ## Troubleshooting
@@ -275,14 +275,14 @@ pnpm dev quick new "Legacy task"
    ```bash
    # Aliases may not persist across bash sessions
    # Use direct commands instead
-   pnpm dev todo
+   pnpm pm todo
    ```
 
 2. **Command not found**
 
    ```bash
-   # Use direct pnpm dev command
-   pnpm dev todo
+   # Use direct pnpm pm command
+   pnpm pm todo
    ```
 
 3. **Performance issues**
@@ -297,8 +297,8 @@ pnpm dev quick new "Legacy task"
 Enable verbose output for troubleshooting:
 
 ```bash
-# Use pnpm dev directly for debug output
-pnpm dev new "Debug ticket" --verbose
+# Use pnpm pm directly for debug output
+pnpm pm new "Debug ticket" --verbose
 ```
 
 ### Known Limitations

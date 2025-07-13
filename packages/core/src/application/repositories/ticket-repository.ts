@@ -1,6 +1,6 @@
 import type { TicketStats } from '@project-manager/shared'
-import type { Ticket } from '../../domain/entities/ticket.js'
-import type { TicketId } from '../../domain/value-objects/ticket-id.js'
+import type { Ticket } from '../../domain/entities/ticket.ts'
+import type { TicketId } from '../../domain/value-objects/ticket-id.ts'
 
 /**
  * Repository interface for Ticket aggregate

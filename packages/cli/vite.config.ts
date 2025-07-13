@@ -27,6 +27,7 @@ export default defineConfig({
         'node:path',
         'node:os',
         'node:url',
+        'node:child_process',
       ],
       output: {
         banner: chunk => {

@@ -1,0 +1,46 @@
+{
+  "name": "@project-manager/mcp-server",
+  "version": "0.0.0",
+  "description": "Model Context Protocol server for project-manager AI integration",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "pm-mcp-server": "src/bin/mcp-server-dev.ts"
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsx watch --clear-screen=false --tsconfig tsconfig.json src/bin/mcp-server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.25.56",
+    "@project-manager/core": "workspace:*",
+    "@project-manager/shared": "workspace:*"
+  },
+  "publishConfig": {
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "bin": {
+      "pm-mcp-server": "dist/bin/mcp-server.js"
+    },
+    "executableFiles": [
+      "dist/bin/mcp-server.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "inversify": "^6.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vitest": "catalog:"
+  }
+}

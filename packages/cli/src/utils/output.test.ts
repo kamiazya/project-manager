@@ -1,7 +1,7 @@
 import { Ticket } from '@project-manager/core'
 import type { TicketStats } from '@project-manager/shared'
 import { describe, expect, it } from 'vitest'
-import { formatStats, formatTicket, formatTicketList } from './output.js'
+import { formatStats, formatTicket, formatTicketList } from './output.ts'
 
 describe('output', () => {
   const sampleTicket = Ticket.create({

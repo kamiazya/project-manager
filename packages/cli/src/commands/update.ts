@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { updateTicketAction } from '../utils/cli-helpers.js'
+import { updateTicketAction } from '../utils/cli-helpers.ts'
 
 export function updateTicketCommand(): Command {
   const command = new Command('update')

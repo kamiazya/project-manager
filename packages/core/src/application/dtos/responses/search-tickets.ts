@@ -1,5 +1,5 @@
-import type { Ticket } from '../../../domain/entities/ticket.js'
-import { TicketSummary } from './get-all-tickets.js'
+import type { Ticket } from '../../../domain/entities/ticket.ts'
+import { TicketSummary } from './get-all-tickets.ts'
 
 export class SearchTicketsResponse {
   constructor(

@@ -5,7 +5,7 @@ import {
   TicketError,
   TicketNotFoundError,
   TicketValidationError,
-} from './errors.js'
+} from './errors.ts'
 
 describe('Custom Error Types', () => {
   describe('TicketError', () => {
