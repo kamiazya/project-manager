@@ -1,4 +1,3 @@
-import 'reflect-metadata'
 import { Container } from 'inversify'
 import {
   type TicketRepository,
@@ -48,55 +47,94 @@ export function createContainer(storagePath?: string): Container {
   // Bind individual use cases
   container
     .bind<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
-    .to(CreateTicketUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new CreateTicketUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<GetTicketByIdUseCase>(TYPES.GetTicketByIdUseCase)
-    .to(GetTicketByIdUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new GetTicketByIdUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<GetAllTicketsUseCase>(TYPES.GetAllTicketsUseCase)
-    .to(GetAllTicketsUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new GetAllTicketsUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<UpdateTicketTitleUseCase>(TYPES.UpdateTicketTitleUseCase)
-    .to(UpdateTicketTitleUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new UpdateTicketTitleUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<UpdateTicketDescriptionUseCase>(TYPES.UpdateTicketDescriptionUseCase)
-    .to(UpdateTicketDescriptionUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new UpdateTicketDescriptionUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<UpdateTicketStatusUseCase>(TYPES.UpdateTicketStatusUseCase)
-    .to(UpdateTicketStatusUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new UpdateTicketStatusUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<UpdateTicketPriorityUseCase>(TYPES.UpdateTicketPriorityUseCase)
-    .to(UpdateTicketPriorityUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new UpdateTicketPriorityUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<StartTicketProgressUseCase>(TYPES.StartTicketProgressUseCase)
-    .to(StartTicketProgressUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new StartTicketProgressUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<CompleteTicketUseCase>(TYPES.CompleteTicketUseCase)
-    .to(CompleteTicketUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new CompleteTicketUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<ArchiveTicketUseCase>(TYPES.ArchiveTicketUseCase)
-    .to(ArchiveTicketUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new ArchiveTicketUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<DeleteTicketUseCase>(TYPES.DeleteTicketUseCase)
-    .to(DeleteTicketUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new DeleteTicketUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<GetTicketStatsUseCase>(TYPES.GetTicketStatsUseCase)
-    .to(GetTicketStatsUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new GetTicketStatsUseCase(ticketRepository)
+    })
     .inSingletonScope()
   container
     .bind<SearchTicketsUseCase>(TYPES.SearchTicketsUseCase)
-    .to(SearchTicketsUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new SearchTicketsUseCase(ticketRepository)
+    })
     .inSingletonScope()
 
   return container

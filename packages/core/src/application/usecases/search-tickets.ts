@@ -1,21 +1,13 @@
-import { inject, injectable } from 'inversify'
 import type { UseCase } from '../common/base-usecase.js'
 import { SearchTicketsRequest } from '../dtos/requests/search-tickets.js'
 import { SearchTicketsResponse } from '../dtos/responses/search-tickets.js'
-import {
-  type TicketRepository,
-  TicketRepository as TicketRepositorySymbol,
-} from '../repositories/ticket-repository.js'
+import type { TicketRepository } from '../repositories/ticket-repository.js'
 
 /**
  * Use case for searching tickets by criteria.
  */
-@injectable()
 export class SearchTicketsUseCase implements UseCase<SearchTicketsRequest, SearchTicketsResponse> {
-  constructor(
-    @inject(TicketRepositorySymbol)
-    private readonly ticketRepository: TicketRepository
-  ) {}
+  constructor(private readonly ticketRepository: TicketRepository) {}
 
   async execute(request: SearchTicketsRequest): Promise<SearchTicketsResponse> {
     const tickets = await this.ticketRepository.findAll()

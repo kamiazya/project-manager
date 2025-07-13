@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { homedir } from 'node:os'
+import { dirname, join } from 'node:path'
 import type { TicketJSON, TicketStats } from '@project-manager/shared'
 import {
   ENV_VARS,
@@ -9,7 +10,6 @@ import {
   StorageError,
   TicketNotFoundError,
 } from '@project-manager/shared'
-import { injectable } from 'inversify'
 import type { TicketRepository } from '../../application/repositories/ticket-repository.js'
 import { Ticket } from '../../domain/entities/ticket.js'
 import type { TicketId } from '../../domain/value-objects/ticket-id.js'
@@ -24,7 +24,6 @@ import { TicketMapper } from './mappers/ticket-mapper.js'
  * - Delegates mapping logic to TicketMapper
  * - Domain objects remain pure without persistence concerns
  */
-@injectable()
 export class JsonTicketRepository implements TicketRepository {
   private readonly filePath: string
   private readonly writeLock = new Map<string, Promise<void>>()
@@ -34,7 +33,22 @@ export class JsonTicketRepository implements TicketRepository {
   }
 
   private getDefaultPath(): string {
-    return process.env[ENV_VARS.STORAGE_PATH] || FILE_SYSTEM.DEFAULT_TICKETS_FILE
+    const envPath = process.env[ENV_VARS.STORAGE_PATH]
+    if (envPath) {
+      return envPath
+    }
+
+    // Use default location following XDG Base Directory specification
+    const homeDir = homedir()
+    const configHome = process.env[ENV_VARS.XDG_CONFIG_HOME] || join(homeDir, '.config')
+
+    // Use separate directory for development environment
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const dirName = isDevelopment
+      ? `${FILE_SYSTEM.CONFIG_DIR_NAME}-dev`
+      : FILE_SYSTEM.CONFIG_DIR_NAME
+
+    return join(configHome, dirName, FILE_SYSTEM.DEFAULT_TICKETS_FILE)
   }
 
   async save(ticket: Ticket): Promise<void> {
