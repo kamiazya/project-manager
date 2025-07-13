@@ -70,6 +70,10 @@ const ENV_MAPPINGS = {
 function getConfigPaths(): string[] {
   const paths: string[] = []
 
+  // Use separate directory for development environment
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const dirName = isDevelopment ? `${FILE_SYSTEM.CONFIG_DIR_NAME}-dev` : FILE_SYSTEM.CONFIG_DIR_NAME
+
   // 1. Current directory
   paths.push(join(process.cwd(), '.pmrc.json'))
 
@@ -79,11 +83,11 @@ function getConfigPaths(): string[] {
   // 3. XDG config directory
   const xdgConfigHome = process.env[ENV_VARS.XDG_CONFIG_HOME]
   if (xdgConfigHome) {
-    paths.push(join(xdgConfigHome, FILE_SYSTEM.CONFIG_DIR_NAME, 'config.json'))
+    paths.push(join(xdgConfigHome, dirName, 'config.json'))
   }
 
   // 4. Default config directory
-  paths.push(join(homedir(), '.config', FILE_SYSTEM.CONFIG_DIR_NAME, 'config.json'))
+  paths.push(join(homedir(), '.config', dirName, 'config.json'))
 
   return paths
 }
