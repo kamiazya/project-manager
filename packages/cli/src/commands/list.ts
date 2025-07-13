@@ -1,46 +1,75 @@
-import type {
-  TicketPriority,
-  TicketSearchCriteria,
-  TicketStatus,
-  TicketType,
-} from '@project-manager/shared'
-import { getConfig } from '@project-manager/shared'
-import { Command } from 'commander'
-import { searchTicketsAction } from '../utils/cli-helpers.ts'
+import { Flags } from '@oclif/core'
+import type { SearchTicketsUseCase } from '@project-manager/core'
+import { SearchTicketsRequest, TYPES } from '@project-manager/core'
+import type { TicketSearchCriteria } from '@project-manager/shared'
+import { SUCCESS_MESSAGES } from '@project-manager/shared'
+import { BaseCommand } from '../lib/base-command.ts'
+import { formatTicketSummaryList } from '../utils/output.ts'
 
-export function listTicketCommand(): Command {
-  const config = getConfig()
+/**
+ * List tickets with optional filtering
+ */
+export class ListCommand extends BaseCommand {
+  static override description = 'List tickets'
+  static override aliases = ['ls']
 
-  const command = new Command('list')
-    .alias('ls')
-    .description('List tickets')
-    .option('-s, --status <status>', 'Filter by status (pending, in_progress, completed, archived)')
-    .option('-p, --priority <priority>', 'Filter by priority (high, medium, low)')
-    .option('-t, --type <type>', 'Filter by type (feature, bug, task)')
-    .option('--title <title>', 'Search by title (partial match)')
-    .option(
-      '-f, --format <format>',
-      'Output format (table, json, compact)',
-      config.defaultOutputFormat
-    )
-    .action(async options => {
-      const criteria: TicketSearchCriteria = {}
+  static override flags = {
+    status: Flags.string({
+      char: 's',
+      description: 'Filter by status (pending, in_progress, completed, archived)',
+      options: ['pending', 'in_progress', 'completed', 'archived'],
+    }),
+    priority: Flags.string({
+      char: 'p',
+      description: 'Filter by priority (high, medium, low)',
+      options: ['high', 'medium', 'low'],
+    }),
+    type: Flags.string({
+      char: 't',
+      description: 'Filter by type (feature, bug, task)',
+      options: ['feature', 'bug', 'task'],
+    }),
+    title: Flags.string({
+      description: 'Search by title (partial match)',
+    }),
+    format: Flags.string({
+      char: 'f',
+      description: 'Output format (table, json, compact)',
+      options: ['table', 'json', 'compact'],
+      default: 'table',
+    }),
+  }
 
-      if (options.status) {
-        criteria.status = options.status as TicketStatus
-      }
-      if (options.priority) {
-        criteria.priority = options.priority as TicketPriority
-      }
-      if (options.type) {
-        criteria.type = options.type as TicketType
-      }
-      if (options.title) {
-        criteria.search = options.title
-      }
+  async execute(_args: any, flags: any): Promise<any> {
+    // Build search criteria from flags (remove undefined values)
+    const criteria: TicketSearchCriteria = {}
 
-      await searchTicketsAction(criteria, { format: options.format })
+    if (flags.status) criteria.status = flags.status
+    if (flags.priority) criteria.priority = flags.priority
+    if (flags.type) criteria.type = flags.type
+    if (flags.title) criteria.search = flags.title
+
+    // Get the use case from the service container
+    const searchTicketsUseCase = this.getService<SearchTicketsUseCase>(TYPES.SearchTicketsUseCase)
+
+    // Execute the request
+    const request = new SearchTicketsRequest(criteria)
+    const response = await searchTicketsUseCase.execute(request)
+
+    // Handle JSON output
+    if (flags.json) {
+      return response.tickets
+    }
+
+    // Format and display results
+    const output = formatTicketSummaryList(response.tickets, {
+      format: flags.format,
     })
+    this.log(output)
 
-  return command
+    // Show summary message
+    if (response.tickets.length > 0) {
+      this.log(`\n${SUCCESS_MESSAGES.TICKETS_FOUND(response.tickets.length)}`)
+    }
+  }
 }

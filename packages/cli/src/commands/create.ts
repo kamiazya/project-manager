@@ -1,37 +1,140 @@
-import type { TicketPriority, TicketPrivacy, TicketType } from '@project-manager/shared'
-import { getConfig } from '@project-manager/shared'
-import { Command } from 'commander'
-import { createDetailedTicketAction } from '../utils/cli-helpers.ts'
+import { input, select } from '@inquirer/prompts'
+import { Args, Flags } from '@oclif/core'
+import type { CreateTicketUseCase } from '@project-manager/core'
+import { CreateTicketRequest, TYPES } from '@project-manager/core'
+import { BaseCommand } from '../lib/base-command.ts'
 
-export function createTicketCommand(): Command {
-  const config = getConfig()
+/**
+ * Create a new ticket
+ */
+export class CreateCommand extends BaseCommand {
+  static override description = 'Create a new ticket'
 
-  const command = new Command('create')
-    .alias('c')
-    .description('Create a new ticket')
-    .argument('<title>', 'Ticket title')
-    .argument('<description>', 'Ticket description')
-    .option(
-      '-p, --priority <priority>',
-      'Priority level (high, medium, low)',
-      config.defaultPriority
-    )
-    .option('-t, --type <type>', 'Ticket type (feature, bug, task)', config.defaultType)
-    .option(
-      '--privacy <privacy>',
-      'Privacy level (local-only, shareable, public)',
-      config.defaultPrivacy
-    )
-    .option('-s, --status <status>', 'Initial status (pending, in_progress)', config.defaultStatus)
-    .option('--json', 'Output in JSON format')
-    .action(async (title: string, description: string, options) => {
-      await createDetailedTicketAction(title, description, {
-        priority: options.priority as TicketPriority,
-        type: options.type as TicketType,
-        privacy: options.privacy as TicketPrivacy,
-        json: options.json,
+  static override examples = [
+    '<%= config.bin %> <%= command.id %> "Fix login bug"',
+    '<%= config.bin %> <%= command.id %> "Add user dashboard" -d "Create user dashboard with analytics" -p h -t f',
+    '<%= config.bin %> <%= command.id %> # Interactive mode',
+  ]
+
+  static override args = {
+    title: Args.string({
+      description: 'Ticket title (optional, will prompt if not provided)',
+      required: false,
+    }),
+  }
+
+  static override flags = {
+    description: Flags.string({
+      char: 'd',
+      description: 'Ticket description',
+      default: '',
+    }),
+    priority: Flags.string({
+      char: 'p',
+      description: 'Priority: h(igh), m(edium), l(ow)',
+      options: ['h', 'm', 'l', 'high', 'medium', 'low'],
+      default: 'm',
+    }),
+    type: Flags.string({
+      char: 't',
+      description: 'Type: f(eature), b(ug), t(ask)',
+      options: ['f', 'b', 't', 'feature', 'bug', 'task'],
+      default: 't',
+    }),
+  }
+
+  async execute(args: { title?: string }, flags: any): Promise<any> {
+    // Get title - from args or interactive input
+    let title = args.title
+    if (!title) {
+      title = await input({
+        message: 'Title:',
       })
-    })
+    }
 
-  return command
+    // Validate title
+    if (!title || title.trim() === '') {
+      this.error('Title cannot be empty')
+    }
+
+    // Get description - from flags or interactive input
+    let description = flags.description
+    if (!args.title && !flags.description) {
+      description = await input({
+        message: 'Description:',
+      })
+    }
+
+    // Get priority - from flags or interactive input
+    let priority = this.expandPriorityShortcut(flags.priority)
+    if (!args.title && flags.priority === 'm') {
+      priority = await select({
+        message: 'Priority:',
+        choices: [
+          { name: 'High', value: 'high' },
+          { name: 'Medium', value: 'medium' },
+          { name: 'Low', value: 'low' },
+        ],
+        default: 'medium',
+      })
+    }
+
+    // Get type - from flags or interactive input
+    let type = this.expandTypeShortcut(flags.type)
+    if (!args.title && flags.type === 't') {
+      type = await select({
+        message: 'Type:',
+        choices: [
+          { name: 'Feature', value: 'feature' },
+          { name: 'Bug', value: 'bug' },
+          { name: 'Task', value: 'task' },
+        ],
+        default: 'task',
+      })
+    }
+
+    // Create ticket
+    const createTicketUseCase = this.getService<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
+    const request = new CreateTicketRequest(
+      title.trim(),
+      description,
+      priority as 'high' | 'medium' | 'low',
+      type as 'feature' | 'bug' | 'task'
+    )
+    const ticket = await createTicketUseCase.execute(request)
+
+    this.log(`Ticket ${ticket.id} created successfully.`)
+  }
+
+  /**
+   * Expand priority shortcuts to full names
+   */
+  private expandPriorityShortcut(priority: string): string {
+    switch (priority) {
+      case 'h':
+        return 'high'
+      case 'm':
+        return 'medium'
+      case 'l':
+        return 'low'
+      default:
+        return priority
+    }
+  }
+
+  /**
+   * Expand type shortcuts to full names
+   */
+  private expandTypeShortcut(type: string): string {
+    switch (type) {
+      case 'f':
+        return 'feature'
+      case 'b':
+        return 'bug'
+      case 't':
+        return 'task'
+      default:
+        return type
+    }
+  }
 }
