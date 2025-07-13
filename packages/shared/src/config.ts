@@ -110,7 +110,7 @@ function loadConfigFromFile(filePath: string): Partial<Config> {
     }
 
     return parsed
-  } catch (error) {
+  } catch (_error) {
     // Silently ignore file reading errors
     return {}
   }
@@ -135,7 +135,7 @@ function loadConfigFromEnv(): Partial<Config> {
         ;(config as any)[configKey] = value.toLowerCase() === 'true'
       } else if (configKey === 'maxTitleLength') {
         const parsed = parseInt(value, 10)
-        if (!isNaN(parsed) && parsed > 0) {
+        if (!Number.isNaN(parsed) && parsed > 0) {
           ;(config as any)[configKey] = parsed
         }
       } else {

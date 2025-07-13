@@ -1,4 +1,4 @@
-import { TYPES, UpdateTicketStatusUseCase } from '@project-manager/core'
+import { UpdateTicketStatusUseCase } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as containerModule from '../utils/container.ts'

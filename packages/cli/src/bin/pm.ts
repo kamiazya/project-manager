@@ -41,7 +41,12 @@ export function validateMcpMode(mcpMode: string): McpConfig {
       const portNum = parseInt(httpPort, 10)
       // Check if the original string equals the parsed number's string representation
       // This catches cases like '3000.5', '3000abc', whitespace, etc.
-      if (isNaN(portNum) || portNum < 1 || portNum > 65535 || httpPort !== portNum.toString()) {
+      if (
+        Number.isNaN(portNum) ||
+        portNum < 1 ||
+        portNum > 65535 ||
+        httpPort !== portNum.toString()
+      ) {
         console.error(
           `Error: Invalid port '${httpPort}'. Port must be a number between 1 and 65535`
         )
@@ -94,7 +99,7 @@ async function main() {
       let mcpMode = 'stdio'
 
       // Parse MCP mode if provided
-      if (mcpArg && mcpArg.includes('=')) {
+      if (mcpArg?.includes('=')) {
         mcpMode = mcpArg.split('=')[1] || 'stdio'
       } else if (mcpIndex + 1 < args.length) {
         const nextArg = args[mcpIndex + 1]
