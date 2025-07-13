@@ -1,6 +1,86 @@
 import { type ChildProcess, spawn } from 'node:child_process'
 import { createCLI } from '../cli.js'
 
+export interface McpConfig {
+  transportMode: 'stdio' | 'http'
+  httpPort: string
+  isStateless: boolean
+}
+
+export function validateMcpMode(mcpMode: string): McpConfig {
+  // Parse MCP mode configuration
+  const modeParts = mcpMode.split(':')
+  const transportMode = modeParts[0] || '' // 'stdio' or 'http'
+
+  // Validate transport mode
+  if (!transportMode || !['stdio', 'http'].includes(transportMode)) {
+    console.error(
+      `Error: Invalid MCP transport mode '${transportMode}'. Allowed values: stdio, http`
+    )
+    console.error('Usage: --mcp stdio | --mcp http:port[:stateless]')
+    process.exit(1)
+  }
+
+  // Parse and validate HTTP-specific options
+  let httpPort = '3000'
+  let isStateless = false
+
+  if (transportMode === 'http') {
+    // Validate port if provided
+    if (modeParts[1] !== undefined) {
+      httpPort = modeParts[1]
+
+      // Check for empty port
+      if (httpPort === '') {
+        console.error(
+          `Error: Invalid port '${httpPort}'. Port must be a number between 1 and 65535`
+        )
+        process.exit(1)
+      }
+
+      const portNum = parseInt(httpPort, 10)
+      // Check if the original string equals the parsed number's string representation
+      // This catches cases like '3000.5', '3000abc', whitespace, etc.
+      if (isNaN(portNum) || portNum < 1 || portNum > 65535 || httpPort !== portNum.toString()) {
+        console.error(
+          `Error: Invalid port '${httpPort}'. Port must be a number between 1 and 65535`
+        )
+        process.exit(1)
+      }
+    }
+
+    // Validate stateless flag if provided
+    if (modeParts[2]) {
+      if (modeParts[2] !== 'stateless') {
+        console.error(`Error: Invalid flag '${modeParts[2]}'. Only 'stateless' flag is supported`)
+        console.error('Usage: --mcp http:port:stateless')
+        process.exit(1)
+      }
+      isStateless = true
+    }
+
+    // Validate no extra parts
+    if (modeParts.length > 3) {
+      console.error(`Error: Too many parameters in MCP mode '${mcpMode}'`)
+      console.error('Usage: --mcp http:port[:stateless]')
+      process.exit(1)
+    }
+  } else {
+    // stdio mode should not have additional parameters
+    if (modeParts.length > 1) {
+      console.error(`Error: stdio mode does not accept additional parameters: '${mcpMode}'`)
+      console.error('Usage: --mcp stdio')
+      process.exit(1)
+    }
+  }
+
+  return {
+    transportMode: transportMode as 'stdio' | 'http',
+    httpPort,
+    isStateless,
+  }
+}
+
 async function main() {
   try {
     const cli = createCLI()
@@ -26,62 +106,9 @@ async function main() {
       const isDev = process.env.NODE_ENV === 'development'
       const envMode = isDev ? 'development' : 'production'
 
-      // Parse MCP mode configuration
-      const modeParts = mcpMode.split(':')
-      const transportMode = modeParts[0] || '' // 'stdio' or 'http'
-
-      // Validate transport mode
-      if (!transportMode || !['stdio', 'http'].includes(transportMode)) {
-        console.error(
-          `Error: Invalid MCP transport mode '${transportMode}'. Allowed values: stdio, http`
-        )
-        console.error('Usage: --mcp stdio | --mcp http:port[:stateless]')
-        process.exit(1)
-      }
-
-      // Parse and validate HTTP-specific options
-      let httpPort = '3000'
-      let isStateless = false
-
-      if (transportMode === 'http') {
-        // Validate port if provided
-        if (modeParts[1]) {
-          httpPort = modeParts[1]
-          const portNum = parseInt(httpPort, 10)
-          if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-            console.error(
-              `Error: Invalid port '${httpPort}'. Port must be a number between 1 and 65535`
-            )
-            process.exit(1)
-          }
-        }
-
-        // Validate stateless flag if provided
-        if (modeParts[2]) {
-          if (modeParts[2] !== 'stateless') {
-            console.error(
-              `Error: Invalid flag '${modeParts[2]}'. Only 'stateless' flag is supported`
-            )
-            console.error('Usage: --mcp http:port:stateless')
-            process.exit(1)
-          }
-          isStateless = true
-        }
-
-        // Validate no extra parts
-        if (modeParts.length > 3) {
-          console.error(`Error: Too many parameters in MCP mode '${mcpMode}'`)
-          console.error('Usage: --mcp http:port[:stateless]')
-          process.exit(1)
-        }
-      } else {
-        // stdio mode should not have additional parameters
-        if (modeParts.length > 1) {
-          console.error(`Error: stdio mode does not accept additional parameters: '${mcpMode}'`)
-          console.error('Usage: --mcp stdio')
-          process.exit(1)
-        }
-      }
+      // Validate MCP mode configuration
+      const config = validateMcpMode(mcpMode)
+      const { transportMode, httpPort, isStateless } = config
 
       console.log(
         `Starting MCP server in ${envMode} mode (${transportMode}${transportMode === 'http' ? `:${httpPort}${isStateless ? ':stateless' : ''}` : ''})...`
