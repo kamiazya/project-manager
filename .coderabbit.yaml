@@ -28,7 +28,9 @@ knowledge_base:
   code_guidelines:
     enabled: true
     filePatterns:
-      - '**/*.md'
+      - '*.md'
+      - 'docs/**/*.md'
+      - 'packages/**/*.md'
   learnings:
     scope: local
   issues:
