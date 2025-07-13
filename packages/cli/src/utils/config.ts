@@ -9,7 +9,12 @@ import { ENV_VARS, FILE_SYSTEM } from '@project-manager/shared'
 export function getDefaultStoragePath(): string {
   const homeDir = homedir()
   const configHome = process.env[ENV_VARS.XDG_CONFIG_HOME] || join(homeDir, '.config')
-  const projectManagerDir = join(configHome, FILE_SYSTEM.CONFIG_DIR_NAME)
+
+  // Use separate directory for development environment
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const dirName = isDevelopment ? `${FILE_SYSTEM.CONFIG_DIR_NAME}-dev` : FILE_SYSTEM.CONFIG_DIR_NAME
+
+  const projectManagerDir = join(configHome, dirName)
 
   // Ensure directory exists
   if (!existsSync(projectManagerDir)) {
