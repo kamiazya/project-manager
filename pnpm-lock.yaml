@@ -154,6 +154,9 @@ importers:
       '@project-manager/shared':
         specifier: workspace:*
         version: link:../shared
+      inversify:
+        specifier: 'catalog:'
+        version: 7.5.4(reflect-metadata@0.2.2)
       zod:
         specifier: ^3.25.56
         version: 3.25.76
@@ -161,9 +164,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.0.12
-      inversify:
-        specifier: 'catalog:'
-        version: 7.5.4(reflect-metadata@0.2.2)
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.0.12)(typescript@5.8.3)
