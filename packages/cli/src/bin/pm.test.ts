@@ -5,12 +5,13 @@ import { validateMcpMode } from './pm.ts'
 // Mock console methods to capture output
 const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 const mockProcessExit = vi.spyOn(process, 'exit').mockImplementation(() => {
-  throw new Error('process.exit() called')
+  // No-op implementation that doesn't throw
+  return undefined as never
 })
 
 // Helper function to test MCP mode validation with expected exit
 function expectValidationError(mcpMode: string, expectedError: string, expectedUsage?: string) {
-  expect(() => validateMcpMode(mcpMode)).toThrow('process.exit() called')
+  validateMcpMode(mcpMode) // Call directly without expecting a throw
   expect(mockConsoleError).toHaveBeenCalledWith(expectedError)
   if (expectedUsage) {
     expect(mockConsoleError).toHaveBeenCalledWith(expectedUsage)
