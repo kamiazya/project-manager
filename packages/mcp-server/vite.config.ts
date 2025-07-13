@@ -13,6 +13,7 @@ export default defineConfig({
     }),
   ],
   build: {
+    target: 'node18',
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
@@ -34,8 +35,17 @@ export default defineConfig({
         'node:url',
         'node:os',
         'node:child_process',
+        'node:crypto',
+        'node:http',
+        'async_hooks',
+        'buffer',
+        'string_decoder',
         'reflect-metadata',
         'inversify',
+        'raw-body',
+        'content-type',
+        'safer-buffer',
+        'iconv-lite',
       ],
       output: {
         banner: chunk => {
