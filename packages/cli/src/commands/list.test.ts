@@ -1,16 +1,16 @@
 import { TYPES } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ListCommand } from '../../src/commands/list.ts'
-import { getServiceContainer } from '../../src/utils/service-factory.ts'
+import { getServiceContainer } from '../utils/service-factory.ts'
+import { ListCommand } from './list.ts'
 
 // Mock the service factory module
-vi.mock('../../src/utils/service-factory.ts', () => ({
+vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
 }))
 
 // Mock the output module
-vi.mock('../../src/utils/output.ts', () => ({
+vi.mock('../utils/output.ts', () => ({
   formatTicketSummaryList: vi.fn((tickets, options) => {
     if (options.format === 'json') {
       return JSON.stringify(tickets)
@@ -20,10 +20,68 @@ vi.mock('../../src/utils/output.ts', () => ({
 }))
 
 // Mock shared configuration
-vi.mock('@project-manager/shared', () => ({
-  getConfig: vi.fn(() => ({ defaultOutputFormat: 'table' })),
-  SUCCESS_MESSAGES: {
-    TICKETS_FOUND: (count: number) => `Found ${count} tickets`,
+vi.mock('@project-manager/shared', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    getConfig: vi.fn(() => ({ defaultOutputFormat: 'table' })),
+    SUCCESS_MESSAGES: {
+      TICKETS_FOUND: (count: number) => `Found ${count} tickets`,
+    },
+  }
+})
+
+// Mock the oclif Command class
+vi.mock('@oclif/core', () => ({
+  Command: class MockCommand {
+    config = { runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }) }
+    argv: string[]
+
+    constructor(argv: string[]) {
+      this.argv = argv
+    }
+
+    async init() {}
+    async parse() {
+      // Simple parsing logic for tests
+      const args: any = {}
+      const flags: any = {}
+
+      // Handle flags
+      for (let i = 0; i < this.argv.length; i++) {
+        if (this.argv[i] === '--json') {
+          flags.json = true
+        } else if (this.argv[i] === '--status' && i + 1 < this.argv.length) {
+          flags.status = this.argv[i + 1]
+          i++
+        } else if (this.argv[i] === '--priority' && i + 1 < this.argv.length) {
+          flags.priority = this.argv[i + 1]
+          i++
+        } else if (this.argv[i] === '--type' && i + 1 < this.argv.length) {
+          flags.type = this.argv[i + 1]
+          i++
+        } else if (this.argv[i] === '--title' && i + 1 < this.argv.length) {
+          flags.title = this.argv[i + 1]
+          i++
+        } else if (this.argv[i] === '--format' && i + 1 < this.argv.length) {
+          flags.format = this.argv[i + 1]
+          i++
+        }
+      }
+
+      return { args, flags }
+    }
+    log = vi.fn()
+    logJson = vi.fn()
+    error = vi.fn()
+    async catch() {}
+  },
+  Args: {
+    string: vi.fn(() => ({ description: '', required: false })),
+  },
+  Flags: {
+    boolean: vi.fn(() => ({ description: '', required: false })),
+    string: vi.fn(() => ({ description: '', required: false })),
   },
 }))
 

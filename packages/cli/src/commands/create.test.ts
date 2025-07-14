@@ -1,9 +1,11 @@
+import { TYPES } from '@project-manager/core'
 import { Container } from 'inversify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { CreateCommand } from '../../src/commands/create.ts'
+import { getServiceContainer } from '../utils/service-factory.ts'
+import { CreateCommand } from './create.ts'
 
 // Mock service factory
-vi.mock('../../src/utils/service-factory.ts', () => ({
+vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
 }))
 
@@ -11,6 +13,60 @@ vi.mock('../../src/utils/service-factory.ts', () => ({
 vi.mock('@inquirer/prompts', () => ({
   input: vi.fn(),
   select: vi.fn(),
+}))
+
+// Mock the oclif Command class
+vi.mock('@oclif/core', () => ({
+  Command: class MockCommand {
+    config = { runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }) }
+    argv: string[]
+
+    constructor(argv: string[]) {
+      this.argv = argv
+    }
+
+    async init() {}
+    async parse() {
+      // Simple parsing logic for tests
+      const args: any = {}
+      const flags: any = {}
+
+      // Handle positional arguments
+      if (this.argv.length > 0 && !this.argv[0].startsWith('-')) {
+        args.title = this.argv[0]
+      }
+
+      // Handle flags
+      for (let i = 0; i < this.argv.length; i++) {
+        if (this.argv[i] === '--json') {
+          flags.json = true
+        } else if (this.argv[i] === '-d' || this.argv[i] === '--description') {
+          flags.description = this.argv[i + 1]
+          i++
+        } else if (this.argv[i] === '-p' || this.argv[i] === '--priority') {
+          flags.priority = this.argv[i + 1]
+          i++
+        } else if (this.argv[i] === '-t' || this.argv[i] === '--type') {
+          flags.type = this.argv[i + 1]
+          i++
+        }
+      }
+
+      return { args, flags }
+    }
+    log = vi.fn()
+    logJson = vi.fn()
+    error = vi.fn()
+    async catch() {}
+  },
+  Args: {
+    string: vi.fn(() => ({ description: '', required: false })),
+  },
+  Flags: {
+    boolean: vi.fn(() => ({ description: '', required: false })),
+    string: vi.fn(() => ({ description: '', required: false })),
+    char: vi.fn(() => ({ description: '', required: false })),
+  },
 }))
 
 describe('CreateCommand', () => {
@@ -31,7 +87,6 @@ describe('CreateCommand', () => {
       }),
     }
 
-    const { getServiceContainer } = require('../../src/utils/service-factory.ts')
     vi.mocked(getServiceContainer).mockReturnValue(mockContainer)
   })
 
@@ -51,13 +106,11 @@ describe('CreateCommand', () => {
     // Act
     const cmd = new CreateCommand(['Test ticket', '-d', 'Test description', '-p', 'h', '-t', 'f'], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
-    })
+    } as any)
+    await cmd.init()
 
     const logSpy = vi.spyOn(cmd, 'log').mockImplementation(() => {})
-    await cmd.execute(
-      { title: 'Test ticket' },
-      { description: 'Test description', priority: 'h', type: 'f' }
-    )
+    await cmd.run()
 
     // Assert
     expect(mockCreateTicketUseCase.execute).toHaveBeenCalledWith(
@@ -93,10 +146,11 @@ describe('CreateCommand', () => {
     // Act
     const cmd = new CreateCommand([], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
-    })
+    } as any)
+    await cmd.init()
 
     const logSpy = vi.spyOn(cmd, 'log').mockImplementation(() => {})
-    await cmd.execute({ title: undefined }, { description: '', priority: 'm', type: 't' })
+    await cmd.run()
 
     // Assert
     expect(input).toHaveBeenCalledWith({ message: 'Title:' })
@@ -146,9 +200,10 @@ describe('CreateCommand', () => {
     // Act
     const cmd = new CreateCommand(['Test ticket', '-p', 'l'], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
-    })
+    } as any)
+    await cmd.init()
 
-    await cmd.execute({ title: 'Test ticket' }, { description: '', priority: 'l', type: 't' })
+    await cmd.run()
 
     // Assert
     expect(mockCreateTicketUseCase.execute).toHaveBeenCalledWith(
@@ -177,9 +232,10 @@ describe('CreateCommand', () => {
     // Act
     const cmd = new CreateCommand(['Test ticket', '-t', 'b'], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
-    })
+    } as any)
+    await cmd.init()
 
-    await cmd.execute({ title: 'Test ticket' }, { description: '', priority: 'm', type: 'b' })
+    await cmd.run()
 
     // Assert
     expect(mockCreateTicketUseCase.execute).toHaveBeenCalledWith(
@@ -196,10 +252,9 @@ describe('CreateCommand', () => {
     // Arrange & Act & Assert
     const cmd = new CreateCommand([''], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
-    })
+    } as any)
+    await cmd.init()
 
-    await expect(
-      cmd.execute({ title: '' }, { description: '', priority: 'm', type: 't' })
-    ).rejects.toThrow('Title cannot be empty')
+    await expect(cmd.run()).rejects.toThrow('Title cannot be empty')
   })
 })

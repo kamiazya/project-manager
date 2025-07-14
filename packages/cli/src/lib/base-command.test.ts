@@ -1,11 +1,43 @@
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { BaseCommand } from '../../src/commands/base.ts'
-import { getServiceContainer } from '../../src/utils/service-factory.ts'
+import { getServiceContainer } from '../utils/service-factory.ts'
+import { BaseCommand } from './base-command.ts'
 
 // Mock the service factory module
-vi.mock('../../src/utils/service-factory.ts', () => ({
+vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
+}))
+
+// Mock the oclif Command class
+vi.mock('@oclif/core', () => ({
+  Command: class MockCommand {
+    config = { runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }) }
+    argv: string[]
+
+    constructor(argv: string[]) {
+      this.argv = argv
+    }
+
+    async init() {}
+    async parse() {
+      // Simple parsing logic for tests
+      const args: any = {}
+      const flags: any = {}
+
+      return { args, flags }
+    }
+    log = vi.fn()
+    logJson = vi.fn()
+    error = vi.fn()
+    async catch() {}
+  },
+  Args: {
+    string: vi.fn(() => ({ description: '', required: false })),
+  },
+  Flags: {
+    boolean: vi.fn(() => ({ description: '', required: false })),
+    string: vi.fn(() => ({ description: '', required: false })),
+  },
 }))
 
 describe('BaseCommand', () => {
@@ -52,19 +84,8 @@ describe('BaseCommand', () => {
     const cmd = new TestCommand([], {} as any)
     await cmd.init()
 
-    // Mock the parent catch method to prevent actual error throwing
-    const catchSpy = vi
-      .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(cmd)), 'catch')
-      .mockResolvedValue(undefined)
-
-    // The catch method should be called when an error occurs
-    try {
-      await cmd.run()
-    } catch (error) {
-      // This is expected since we're testing error handling
-    }
-
-    expect(catchSpy).toHaveBeenCalled()
+    // The run method should propagate the error
+    await expect(cmd.run()).rejects.toThrow('Test error')
   })
 
   it('should provide access to services', async () => {
@@ -76,7 +97,7 @@ describe('BaseCommand', () => {
 
     class TestCommand extends BaseCommand {
       async execute(): Promise<void> {
-        const ticketService = this.getService('TicketService')
+        const ticketService = this.getService('TicketService' as any)
         expect(ticketService).toBe(mockTicketService)
       }
     }

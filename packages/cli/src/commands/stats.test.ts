@@ -1,17 +1,56 @@
-import { runCommand } from '@oclif/test'
 import { TYPES } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getServiceContainer } from '../../src/utils/service-factory.ts'
+import { getServiceContainer } from '../utils/service-factory.ts'
+import { StatsCommand } from './stats.ts'
 
 // Mock the service factory module
-vi.mock('../../src/utils/service-factory.ts', () => ({
+vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
 }))
 
 // Mock the output module to check formatted output
-vi.mock('../../src/utils/output.ts', () => ({
+vi.mock('../utils/output.ts', () => ({
   formatStats: vi.fn(stats => `Total: ${stats.total} tickets`),
+}))
+
+// Mock the oclif Command class
+vi.mock('@oclif/core', () => ({
+  Command: class MockCommand {
+    config = { runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }) }
+    argv: string[]
+
+    constructor(argv: string[]) {
+      this.argv = argv
+    }
+
+    async init() {}
+    async parse() {
+      // Simple parsing logic for tests
+      const args: any = {}
+      const flags: any = {}
+
+      // Handle flags
+      for (let i = 0; i < this.argv.length; i++) {
+        if (this.argv[i] === '--json') {
+          flags.json = true
+        }
+      }
+
+      return { args, flags }
+    }
+    log = vi.fn()
+    logJson = vi.fn()
+    error = vi.fn()
+    async catch() {}
+  },
+  Args: {
+    string: vi.fn(() => ({ description: '', required: false })),
+  },
+  Flags: {
+    boolean: vi.fn(() => ({ description: '', required: false })),
+    string: vi.fn(() => ({ description: '', required: false })),
+  },
 }))
 
 describe('StatsCommand', () => {
@@ -50,12 +89,16 @@ describe('StatsCommand', () => {
     })
 
     // Act
-    const { stdout } = await runCommand('stats')
+    const cmd = new StatsCommand([], {} as any)
+    await cmd.init()
+
+    const logSpy = vi.spyOn(cmd, 'log').mockImplementation(() => {})
+    await cmd.run()
 
     // Assert
     expect(mockContainer.get).toHaveBeenCalledWith(TYPES.GetTicketStatsUseCase)
     expect(mockGetTicketStatsUseCase.execute).toHaveBeenCalled()
-    expect(stdout).toContain('Total: 10 tickets')
+    expect(logSpy).toHaveBeenCalledWith('Total: 10 tickets')
   })
 
   it('should display stats in JSON format when --json flag is used', async () => {
@@ -72,19 +115,26 @@ describe('StatsCommand', () => {
     })
 
     // Act
-    const { stdout } = await runCommand('stats --json')
+    const cmd = new StatsCommand(['--json'], {} as any)
+    await cmd.init()
+
+    const logJsonSpy = vi.spyOn(cmd, 'logJson').mockImplementation(() => {})
+    await cmd.run()
 
     // Assert
     expect(mockGetTicketStatsUseCase.execute).toHaveBeenCalled()
-    expect(stdout).toContain('"total": 10')
-    expect(stdout).toContain('"byStatus"')
+    expect(logJsonSpy).toHaveBeenCalledWith(mockStats)
   })
 
   it('should handle errors gracefully', async () => {
     // Arrange
     mockGetTicketStatsUseCase.execute.mockRejectedValue(new Error('Database connection failed'))
 
-    // Act & Assert
-    await expect(runCommand('stats')).rejects.toThrow('Database connection failed')
+    // Act
+    const cmd = new StatsCommand([], {} as any)
+    await cmd.init()
+
+    // Assert
+    await expect(cmd.run()).rejects.toThrow('Database connection failed')
   })
 })

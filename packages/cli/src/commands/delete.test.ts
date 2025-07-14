@@ -1,11 +1,11 @@
 import { TYPES } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { DeleteCommand } from '../../src/commands/delete.ts'
-import { getServiceContainer } from '../../src/utils/service-factory.ts'
+import { getServiceContainer } from '../utils/service-factory.ts'
+import { DeleteCommand } from './delete.ts'
 
 // Mock the service factory module
-vi.mock('../../src/utils/service-factory.ts', () => ({
+vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
 }))
 
