@@ -88,7 +88,168 @@ pnpm install  # Updates bin links in node_modules/.bin/
 #### Examples in Project
 
 - **CLI Package**: `pm-dev.ts` → `pm` command
-- **MCP Server Package**: `mcp-server-dev.ts` → `pm-mcp-server` command
+- **MCP Server Package**: `mcp-server-dev.ts` → `pm-mcp-server` command with integrated hot reload
+
+### Advanced Hot Reload: MCP Server Implementation
+
+The MCP Server package features a sophisticated hot reload implementation that goes beyond simple TypeScript execution. It provides a production-quality development experience with intelligent file watching and process management.
+
+#### Key Features
+
+- ✅ **Environment-Based Activation**: Automatically enables hot reload when `NODE_ENV=development`
+- ✅ **Debounced Restarts**: 300ms delay prevents excessive restarts during rapid file changes
+- ✅ **Colorful Logging**: Color-coded console output for easy development monitoring
+- ✅ **Graceful Shutdown**: 2-second timeout before force-killing unresponsive processes
+- ✅ **Process Recovery**: Automatic restart on crashes with intelligent backoff
+- ✅ **Native File Watching**: Uses Node.js fs.watch API with recursive directory monitoring
+- ✅ **Zero External Dependencies**: No third-party file watching libraries required
+- ✅ **AbortController Integration**: Modern async/await patterns with proper cancellation
+- ✅ **Production Mode Support**: Falls back to direct execution when hot reload is disabled
+
+#### Implementation Example
+
+```typescript
+// packages/mcp-server/src/bin/mcp-server-dev.ts
+#!/usr/bin/env tsx
+
+import { watch, access, readdir } from 'node:fs/promises'
+import { constants } from 'node:fs'
+
+// Environment-based hot reload activation
+const enableHotReload = process.env.NODE_ENV === 'development'
+
+if (!enableHotReload) {
+  // Production: Direct execution
+  import('./mcp-server.ts')
+} else {
+  // Development: Hot reload with file watching
+  runWithHotReload()
+}
+
+async function runWithHotReload() {
+  let watchController: AbortController | null = null
+  const knownFiles = new Set<string>()
+
+  // Initialize known files using async readdir
+  async function initializeKnownFiles() {
+    const files = await readdir(srcDir, { recursive: true })
+    for (const file of files) {
+      if (typeof file === 'string') knownFiles.add(file)
+    }
+  }
+
+  // Native fs.watch with AbortController
+  async function startWatching() {
+    watchController = new AbortController()
+    const watcher = watch(srcDir, { 
+      recursive: true, 
+      signal: watchController.signal 
+    })
+
+    for await (const event of watcher) {
+      await handleFileEvent(event.eventType, event.filename)
+    }
+  }
+
+  // Intelligent file event handling
+  async function handleFileEvent(eventType: string, filename: string | null) {
+    if (!filename) return
+
+    if (eventType === 'rename') {
+      try {
+        await access(fullPath, constants.F_OK)
+        // File exists - it was added
+        if (!knownFiles.has(filename)) {
+          log(`File added: ${relativePath}`)
+          knownFiles.add(filename)
+          debouncedRestart()
+        }
+      } catch {
+        // File doesn't exist - it was removed
+        if (knownFiles.has(filename)) {
+          log(`File removed: ${relativePath}`)
+          knownFiles.delete(filename)
+          debouncedRestart()
+        }
+      }
+    } else if (eventType === 'change') {
+      log(`File changed: ${relativePath}`)
+      debouncedRestart()
+    }
+  }
+
+  await initializeKnownFiles()
+  startWatching()
+}
+```
+
+#### Usage Patterns
+
+**Development with Hot Reload**
+
+```bash
+# Automatic hot reload (NODE_ENV=development default)
+pnpm pm-mcp-server
+
+# Manual environment control
+NODE_ENV=development pnpm pm-mcp-server
+
+# Configuration in .mcp.json
+{
+  "mcpServers": {
+    "project-manager": {
+      "command": "pnpm",
+      "args": ["pm-mcp-server"]
+    }
+  }
+}
+```
+
+**Production Mode**
+
+```bash
+# Disable hot reload
+NODE_ENV=production pnpm pm-mcp-server
+
+# Or use compiled version
+node dist/bin/mcp-server.js
+```
+
+#### Benefits for AI Development
+
+- **Consistent Development Environment**: AI assistants and human developers experience the same hot reload behavior
+- **Fast Iteration Cycles**: 300ms debounced restarts provide optimal development speed
+- **Clear Visual Feedback**: Color-coded logging makes development progress visible
+- **Reliable Process Management**: Graceful shutdown prevents resource leaks
+- **Zero Configuration**: Works out-of-the-box with sensible defaults
+
+#### Advantages of Native fs.watch Implementation
+
+**Reduced Dependencies**
+
+- **No External Libraries**: Uses only Node.js built-in APIs (fs.watch, AbortController)
+- **Smaller Bundle Size**: Eliminates chokidar and its dependencies
+- **Fewer Security Vulnerabilities**: Reduced attack surface from external packages
+- **Better Long-term Maintenance**: No need to update external file watching libraries
+
+**Modern Node.js Patterns**
+
+- **Async/Await Integration**: Native promises and async iterators for clean code
+- **AbortController Support**: Standard cancellation patterns for proper cleanup
+- **Recursive Directory Watching**: Built-in recursive option on all major platforms
+- **Event Type Detection**: Intelligent handling of rename vs change events
+
+**Performance Benefits**
+
+- **Direct OS Integration**: Native OS file system events without wrapper overhead
+- **Memory Efficiency**: Reduced memory footprint compared to feature-rich libraries
+- **Startup Speed**: Faster initialization without additional dependency loading
+
+**Platform Compatibility**
+
+- **Cross-Platform Consistency**: Works reliably on Windows, macOS, and Linux
+- **Node.js Version Alignment**: Uses APIs available in modern Node.js LTS versions
+- **Future-Proof**: Benefits from Node.js core improvements and optimizations
 
 ## Advanced pnpm Configuration
 
@@ -299,7 +460,11 @@ This project uses these patterns extensively:
 
 #### MCP Server Package (`packages/mcp-server/`)
 
-- **Development**: `pm-mcp-server` executes `src/bin/mcp-server-dev.ts` with hot-reload
+- **Development**: `pm-mcp-server` executes `src/bin/mcp-server-dev.ts` with integrated hot-reload
+  - Automatic file watching with 300ms debounced restarts
+  - Colorful logging for enhanced development experience
+  - Graceful shutdown with 2-second timeout
+  - Environment-based automatic switching (NODE_ENV=development)
 - **Production**: `pm-mcp-server` executes `dist/bin/mcp-server.js` for deployment
 
 #### Core Package (`packages/core/`)
@@ -426,7 +591,7 @@ This ensures development activities don't interfere with production data.
 source pm-dev-alias.sh           # Load convenience aliases (optional)
 
 # 2. Start development with hot-reload
-pm-mcp-server                     # MCP server development
+pnpm pm-mcp-server               # MCP server with integrated hot reload
 pnpm pm                          # CLI development
 
 # 3. Run tests and checks
@@ -539,6 +704,27 @@ pnpm list --depth=0
 pnpm install
 ```
 
+**8. MCP Hot Reload Issues**
+
+```bash
+# Check hot reload status
+echo $NODE_ENV  # Should show 'development' for hot reload
+
+# Test MCP server startup
+timeout 5s pnpm pm-mcp-server
+
+# Look for hot reload indicators in output:
+# [Hot Reload] Starting MCP server...
+# [Hot Reload] Watching for changes in src/
+
+# Verify file watching works
+touch packages/mcp-server/src/test.ts
+# Should see: [Hot Reload] File added: src/test.ts
+
+# Force production mode
+NODE_ENV=production pnpm pm-mcp-server  # Should skip hot reload
+```
+
 ### Getting Help
 
 When encountering development issues:
@@ -599,6 +785,14 @@ timeout 5s pnpm dev 2>&1 | head -10
 # - "Server started successfully"
 # - "Watching for file changes"
 # - No compilation errors
+
+# For MCP Server hot reload specifically
+timeout 5s pnpm pm-mcp-server 2>&1 | head -10
+
+# Look for MCP hot reload indicators:
+# - "[Hot Reload] Starting MCP server..."
+# - "[Hot Reload] Watching for changes in src/"
+# - No TypeScript compilation errors
 ```
 
 #### Verification Checklist for AI
@@ -610,6 +804,14 @@ When testing hot-reload development:
 - ✅ Development wrapper sets NODE_ENV correctly
 - ✅ Watch mode starts without errors (`timeout 5s pnpm dev`)
 - ✅ File changes trigger recompilation (manual verification needed)
+
+**Additional MCP Server Hot Reload Verification:**
+
+- ✅ MCP server hot reload activates (`timeout 5s pnpm pm-mcp-server`)
+- ✅ Color-coded logging appears (`[Hot Reload]` prefix in cyan)
+- ✅ File watching works (create/modify files in `src/`)
+- ✅ Debounced restarts prevent excessive reloading
+- ✅ Production mode skips hot reload (`NODE_ENV=production pnpm pm-mcp-server`)
 
 #### Watch Mode Performance Tips
 
@@ -629,8 +831,11 @@ timeout 3s pnpm dev
 **Common Watch Mode Commands:**
 
 ```bash
-# MCP Server hot-reload
-pnpm dev  # Uses tsx watch
+# MCP Server with integrated hot-reload
+pnpm pm-mcp-server  # Intelligent file watching with debounced restarts
+
+# Alternative: Package-specific development
+cd packages/mcp-server && pnpm dev  # Legacy tsx watch mode
 
 # CLI development (no watch needed - direct tsx execution)
 pnpm pm <command>  # Direct execution via tsx

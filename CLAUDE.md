@@ -415,14 +415,24 @@ pnpm pm done <ticket-id>              # Complete ticket
 **Hot Reload Development (recommended for MCP server development)**
 
 ```bash
-# Start MCP server with hot reload (automatic restart on file changes)
-pm-mcp-server                         # Direct hot-reload execution (tsx)
-NODE_ENV=development pm --mcp         # Start in development mode via CLI
-pnpm dev                              # Or run directly from mcp-server package
+# Development mode with intelligent hot reload (default)
+pnpm pm-mcp-server                    # Auto-detects NODE_ENV, enables hot reload
 
-# Alternative development methods
-pnpm dev:build                        # TypeScript watch mode compilation
+# Explicit development mode (same as above)
+NODE_ENV=development pnpm pm-mcp-server
+
+# Production mode (no hot reload)
+NODE_ENV=production pnpm pm-mcp-server
 ```
+
+**Features:**
+
+- ✅ **Intelligent Environment Detection**: Automatically enables hot reload in development
+- ✅ **Debounced Restarts**: 300ms delay prevents excessive restarts from multiple file changes
+- ✅ **Colorful Logs**: Easy-to-read output with color-coded messages
+- ✅ **Graceful Shutdown**: 2-second timeout before force-killing processes
+- ✅ **Error Recovery**: Automatic restart on crashes with detailed error messages
+- ✅ **File Change Tracking**: Shows exactly which files triggered restarts
 
 **Production Testing (build required)**
 
