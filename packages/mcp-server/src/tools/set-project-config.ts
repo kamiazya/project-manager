@@ -122,6 +122,12 @@ export const setProjectConfigTool: McpTool = {
       // Update the config
       const updatedConfig = { ...existingConfig, [key]: parsedValue }
 
+      // Validate the updated configuration
+      const validationErrors = validateConfig(updatedConfig)
+      if (validationErrors.length > 0) {
+        throw new Error(`Configuration validation errors: ${validationErrors.join(', ')}`)
+      }
+
       // Create directory if it doesn't exist
       const configDir = dirname(configPath)
       if (!existsSync(configDir)) {
