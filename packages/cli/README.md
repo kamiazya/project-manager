@@ -39,8 +39,8 @@ pm create
 # Command line mode - fast creation
 pm create "Fix login bug" -d "Users cannot login with email" -p high -t bug
 
-# Quick creation with minimal input
-pm quick "Add dark mode toggle"
+# Quick creation with new command (alias)
+pm new "Add dark mode toggle"
 ```
 
 ### Manage Your Workflow
@@ -72,8 +72,8 @@ pm create "Implement user authentication"
 pm create "Fix mobile responsiveness" -p high -t bug
 
 # Quick ticket creation
-pm quick "Research GraphQL libraries"
-pm quick "Update documentation" -p low
+pm new "Research GraphQL libraries"
+pm new "Update documentation" -p low
 
 # Update ticket status and details
 pm update ticket-456 --status in_progress
