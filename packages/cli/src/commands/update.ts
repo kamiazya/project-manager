@@ -1,19 +1,6 @@
 import { Args, Flags } from '@oclif/core'
-import type {
-  GetTicketByIdUseCase,
-  UpdateTicketDescriptionUseCase,
-  UpdateTicketPriorityUseCase,
-  UpdateTicketStatusUseCase,
-  UpdateTicketTitleUseCase,
-} from '@project-manager/core'
-import {
-  GetTicketByIdRequest,
-  TYPES,
-  UpdateTicketDescriptionRequest,
-  UpdateTicketPriorityRequest,
-  UpdateTicketStatusRequest,
-  UpdateTicketTitleRequest,
-} from '@project-manager/core'
+import type { UpdateTicketUseCase } from '@project-manager/core'
+import { TYPES, UpdateTicketRequest } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 
 /**
@@ -56,79 +43,29 @@ export class UpdateCommand extends BaseCommand {
   }
 
   async execute(args: { ticketId: string }, flags: any): Promise<any> {
-    // Get the use cases from the service container
-    const getTicketByIdUseCase = this.getService<GetTicketByIdUseCase>(TYPES.GetTicketByIdUseCase)
+    // Get the use case from the service container
+    const updateTicketUseCase = this.getService<UpdateTicketUseCase>(TYPES.UpdateTicketUseCase)
 
-    // First, verify the ticket exists
-    const getRequest = new GetTicketByIdRequest(args.ticketId)
-    const ticket = await getTicketByIdUseCase.execute(getRequest)
-
-    // Handle ticket not found
-    if (!ticket) {
-      this.error(`Ticket not found: ${args.ticketId}`)
-    }
+    // Create update request with all provided fields
+    const updateRequest = new UpdateTicketRequest(
+      args.ticketId,
+      flags.title,
+      flags.description,
+      flags.status,
+      flags.priority
+    )
 
     // Check if at least one field was provided for update
-    const hasUpdates =
-      flags.title !== undefined ||
-      flags.description !== undefined ||
-      flags.status !== undefined ||
-      flags.priority !== undefined ||
-      flags.type !== undefined
-
-    if (!hasUpdates) {
+    if (!updateRequest.hasUpdates()) {
       this.error('At least one field must be specified for update')
     }
 
-    let updatedTicket = ticket
-
-    // Update title if provided
-    if (flags.title !== undefined) {
-      const updateTitleUseCase = this.getService<UpdateTicketTitleUseCase>(
-        TYPES.UpdateTicketTitleUseCase
-      )
-      const titleRequest = new UpdateTicketTitleRequest(args.ticketId, flags.title)
-      const titleResponse = await updateTitleUseCase.execute(titleRequest)
-      updatedTicket = titleResponse
-    }
-
-    // Update description if provided
-    if (flags.description !== undefined) {
-      const updateDescriptionUseCase = this.getService<UpdateTicketDescriptionUseCase>(
-        TYPES.UpdateTicketDescriptionUseCase
-      )
-      const descriptionRequest = new UpdateTicketDescriptionRequest(
-        args.ticketId,
-        flags.description
-      )
-      const descriptionResponse = await updateDescriptionUseCase.execute(descriptionRequest)
-      updatedTicket = descriptionResponse
-    }
-
-    // Update status if provided
-    if (flags.status !== undefined) {
-      const updateStatusUseCase = this.getService<UpdateTicketStatusUseCase>(
-        TYPES.UpdateTicketStatusUseCase
-      )
-      const statusRequest = new UpdateTicketStatusRequest(args.ticketId, flags.status)
-      const statusResponse = await updateStatusUseCase.execute(statusRequest)
-      updatedTicket = statusResponse
-    }
-
-    // Update priority if provided
-    if (flags.priority !== undefined) {
-      const updatePriorityUseCase = this.getService<UpdateTicketPriorityUseCase>(
-        TYPES.UpdateTicketPriorityUseCase
-      )
-      const priorityRequest = new UpdateTicketPriorityRequest(args.ticketId, flags.priority)
-      const priorityResponse = await updatePriorityUseCase.execute(priorityRequest)
-      updatedTicket = priorityResponse
-    }
+    // Execute the update operation (single I/O operation)
+    const updatedTicket = await updateTicketUseCase.execute(updateRequest)
 
     // Note: type updates would need a separate use case if implemented
     if (flags.type !== undefined) {
-      // For now, we'll warn that type updates aren't implemented
-      this.warn('Type updates are not yet implemented')
+      this.warn('Type updates are not yet implemented and will be ignored')
     }
 
     // Handle JSON output
