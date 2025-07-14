@@ -6,7 +6,7 @@ import type { Hook } from '@oclif/core'
 const hook: Hook<'postrun'> = async function (opts) {
   // Log command execution for debugging in development
   if (process.env.NODE_ENV === 'development') {
-    this.debug(`Command ${opts.Command.id} completed successfully`)
+    this.debug(`Command ${opts.Command?.id || 'unknown'} completed successfully`)
   }
 
   // Cleanup any temporary resources if needed

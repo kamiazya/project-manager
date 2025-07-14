@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { Hook } from '@oclif/core'
+import type { Hook } from '@oclif/core'
 import { getStoragePath } from '../../utils/config.ts'
 
 /**
@@ -54,7 +54,7 @@ const configValidationHook: Hook<'init'> = async function (opts) {
     }
 
     // Validate that required dependencies are available
-    if (opts.Command?.id === 'mcp' && !process.env.CI) {
+    if (opts.id === 'mcp' && !process.env.CI) {
       // For MCP command, ensure tsx is available in development
       if (nodeEnv === 'development') {
         try {
