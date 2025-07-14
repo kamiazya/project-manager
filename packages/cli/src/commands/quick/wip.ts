@@ -25,10 +25,6 @@ export class QuickWipCommand extends BaseCommand {
     const searchTicketsUseCase = this.getService<SearchTicketsUseCase>(TYPES.SearchTicketsUseCase)
     const request = new SearchTicketsRequest({
       status: 'in_progress',
-      priority: undefined,
-      type: undefined,
-      privacy: undefined,
-      search: undefined,
     })
 
     const response = await searchTicketsUseCase.execute(request)
@@ -55,7 +51,7 @@ export class QuickWipCommand extends BaseCommand {
       const headers = ['ID', 'Title', 'Priority', 'Type', 'Created']
       const rows = tickets.map(ticket => [
         ticket.id,
-        ticket.title.length > 50 ? ticket.title.substring(0, 47) + '...' : ticket.title,
+        ticket.title.length > 50 ? `${ticket.title.substring(0, 47)}...` : ticket.title,
         ticket.priority,
         ticket.type,
         new Date(ticket.createdAt).toLocaleDateString(),
@@ -69,14 +65,16 @@ export class QuickWipCommand extends BaseCommand {
 
   private formatTable(headers: string[], rows: string[][]): string {
     const colWidths = headers.map((header, i) =>
-      Math.max(header.length, ...rows.map(row => row[i].length))
+      Math.max(header.length, ...rows.map(row => row[i]?.length || 0))
     )
 
-    const headerRow = headers.map((header, i) => header.padEnd(colWidths[i])).join(' | ')
+    const headerRow = headers.map((header, i) => header.padEnd(colWidths[i] || 0)).join(' | ')
 
-    const separator = colWidths.map(width => '-'.repeat(width)).join('-|-')
+    const separator = colWidths.map(width => '-'.repeat(width || 0)).join('-|-')
 
-    const dataRows = rows.map(row => row.map((cell, i) => cell.padEnd(colWidths[i])).join(' | '))
+    const dataRows = rows.map(row =>
+      row.map((cell, i) => cell.padEnd(colWidths[i] || 0)).join(' | ')
+    )
 
     return [headerRow, separator, ...dataRows].join('\n')
   }

@@ -23,13 +23,7 @@ export class QuickAllCommand extends BaseCommand {
 
   async execute(_args: any, flags: any): Promise<any> {
     const searchTicketsUseCase = this.getService<SearchTicketsUseCase>(TYPES.SearchTicketsUseCase)
-    const request = new SearchTicketsRequest({
-      status: undefined,
-      priority: undefined,
-      type: undefined,
-      privacy: undefined,
-      search: undefined,
-    })
+    const request = new SearchTicketsRequest({})
 
     const response = await searchTicketsUseCase.execute(request)
     const tickets = response.tickets
@@ -57,7 +51,7 @@ export class QuickAllCommand extends BaseCommand {
       const headers = ['ID', 'Title', 'Status', 'Priority', 'Type', 'Created']
       const rows = tickets.map(ticket => [
         ticket.id,
-        ticket.title.length > 40 ? ticket.title.substring(0, 37) + '...' : ticket.title,
+        ticket.title.length > 40 ? `${ticket.title.substring(0, 37)}...` : ticket.title,
         ticket.status,
         ticket.priority,
         ticket.type,
@@ -72,14 +66,16 @@ export class QuickAllCommand extends BaseCommand {
 
   private formatTable(headers: string[], rows: string[][]): string {
     const colWidths = headers.map((header, i) =>
-      Math.max(header.length, ...rows.map(row => row[i].length))
+      Math.max(header.length, ...rows.map(row => row[i]?.length || 0))
     )
 
-    const headerRow = headers.map((header, i) => header.padEnd(colWidths[i])).join(' | ')
+    const headerRow = headers.map((header, i) => header.padEnd(colWidths[i] || 0)).join(' | ')
 
-    const separator = colWidths.map(width => '-'.repeat(width)).join('-|-')
+    const separator = colWidths.map(width => '-'.repeat(width || 0)).join('-|-')
 
-    const dataRows = rows.map(row => row.map((cell, i) => cell.padEnd(colWidths[i])).join(' | '))
+    const dataRows = rows.map(row =>
+      row.map((cell, i) => cell.padEnd(colWidths[i] || 0)).join(' | ')
+    )
 
     return [headerRow, separator, ...dataRows].join('\n')
   }
