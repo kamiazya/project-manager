@@ -27,23 +27,23 @@ export class CreateCommand extends BaseCommand {
     description: Flags.string({
       char: 'd',
       description: 'Ticket description',
-      default: '',
     }),
     priority: Flags.string({
       char: 'p',
       description: 'Priority: h(igh), m(edium), l(ow)',
       options: ['h', 'm', 'l', 'high', 'medium', 'low'],
-      default: 'm',
     }),
     type: Flags.string({
       char: 't',
       description: 'Type: f(eature), b(ug), t(ask)',
       options: ['f', 'b', 't', 'feature', 'bug', 'task'],
-      default: 't',
     }),
   }
 
   async execute(args: { title?: string }, flags: any): Promise<any> {
+    // Determine if we should use interactive mode
+    const isInteractive = !args.title
+
     // Get title - from args or interactive input
     let title = args.title
     if (!title) {
@@ -58,16 +58,17 @@ export class CreateCommand extends BaseCommand {
     }
 
     // Get description - from flags or interactive input
-    let description = flags.description
-    if (!args.title && !flags.description) {
+    let description = flags.description || ''
+    if (isInteractive && !flags.description) {
       description = await input({
         message: 'Description:',
+        default: '',
       })
     }
 
     // Get priority - from flags or interactive input
-    let priority = this.expandPriorityShortcut(flags.priority)
-    if (!args.title && flags.priority === 'm') {
+    let priority = flags.priority ? this.expandPriorityShortcut(flags.priority) : 'medium'
+    if (isInteractive && !flags.priority) {
       priority = await select({
         message: 'Priority:',
         choices: [
@@ -80,8 +81,8 @@ export class CreateCommand extends BaseCommand {
     }
 
     // Get type - from flags or interactive input
-    let type = this.expandTypeShortcut(flags.type)
-    if (!args.title && flags.type === 't') {
+    let type = flags.type ? this.expandTypeShortcut(flags.type) : 'task'
+    if (isInteractive && !flags.type) {
       type = await select({
         message: 'Type:',
         choices: [
