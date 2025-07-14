@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev": "tsx --tsconfig tsconfig.json scripts/dev-wrapper.ts"
+    "dev": "tsx --tsconfig tsconfig.json src/bin/mcp-server-dev.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
