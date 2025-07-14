@@ -11,6 +11,10 @@
     "typescript": {
       "command": "pnpm",
       "args": ["typescript-mcp"]
+    },
+    "project-manager": {
+      "command": "pnpm",
+      "args": ["pm-mcp-server"]
     }
   }
 }

@@ -6,6 +6,6 @@
     "allowImportingTsExtensions": true,
     "customConditions": ["@project-manager/source"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "test/commands/base.test.ts"],
   "exclude": ["dist", "**/*.test.ts", "**/*.spec.ts"]
 }

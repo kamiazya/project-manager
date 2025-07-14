@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * oclif-based CLI runner for project-manager.
  * This replaces the old Commander.js-based implementation.

@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { type Config, DEFAULT_CONFIG, validateConfig } from '@project-manager/shared'
+import { type Config, DEFAULT_CONFIG, resetConfig, validateConfig } from '@project-manager/shared'
 import { z } from 'zod'
 import type { McpTool } from '../types/mcp-tool.ts'
 import { handleError } from '../utils/error-handler.ts'
@@ -130,6 +130,9 @@ export const setProjectConfigTool: McpTool = {
 
       // Write the updated config
       writeFileSync(configPath, JSON.stringify(updatedConfig, null, 2))
+
+      // Reset config cache to ensure changes are reflected
+      resetConfig()
 
       return {
         content: [
