@@ -25,7 +25,6 @@
       "commands": "./dist/commands",
       "hooks": {
         "init": [
-          "./dist/hooks/init/dependency-injection.js",
           "./dist/hooks/init/config-validation.js",
           "./dist/hooks/init/plugin-support.js"
         ],
@@ -54,7 +53,6 @@
     "topicSeparator": " ",
     "hooks": {
       "init": [
-        "./src/hooks/init/dependency-injection.ts",
         "./src/hooks/init/config-validation.ts",
         "./src/hooks/init/plugin-support.ts"
       ],
@@ -73,7 +71,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^7.6.0",
-    "@modelcontextprotocol/sdk": "^1.15.1",
+    "@modelcontextprotocol/sdk": "catalog:",
     "@oclif/core": "^4.5.0",
     "@oclif/plugin-autocomplete": "^3.2.33",
     "@oclif/plugin-help": "^6.2.31",

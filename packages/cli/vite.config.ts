@@ -24,7 +24,6 @@ export default defineConfig({
         'commands/update': 'src/commands/update.ts',
         'commands/mcp': 'src/commands/mcp.ts',
         'lib/base-command': 'src/lib/base-command.ts',
-        'hooks/init/dependency-injection': 'src/hooks/init/dependency-injection.ts',
         'hooks/init/config-validation': 'src/hooks/init/config-validation.ts',
         'hooks/init/plugin-support': 'src/hooks/init/plugin-support.ts',
         'hooks/postrun/cleanup': 'src/hooks/postrun/cleanup.ts',

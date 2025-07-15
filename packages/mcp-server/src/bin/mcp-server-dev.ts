@@ -91,15 +91,23 @@ async function runWithHotReload() {
         env: { ...process.env, NODE_ENV: 'development' },
       })
 
-      child.on('close', code => {
-        log(`Server process exited with code ${code}`)
+      child.on('close', (code: number | null) => {
+        // Handle the case where code can be null (when terminated by signal)
+        const exitMessage =
+          code !== null
+            ? `Server process exited with code ${code}`
+            : 'Server process was terminated by signal'
+        log(exitMessage)
+
         child = null
         if (!isRestarting) {
           if (code === 0) {
             log('Server exited gracefully. Shutting down wrapper.')
             process.exit(0)
           } else {
-            log(`${colors.red}Server crashed. Restarting in 1 second...${colors.reset}`)
+            // code is either non-zero or null (signal termination)
+            const reason = code !== null ? `crashed (code ${code})` : 'was terminated by signal'
+            log(`${colors.red}Server ${reason}. Restarting in 1 second...${colors.reset}`)
             setTimeout(startServer, 1000)
           }
         }
