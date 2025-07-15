@@ -11,6 +11,7 @@ export const TYPES = {
   CreateTicketUseCase: Symbol.for('CreateTicketUseCase'),
   GetTicketByIdUseCase: Symbol.for('GetTicketByIdUseCase'),
   GetAllTicketsUseCase: Symbol.for('GetAllTicketsUseCase'),
+  UpdateTicketUseCase: Symbol.for('UpdateTicketUseCase'),
   UpdateTicketTitleUseCase: Symbol.for('UpdateTicketTitleUseCase'),
   UpdateTicketDescriptionUseCase: Symbol.for('UpdateTicketDescriptionUseCase'),
   UpdateTicketStatusUseCase: Symbol.for('UpdateTicketStatusUseCase'),

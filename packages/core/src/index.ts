@@ -15,6 +15,7 @@ export { GetTicketByIdRequest } from './application/dtos/requests/get-ticket-by-
 export { GetTicketStatsRequest } from './application/dtos/requests/get-ticket-stats.ts'
 export { SearchTicketsRequest } from './application/dtos/requests/search-tickets.ts'
 export { StartTicketProgressRequest } from './application/dtos/requests/start-ticket-progress.ts'
+export { UpdateTicketRequest } from './application/dtos/requests/update-ticket.ts'
 export { UpdateTicketDescriptionRequest } from './application/dtos/requests/update-ticket-description.ts'
 export { UpdateTicketPriorityRequest } from './application/dtos/requests/update-ticket-priority.ts'
 export { UpdateTicketStatusRequest } from './application/dtos/requests/update-ticket-status.ts'
@@ -33,6 +34,7 @@ export { SearchTicketsResponse } from './application/dtos/responses/search-ticke
 export { StartTicketProgressResponse } from './application/dtos/responses/start-ticket-progress.ts'
 // DTOs - Responses
 export { TicketResponse } from './application/dtos/responses/ticket.ts'
+export { UpdateTicketResponse } from './application/dtos/responses/update-ticket.ts'
 export { UpdateTicketDescriptionResponse } from './application/dtos/responses/update-ticket-description.ts'
 export { UpdateTicketPriorityResponse } from './application/dtos/responses/update-ticket-priority.ts'
 export { UpdateTicketStatusResponse } from './application/dtos/responses/update-ticket-status.ts'
@@ -48,6 +50,7 @@ export { GetTicketByIdUseCase } from './application/usecases/get-ticket-by-id.ts
 export { GetTicketStatsUseCase } from './application/usecases/get-ticket-stats.ts'
 export { SearchTicketsUseCase } from './application/usecases/search-tickets.ts'
 export { StartTicketProgressUseCase } from './application/usecases/start-ticket-progress.ts'
+export { UpdateTicketUseCase } from './application/usecases/update-ticket.ts'
 export { UpdateTicketDescriptionUseCase } from './application/usecases/update-ticket-description.ts'
 export { UpdateTicketPriorityUseCase } from './application/usecases/update-ticket-priority.ts'
 export { UpdateTicketStatusUseCase } from './application/usecases/update-ticket-status.ts'
