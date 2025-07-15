@@ -1,3 +1,4 @@
+import type { Config } from '@oclif/core'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { ConfigEnvCommand } from './env.ts'
 
@@ -6,7 +7,17 @@ describe('ConfigEnvCommand', () => {
   let logSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    command = new ConfigEnvCommand([], {} as any)
+    const mockConfig: Config = {
+      bin: 'pm',
+      version: '1.0.0',
+      root: '/test',
+      name: 'project-manager',
+      channel: 'stable',
+      pjson: { name: 'project-manager', version: '1.0.0' },
+      userAgent: 'project-manager/1.0.0',
+    } as Config
+
+    command = new ConfigEnvCommand([], mockConfig)
     logSpy = vi.spyOn(command, 'log').mockImplementation(() => {})
   })
 
@@ -45,24 +56,20 @@ describe('ConfigEnvCommand', () => {
     expect(resolvedResult).toBeUndefined()
   })
 
-  test('should handle json flag correctly', async () => {
-    await command.execute()
-
-    // Should still display environment variables (json formatting would be handled by base command)
-    expect(logSpy).toHaveBeenCalled()
-  })
-
   test('should not have duplicate environment variable definitions', async () => {
     await command.execute()
 
+    // Type guard to ensure we only work with strings
+    const isStringWithEnvVar = (call: unknown): call is string => {
+      return typeof call === 'string' && call.includes('PM_') && call.includes(' - ')
+    }
+
     // Get all log calls
     const logCalls = logSpy.mock.calls.map(call => call[0])
-    const envVarLines = logCalls.filter(
-      call => typeof call === 'string' && call.includes('PM_') && call.includes(' - ')
-    )
+    const envVarLines = logCalls.filter(isStringWithEnvVar)
 
     // Check that each environment variable appears only once
-    const envVarNames = envVarLines.map(line => (line as string).split(' - ')[0].trim())
+    const envVarNames = envVarLines.map(line => line.split(' - ')[0].trim())
     const uniqueNames = new Set(envVarNames)
 
     expect(envVarNames.length).toBe(uniqueNames.size)

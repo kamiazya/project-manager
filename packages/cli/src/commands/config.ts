@@ -3,10 +3,10 @@ import { BaseCommand } from '../lib/base-command.ts'
 /**
  * Manage configuration settings
  */
-export class ConfigCommand extends BaseCommand<Record<string, never>, Record<string, never>, void> {
-  static override description = 'Manage configuration settings'
+export class ConfigCommand extends BaseCommand {
+  static description = 'Manage configuration settings'
 
-  static override examples = [
+  static examples = [
     '<%= config.bin %> <%= command.id %> # Show current configuration',
     '<%= config.bin %> <%= command.id %>:show # Show current configuration',
     '<%= config.bin %> <%= command.id %>:get <key> # Get a configuration value',

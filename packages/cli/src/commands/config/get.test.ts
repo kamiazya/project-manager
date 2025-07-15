@@ -3,7 +3,7 @@ import { ConfigGetCommand } from './get.ts'
 
 // Mock the config module
 vi.mock('@project-manager/shared', async importOriginal => {
-  const actual = await importOriginal()
+  const actual = (await importOriginal()) as Record<string, unknown>
   return {
     ...actual,
     getConfig: vi.fn(),
@@ -12,7 +12,6 @@ vi.mock('@project-manager/shared', async importOriginal => {
 
 describe('ConfigGetCommand', () => {
   let command: ConfigGetCommand
-  let logSpy: ReturnType<typeof vi.spyOn> // eslint-disable-line @typescript-eslint/no-unused-vars
   let mockGetConfig: ReturnType<typeof vi.fn>
 
   beforeEach(async () => {
@@ -20,7 +19,7 @@ describe('ConfigGetCommand', () => {
     mockGetConfig = vi.mocked(getConfig)
 
     command = new ConfigGetCommand([], {} as any)
-    logSpy = vi.spyOn(command, 'log').mockImplementation(() => {})
+    vi.spyOn(command, 'log').mockImplementation(() => {})
   })
 
   test('should have correct command metadata', () => {
@@ -122,6 +121,8 @@ describe('ConfigGetCommand', () => {
 
     try {
       await command.execute(args)
+      // If we reach this point, no error was thrown - fail the test
+      expect.fail('Expected command.execute to throw an error for invalid key')
     } catch (error) {
       // Should throw for invalid keys through the type guard
       expect(error).toBeInstanceOf(Error)

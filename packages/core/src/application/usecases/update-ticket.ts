@@ -25,7 +25,7 @@ export class UpdateTicketUseCase implements UseCase<UpdateTicketRequest, UpdateT
     const ticket = await this.ticketRepository.findById(ticketId)
 
     if (!ticket) {
-      throw new TicketNotFoundError(ERROR_MESSAGES.TICKET_NOT_FOUND(request.id))
+      throw new TicketNotFoundError(request.id)
     }
 
     // Apply all updates using domain methods (includes validation)

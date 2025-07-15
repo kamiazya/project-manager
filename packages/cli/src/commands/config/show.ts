@@ -8,10 +8,10 @@ interface ShowFlags extends Record<string, unknown> {
 /**
  * Show current configuration
  */
-export class ConfigShowCommand extends BaseCommand<Record<string, never>, ShowFlags, Config> {
-  static override description = 'Show current configuration'
+export class ConfigShowCommand extends BaseCommand {
+  static description = 'Show current configuration'
 
-  static override examples = [
+  static examples = [
     '<%= config.bin %> <%= command.id %> # Show current configuration',
     '<%= config.bin %> <%= command.id %> --json # Show configuration in JSON format',
   ]
