@@ -25,9 +25,9 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.1.1",
-    "@types/node": "catalog:",
     "@project-manager/cli": "workspace:*",
     "@project-manager/mcp-server": "workspace:*",
+    "@types/node": "catalog:",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "markdownlint-cli2": "catalog:",
@@ -38,7 +38,7 @@
     "vite-plugin-dts": "catalog:",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.13.1",
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc}": [
       "biome check --write"

@@ -15,6 +15,10 @@
     "project-manager": {
       "command": "pnpm",
       "args": ["pm-mcp-server"]
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
     }
   }
 }

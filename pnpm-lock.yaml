@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@modelcontextprotocol/sdk':
+      specifier: ^1.15.1
+      version: 1.15.1
     '@types/node':
       specifier: ^24.0.12
       version: 24.0.12
@@ -84,7 +87,7 @@ importers:
         specifier: ^7.6.0
         version: 7.6.0(@types/node@24.0.12)
       '@modelcontextprotocol/sdk':
-        specifier: ^1.15.1
+        specifier: 'catalog:'
         version: 1.15.1
       '@oclif/core':
         specifier: ^4.5.0
@@ -167,7 +170,7 @@ importers:
   packages/mcp-server:
     dependencies:
       '@modelcontextprotocol/sdk':
-        specifier: ^1.12.1
+        specifier: 'catalog:'
         version: 1.15.1
       '@project-manager/core':
         specifier: workspace:*

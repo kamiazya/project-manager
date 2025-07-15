@@ -33,6 +33,6 @@
       "@project-manager/cli": ["packages/cli/src"]
     }
   },
-  "include": ["packages/*/src/**/*", "packages/cli/test/commands/base.test.ts"],
+  "include": ["packages/*/src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
