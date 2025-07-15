@@ -163,10 +163,10 @@ describe('JsonTicketRepository', () => {
       const allTickets = await repository.findAll()
       const foundTicket = allTickets[0]
 
-      expect(foundTicket?.id).toBeInstanceOf(TicketId)
-      expect(foundTicket?.title.value).toBe('Domain test')
-      expect(foundTicket?.status.value).toBe('pending')
-      expect(foundTicket?.priority.value).toBe('high')
+      expect(foundTicket.id).toBeInstanceOf(TicketId)
+      expect(foundTicket.title.value).toBe('Domain test')
+      expect(foundTicket.status.value).toBe('pending')
+      expect(foundTicket.priority.value).toBe('high')
     })
   })
 

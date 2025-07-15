@@ -19,6 +19,10 @@
     "github": {
       "type": "http",
       "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "sequential-thinking": {
+      "command": "pnpm",
+      "args": ["dlx", "@modelcontextprotocol/server-sequential-thinking"]
     }
   }
 }

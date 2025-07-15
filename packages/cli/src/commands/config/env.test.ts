@@ -69,7 +69,7 @@ describe('ConfigEnvCommand', () => {
     const envVarLines = logCalls.filter(isStringWithEnvVar)
 
     // Check that each environment variable appears only once
-    const envVarNames = envVarLines.map(line => line.split(' - ')[0]?.trim() || '')
+    const envVarNames = envVarLines.filter(Boolean).map(line => line.split(' - ')[0]?.trim() || '')
     const uniqueNames = new Set(envVarNames)
 
     expect(envVarNames.length).toBe(uniqueNames.size)

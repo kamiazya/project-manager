@@ -33,6 +33,10 @@ export class ShowCommand extends BaseCommand<
     args: ExecuteArgs,
     flags: ExecuteFlags
   ): Promise<GetTicketByIdResponse | undefined> {
+    if (!args.ticketId) {
+      this.error('Ticket ID is required')
+    }
+
     // Get the use case from the service container
     const getTicketByIdUseCase = this.getService<GetTicketByIdUseCase>(TYPES.GetTicketByIdUseCase)
 

@@ -29,9 +29,7 @@ describe('configValidationHook', () => {
       warn: vi.fn(),
     }
 
-    mockOptions = {
-      id: 'test-command',
-    }
+    mockOptions = {}
 
     // Reset mocks
     vi.clearAllMocks()
@@ -43,6 +41,7 @@ describe('configValidationHook', () => {
 
   it('should pass validation when storage directory exists and file is valid', async () => {
     // Arrange
+    mockOptions.id = 'test-command'
     vi.mocked(existsSync)
       .mockReturnValueOnce(true) // storageDir exists
       .mockReturnValueOnce(true) // storageFile exists
@@ -59,6 +58,7 @@ describe('configValidationHook', () => {
 
   it('should warn when storage directory does not exist', async () => {
     // Arrange
+    mockOptions.id = 'test-command'
     vi.mocked(existsSync).mockReturnValue(false) // storageDir does not exist
 
     // Act
@@ -72,6 +72,7 @@ describe('configValidationHook', () => {
 
   it('should handle corrupted storage file', async () => {
     // Arrange
+    mockOptions.id = 'test-command'
     vi.mocked(existsSync)
       .mockReturnValueOnce(true) // storageDir exists
       .mockReturnValueOnce(true) // storageFile exists
@@ -102,6 +103,7 @@ describe('configValidationHook', () => {
 
   it('should handle backup creation failure with error details', async () => {
     // Arrange
+    mockOptions.id = 'test-command'
     vi.mocked(existsSync)
       .mockReturnValueOnce(true) // storageDir exists
       .mockReturnValueOnce(true) // storageFile exists
@@ -134,6 +136,7 @@ describe('configValidationHook', () => {
 
   it('should handle backup write failure with error details', async () => {
     // Arrange
+    mockOptions.id = 'test-command'
     vi.mocked(existsSync)
       .mockReturnValueOnce(true) // storageDir exists
       .mockReturnValueOnce(true) // storageFile exists
@@ -163,6 +166,7 @@ describe('configValidationHook', () => {
 
   it('should handle empty storage file', async () => {
     // Arrange
+    mockOptions.id = 'test-command'
     vi.mocked(existsSync)
       .mockReturnValueOnce(true) // storageDir exists
       .mockReturnValueOnce(true) // storageFile exists
@@ -180,6 +184,7 @@ describe('configValidationHook', () => {
   it('should warn for unknown NODE_ENV values', async () => {
     // Arrange
     process.env.NODE_ENV = 'unknown'
+    mockOptions.id = 'test-command'
     vi.mocked(existsSync).mockReturnValue(true)
     vi.mocked(readFileSync).mockReturnValue('{"tickets": []}')
 
@@ -223,6 +228,7 @@ describe('configValidationHook', () => {
 
   it('should handle validation errors gracefully', async () => {
     // Arrange
+    mockOptions.id = 'test-command'
     vi.mocked(existsSync).mockImplementation(() => {
       throw new Error('File system error')
     })
@@ -306,7 +312,8 @@ describe('configValidationHook', () => {
     vi.mocked(existsSync).mockReturnValue(true)
     vi.mocked(readFileSync).mockReturnValue('{"tickets": []}')
 
-    let timeoutCallback: (() => void) | undefined
+    // Use Vitest's built-in timer mocking
+    vi.useFakeTimers()
 
     const mockChild = {
       kill: vi.fn(),
@@ -316,21 +323,13 @@ describe('configValidationHook', () => {
     // Configure the existing spawn mock
     vi.mocked(spawn).mockReturnValue(mockChild as any)
 
-    // Mock setTimeout to capture the timeout callback
-    const originalSetTimeout = global.setTimeout
-    global.setTimeout = vi.fn((callback, ms) => {
-      if (ms === 3000) {
-        timeoutCallback = callback
-        return 123 as any // Mock timer id
-      }
-      return originalSetTimeout(callback, ms)
-    }) as any
-
     // Act
-    await configValidationHook.call(mockContext, mockOptions)
+    const promise = configValidationHook.call(mockContext, mockOptions)
 
-    // Manually trigger timeout
-    timeoutCallback?.()
+    // Advance timers to trigger the timeout (3000ms)
+    await vi.advanceTimersByTimeAsync(3000)
+
+    await promise
 
     // Assert
     expect(mockChild.kill).toHaveBeenCalledWith('SIGKILL')
@@ -340,7 +339,7 @@ describe('configValidationHook', () => {
     expect(mockContext.warn).toHaveBeenCalledWith('Install tsx globally: npm install -g tsx')
 
     // Cleanup
-    global.setTimeout = originalSetTimeout
+    vi.useRealTimers()
   })
 
   it('should prevent duplicate warnings when both error and exit events occur', async () => {

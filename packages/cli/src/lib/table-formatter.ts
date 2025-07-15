@@ -54,8 +54,8 @@ export class TableFormatter {
         }
 
         const title = TableFormatter.truncateTitle(ticket.title)
-        const statusDisplay = `${priority}${type}${statusPart}`
-        logFn(`${ticket.id || 'Unknown'} [${statusDisplay}] ${title}`)
+        const statusDisplay = `${priority}${type}`
+        logFn(`${ticket.id || 'Unknown'} [${statusDisplay}]${statusPart} ${title}`)
       }
     })
   }
