@@ -1,7 +1,6 @@
 import { TicketNotFoundError, TicketValidationError } from '@project-manager/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Ticket } from '../../domain/entities/ticket.ts'
-import { TicketId } from '../../domain/value-objects/ticket-id.ts'
 import { UpdateTicketRequest } from '../dtos/requests/update-ticket.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { UpdateTicketUseCase } from './update-ticket.ts'
@@ -16,10 +15,8 @@ describe('UpdateTicketUseCase', () => {
       findById: vi.fn(),
       save: vi.fn(),
       findAll: vi.fn(),
-      remove: vi.fn(),
-      search: vi.fn(),
-      count: vi.fn(),
-      clear: vi.fn(),
+      delete: vi.fn(),
+      getStatistics: vi.fn(),
     }
     useCase = new UpdateTicketUseCase(mockRepository)
 

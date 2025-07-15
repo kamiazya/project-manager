@@ -24,9 +24,11 @@ describe('McpCommand', () => {
   beforeEach(() => {
     originalEnv = { ...process.env }
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit called')
-    })
+    processExitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation((_code?: string | number | null | undefined) => {
+        return undefined as never
+      })
 
     command = new McpCommand([], {} as any)
     logSpy = vi.spyOn(command, 'log').mockImplementation(() => {})
@@ -162,11 +164,6 @@ describe('McpCommand', () => {
     }
     vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
 
-    // Create a non-throwing process.exit mock for this test
-    const testProcessExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
-      return undefined as never
-    })
-
     // Spy on process.on to capture the SIGINT handler
     let sigintHandler: (() => void) | undefined
     const mockProcessOn = vi.spyOn(process, 'on').mockImplementation((event, handler) => {
@@ -193,11 +190,10 @@ describe('McpCommand', () => {
 
     // Assert that server's close method is called and process.exit is called with code 0
     expect(mockServer.close).toHaveBeenCalled()
-    expect(testProcessExitSpy).toHaveBeenCalledWith(0)
+    expect(processExitSpy).toHaveBeenCalledWith(0)
 
-    // Restore the mocked process.on and process.exit
+    // Restore the mocked process.on
     mockProcessOn.mockRestore()
-    testProcessExitSpy.mockRestore()
   })
 
   test('should properly close server on SIGTERM signal', async () => {
@@ -209,11 +205,6 @@ describe('McpCommand', () => {
       close: vi.fn().mockResolvedValue(undefined),
     }
     vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
-
-    // Create a non-throwing process.exit mock for this test
-    const testProcessExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
-      return undefined as never
-    })
 
     // Spy on process.on to capture the SIGTERM handler
     let sigtermHandler: (() => void) | undefined
@@ -241,11 +232,10 @@ describe('McpCommand', () => {
 
     // Assert that server's close method is called and process.exit is called with code 0
     expect(mockServer.close).toHaveBeenCalled()
-    expect(testProcessExitSpy).toHaveBeenCalledWith(0)
+    expect(processExitSpy).toHaveBeenCalledWith(0)
 
-    // Restore the mocked process.on and process.exit
+    // Restore the mocked process.on
     mockProcessOn.mockRestore()
-    testProcessExitSpy.mockRestore()
   })
 
   test('should handle server close errors during graceful shutdown', async () => {
@@ -258,13 +248,8 @@ describe('McpCommand', () => {
     }
     vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
 
-    // Create a non-throwing process.exit mock for this test
-    const testProcessExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
-      return undefined as never
-    })
-
     // Spy on console.error to capture error messages
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const testConsoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     // Spy on process.on to capture the SIGINT handler
     let sigintHandler: (() => void) | undefined
@@ -288,13 +273,15 @@ describe('McpCommand', () => {
 
     // Assert that server's close method was called and error was logged
     expect(mockServer.close).toHaveBeenCalled()
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Error during server shutdown:', expect.any(Error))
-    expect(testProcessExitSpy).toHaveBeenCalledWith(0)
+    expect(testConsoleErrorSpy).toHaveBeenCalledWith(
+      'Error during server shutdown:',
+      expect.any(Error)
+    )
+    expect(processExitSpy).toHaveBeenCalledWith(0)
 
     // Restore all mocks
     mockProcessOn.mockRestore()
-    testProcessExitSpy.mockRestore()
-    consoleErrorSpy.mockRestore()
+    testConsoleErrorSpy.mockRestore()
   })
 
   test('should handle server without close method during graceful shutdown', async () => {
@@ -307,13 +294,8 @@ describe('McpCommand', () => {
     }
     vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
 
-    // Create a non-throwing process.exit mock for this test
-    const testProcessExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
-      return undefined as never
-    })
-
     // Spy on console.error to capture success message
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const testConsoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     // Spy on process.on to capture the SIGINT handler
     let sigintHandler: (() => void) | undefined
@@ -336,12 +318,11 @@ describe('McpCommand', () => {
     }
 
     // Assert that graceful shutdown was attempted and process.exit was called
-    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Received SIGINT'))
-    expect(testProcessExitSpy).toHaveBeenCalledWith(0)
+    expect(testConsoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Received SIGINT'))
+    expect(processExitSpy).toHaveBeenCalledWith(0)
 
     // Restore all mocks
     mockProcessOn.mockRestore()
-    testProcessExitSpy.mockRestore()
-    consoleErrorSpy.mockRestore()
+    testConsoleErrorSpy.mockRestore()
   })
 })

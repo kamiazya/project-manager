@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES, TicketNotFoundError, TicketValidationError } from '@project-manager/shared'
+import { TicketNotFoundError, TicketValidationError } from '@project-manager/shared'
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
 import type { UseCase } from '../common/base-usecase.ts'
 import { UpdateTicketRequest } from '../dtos/requests/update-ticket.ts'

@@ -30,7 +30,12 @@ describe('pluginSupportHook', () => {
     vi.mocked(existsSync).mockReturnValue(false)
 
     // Act
-    await pluginSupportHook.call(mockContext)
+    await pluginSupportHook.call(mockContext, {
+      argv: [],
+      id: undefined,
+      config: {} as any,
+      context: {} as any,
+    })
 
     // Assert
     expect((globalThis as any).projectManagerPlugins).toBeInstanceOf(Map)
@@ -43,7 +48,12 @@ describe('pluginSupportHook', () => {
     vi.mocked(existsSync).mockReturnValue(false)
 
     // Act
-    await pluginSupportHook.call(mockContext)
+    await pluginSupportHook.call(mockContext, {
+      argv: [],
+      id: undefined,
+      config: {} as any,
+      context: {} as any,
+    })
 
     // Assert
     const extensions = getExtensionPoints()
@@ -68,7 +78,12 @@ describe('pluginSupportHook', () => {
     )
 
     // Act
-    await pluginSupportHook.call(mockContext)
+    await pluginSupportHook.call(mockContext, {
+      argv: [],
+      id: undefined,
+      config: {} as any,
+      context: {} as any,
+    })
 
     // Assert
     expect(mockContext.debug).toHaveBeenCalledWith('Found 3 plugins in configuration')
@@ -83,7 +98,12 @@ describe('pluginSupportHook', () => {
     vi.mocked(existsSync).mockReturnValue(false)
 
     // Act
-    await pluginSupportHook.call(mockContext)
+    await pluginSupportHook.call(mockContext, {
+      argv: [],
+      id: undefined,
+      config: {} as any,
+      context: {} as any,
+    })
 
     // Assert
     expect(mockContext.warn).not.toHaveBeenCalled()
@@ -95,7 +115,12 @@ describe('pluginSupportHook', () => {
     vi.mocked(readFileSync).mockReturnValue('invalid json')
 
     // Act
-    await pluginSupportHook.call(mockContext)
+    await pluginSupportHook.call(mockContext, {
+      argv: [],
+      id: undefined,
+      config: {} as any,
+      context: {} as any,
+    })
 
     // Assert
     expect(mockContext.warn).toHaveBeenCalledWith(
@@ -113,7 +138,12 @@ describe('pluginSupportHook', () => {
     )
 
     // Act
-    await pluginSupportHook.call(mockContext)
+    await pluginSupportHook.call(mockContext, {
+      argv: [],
+      id: undefined,
+      config: {} as any,
+      context: {} as any,
+    })
 
     // Assert
     expect(mockContext.warn).not.toHaveBeenCalled()
@@ -127,7 +157,12 @@ describe('pluginSupportHook', () => {
     })
 
     // Act
-    await pluginSupportHook.call(mockContext)
+    await pluginSupportHook.call(mockContext, {
+      argv: [],
+      id: undefined,
+      config: {} as any,
+      context: {} as any,
+    })
 
     // Assert
     expect(mockContext.warn).toHaveBeenCalledWith('Plugin initialization failed: File system error')

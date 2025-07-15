@@ -4,7 +4,7 @@ import { QuickWipCommand } from './wip.ts'
 describe('QuickWipCommand', () => {
   let command: QuickWipCommand
   let logSpy: ReturnType<typeof vi.spyOn>
-  let errorSpy: ReturnType<typeof vi.spyOn>
+  let errorSpy: any
   let mockSearchTicketsUseCase: any
 
   beforeEach(() => {

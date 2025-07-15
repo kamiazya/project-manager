@@ -63,9 +63,9 @@ describe('updateTicketStatusTool', () => {
 
     // Verify the use case was called with UpdateTicketStatusRequest instance
     expect(mockUseCase.execute).toHaveBeenCalled()
-    const callArg = vi.mocked(mockUseCase.execute).mock.calls[0][0]
-    expect(callArg.id).toBe('test-id')
-    expect(callArg.newStatus).toBe('in_progress')
+    const callArg = vi.mocked(mockUseCase.execute).mock.calls[0]?.[0]
+    expect(callArg?.id).toBe('test-id')
+    expect(callArg?.newStatus).toBe('in_progress')
   })
 
   it('should handle different status values', async () => {

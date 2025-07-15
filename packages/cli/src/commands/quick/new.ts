@@ -4,11 +4,11 @@ import { CreateTicketRequest, TYPES } from '@project-manager/core'
 import type { TicketPriority, TicketType } from '@project-manager/shared'
 import { BaseCommand } from '../../lib/base-command.ts'
 
-interface ExecuteArgs {
+interface ExecuteArgs extends Record<string, unknown> {
   title: string
 }
 
-interface ExecuteFlags {
+interface ExecuteFlags extends Record<string, unknown> {
   description: string
   priority: string // Can be shortcuts or full names
   type: string // Can be shortcuts or full names
@@ -18,7 +18,7 @@ interface ExecuteFlags {
 /**
  * Quickly create a new ticket
  */
-export class QuickNewCommand extends BaseCommand {
+export class QuickNewCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void> {
   static override description = 'Quickly create a new ticket'
   static override aliases = ['q:n']
 

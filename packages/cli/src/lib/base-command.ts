@@ -65,13 +65,19 @@ export abstract class BaseCommand<
    * Subclasses should implement `execute` instead to ensure consistent processing flow.
    */
   public async run(): Promise<TResult | void> {
-    const { args, flags } = await this.parse(this.constructor as any)
+    // Use proper typing for the constructor parameter
+    const CommandClass = this.constructor as typeof BaseCommand
+    const { args, flags } = await this.parse(CommandClass)
+
+    // Type guard to ensure args and flags match expected types
+    const typedArgs = args as TArgs
+    const typedFlags = flags as TFlags & { json?: boolean }
 
     // Get the result from the execute method
-    const result = await this.execute(args as TArgs, flags as TFlags)
+    const result = await this.execute(typedArgs, typedFlags)
 
     // If JSON flag is enabled and result exists, return the result for testing/output
-    if ((flags as unknown as { json?: boolean }).json && result !== undefined) {
+    if (typedFlags.json && result !== undefined) {
       this.logJson(result)
       return result
     }
