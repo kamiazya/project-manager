@@ -1,5 +1,5 @@
 import { Args } from '@oclif/core'
-import { getConfig } from '@project-manager/shared'
+import { type Config, getConfig } from '@project-manager/shared'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 /**
@@ -20,14 +20,22 @@ export class ConfigGetCommand extends BaseCommand {
     }),
   }
 
-  async execute(args: { key: string }): Promise<any> {
+  async execute(args: { key: string }): Promise<string | number | boolean | undefined> {
     const config = getConfig()
-    const value = (config as any)[args.key]
 
-    if (value === undefined) {
-      this.error(`Configuration key not found: ${args.key}`)
+    // Type-safe key validation
+    if (!this.isValidConfigKey(args.key, config)) {
+      // Return undefined for non-existent keys (as expected by tests)
+      return undefined
     }
 
-    this.log(value)
+    const value = config[args.key as keyof Config]
+
+    // Return the value for proper JSON output handling
+    return value
+  }
+
+  private isValidConfigKey(key: string, config: Config): key is keyof Config {
+    return key in config
   }
 }

@@ -10,45 +10,43 @@ export class ConfigEnvCommand extends BaseCommand {
     '<%= config.bin %> <%= command.id %> # Show available environment variables',
   ]
 
-  async execute(): Promise<any> {
+  async execute(): Promise<void> {
+    const envVars = [
+      { name: 'PM_STORAGE_PATH', description: 'Custom storage path' },
+      { name: 'PM_DEFAULT_PRIORITY', description: 'Default priority (high, medium, low)' },
+      { name: 'PM_DEFAULT_TYPE', description: 'Default type (feature, bug, task)' },
+      {
+        name: 'PM_DEFAULT_PRIVACY',
+        description: 'Default privacy (local-only, shareable, public)',
+      },
+      { name: 'PM_DEFAULT_STATUS', description: 'Default status (pending, in_progress)' },
+      {
+        name: 'PM_DEFAULT_OUTPUT_FORMAT',
+        description: 'Default output format (table, json, compact)',
+      },
+      { name: 'PM_CONFIRM_DELETION', description: 'Confirm deletion (true, false)' },
+      { name: 'PM_SHOW_HELP_ON_ERROR', description: 'Show help on error (true, false)' },
+      { name: 'PM_MAX_TITLE_LENGTH', description: 'Maximum title length (number)' },
+      { name: 'PM_DATE_FORMAT', description: 'Date format (iso, short, relative)' },
+      { name: 'PM_ENABLE_INTERACTIVE_MODE', description: 'Enable interactive mode (true, false)' },
+      { name: 'PM_ENABLE_COLOR_OUTPUT', description: 'Enable color output (true, false)' },
+      { name: 'XDG_CONFIG_HOME', description: 'XDG config directory' },
+    ]
+
     this.log('Environment Variables:')
     this.log('=====================')
-    this.log('PM_STORAGE_PATH - Custom storage path')
-    this.log('PM_DEFAULT_PRIORITY - Default priority (high, medium, low)')
-    this.log('PM_DEFAULT_TYPE - Default type (feature, bug, task)')
-    this.log('PM_DEFAULT_PRIVACY - Default privacy (local-only, shareable, public)')
-    this.log('PM_DEFAULT_STATUS - Default status (pending, in_progress)')
-    this.log('PM_DEFAULT_OUTPUT_FORMAT - Default output format (table, json, compact)')
-    this.log('PM_CONFIRM_DELETION - Confirm deletion (true, false)')
-    this.log('PM_SHOW_HELP_ON_ERROR - Show help on error (true, false)')
-    this.log('PM_MAX_TITLE_LENGTH - Maximum title length (number)')
-    this.log('PM_DATE_FORMAT - Date format (iso, short, relative)')
-    this.log('PM_ENABLE_INTERACTIVE_MODE - Enable interactive mode (true, false)')
-    this.log('PM_ENABLE_COLOR_OUTPUT - Enable color output (true, false)')
-    this.log('XDG_CONFIG_HOME - XDG config directory')
+
+    envVars.forEach(({ name, description }) => {
+      this.log(`${name} - ${description}`)
+    })
+
     this.log()
     this.log('Currently set:')
 
-    const envVars = [
-      'PM_STORAGE_PATH',
-      'PM_DEFAULT_PRIORITY',
-      'PM_DEFAULT_TYPE',
-      'PM_DEFAULT_PRIVACY',
-      'PM_DEFAULT_STATUS',
-      'PM_DEFAULT_OUTPUT_FORMAT',
-      'PM_CONFIRM_DELETION',
-      'PM_SHOW_HELP_ON_ERROR',
-      'PM_MAX_TITLE_LENGTH',
-      'PM_DATE_FORMAT',
-      'PM_ENABLE_INTERACTIVE_MODE',
-      'PM_ENABLE_COLOR_OUTPUT',
-      'XDG_CONFIG_HOME',
-    ]
-
-    envVars.forEach(envVar => {
-      const value = process.env[envVar]
+    envVars.forEach(({ name }) => {
+      const value = process.env[name]
       if (value !== undefined) {
-        this.log(`  ${envVar}=${value}`)
+        this.log(`  ${name}=${value}`)
       }
     })
   }
