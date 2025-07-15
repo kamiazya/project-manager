@@ -91,6 +91,6 @@ describe('cleanup hook', () => {
 
     await hook.call(mockContext as any, mockOpts as any)
 
-    expect(mockContext.debug).toHaveBeenCalledWith('Command undefined completed successfully')
+    expect(mockContext.debug).toHaveBeenCalledWith('Command unknown completed successfully')
   })
 })

@@ -142,4 +142,71 @@ describe('pluginSupportHook', () => {
     expect(pluginRegistry).toBeInstanceOf(Map)
     expect(extensionPoints).toBeInstanceOf(Map)
   })
+
+  it('should initialize plugin registry when getPluginRegistry is called without hook execution', async () => {
+    // Arrange - clear global registry
+    delete (globalThis as any).projectManagerPlugins
+
+    // Import utility function
+    const { getPluginRegistry } = await import('./plugin-support.ts')
+
+    // Act
+    const registry = getPluginRegistry()
+
+    // Assert
+    expect(registry).toBeInstanceOf(Map)
+    expect(registry.size).toBe(0)
+    expect(globalThis.projectManagerPlugins).toBe(registry)
+  })
+
+  it('should initialize extension points when getExtensionPoints is called without hook execution', async () => {
+    // Arrange - clear global registry
+    delete (globalThis as any).projectManagerExtensions
+
+    // Import utility function
+    const { getExtensionPoints } = await import('./plugin-support.ts')
+
+    // Act
+    const extensions = getExtensionPoints()
+
+    // Assert
+    expect(extensions).toBeInstanceOf(Map)
+    expect(extensions.size).toBe(0)
+    expect(globalThis.projectManagerExtensions).toBe(extensions)
+  })
+
+  it('should return existing plugin registry when already initialized', async () => {
+    // Arrange - manually initialize with test data
+    const testMap = new Map()
+    testMap.set('test-plugin', { name: 'test' })
+    ;(globalThis as any).projectManagerPlugins = testMap
+
+    // Import utility function
+    const { getPluginRegistry } = await import('./plugin-support.ts')
+
+    // Act
+    const registry = getPluginRegistry()
+
+    // Assert
+    expect(registry).toBe(testMap)
+    expect(registry.has('test-plugin')).toBe(true)
+  })
+
+  it('should return existing extension points when already initialized', async () => {
+    // Arrange - manually initialize with test data
+    const testMap = new Map()
+    testMap.set('test:event', ['handler1', 'handler2'])
+    ;(globalThis as any).projectManagerExtensions = testMap
+
+    // Import utility function
+    const { getExtensionPoints } = await import('./plugin-support.ts')
+
+    // Act
+    const extensions = getExtensionPoints()
+
+    // Assert
+    expect(extensions).toBe(testMap)
+    expect(extensions.has('test:event')).toBe(true)
+    expect(extensions.get('test:event')).toEqual(['handler1', 'handler2'])
+  })
 })

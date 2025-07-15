@@ -38,7 +38,9 @@ const configValidationHook: Hook<'init'> = async function (opts) {
           writeFileSync(backupPath, corrupted)
           this.warn(`Backup created at: ${backupPath}`)
         } catch (backupError) {
-          this.warn('Failed to create backup of corrupted file')
+          const errorMessage =
+            backupError instanceof Error ? backupError.message : String(backupError)
+          this.warn(`Failed to create backup of corrupted file: ${errorMessage}`)
         }
 
         // Initialize with empty storage structure
@@ -60,12 +62,45 @@ const configValidationHook: Hook<'init'> = async function (opts) {
         try {
           const { spawn } = await import('node:child_process')
           const child = spawn('tsx', ['--version'], { stdio: 'ignore' })
-          child.on('error', () => {
-            this.warn('tsx is not available. MCP hot reload may not work properly.')
+
+          // Set up timeout to prevent hanging
+          const timeout = setTimeout(() => {
+            child.kill('SIGKILL')
+            this.warn('tsx availability check timed out. MCP hot reload may not work properly.')
+            this.warn('Install tsx globally: npm install -g tsx')
+          }, 3000) // 3 second timeout
+
+          let hasCompleted = false
+
+          // Handle successful completion
+          child.on('exit', code => {
+            if (hasCompleted) return
+            hasCompleted = true
+            clearTimeout(timeout)
+
+            if (code !== 0) {
+              this.warn(
+                `tsx command failed with exit code ${code}. MCP hot reload may not work properly.`
+              )
+              this.warn('Install tsx globally: npm install -g tsx')
+            }
+          })
+
+          // Handle process errors (e.g., command not found)
+          child.on('error', error => {
+            if (hasCompleted) return
+            hasCompleted = true
+            clearTimeout(timeout)
+
+            this.warn(
+              `tsx is not available: ${error.message}. MCP hot reload may not work properly.`
+            )
             this.warn('Install tsx globally: npm install -g tsx')
           })
-        } catch {
-          // Ignore errors in environments where tsx check is not needed
+        } catch (error) {
+          // Handle import errors or other unexpected issues
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+          this.warn(`Failed to check tsx availability: ${errorMessage}`)
         }
       }
     }
