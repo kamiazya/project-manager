@@ -6,8 +6,35 @@ import { getServiceContainer } from '../utils/service-factory.ts'
 /**
  * Base command class that provides common functionality for all commands.
  * Integrates with the existing service factory and dependency injection system.
+ *
+ * @template TArgs - Type for command arguments
+ * @template TFlags - Type for command flags
+ * @template TResult - Type for command result (for JSON output)
+ *
+ * @example
+ * // Example usage with specific types
+ * interface CreateArgs extends Record<string, unknown> {
+ *   title?: string
+ * }
+ *
+ * interface CreateFlags extends Record<string, unknown> {
+ *   priority?: string
+ *   json?: boolean
+ * }
+ *
+ * export class CreateCommand extends BaseCommand<CreateArgs, CreateFlags, void> {
+ *   async execute(args: CreateArgs, flags: CreateFlags): Promise<void> {
+ *     // TypeScript provides full type safety for args and flags
+ *     if (args.title) { ... }
+ *     if (flags.priority) { ... }
+ *   }
+ * }
  */
-export abstract class BaseCommand extends Command {
+export abstract class BaseCommand<
+  TArgs extends Record<string, unknown> = Record<string, unknown>,
+  TFlags extends Record<string, unknown> = Record<string, unknown>,
+  TResult = unknown,
+> extends Command {
   // Public container property allows easy mock injection during testing
   public container!: Container
 
@@ -37,25 +64,26 @@ export abstract class BaseCommand extends Command {
    * The `run` method is final to prevent subclass overrides.
    * Subclasses should implement `execute` instead to ensure consistent processing flow.
    */
-  public async run(): Promise<void> {
+  public async run(): Promise<TResult | void> {
     const { args, flags } = await this.parse(this.constructor as any)
 
     // Get the result from the execute method
-    const result = await this.execute(args, flags)
+    const result = await this.execute(args as TArgs, flags as TFlags)
 
-    // If JSON flag is enabled and result exists, oclif automatically outputs as JSON
-    if (flags.json && result !== undefined) {
+    // If JSON flag is enabled and result exists, return the result for testing/output
+    if ((flags as unknown as { json?: boolean }).json && result !== undefined) {
       this.logJson(result)
+      return result
     }
   }
 
   /**
    * Abstract method that concrete commands must implement.
-   * @param args Parsed command line arguments
-   * @param flags Parsed command line flags
+   * @param args Parsed command line arguments with type safety
+   * @param flags Parsed command line flags with type safety
    * @returns Result data for JSON output (optional)
    */
-  protected abstract execute(args: any, flags: any): Promise<any>
+  protected abstract execute(args: TArgs, flags: TFlags): Promise<TResult | void>
 
   /**
    * Error handler that provides user-friendly error messages.
