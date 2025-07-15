@@ -26,7 +26,7 @@ vi.mock('@oclif/core', () => ({
       const flags: any = {}
 
       // Handle positional arguments
-      if (this.argv.length > 0 && !this.argv[0].startsWith('-')) {
+      if (this.argv.length > 0 && this.argv[0] && !this.argv[0].startsWith('-')) {
         args.ticketId = this.argv[0]
       }
 
@@ -46,6 +46,9 @@ vi.mock('@oclif/core', () => ({
         } else if (this.argv[i] === '--type' && i + 1 < this.argv.length) {
           flags.type = this.argv[i + 1]
           i++
+        } else if (this.argv[i] === '--description' && i + 1 < this.argv.length) {
+          flags.description = this.argv[i + 1]
+          i++
         }
       }
 
@@ -54,6 +57,7 @@ vi.mock('@oclif/core', () => ({
     log = vi.fn()
     logJson = vi.fn()
     error = vi.fn()
+    warn = vi.fn()
     async catch() {}
   },
   Args: {
@@ -67,38 +71,18 @@ vi.mock('@oclif/core', () => ({
 
 describe('UpdateCommand', () => {
   let mockContainer: Container
-  let mockGetTicketByIdUseCase: any
-  let mockUpdateTicketTitleUseCase: any
-  let mockUpdateTicketStatusUseCase: any
-  let mockUpdateTicketPriorityUseCase: any
-  let mockUpdateTicketDescriptionUseCase: any
+  let mockUpdateTicketUseCase: any
 
   beforeEach(() => {
     // Mock use cases
-    mockGetTicketByIdUseCase = {
-      execute: vi.fn(),
-    }
-    mockUpdateTicketTitleUseCase = {
-      execute: vi.fn(),
-    }
-    mockUpdateTicketStatusUseCase = {
-      execute: vi.fn(),
-    }
-    mockUpdateTicketPriorityUseCase = {
-      execute: vi.fn(),
-    }
-    mockUpdateTicketDescriptionUseCase = {
+    mockUpdateTicketUseCase = {
       execute: vi.fn(),
     }
 
     // Mock the service container
     mockContainer = {
       get: vi.fn(type => {
-        if (type === TYPES.GetTicketByIdUseCase) return mockGetTicketByIdUseCase
-        if (type === TYPES.UpdateTicketTitleUseCase) return mockUpdateTicketTitleUseCase
-        if (type === TYPES.UpdateTicketStatusUseCase) return mockUpdateTicketStatusUseCase
-        if (type === TYPES.UpdateTicketPriorityUseCase) return mockUpdateTicketPriorityUseCase
-        if (type === TYPES.UpdateTicketDescriptionUseCase) return mockUpdateTicketDescriptionUseCase
+        if (type === TYPES.UpdateTicketUseCase) return mockUpdateTicketUseCase
         return null
       }),
     } as unknown as Container
@@ -112,21 +96,15 @@ describe('UpdateCommand', () => {
 
   it('should update ticket title', async () => {
     // Arrange
-    const mockTicket = {
+    const updatedTicket = {
       id: 'ticket-123',
-      title: 'Old title',
+      title: 'New title',
       status: 'pending',
       priority: 'medium',
       type: 'task',
     }
 
-    const updatedTicket = {
-      ...mockTicket,
-      title: 'New title',
-    }
-
-    mockGetTicketByIdUseCase.execute.mockResolvedValue(mockTicket)
-    mockUpdateTicketTitleUseCase.execute.mockResolvedValue({ ticket: updatedTicket })
+    mockUpdateTicketUseCase.execute.mockResolvedValue(updatedTicket)
 
     // Act
     const cmd = new UpdateCommand(['ticket-123', '--title', 'New title'], {
@@ -138,115 +116,97 @@ describe('UpdateCommand', () => {
     await cmd.run()
 
     // Assert
-    expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({ id: 'ticket-123' })
-    expect(mockUpdateTicketTitleUseCase.execute).toHaveBeenCalledWith({
-      id: 'ticket-123',
-      newTitle: 'New title',
-    })
+    expect(mockContainer.get).toHaveBeenCalledWith(TYPES.UpdateTicketUseCase)
+    expect(mockUpdateTicketUseCase.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'ticket-123',
+        title: 'New title',
+        description: undefined,
+        status: undefined,
+        priority: undefined,
+      })
+    )
     expect(logSpy).toHaveBeenCalledWith('Ticket ticket-123 updated successfully.')
   })
 
   it('should update multiple fields', async () => {
     // Arrange
-    const mockTicket = {
+    const updatedTicket = {
       id: 'ticket-123',
-      title: 'Test ticket',
-      status: 'pending',
-      priority: 'low',
+      title: 'New title',
+      status: 'in_progress',
+      priority: 'high',
       type: 'task',
     }
 
-    const updatedTicket = {
-      ...mockTicket,
-      status: 'in_progress',
-      priority: 'high',
-    }
-
-    mockGetTicketByIdUseCase.execute.mockResolvedValue(mockTicket)
-    mockUpdateTicketStatusUseCase.execute.mockResolvedValue({
-      ticket: { ...mockTicket, status: 'in_progress' },
-    })
-    mockUpdateTicketPriorityUseCase.execute.mockResolvedValue({ ticket: updatedTicket })
+    mockUpdateTicketUseCase.execute.mockResolvedValue(updatedTicket)
 
     // Act
-    const cmd = new UpdateCommand(['ticket-123', '--status', 'in_progress', '--priority', 'high'], {
-      runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
-    } as any)
+    const cmd = new UpdateCommand(
+      ['ticket-123', '--title', 'New title', '--status', 'in_progress', '--priority', 'high'],
+      {
+        runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
+      } as any
+    )
     await cmd.init()
 
     const logSpy = vi.spyOn(cmd, 'log').mockImplementation(() => {})
     await cmd.run()
 
     // Assert
-    expect(mockUpdateTicketStatusUseCase.execute).toHaveBeenCalledWith({
-      id: 'ticket-123',
-      newStatus: 'in_progress',
-    })
-    expect(mockUpdateTicketPriorityUseCase.execute).toHaveBeenCalledWith({
-      id: 'ticket-123',
-      newPriority: 'high',
-    })
+    expect(mockUpdateTicketUseCase.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'ticket-123',
+        title: 'New title',
+        status: 'in_progress',
+        priority: 'high',
+      })
+    )
     expect(logSpy).toHaveBeenCalledWith('Ticket ticket-123 updated successfully.')
   })
 
   it('should output JSON when --json flag is used', async () => {
     // Arrange
-    const mockTicket = {
-      id: 'ticket-123',
-      title: 'Test ticket',
-      status: 'pending',
-    }
-
     const updatedTicket = {
-      ...mockTicket,
-      title: 'Updated title',
+      id: 'ticket-123',
+      title: 'New title',
+      status: 'pending',
+      priority: 'medium',
+      type: 'task',
     }
 
-    mockGetTicketByIdUseCase.execute.mockResolvedValue(mockTicket)
-    mockUpdateTicketTitleUseCase.execute.mockResolvedValue({ ticket: updatedTicket })
+    mockUpdateTicketUseCase.execute.mockResolvedValue(updatedTicket)
 
     // Act
-    const cmd = new UpdateCommand(['ticket-123', '--title', 'Updated title', '--json'], {
+    const cmd = new UpdateCommand(['ticket-123', '--title', 'New title', '--json'], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
     } as any)
     await cmd.init()
 
-    const logJsonSpy = vi.spyOn(cmd, 'logJson').mockImplementation(() => {})
-    await cmd.run()
+    const result = await cmd.run()
 
     // Assert
-    expect(logJsonSpy).toHaveBeenCalledWith({ ticket: updatedTicket })
+    expect(result).toEqual(updatedTicket)
   })
 
   it('should handle ticket not found', async () => {
     // Arrange
-    mockGetTicketByIdUseCase.execute.mockResolvedValue(null)
+    const { TicketNotFoundError } = await import('@project-manager/shared')
+    mockUpdateTicketUseCase.execute.mockRejectedValue(
+      new TicketNotFoundError('Ticket not found: non-existent-id')
+    )
 
     // Act
-    const cmd = new UpdateCommand(['non-existent', '--title', 'New title'], {
+    const cmd = new UpdateCommand(['non-existent-id', '--title', 'New title'], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
     } as any)
     await cmd.init()
 
-    const errorSpy = vi.spyOn(cmd, 'error').mockImplementation(() => {
-      throw new Error('Ticket not found')
-    })
-
     // Assert
-    await expect(cmd.run()).rejects.toThrow('Ticket not found')
-    expect(errorSpy).toHaveBeenCalledWith('Ticket not found: non-existent')
+    await expect(cmd.run()).rejects.toThrow('Ticket not found: non-existent-id')
   })
 
-  it('should require at least one field to update', async () => {
-    // Arrange
-    const mockTicket = {
-      id: 'ticket-123',
-      title: 'Test ticket',
-      status: 'pending',
-    }
-
-    mockGetTicketByIdUseCase.execute.mockResolvedValue(mockTicket)
-
+  it('should validate at least one field is provided', async () => {
     // Act
     const cmd = new UpdateCommand(['ticket-123'], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
@@ -254,16 +214,17 @@ describe('UpdateCommand', () => {
     await cmd.init()
 
     const errorSpy = vi.spyOn(cmd, 'error').mockImplementation(() => {
-      throw new Error('No fields to update')
+      throw new Error('At least one field must be specified for update')
     })
 
     // Assert
-    await expect(cmd.run()).rejects.toThrow('No fields to update')
+    await expect(cmd.run()).rejects.toThrow('At least one field must be specified for update')
     expect(errorSpy).toHaveBeenCalledWith('At least one field must be specified for update')
   })
 
   it('should validate required ticket ID argument', async () => {
-    // Arrange - no ticket ID provided
+    // This test might not be needed as oclif should handle required arguments
+    // But keeping it to ensure proper error handling
     const cmd = new UpdateCommand(['--title', 'New title'], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
     } as any)
@@ -273,7 +234,8 @@ describe('UpdateCommand', () => {
       throw new Error('Ticket ID is required')
     })
 
-    // Act & Assert
+    // We expect an error due to missing required argument
     await expect(cmd.run()).rejects.toThrow('Ticket ID is required')
+    expect(errorSpy).toHaveBeenCalledWith('Ticket ID is required')
   })
 })

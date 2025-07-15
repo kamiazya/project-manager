@@ -4,10 +4,21 @@ import type { CreateTicketUseCase } from '@project-manager/core'
 import { CreateTicketRequest, TYPES } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 
+interface ExecuteArgs extends Record<string, unknown> {
+  title?: string
+}
+
+interface ExecuteFlags extends Record<string, unknown> {
+  description?: string
+  priority?: string
+  type?: string
+  json?: boolean
+}
+
 /**
  * Create a new ticket
  */
-export class CreateCommand extends BaseCommand {
+export class CreateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void> {
   static override description = 'Create a new ticket'
 
   static override examples = [
@@ -40,13 +51,13 @@ export class CreateCommand extends BaseCommand {
     }),
   }
 
-  async execute(args: { title?: string }, flags: any): Promise<any> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
     // Determine if we should use interactive mode
-    const isInteractive = !args.title
+    const isInteractive = !args.title || args.title.trim() === ''
 
     // Get title - from args or interactive input
     let title = args.title
-    if (!title) {
+    if (isInteractive) {
       title = await input({
         message: 'Title:',
       })

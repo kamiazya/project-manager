@@ -1,5 +1,4 @@
 import { TYPES } from '@project-manager/core'
-import { Container } from 'inversify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getServiceContainer } from '../utils/service-factory.ts'
 import { CreateCommand } from './create.ts'
@@ -32,7 +31,7 @@ vi.mock('@oclif/core', () => ({
       const flags: any = {}
 
       // Handle positional arguments
-      if (this.argv.length > 0 && !this.argv[0].startsWith('-')) {
+      if (this.argv.length > 0 && !this.argv[0]?.startsWith('-')) {
         args.title = this.argv[0]
       }
 
@@ -154,7 +153,7 @@ describe('CreateCommand', () => {
 
     // Assert
     expect(input).toHaveBeenCalledWith({ message: 'Title:' })
-    expect(input).toHaveBeenCalledWith({ message: 'Description:' })
+    expect(input).toHaveBeenCalledWith({ message: 'Description:', default: '' })
     expect(select).toHaveBeenCalledWith({
       message: 'Priority:',
       choices: [
@@ -249,11 +248,23 @@ describe('CreateCommand', () => {
   })
 
   it('should throw error when title is empty', async () => {
-    // Arrange & Act & Assert
+    // Arrange
+    const { input } = await import('@inquirer/prompts')
+    vi.mocked(input).mockResolvedValue('') // Return empty string from input
+
+    // Mock error handling
+    const errorSpy = vi.fn().mockImplementation(msg => {
+      throw new Error(msg)
+    })
+
+    // Act & Assert
     const cmd = new CreateCommand([''], {
       runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
     } as any)
     await cmd.init()
+
+    // Spy on error method
+    vi.spyOn(cmd, 'error').mockImplementation(errorSpy as any)
 
     await expect(cmd.run()).rejects.toThrow('Title cannot be empty')
   })

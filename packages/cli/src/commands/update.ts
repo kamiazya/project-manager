@@ -1,12 +1,25 @@
 import { Args, Flags } from '@oclif/core'
-import type { UpdateTicketUseCase } from '@project-manager/core'
+import type { UpdateTicketResponse, UpdateTicketUseCase } from '@project-manager/core'
 import { TYPES, UpdateTicketRequest } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
+
+interface ExecuteArgs extends Record<string, unknown> {
+  ticketId: string
+}
+
+interface ExecuteFlags extends Record<string, unknown> {
+  title?: string
+  description?: string
+  status?: 'pending' | 'in_progress' | 'completed' | 'archived'
+  priority?: 'high' | 'medium' | 'low'
+  type?: 'feature' | 'bug' | 'task'
+  json?: boolean // Inherited from BaseCommand
+}
 
 /**
  * Update a ticket's properties
  */
-export class UpdateCommand extends BaseCommand {
+export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, UpdateTicketResponse> {
   static override description = 'Update ticket properties'
   static override aliases = ['u']
 
@@ -42,7 +55,12 @@ export class UpdateCommand extends BaseCommand {
     }),
   }
 
-  async execute(args: { ticketId: string }, flags: any): Promise<any> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<UpdateTicketResponse | void> {
+    // Validate required ticket ID
+    if (!args.ticketId) {
+      this.error('Ticket ID is required')
+    }
+
     // Get the use case from the service container
     const updateTicketUseCase = this.getService<UpdateTicketUseCase>(TYPES.UpdateTicketUseCase)
 

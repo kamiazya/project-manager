@@ -4,6 +4,11 @@ import type { DeleteTicketUseCase, GetTicketByIdUseCase } from '@project-manager
 import { DeleteTicketRequest, GetTicketByIdRequest, TYPES } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 
+interface ExecuteFlags {
+  force?: boolean
+  json?: boolean
+}
+
 /**
  * Delete a ticket
  */
@@ -25,7 +30,7 @@ export class DeleteCommand extends BaseCommand {
     }),
   }
 
-  async execute(args: { ticketId: string }, flags: any): Promise<any> {
+  async execute(args: { ticketId: string }, flags: ExecuteFlags): Promise<void> {
     // Get the use cases from the service container
     const getTicketByIdUseCase = this.getService<GetTicketByIdUseCase>(TYPES.GetTicketByIdUseCase)
     const deleteTicketUseCase = this.getService<DeleteTicketUseCase>(TYPES.DeleteTicketUseCase)

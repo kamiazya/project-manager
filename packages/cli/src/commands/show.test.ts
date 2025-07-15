@@ -36,7 +36,7 @@ vi.mock('@oclif/core', () => ({
       const flags: any = {}
 
       // Handle positional arguments
-      if (this.argv.length > 0 && !this.argv[0].startsWith('-')) {
+      if (this.argv.length > 0 && this.argv[0] && !this.argv[0].startsWith('-')) {
         args.ticketId = this.argv[0]
       }
 
@@ -127,11 +127,10 @@ describe('ShowCommand', () => {
     const cmd = new ShowCommand(['ticket-123', '--json'], {} as any)
     await cmd.init()
 
-    const logJsonSpy = vi.spyOn(cmd, 'logJson').mockImplementation(() => {})
-    await cmd.run()
+    const result = await cmd.run()
 
-    // Assert
-    expect(logJsonSpy).toHaveBeenCalledWith(mockTicket)
+    // Assert - should return the ticket directly when --json flag is used
+    expect(result).toEqual(mockTicket)
   })
 
   it('should handle ticket not found', async () => {
@@ -156,7 +155,12 @@ describe('ShowCommand', () => {
     const cmd = new ShowCommand([], {} as any)
     await cmd.init()
 
+    const errorSpy = vi.spyOn(cmd, 'error').mockImplementation(() => {
+      throw new Error('Ticket ID is required')
+    })
+
     // Act & Assert
-    await expect(cmd.run()).rejects.toThrow()
+    await expect(cmd.run()).rejects.toThrow('Ticket ID is required')
+    expect(errorSpy).toHaveBeenCalledWith('Ticket ID is required')
   })
 })
