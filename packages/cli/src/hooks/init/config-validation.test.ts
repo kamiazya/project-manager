@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import configValidationHook from './config-validation.ts'
@@ -211,18 +212,14 @@ describe('configValidationHook', () => {
       }),
     }
 
-    const mockSpawn = vi.fn().mockReturnValue(mockChild)
-
-    // Mock dynamic import
-    vi.doMock('node:child_process', () => ({
-      spawn: mockSpawn,
-    }))
+    // Configure the existing spawn mock
+    vi.mocked(spawn).mockReturnValue(mockChild as any)
 
     // Act
     await configValidationHook.call(mockContext, mockOptions)
 
     // Assert
-    expect(mockSpawn).toHaveBeenCalledWith('tsx', ['--version'], { stdio: 'ignore' })
+    expect(spawn).toHaveBeenCalledWith('tsx', ['--version'], { stdio: 'ignore' })
     expect(mockContext.warn).not.toHaveBeenCalledWith(expect.stringContaining('tsx'))
   })
 
@@ -259,12 +256,8 @@ describe('configValidationHook', () => {
       }),
     }
 
-    const mockSpawn = vi.fn().mockReturnValue(mockChild)
-
-    // Mock dynamic import
-    vi.doMock('node:child_process', () => ({
-      spawn: mockSpawn,
-    }))
+    // Configure the existing spawn mock
+    vi.mocked(spawn).mockReturnValue(mockChild as any)
 
     // Act
     await configValidationHook.call(mockContext, mockOptions)
@@ -294,12 +287,8 @@ describe('configValidationHook', () => {
       }),
     }
 
-    const mockSpawn = vi.fn().mockReturnValue(mockChild)
-
-    // Mock dynamic import
-    vi.doMock('node:child_process', () => ({
-      spawn: mockSpawn,
-    }))
+    // Configure the existing spawn mock
+    vi.mocked(spawn).mockReturnValue(mockChild as any)
 
     // Act
     await configValidationHook.call(mockContext, mockOptions)
@@ -326,12 +315,8 @@ describe('configValidationHook', () => {
       on: vi.fn(), // No callbacks called - simulates hanging process
     }
 
-    const mockSpawn = vi.fn().mockReturnValue(mockChild)
-
-    // Mock dynamic import
-    vi.doMock('node:child_process', () => ({
-      spawn: mockSpawn,
-    }))
+    // Configure the existing spawn mock
+    vi.mocked(spawn).mockReturnValue(mockChild as any)
 
     // Mock setTimeout to capture the timeout callback
     const originalSetTimeout = global.setTimeout
@@ -377,12 +362,8 @@ describe('configValidationHook', () => {
       }),
     }
 
-    const mockSpawn = vi.fn().mockReturnValue(mockChild)
-
-    // Mock dynamic import
-    vi.doMock('node:child_process', () => ({
-      spawn: mockSpawn,
-    }))
+    // Configure the existing spawn mock
+    vi.mocked(spawn).mockReturnValue(mockChild as any)
 
     // Act
     await configValidationHook.call(mockContext, mockOptions)
