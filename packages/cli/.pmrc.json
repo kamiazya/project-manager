@@ -1,0 +1,6 @@
+{
+  "storage.path": "/test/path",
+  "defaults.priority": "high",
+  "server.port": 8080,
+  "backup.enabled": true
+}
