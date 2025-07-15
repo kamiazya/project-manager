@@ -1,11 +1,14 @@
-import { Flags } from '@oclif/core'
-import { getConfig } from '@project-manager/shared'
+import { type Config, getConfig } from '@project-manager/shared'
 import { BaseCommand } from '../../lib/base-command.ts'
+
+interface ShowFlags extends Record<string, unknown> {
+  json?: boolean
+}
 
 /**
  * Show current configuration
  */
-export class ConfigShowCommand extends BaseCommand {
+export class ConfigShowCommand extends BaseCommand<Record<string, never>, ShowFlags, Config> {
   static override description = 'Show current configuration'
 
   static override examples = [
@@ -13,19 +16,15 @@ export class ConfigShowCommand extends BaseCommand {
     '<%= config.bin %> <%= command.id %> --json # Show configuration in JSON format',
   ]
 
-  static override flags = {
-    json: Flags.boolean({
-      description: 'Output in JSON format',
-    }),
-  }
-
-  async execute(_args: any, flags: any): Promise<any> {
+  async execute(_args: Record<string, never>, flags: ShowFlags): Promise<Config | void> {
     const config = getConfig()
 
+    // For JSON output, just return the config and let BaseCommand handle it
     if (flags.json) {
       return config
     }
 
+    // For non-JSON output, display formatted configuration
     this.log('Current Configuration:')
     this.log('=====================')
     this.log(`Default Priority: ${config.defaultPriority}`)
@@ -43,5 +42,7 @@ export class ConfigShowCommand extends BaseCommand {
     if (config.storagePath) {
       this.log(`Storage Path: ${config.storagePath}`)
     }
+
+    // Don't return anything for non-JSON output
   }
 }

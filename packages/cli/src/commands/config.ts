@@ -3,7 +3,7 @@ import { BaseCommand } from '../lib/base-command.ts'
 /**
  * Manage configuration settings
  */
-export class ConfigCommand extends BaseCommand {
+export class ConfigCommand extends BaseCommand<Record<string, never>, Record<string, never>, void> {
   static override description = 'Manage configuration settings'
 
   static override examples = [
@@ -14,7 +14,7 @@ export class ConfigCommand extends BaseCommand {
     '<%= config.bin %> <%= command.id %>:env # Show environment variables',
   ]
 
-  async execute(): Promise<any> {
+  async execute(_args: Record<string, never>, _flags: Record<string, never>): Promise<void> {
     // Default action - show help for config commands
     await this.config.runCommand('help', ['config'])
   }
