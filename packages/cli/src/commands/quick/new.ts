@@ -1,7 +1,19 @@
 import { Args, Flags } from '@oclif/core'
 import type { CreateTicketUseCase } from '@project-manager/core'
 import { CreateTicketRequest, TYPES } from '@project-manager/core'
+import type { TicketPriority, TicketType } from '@project-manager/shared'
 import { BaseCommand } from '../../lib/base-command.ts'
+
+interface ExecuteArgs {
+  title: string
+}
+
+interface ExecuteFlags {
+  description: string
+  priority: string // Can be shortcuts or full names
+  type: string // Can be shortcuts or full names
+  json?: boolean // Inherited from BaseCommand
+}
 
 /**
  * Quickly create a new ticket
@@ -42,19 +54,14 @@ export class QuickNewCommand extends BaseCommand {
     }),
   }
 
-  async execute(args: { title: string }, flags: any): Promise<any> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
     // Expand shortcuts
     const priority = this.expandPriorityShortcut(flags.priority)
     const type = this.expandTypeShortcut(flags.type)
 
     // Create ticket
     const createTicketUseCase = this.getService<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
-    const request = new CreateTicketRequest(
-      args.title.trim(),
-      flags.description,
-      priority as 'high' | 'medium' | 'low',
-      type as 'feature' | 'bug' | 'task'
-    )
+    const request = new CreateTicketRequest(args.title.trim(), flags.description, priority, type)
     const ticket = await createTicketUseCase.execute(request)
 
     this.log(`Ticket ${ticket.id} created successfully.`)
@@ -63,7 +70,7 @@ export class QuickNewCommand extends BaseCommand {
   /**
    * Expand priority shortcuts to full names
    */
-  private expandPriorityShortcut(priority: string): string {
+  private expandPriorityShortcut(priority: string): TicketPriority {
     switch (priority) {
       case 'h':
         return 'high'
@@ -72,14 +79,14 @@ export class QuickNewCommand extends BaseCommand {
       case 'l':
         return 'low'
       default:
-        return priority
+        return priority as TicketPriority
     }
   }
 
   /**
    * Expand type shortcuts to full names
    */
-  private expandTypeShortcut(type: string): string {
+  private expandTypeShortcut(type: string): TicketType {
     switch (type) {
       case 'f':
         return 'feature'
@@ -88,7 +95,7 @@ export class QuickNewCommand extends BaseCommand {
       case 't':
         return 'task'
       default:
-        return type
+        return type as TicketType
     }
   }
 }

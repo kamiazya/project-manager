@@ -1,5 +1,12 @@
 import { BaseCommand } from '../lib/base-command.ts'
 
+type ExecuteArgs = {}
+
+interface ExecuteFlags {
+  // Inherits base flags from BaseCommand (json, version, etc.)
+  json?: boolean
+}
+
 /**
  * Quick operations for common tasks
  */
@@ -16,7 +23,7 @@ export class QuickCommand extends BaseCommand {
     '<%= config.bin %> <%= command.id %>:wip # List work-in-progress tickets',
   ]
 
-  async execute(_args: any, _flags: any): Promise<any> {
+  async execute(_args: ExecuteArgs, _flags: ExecuteFlags): Promise<void> {
     // Display standard oclif help for this command
     await this.config.runCommand('help', ['quick'])
   }
