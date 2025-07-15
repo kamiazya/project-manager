@@ -30,9 +30,7 @@ describe('configValidationHook', () => {
     }
 
     mockOptions = {
-      Command: {
-        id: 'test-command',
-      },
+      id: 'test-command',
     }
 
     // Reset mocks
