@@ -27,7 +27,7 @@ const configValidationHook: Hook<'init'> = async function (opts) {
         if (content.trim()) {
           JSON.parse(content)
         }
-      } catch (error) {
+      } catch (_error) {
         this.warn(`Storage file is corrupted or invalid JSON: ${storagePath}`)
         this.warn('Creating backup and initializing fresh storage...')
 

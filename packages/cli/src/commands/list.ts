@@ -54,7 +54,7 @@ export class ListCommand extends BaseCommand {
     }),
   }
 
-  async execute(_args: Record<string, never>, flags: ExecuteFlags): Promise<any[] | void> {
+  async execute(_args: Record<string, never>, flags: ExecuteFlags): Promise<any[] | undefined> {
     // Build search criteria from flags (remove undefined values)
     const criteria: TicketSearchCriteria = {}
 
@@ -85,5 +85,7 @@ export class ListCommand extends BaseCommand {
     if (response.tickets.length > 0) {
       this.log(`\n${SUCCESS_MESSAGES.TICKETS_FOUND(response.tickets.length)}`)
     }
+
+    return undefined
   }
 }

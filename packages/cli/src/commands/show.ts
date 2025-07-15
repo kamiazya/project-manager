@@ -18,7 +18,7 @@ interface ExecuteFlags extends Record<string, unknown> {
 export class ShowCommand extends BaseCommand<
   ExecuteArgs,
   ExecuteFlags,
-  GetTicketByIdResponse | void
+  GetTicketByIdResponse | undefined
 > {
   static override description = 'Show ticket details'
 
@@ -29,7 +29,10 @@ export class ShowCommand extends BaseCommand<
     }),
   }
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<GetTicketByIdResponse | void> {
+  async execute(
+    args: ExecuteArgs,
+    flags: ExecuteFlags
+  ): Promise<GetTicketByIdResponse | undefined> {
     // Validate required ticket ID
     if (!args.ticketId) {
       this.error('Ticket ID is required')
@@ -55,5 +58,7 @@ export class ShowCommand extends BaseCommand<
     // Format and display the ticket
     const output = formatTicketResponse(response, { format: 'table' })
     this.log(output)
+
+    return undefined
   }
 }

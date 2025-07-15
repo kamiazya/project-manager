@@ -1,6 +1,6 @@
 import { BaseCommand } from '../lib/base-command.ts'
 
-type ExecuteArgs = {}
+type ExecuteArgs = Record<string, never>
 
 interface ExecuteFlags {
   // Inherits base flags from BaseCommand (json, version, etc.)

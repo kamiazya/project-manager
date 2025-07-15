@@ -64,7 +64,7 @@ export abstract class BaseCommand<
    * The `run` method is final to prevent subclass overrides.
    * Subclasses should implement `execute` instead to ensure consistent processing flow.
    */
-  public async run(): Promise<TResult | void> {
+  public async run(): Promise<TResult | undefined> {
     // Use proper typing for the constructor parameter
     const CommandClass = this.constructor as typeof BaseCommand
     const { args, flags } = await this.parse(CommandClass)
@@ -81,6 +81,8 @@ export abstract class BaseCommand<
       this.logJson(result)
       return result
     }
+
+    return undefined
   }
 
   /**
@@ -89,7 +91,7 @@ export abstract class BaseCommand<
    * @param flags Parsed command line flags with type safety
    * @returns Result data for JSON output (optional)
    */
-  protected abstract execute(args: TArgs, flags: TFlags): Promise<TResult | void>
+  protected abstract execute(args: TArgs, flags: TFlags): Promise<TResult | undefined>
 
   /**
    * Error handler that provides user-friendly error messages.

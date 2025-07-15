@@ -55,7 +55,7 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, Update
     }),
   }
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<UpdateTicketResponse | void> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<UpdateTicketResponse | undefined> {
     // Validate required ticket ID
     if (!args.ticketId) {
       this.error('Ticket ID is required')
@@ -93,5 +93,7 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, Update
 
     // Display success message
     this.log(`Ticket ${args.ticketId} updated successfully.`)
+
+    return undefined
   }
 }

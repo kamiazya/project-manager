@@ -16,7 +16,7 @@ export class ConfigShowCommand extends BaseCommand {
     '<%= config.bin %> <%= command.id %> --json # Show configuration in JSON format',
   ]
 
-  async execute(_args: Record<string, never>, flags: ShowFlags): Promise<Config | void> {
+  async execute(_args: Record<string, never>, flags: ShowFlags): Promise<Config | undefined> {
     const config = getConfig()
 
     // For JSON output, just return the config and let BaseCommand handle it
@@ -44,5 +44,6 @@ export class ConfigShowCommand extends BaseCommand {
     }
 
     // Don't return anything for non-JSON output
+    return undefined
   }
 }

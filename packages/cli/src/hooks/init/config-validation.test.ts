@@ -319,7 +319,7 @@ describe('configValidationHook', () => {
     vi.mocked(existsSync).mockReturnValue(true)
     vi.mocked(readFileSync).mockReturnValue('{"tickets": []}')
 
-    let timeoutCallback: Function | undefined
+    let timeoutCallback: (() => void) | undefined
 
     const mockChild = {
       kill: vi.fn(),
@@ -368,7 +368,7 @@ describe('configValidationHook', () => {
     vi.mocked(existsSync).mockReturnValue(true)
     vi.mocked(readFileSync).mockReturnValue('{"tickets": []}')
 
-    const callbacks: { [key: string]: Function } = {}
+    const callbacks: { [key: string]: (...args: any[]) => void } = {}
 
     const mockChild = {
       kill: vi.fn(),

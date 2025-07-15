@@ -43,16 +43,11 @@ export class ConfigSetCommand extends BaseCommand {
       // Get the configuration service
       const mockConfig = (this as any).getService ? (this as any).getService() : null
 
-      if (mockConfig && mockConfig.set) {
+      if (mockConfig?.set) {
         // Use the mocked configuration service for testing
-        try {
-          await mockConfig.set(args.key, args.value)
-          this.log(`Configuration updated: ${args.key} = ${args.value}`)
-          return
-        } catch (error) {
-          // Re-throw the service error without wrapping it
-          throw error
-        }
+        await mockConfig.set(args.key, args.value)
+        this.log(`Configuration updated: ${args.key} = ${args.value}`)
+        return
       }
       // Define the possible types for configuration values
       type ConfigValue = string | boolean | number
@@ -144,7 +139,7 @@ export class ConfigSetCommand extends BaseCommand {
 
       // Parse numeric values
       if (isNumericKey(args.key)) {
-        parsedValue = parseInt(args.value, 10)
+        parsedValue = Number.parseInt(args.value, 10)
         if (Number.isNaN(parsedValue)) {
           this.error(`Invalid numeric value for ${args.key}: ${args.value}`)
         }

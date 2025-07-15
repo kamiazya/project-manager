@@ -4,7 +4,7 @@ import { SearchTicketsRequest, TYPES } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
 import { TableFormatter } from '../../lib/table-formatter.ts'
 
-type ExecuteArgs = {}
+type ExecuteArgs = Record<string, never>
 
 interface ExecuteFlags {
   compact?: boolean
