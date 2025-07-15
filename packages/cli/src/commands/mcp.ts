@@ -3,6 +3,11 @@ import { Flags } from '@oclif/core'
 import { createMcpServer } from '@project-manager/mcp-server'
 import { BaseCommand } from '../lib/base-command.ts'
 
+interface ExecuteFlags {
+  version?: boolean
+  json?: boolean
+}
+
 /**
  * Start MCP server for AI integration
  */
@@ -21,7 +26,7 @@ export class McpCommand extends BaseCommand {
     }),
   }
 
-  async execute(_args: any, flags: any): Promise<void> {
+  async execute(flags: ExecuteFlags): Promise<void> {
     if (flags.version) {
       // Import package.json to get version
       const { version } = await import('@project-manager/mcp-server/package.json', {
@@ -48,16 +53,24 @@ export class McpCommand extends BaseCommand {
         console.error('[DEV] Communication via stdin/stdout for mcp.json compatibility')
       }
 
-      // Keep the process alive
-      process.on('SIGINT', () => {
-        console.error('\nShutting down MCP server...')
-        process.exit(0)
-      })
+      // Graceful shutdown function
+      const gracefulShutdown = async (signal: string) => {
+        console.error(`\nReceived ${signal}, shutting down MCP server gracefully...`)
+        try {
+          if (server && typeof server.close === 'function') {
+            await server.close()
+            console.error('MCP server closed successfully')
+          }
+        } catch (error) {
+          console.error('Error during server shutdown:', error)
+        } finally {
+          process.exit(0)
+        }
+      }
 
-      process.on('SIGTERM', () => {
-        console.error('\nShutting down MCP server...')
-        process.exit(0)
-      })
+      // Keep the process alive and handle signals
+      process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+      process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
     } catch (error) {
       this.error(`Failed to start MCP server: ${error}`, { exit: 1 })
     }

@@ -22,8 +22,10 @@ vi.mock('../utils/output.ts', () => ({
 // Mock shared configuration
 vi.mock('@project-manager/shared', async importOriginal => {
   const actual = await importOriginal()
+  // Ensure actual is an object before spreading
+  const actualObject = actual && typeof actual === 'object' ? actual : {}
   return {
-    ...actual,
+    ...actualObject,
     getConfig: vi.fn(() => ({ defaultOutputFormat: 'table' })),
     SUCCESS_MESSAGES: {
       TICKETS_FOUND: (count: number) => `Found ${count} tickets`,
@@ -60,8 +62,8 @@ vi.mock('@oclif/core', () => ({
         } else if (this.argv[i] === '--type' && i + 1 < this.argv.length) {
           flags.type = this.argv[i + 1]
           i++
-        } else if (this.argv[i] === '--title' && i + 1 < this.argv.length) {
-          flags.title = this.argv[i + 1]
+        } else if (this.argv[i] === '--search' && i + 1 < this.argv.length) {
+          flags.search = this.argv[i + 1]
           i++
         } else if (this.argv[i] === '--format' && i + 1 < this.argv.length) {
           flags.format = this.argv[i + 1]
@@ -144,7 +146,6 @@ describe('ListCommand', () => {
     const cmd = new ListCommand(['--status', 'pending'], {} as any)
     await cmd.init()
 
-    const logSpy = vi.spyOn(cmd, 'log').mockImplementation(() => {})
     await cmd.run()
 
     // Assert
@@ -162,7 +163,6 @@ describe('ListCommand', () => {
     const cmd = new ListCommand(['--priority', 'high', '--type', 'bug'], {} as any)
     await cmd.init()
 
-    const logSpy = vi.spyOn(cmd, 'log').mockImplementation(() => {})
     await cmd.run()
 
     // Assert
@@ -171,16 +171,15 @@ describe('ListCommand', () => {
     })
   })
 
-  it('should search by title', async () => {
+  it('should search by title and description', async () => {
     // Arrange
     const mockTickets = [{ id: '1', title: 'Login feature' }]
     mockSearchTicketsUseCase.execute.mockResolvedValue({ tickets: mockTickets })
 
     // Act
-    const cmd = new ListCommand(['--title', 'login'], {} as any)
+    const cmd = new ListCommand(['--search', 'login'], {} as any)
     await cmd.init()
 
-    const logSpy = vi.spyOn(cmd, 'log').mockImplementation(() => {})
     await cmd.run()
 
     // Assert
@@ -214,10 +213,9 @@ describe('ListCommand', () => {
     const cmd = new ListCommand(['--json'], {} as any)
     await cmd.init()
 
-    const logJsonSpy = vi.spyOn(cmd, 'logJson').mockImplementation(() => {})
     await cmd.run()
 
     // Assert
-    expect(logJsonSpy).toHaveBeenCalledWith(mockTickets)
+    expect((cmd as any).logJson).toHaveBeenCalledWith(mockTickets)
   })
 })

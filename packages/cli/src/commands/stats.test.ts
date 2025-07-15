@@ -118,12 +118,11 @@ describe('StatsCommand', () => {
     const cmd = new StatsCommand(['--json'], {} as any)
     await cmd.init()
 
-    const logJsonSpy = vi.spyOn(cmd, 'logJson').mockImplementation(() => {})
-    await cmd.run()
+    const result = await cmd.run()
 
     // Assert
     expect(mockGetTicketStatsUseCase.execute).toHaveBeenCalled()
-    expect(logJsonSpy).toHaveBeenCalledWith(mockStats)
+    expect(result).toEqual(mockStats)
   })
 
   it('should handle errors gracefully', async () => {

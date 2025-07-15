@@ -1,10 +1,24 @@
 import { Flags } from '@oclif/core'
 import type { SearchTicketsUseCase } from '@project-manager/core'
 import { SearchTicketsRequest, TYPES } from '@project-manager/core'
-import type { TicketSearchCriteria } from '@project-manager/shared'
+import type {
+  TicketPriority,
+  TicketSearchCriteria,
+  TicketStatus,
+  TicketType,
+} from '@project-manager/shared'
 import { SUCCESS_MESSAGES } from '@project-manager/shared'
 import { BaseCommand } from '../lib/base-command.ts'
 import { formatTicketSummaryList } from '../utils/output.ts'
+
+interface ExecuteFlags {
+  status?: TicketStatus
+  priority?: TicketPriority
+  type?: TicketType
+  search?: string
+  format?: 'table' | 'json' | 'compact'
+  json?: boolean
+}
 
 /**
  * List tickets with optional filtering
@@ -29,8 +43,8 @@ export class ListCommand extends BaseCommand {
       description: 'Filter by type (feature, bug, task)',
       options: ['feature', 'bug', 'task'],
     }),
-    title: Flags.string({
-      description: 'Search by title (partial match)',
+    search: Flags.string({
+      description: 'Search tickets by title or description (partial match)',
     }),
     format: Flags.string({
       char: 'f',
@@ -40,14 +54,14 @@ export class ListCommand extends BaseCommand {
     }),
   }
 
-  async execute(_args: any, flags: any): Promise<any> {
+  async execute(_args: Record<string, never>, flags: ExecuteFlags): Promise<any[] | void> {
     // Build search criteria from flags (remove undefined values)
     const criteria: TicketSearchCriteria = {}
 
     if (flags.status) criteria.status = flags.status
     if (flags.priority) criteria.priority = flags.priority
     if (flags.type) criteria.type = flags.type
-    if (flags.title) criteria.search = flags.title
+    if (flags.search) criteria.search = flags.search
 
     // Get the use case from the service container
     const searchTicketsUseCase = this.getService<SearchTicketsUseCase>(TYPES.SearchTicketsUseCase)
@@ -63,7 +77,7 @@ export class ListCommand extends BaseCommand {
 
     // Format and display results
     const output = formatTicketSummaryList(response.tickets, {
-      format: flags.format,
+      format: flags.format || 'table',
     })
     this.log(output)
 
