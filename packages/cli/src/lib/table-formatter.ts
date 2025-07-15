@@ -5,6 +5,7 @@ export interface TableFormatterOptions {
   showStatus?: boolean
   sectionTitle?: string
   customCompactFormat?: (ticket: TicketSummary) => string
+  useStatusAbbreviations?: boolean
 }
 
 export class TableFormatter {
@@ -38,9 +39,23 @@ export class TableFormatter {
       } else {
         const priority = ticket.priority?.charAt(0).toUpperCase() || 'U'
         const type = ticket.type?.charAt(0).toUpperCase() || 'U'
-        const statusPart = options.showStatus && ticket.status ? ` (${ticket.status})` : ''
-        const title = ticket.title || 'Untitled'
-        logFn(`${ticket.id || 'Unknown'} [${priority}${type}]${statusPart} ${title}`)
+
+        let statusPart = ''
+        if (options.showStatus && ticket.status) {
+          if (options.useStatusAbbreviations) {
+            const status =
+              ticket.status === 'in_progress'
+                ? 'WIP'
+                : ticket.status?.charAt(0).toUpperCase() || 'U'
+            statusPart = status
+          } else {
+            statusPart = ` (${ticket.status})`
+          }
+        }
+
+        const title = TableFormatter.truncateTitle(ticket.title)
+        const statusDisplay = `${priority}${type}${statusPart}`
+        logFn(`${ticket.id || 'Unknown'} [${statusDisplay}] ${title}`)
       }
     })
   }

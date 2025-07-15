@@ -1,8 +1,7 @@
 import { Flags } from '@oclif/core'
-import type { SearchTicketsUseCase, TicketSummary } from '@project-manager/core'
+import type { SearchTicketsUseCase } from '@project-manager/core'
 import { SearchTicketsRequest, TYPES } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
-import { MAX_TITLE_LENGTH, TITLE_TRUNCATE_LENGTH } from '../../lib/constants.ts'
 import { TableFormatter } from '../../lib/table-formatter.ts'
 
 /**
@@ -43,18 +42,7 @@ export class QuickAllCommand extends BaseCommand {
       TableFormatter.displayTickets(tickets, outputFormat, msg => this.log(msg), {
         sectionTitle: 'All Tickets:',
         showStatus: true,
-        customCompactFormat: (ticket: TicketSummary) => {
-          const priority = ticket.priority?.charAt(0).toUpperCase() || 'U'
-          const type = ticket.type?.charAt(0).toUpperCase() || 'U'
-          const status =
-            ticket.status === 'in_progress' ? 'WIP' : ticket.status?.charAt(0).toUpperCase() || 'U'
-          const rawTitle = ticket.title || 'Untitled'
-          const title =
-            rawTitle.length > MAX_TITLE_LENGTH
-              ? `${rawTitle.substring(0, TITLE_TRUNCATE_LENGTH)}...`
-              : rawTitle
-          return `${ticket.id || 'Unknown'} [${priority}${type}${status}] ${title}`
-        },
+        useStatusAbbreviations: true,
       })
     } catch (error) {
       if (error instanceof Error) {
