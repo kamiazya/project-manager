@@ -1,8 +1,43 @@
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { cleanArchitecture } from '../../vite-plugin-architecture-fitness.ts'
 
 export default defineConfig({
   plugins: [
+    cleanArchitecture({
+      layers: [
+        {
+          name: 'presentation',
+          patterns: ['**/commands/**', '**/hooks/**', '**/bin/**'],
+          allowedDependencies: ['application', 'domain', 'shared'],
+          description: 'CLI commands, hooks, and entry points',
+        },
+        {
+          name: 'application',
+          patterns: ['**/lib/**', '**/utils/**'],
+          allowedDependencies: ['domain', 'shared'],
+          description: 'CLI application logic and utilities',
+        },
+        {
+          name: 'shared',
+          patterns: ['**/shared/**'],
+          allowedDependencies: [],
+          description: 'Common utilities and patterns',
+        },
+      ],
+      imports: [
+        {
+          pattern: '**/commands/**',
+          forbidden: ['**/infrastructure/**'],
+          message: 'CLI commands should not directly import infrastructure implementations',
+        },
+        {
+          pattern: '**/lib/**',
+          forbidden: ['**/infrastructure/**'],
+          message: 'CLI utilities should not directly import infrastructure implementations',
+        },
+      ],
+    }),
     dts({
       entryRoot: 'src',
       outDir: 'dist',
