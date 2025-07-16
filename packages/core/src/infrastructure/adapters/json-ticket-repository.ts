@@ -1,18 +1,13 @@
 import { constants } from 'node:fs'
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import type { TicketJSON } from '@project-manager/shared'
-import {
-  ERROR_MESSAGES,
-  FILE_SYSTEM,
-  getStoragePath,
-  StorageError,
-  TicketNotFoundError,
-} from '@project-manager/shared'
 import type { TicketStatistics } from '../../application/dtos/ticket-statistics.ts'
 import type { TicketRepository } from '../../application/repositories/ticket-repository.ts'
 import { Ticket } from '../../domain/entities/ticket.ts'
 import type { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import { ERROR_MESSAGES, FILE_SYSTEM, getStoragePath } from '../config/infrastructure-config.ts'
+import { StorageError, TicketNotFoundError } from '../errors/infrastructure-errors.ts'
+import type { TicketJSON } from '../types/persistence-types.ts'
 import * as TicketMapper from './mappers/ticket-mapper.ts'
 
 /**
@@ -77,7 +72,7 @@ export class JsonTicketRepository implements TicketRepository {
       const filteredTickets = tickets.filter(t => t.id !== id.value)
 
       if (filteredTickets.length === tickets.length) {
-        throw new TicketNotFoundError(ERROR_MESSAGES.TICKET_NOT_FOUND(id.value))
+        throw new TicketNotFoundError(ERROR_MESSAGES.TICKET_NOT_FOUND(id.value), id.value)
       }
 
       await this.saveTicketsToFile(filteredTickets)
@@ -225,7 +220,7 @@ export class JsonTicketRepository implements TicketRepository {
       await writeFile(this.filePath, content, FILE_SYSTEM.FILE_ENCODING)
     } catch (error) {
       throw new StorageError(
-        `Failed to write file: ${this.filePath}`,
+        `${ERROR_MESSAGES.OPERATION_FAILED.write} ${this.filePath}`,
         error instanceof Error ? error : undefined
       )
     }

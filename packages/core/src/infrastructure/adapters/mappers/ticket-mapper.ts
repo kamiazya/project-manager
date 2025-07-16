@@ -1,5 +1,5 @@
-import type { TicketJSON } from '@project-manager/shared'
 import { type ReconstituteTicketData, Ticket } from '../../../domain/entities/ticket.ts'
+import type { TicketJSON } from '../../types/persistence-types.ts'
 
 /**
  * Convert a domain Ticket to persistence format (JSON)
