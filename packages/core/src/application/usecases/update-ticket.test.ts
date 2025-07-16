@@ -1,9 +1,28 @@
 import { TicketNotFoundError, TicketValidationError } from '@project-manager/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Ticket } from '../../domain/entities/ticket.ts'
-import { UpdateTicketRequest } from '../dtos/requests/update-ticket.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { UpdateTicketUseCase } from './update-ticket.ts'
+
+// Use local class for testing
+class UpdateTicketRequest {
+  constructor(
+    public readonly id: string,
+    public readonly title?: string,
+    public readonly description?: string,
+    public readonly status?: 'pending' | 'in_progress' | 'completed' | 'archived',
+    public readonly priority?: 'high' | 'medium' | 'low'
+  ) {}
+
+  hasUpdates(): boolean {
+    return (
+      this.title !== undefined ||
+      this.description !== undefined ||
+      this.status !== undefined ||
+      this.priority !== undefined
+    )
+  }
+}
 
 describe('UpdateTicketUseCase', () => {
   let useCase: UpdateTicketUseCase

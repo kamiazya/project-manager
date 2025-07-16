@@ -1,10 +1,18 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
 import type { UseCase } from '../common/base-usecase.ts'
-import { UpdateTicketPriorityRequest } from '../dtos/requests/update-ticket-priority.ts'
-import { TicketResponse } from '../dtos/responses/ticket.ts'
-import { UpdateTicketPriorityResponse } from '../dtos/responses/update-ticket-priority.ts'
+import { TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+
+// Temporary compatibility classes until namespace conversion
+class UpdateTicketPriorityRequest {
+  constructor(
+    public readonly id: string,
+    public readonly newPriority: 'high' | 'medium' | 'low'
+  ) {}
+}
+
+class UpdateTicketPriorityResponse extends TicketResponse {}
 
 /**
  * Use case for updating a ticket's priority.

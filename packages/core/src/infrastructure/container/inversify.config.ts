@@ -6,10 +6,16 @@ import {
 import { ArchiveTicketUseCase } from '../../application/usecases/archive-ticket.ts'
 import { CompleteTicketUseCase } from '../../application/usecases/complete-ticket.ts'
 // Individual use cases
-import { CreateTicketUseCase } from '../../application/usecases/create-ticket.ts'
+import { type CreateTicket, CreateTicketUseCase } from '../../application/usecases/create-ticket.ts'
 import { DeleteTicketUseCase } from '../../application/usecases/delete-ticket.ts'
-import { GetAllTicketsUseCase } from '../../application/usecases/get-all-tickets.ts'
-import { GetTicketByIdUseCase } from '../../application/usecases/get-ticket-by-id.ts'
+import {
+  type GetAllTickets,
+  GetAllTicketsUseCase,
+} from '../../application/usecases/get-all-tickets.ts'
+import {
+  type GetTicketById,
+  GetTicketByIdUseCase,
+} from '../../application/usecases/get-ticket-by-id.ts'
 import { GetTicketStatsUseCase } from '../../application/usecases/get-ticket-stats.ts'
 import { SearchTicketsUseCase } from '../../application/usecases/search-tickets.ts'
 import { StartTicketProgressUseCase } from '../../application/usecases/start-ticket-progress.ts'
@@ -47,21 +53,21 @@ export function createContainer(storagePath?: string): Container {
 
   // Bind individual use cases
   container
-    .bind<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
+    .bind<CreateTicket.UseCase>(TYPES.CreateTicketUseCase)
     .toDynamicValue(() => {
       const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
       return new CreateTicketUseCase(ticketRepository)
     })
     .inSingletonScope()
   container
-    .bind<GetTicketByIdUseCase>(TYPES.GetTicketByIdUseCase)
+    .bind<GetTicketById.UseCase>(TYPES.GetTicketByIdUseCase)
     .toDynamicValue(() => {
       const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
       return new GetTicketByIdUseCase(ticketRepository)
     })
     .inSingletonScope()
   container
-    .bind<GetAllTicketsUseCase>(TYPES.GetAllTicketsUseCase)
+    .bind<GetAllTickets.UseCase>(TYPES.GetAllTicketsUseCase)
     .toDynamicValue(() => {
       const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
       return new GetAllTicketsUseCase(ticketRepository)

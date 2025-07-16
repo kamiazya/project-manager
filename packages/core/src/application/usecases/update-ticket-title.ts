@@ -1,10 +1,18 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
 import type { UseCase } from '../common/base-usecase.ts'
-import { UpdateTicketTitleRequest } from '../dtos/requests/update-ticket-title.ts'
-import { TicketResponse } from '../dtos/responses/ticket.ts'
-import { UpdateTicketTitleResponse } from '../dtos/responses/update-ticket-title.ts'
+import { TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+
+// Temporary compatibility classes until namespace conversion
+class UpdateTicketTitleRequest {
+  constructor(
+    public readonly id: string,
+    public readonly newTitle: string
+  ) {}
+}
+
+class UpdateTicketTitleResponse extends TicketResponse {}
 
 /**
  * Use case for updating a ticket's title.

@@ -1,6 +1,6 @@
 import type { Ticket } from '../../domain/entities/ticket.ts'
 import type { TicketId } from '../../domain/value-objects/ticket-id.ts'
-import type { TicketStatistics } from '../dtos/ticket-statistics.ts'
+import type { TicketStatistics } from '../common/ticket-statistics.ts'
 
 /**
  * Repository interface for Ticket aggregate

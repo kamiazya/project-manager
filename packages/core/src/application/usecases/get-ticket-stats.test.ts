@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { GetTicketStatsRequest } from '../dtos/requests/get-ticket-stats.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { GetTicketStatsUseCase } from './get-ticket-stats.ts'
+
+// Use local class for testing
+class GetTicketStatsRequest {
+  constructor() {}
+}
 
 describe('GetTicketStatsUseCase', () => {
   let useCase: GetTicketStatsUseCase

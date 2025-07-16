@@ -66,16 +66,18 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, Update
     const updateTicketUseCase = getUpdateTicketUseCase()
 
     // Create update request with all provided fields
-    const updateRequest = new UpdateTicketRequest(
-      args.ticketId,
-      flags.title,
-      flags.description,
-      flags.status,
-      flags.priority
-    )
+    const updateRequest = new UpdateTicketRequest(args.ticketId, {
+      title: flags.title,
+      description: flags.description,
+      status: flags.status,
+      priority: flags.priority,
+      type: flags.type,
+    })
 
     // Check if at least one field was provided for update
-    if (!updateRequest.hasUpdates()) {
+    const hasUpdates =
+      flags.title || flags.description || flags.status || flags.priority || flags.type
+    if (!hasUpdates) {
       this.error('At least one field must be specified for update')
     }
 

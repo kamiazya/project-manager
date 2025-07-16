@@ -1,10 +1,15 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
 import type { UseCase } from '../common/base-usecase.ts'
-import { StartTicketProgressRequest } from '../dtos/requests/start-ticket-progress.ts'
-import { StartTicketProgressResponse } from '../dtos/responses/start-ticket-progress.ts'
-import { TicketResponse } from '../dtos/responses/ticket.ts'
+import { TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+
+// Temporary compatibility classes until namespace conversion
+class StartTicketProgressRequest {
+  constructor(public readonly id: string) {}
+}
+
+class StartTicketProgressResponse extends TicketResponse {}
 
 /**
  * Use case for starting progress on a ticket.

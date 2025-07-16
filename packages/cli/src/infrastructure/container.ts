@@ -6,9 +6,12 @@
 import {
   ArchiveTicketUseCase,
   CompleteTicketUseCase,
+  type CreateTicket,
   CreateTicketUseCase,
   DeleteTicketUseCase,
+  type GetAllTickets,
   GetAllTicketsUseCase,
+  type GetTicketById,
   GetTicketByIdUseCase,
   GetTicketStatsUseCase,
   JsonTicketRepository,
@@ -59,17 +62,17 @@ export function createCliContainer(_storagePath: string): Container {
 
   // Use cases
   container
-    .bind<CreateTicketUseCase>(CLI_TYPES.CreateTicketUseCase)
+    .bind<CreateTicket.UseCase>(CLI_TYPES.CreateTicketUseCase)
     .to(CreateTicketUseCase)
     .inTransientScope()
 
   container
-    .bind<GetTicketByIdUseCase>(CLI_TYPES.GetTicketByIdUseCase)
+    .bind<GetTicketById.UseCase>(CLI_TYPES.GetTicketByIdUseCase)
     .to(GetTicketByIdUseCase)
     .inTransientScope()
 
   container
-    .bind<GetAllTicketsUseCase>(CLI_TYPES.GetAllTicketsUseCase)
+    .bind<GetAllTickets.UseCase>(CLI_TYPES.GetAllTicketsUseCase)
     .to(GetAllTicketsUseCase)
     .inTransientScope()
 

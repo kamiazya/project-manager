@@ -1,7 +1,29 @@
+import type { Ticket } from '../../domain/entities/ticket.ts'
 import type { UseCase } from '../common/base-usecase.ts'
-import { SearchTicketsRequest } from '../dtos/requests/search-tickets.ts'
-import { SearchTicketsResponse } from '../dtos/responses/search-tickets.ts'
+import { TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+
+// Temporary compatibility classes until namespace conversion
+interface SearchCriteria {
+  status?: string
+  priority?: string
+  type?: string
+  privacy?: string
+  search?: string
+  searchIn?: string[]
+}
+
+class SearchTicketsRequest {
+  constructor(public readonly criteria: SearchCriteria) {}
+}
+
+class SearchTicketsResponse {
+  constructor(public readonly tickets: TicketResponse[]) {}
+
+  static fromTickets(tickets: Ticket[]): SearchTicketsResponse {
+    return new SearchTicketsResponse(tickets.map(ticket => TicketResponse.fromTicket(ticket)))
+  }
+}
 
 /**
  * Use case for searching tickets by criteria.

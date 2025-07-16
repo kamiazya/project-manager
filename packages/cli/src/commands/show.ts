@@ -1,6 +1,5 @@
 import { Args } from '@oclif/core'
-import type { GetTicketByIdResponse } from '@project-manager/core'
-import { GetTicketByIdRequest } from '@project-manager/core'
+import { type GetTicketById, GetTicketByIdRequest } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 import { formatTicketResponse } from '../utils/output.ts'
 import { getGetTicketByIdUseCase } from '../utils/service-factory.ts'
@@ -19,7 +18,7 @@ interface ExecuteFlags extends Record<string, unknown> {
 export class ShowCommand extends BaseCommand<
   ExecuteArgs,
   ExecuteFlags,
-  GetTicketByIdResponse | undefined
+  GetTicketById.Response | undefined
 > {
   static override description = 'Show ticket details'
 
@@ -33,7 +32,7 @@ export class ShowCommand extends BaseCommand<
   async execute(
     args: ExecuteArgs,
     flags: ExecuteFlags
-  ): Promise<GetTicketByIdResponse | undefined> {
+  ): Promise<GetTicketById.Response | undefined> {
     if (!args.ticketId) {
       this.error('Ticket ID is required')
     }

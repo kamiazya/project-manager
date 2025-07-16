@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Ticket } from '../../domain/entities/ticket.ts'
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
-import { GetTicketByIdRequest } from '../dtos/requests/get-ticket-by-id.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
-import { GetTicketByIdUseCase } from './get-ticket-by-id.ts'
+import { GetTicketById } from './get-ticket-by-id.ts'
 
 describe('GetTicketByIdUseCase', () => {
-  let useCase: GetTicketByIdUseCase
+  let useCase: GetTicketById.UseCase
   let mockTicketRepository: TicketRepository
 
   beforeEach(() => {
@@ -17,14 +16,14 @@ describe('GetTicketByIdUseCase', () => {
       delete: vi.fn(),
       getStatistics: vi.fn(),
     }
-    useCase = new GetTicketByIdUseCase(mockTicketRepository)
+    useCase = new GetTicketById.UseCase(mockTicketRepository)
   })
 
   describe('execute', () => {
     it('should return ticket when found', async () => {
       // Arrange
       const ticketId = '12345678' // 8 hex characters
-      const request = new GetTicketByIdRequest(ticketId)
+      const request = new GetTicketById.Request(ticketId)
       const mockTicket = Ticket.create({
         title: 'Test Ticket',
         description: 'Test Description',
@@ -48,7 +47,7 @@ describe('GetTicketByIdUseCase', () => {
     it('should return null when ticket not found', async () => {
       // Arrange
       const ticketId = '87654321' // 8 hex characters
-      const request = new GetTicketByIdRequest(ticketId)
+      const request = new GetTicketById.Request(ticketId)
 
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 
@@ -63,7 +62,7 @@ describe('GetTicketByIdUseCase', () => {
     it('should call repository with correct TicketId', async () => {
       // Arrange
       const ticketId = '12345678' // 8 hex characters
-      const request = new GetTicketByIdRequest(ticketId)
+      const request = new GetTicketById.Request(ticketId)
 
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 

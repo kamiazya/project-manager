@@ -1,10 +1,35 @@
 import { TicketNotFoundError, TicketValidationError } from '@project-manager/shared'
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
 import type { UseCase } from '../common/base-usecase.ts'
-import { UpdateTicketRequest } from '../dtos/requests/update-ticket.ts'
-import { TicketResponse } from '../dtos/responses/ticket.ts'
-import { UpdateTicketResponse } from '../dtos/responses/update-ticket.ts'
+import { TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+
+// Temporary compatibility classes until namespace conversion
+class UpdateTicketRequest {
+  constructor(
+    public readonly id: string,
+    public readonly title?: string,
+    public readonly description?: string,
+    public readonly status?: 'pending' | 'in_progress' | 'completed' | 'archived',
+    public readonly priority?: 'high' | 'medium' | 'low'
+  ) {}
+
+  hasUpdates(): boolean {
+    return (
+      this.title !== undefined ||
+      this.description !== undefined ||
+      this.status !== undefined ||
+      this.priority !== undefined
+    )
+  }
+}
+
+class UpdateTicketResponse extends TicketResponse {
+  // For backward compatibility with existing code
+  get ticket(): TicketResponse {
+    return this
+  }
+}
 
 /**
  * Unified use case for updating multiple ticket fields in a single operation.

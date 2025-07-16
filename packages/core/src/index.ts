@@ -2,56 +2,45 @@
 
 // Common interfaces
 export type { UseCase } from './application/common/base-usecase.ts'
-export { ArchiveTicketRequest } from './application/dtos/requests/archive-ticket.ts'
-export { CompleteTicketRequest } from './application/dtos/requests/complete-ticket.ts'
-// DTOs - Requests
-export { CreateTicketRequest } from './application/dtos/requests/create-ticket.ts'
-export { DeleteTicketRequest } from './application/dtos/requests/delete-ticket.ts'
+export { TicketResponse } from './application/common/ticket.response.ts'
+// Use case namespaces and compatibility exports
 export {
-  type GetAllTicketsFilters,
+  CreateTicket,
+  CreateTicketRequest,
+  CreateTicketResponse,
+  CreateTicketUseCase,
+} from './application/usecases/create-ticket.ts'
+export {
+  GetAllTickets,
   GetAllTicketsRequest,
-} from './application/dtos/requests/get-all-tickets.ts'
-export { GetTicketByIdRequest } from './application/dtos/requests/get-ticket-by-id.ts'
-export { GetTicketStatsRequest } from './application/dtos/requests/get-ticket-stats.ts'
-export { SearchTicketsRequest } from './application/dtos/requests/search-tickets.ts'
-export { StartTicketProgressRequest } from './application/dtos/requests/start-ticket-progress.ts'
-export { UpdateTicketRequest } from './application/dtos/requests/update-ticket.ts'
-export { UpdateTicketDescriptionRequest } from './application/dtos/requests/update-ticket-description.ts'
-export { UpdateTicketPriorityRequest } from './application/dtos/requests/update-ticket-priority.ts'
-export { UpdateTicketStatusRequest } from './application/dtos/requests/update-ticket-status.ts'
-export { UpdateTicketTitleRequest } from './application/dtos/requests/update-ticket-title.ts'
-export { ArchiveTicketResponse } from './application/dtos/responses/archive-ticket.ts'
-export { CompleteTicketResponse } from './application/dtos/responses/complete-ticket.ts'
-export { CreateTicketResponse } from './application/dtos/responses/create-ticket.ts'
-export { DeleteTicketResponse } from './application/dtos/responses/delete-ticket.ts'
-export {
   GetAllTicketsResponse,
-  TicketSummary,
-} from './application/dtos/responses/get-all-tickets.ts'
-export { GetTicketByIdResponse } from './application/dtos/responses/get-ticket-by-id.ts'
-export { GetTicketStatsResponse } from './application/dtos/responses/get-ticket-stats.ts'
-export { SearchTicketsResponse } from './application/dtos/responses/search-tickets.ts'
-export { StartTicketProgressResponse } from './application/dtos/responses/start-ticket-progress.ts'
-// DTOs - Responses
-export { TicketResponse } from './application/dtos/responses/ticket.ts'
-export { UpdateTicketResponse } from './application/dtos/responses/update-ticket.ts'
-export { UpdateTicketDescriptionResponse } from './application/dtos/responses/update-ticket-description.ts'
-export { UpdateTicketPriorityResponse } from './application/dtos/responses/update-ticket-priority.ts'
-export { UpdateTicketStatusResponse } from './application/dtos/responses/update-ticket-status.ts'
-export { UpdateTicketTitleResponse } from './application/dtos/responses/update-ticket-title.ts'
-// Application DTOs
-export type { TicketStatistics } from './application/dtos/ticket-statistics.ts'
-export { createEmptyTicketStatistics } from './application/dtos/ticket-statistics.ts'
+  GetAllTicketsUseCase,
+} from './application/usecases/get-all-tickets.ts'
+export {
+  GetTicketById,
+  GetTicketByIdRequest,
+  GetTicketByIdResponse,
+  GetTicketByIdUseCase,
+} from './application/usecases/get-ticket-by-id.ts'
+
+// Import namespaces to enable type extraction
+import { GetAllTickets } from './application/usecases/get-all-tickets.ts'
+
+// Extract specific types from namespaces
+export type GetAllTicketsFilters = GetAllTickets.Filters
+export type TicketSummary = GetAllTickets.TicketSummary
+
+// Legacy ticket statistics (TODO: refactor to namespace pattern)
+export type { TicketStatistics } from './application/common/ticket-statistics.ts'
+export { createEmptyTicketStatistics } from './application/common/ticket-statistics.ts'
 // Repository interfaces
 export type { TicketRepository } from './application/repositories/ticket-repository.ts'
 export { TicketRepository as TicketRepositorySymbol } from './application/repositories/ticket-repository.ts'
+
+// Legacy use cases (TODO: convert to namespace pattern)
 export { ArchiveTicketUseCase } from './application/usecases/archive-ticket.ts'
 export { CompleteTicketUseCase } from './application/usecases/complete-ticket.ts'
-// Use cases
-export { CreateTicketUseCase } from './application/usecases/create-ticket.ts'
 export { DeleteTicketUseCase } from './application/usecases/delete-ticket.ts'
-export { GetAllTicketsUseCase } from './application/usecases/get-all-tickets.ts'
-export { GetTicketByIdUseCase } from './application/usecases/get-ticket-by-id.ts'
 export { GetTicketStatsUseCase } from './application/usecases/get-ticket-stats.ts'
 export { SearchTicketsUseCase } from './application/usecases/search-tickets.ts'
 export { StartTicketProgressUseCase } from './application/usecases/start-ticket-progress.ts'
@@ -60,6 +49,54 @@ export { UpdateTicketDescriptionUseCase } from './application/usecases/update-ti
 export { UpdateTicketPriorityUseCase } from './application/usecases/update-ticket-priority.ts'
 export { UpdateTicketStatusUseCase } from './application/usecases/update-ticket-status.ts'
 export { UpdateTicketTitleUseCase } from './application/usecases/update-ticket-title.ts'
+
+// Legacy DTO compatibility exports (TODO: remove after namespace conversion)
+export class SearchTicketsRequest {
+  constructor(public readonly criteria: any) {}
+}
+export class ArchiveTicketRequest {
+  constructor(public readonly id: string) {}
+}
+export class CompleteTicketRequest {
+  constructor(public readonly id: string) {}
+}
+export class DeleteTicketRequest {
+  constructor(public readonly id: string) {}
+}
+export class StartTicketProgressRequest {
+  constructor(public readonly id: string) {}
+}
+export class UpdateTicketRequest {
+  constructor(
+    public readonly id: string,
+    public readonly updates: any
+  ) {}
+
+  hasUpdates(): boolean {
+    return !!(
+      this.updates.title ||
+      this.updates.description ||
+      this.updates.status ||
+      this.updates.priority ||
+      this.updates.type
+    )
+  }
+}
+export class UpdateTicketResponse {
+  constructor(public readonly ticket: any) {}
+}
+export class GetTicketStatsRequest {
+  constructor() {}
+}
+export class UpdateTicketStatusRequest {
+  constructor(
+    public readonly id: string,
+    public readonly status: string
+  ) {}
+}
+
+// NOTE: Infrastructure layer exports removed to comply with Clean Architecture
+// MCP server should use proper dependency injection instead of directly accessing container
 export type {
   CreateTicketData,
   ReconstituteTicketData,
@@ -93,3 +130,7 @@ export { TicketTitle } from './domain/value-objects/ticket-title.ts'
 // Infrastructure layer is NOT exported to enforce Clean Architecture
 // External packages should depend on repository interfaces, not concrete implementations
 // Infrastructure implementations are available internally but not exposed through public API
+
+// NOTE: Infrastructure layer exports removed to comply with Clean Architecture
+// CLI and MCP server should use proper dependency injection instead of directly accessing infrastructure
+// TODO: Implement proper dependency injection factory pattern

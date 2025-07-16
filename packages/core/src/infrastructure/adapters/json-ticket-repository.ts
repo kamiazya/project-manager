@@ -1,7 +1,7 @@
 import { constants } from 'node:fs'
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import type { TicketStatistics } from '../../application/dtos/ticket-statistics.ts'
+import type { TicketStatistics } from '../../application/common/ticket-statistics.ts'
 import type { TicketRepository } from '../../application/repositories/ticket-repository.ts'
 import { Ticket } from '../../domain/entities/ticket.ts'
 import type { TicketId } from '../../domain/value-objects/ticket-id.ts'

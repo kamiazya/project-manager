@@ -1,10 +1,15 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
 import type { UseCase } from '../common/base-usecase.ts'
-import { ArchiveTicketRequest } from '../dtos/requests/archive-ticket.ts'
-import { ArchiveTicketResponse } from '../dtos/responses/archive-ticket.ts'
-import { TicketResponse } from '../dtos/responses/ticket.ts'
+import { TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+
+// Temporary compatibility class until namespace conversion
+class ArchiveTicketRequest {
+  constructor(public readonly id: string) {}
+}
+
+class ArchiveTicketResponse extends TicketResponse {}
 
 /**
  * Use case for archiving a ticket.
