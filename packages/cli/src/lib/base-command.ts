@@ -1,5 +1,4 @@
 import { Command } from '@oclif/core'
-import { StorageError, TicketNotFoundError, TicketValidationError } from '@project-manager/shared'
 import type { Container } from 'inversify'
 import { getServiceContainer } from '../utils/service-factory.ts'
 
@@ -95,17 +94,19 @@ export abstract class BaseCommand<
 
   /**
    * Error handler that provides user-friendly error messages.
-   * Uses typed error classes for robust error handling.
+   * Uses generic error handling approach to avoid coupling to specific error types.
    * Override this method to customize error handling.
    */
   async catch(error: Error): Promise<any> {
-    // Handle domain-specific errors with type safety
-    if (error instanceof TicketNotFoundError) {
-      this.error(`Ticket not found: ${error.ticketId}`, { exit: 1 })
-    } else if (error instanceof TicketValidationError) {
-      const fieldInfo = error.field ? ` (field: ${error.field})` : ''
-      this.error(`Validation error: ${error.message}${fieldInfo}`, { exit: 1 })
-    } else if (error instanceof StorageError) {
+    // Handle domain-specific errors by error message patterns
+    if (error.message.includes('Ticket not found')) {
+      this.error(`Ticket not found: ${error.message}`, { exit: 1 })
+    } else if (
+      error.message.includes('Validation error') ||
+      error.name === 'TicketValidationError'
+    ) {
+      this.error(`Validation error: ${error.message}`, { exit: 1 })
+    } else if (error.message.includes('Storage error') || error.name === 'StorageError') {
       this.error(`Storage error: ${error.message}`, { exit: 1 })
     }
 

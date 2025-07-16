@@ -1,6 +1,6 @@
-import { TYPES } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { CLI_TYPES } from '../infrastructure/container.ts'
 import { getServiceContainer } from '../utils/service-factory.ts'
 import { StatsCommand } from './stats.ts'
 
@@ -96,7 +96,7 @@ describe('StatsCommand', () => {
     await cmd.run()
 
     // Assert
-    expect(mockContainer.get).toHaveBeenCalledWith(TYPES.GetTicketStatsUseCase)
+    expect(mockContainer.get).toHaveBeenCalledWith(CLI_TYPES.GetTicketStatsUseCase)
     expect(mockGetTicketStatsUseCase.execute).toHaveBeenCalled()
     expect(logSpy).toHaveBeenCalledWith('Total: 10 tickets')
   })

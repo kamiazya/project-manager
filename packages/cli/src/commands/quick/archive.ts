@@ -1,7 +1,7 @@
 import { Args } from '@oclif/core'
-import type { ArchiveTicketUseCase } from '@project-manager/core'
-import { ArchiveTicketRequest, TYPES } from '@project-manager/core'
+import { ArchiveTicketRequest } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
+import { getArchiveTicketUseCase } from '../../utils/service-factory.ts'
 
 /**
  * Archive a ticket
@@ -19,7 +19,7 @@ export class QuickArchiveCommand extends BaseCommand {
   }
 
   async execute(args: { id: string }): Promise<any> {
-    const archiveTicketUseCase = this.getService<ArchiveTicketUseCase>(TYPES.ArchiveTicketUseCase)
+    const archiveTicketUseCase = getArchiveTicketUseCase()
     const request = new ArchiveTicketRequest(args.id)
 
     await archiveTicketUseCase.execute(request)

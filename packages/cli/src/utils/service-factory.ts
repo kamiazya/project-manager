@@ -6,85 +6,83 @@ import {
   GetAllTicketsUseCase,
   GetTicketByIdUseCase,
   GetTicketStatsUseCase,
-  getContainer,
-  resetContainer,
   SearchTicketsUseCase,
   StartTicketProgressUseCase,
-  TYPES,
   UpdateTicketDescriptionUseCase,
   UpdateTicketPriorityUseCase,
   UpdateTicketStatusUseCase,
   UpdateTicketTitleUseCase,
+  UpdateTicketUseCase,
 } from '@project-manager/core'
 import type { Container } from 'inversify'
+import { CLI_TYPES, getCliContainer, resetCliContainer } from '../infrastructure/container.ts'
 import { getStoragePath } from './config.ts'
 
-let _container: Container | null = null
-
 export function getServiceContainer(): Container {
-  if (!_container) {
-    _container = getContainer(getStoragePath())
-  }
-
-  return _container
+  return getCliContainer(getStoragePath())
 }
 
 // Individual use case getters
 export function getCreateTicketUseCase(): CreateTicketUseCase {
-  return getServiceContainer().get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
+  return getServiceContainer().get<CreateTicketUseCase>(CLI_TYPES.CreateTicketUseCase)
 }
 
 export function getGetTicketByIdUseCase(): GetTicketByIdUseCase {
-  return getServiceContainer().get<GetTicketByIdUseCase>(TYPES.GetTicketByIdUseCase)
+  return getServiceContainer().get<GetTicketByIdUseCase>(CLI_TYPES.GetTicketByIdUseCase)
 }
 
 export function getGetAllTicketsUseCase(): GetAllTicketsUseCase {
-  return getServiceContainer().get<GetAllTicketsUseCase>(TYPES.GetAllTicketsUseCase)
+  return getServiceContainer().get<GetAllTicketsUseCase>(CLI_TYPES.GetAllTicketsUseCase)
 }
 
 export function getUpdateTicketTitleUseCase(): UpdateTicketTitleUseCase {
-  return getServiceContainer().get<UpdateTicketTitleUseCase>(TYPES.UpdateTicketTitleUseCase)
+  return getServiceContainer().get<UpdateTicketTitleUseCase>(CLI_TYPES.UpdateTicketTitleUseCase)
 }
 
 export function getUpdateTicketDescriptionUseCase(): UpdateTicketDescriptionUseCase {
   return getServiceContainer().get<UpdateTicketDescriptionUseCase>(
-    TYPES.UpdateTicketDescriptionUseCase
+    CLI_TYPES.UpdateTicketDescriptionUseCase
   )
 }
 
 export function getUpdateTicketStatusUseCase(): UpdateTicketStatusUseCase {
-  return getServiceContainer().get<UpdateTicketStatusUseCase>(TYPES.UpdateTicketStatusUseCase)
+  return getServiceContainer().get<UpdateTicketStatusUseCase>(CLI_TYPES.UpdateTicketStatusUseCase)
 }
 
 export function getUpdateTicketPriorityUseCase(): UpdateTicketPriorityUseCase {
-  return getServiceContainer().get<UpdateTicketPriorityUseCase>(TYPES.UpdateTicketPriorityUseCase)
+  return getServiceContainer().get<UpdateTicketPriorityUseCase>(
+    CLI_TYPES.UpdateTicketPriorityUseCase
+  )
 }
 
 export function getStartTicketProgressUseCase(): StartTicketProgressUseCase {
-  return getServiceContainer().get<StartTicketProgressUseCase>(TYPES.StartTicketProgressUseCase)
+  return getServiceContainer().get<StartTicketProgressUseCase>(CLI_TYPES.StartTicketProgressUseCase)
 }
 
 export function getCompleteTicketUseCase(): CompleteTicketUseCase {
-  return getServiceContainer().get<CompleteTicketUseCase>(TYPES.CompleteTicketUseCase)
+  return getServiceContainer().get<CompleteTicketUseCase>(CLI_TYPES.CompleteTicketUseCase)
 }
 
 export function getArchiveTicketUseCase(): ArchiveTicketUseCase {
-  return getServiceContainer().get<ArchiveTicketUseCase>(TYPES.ArchiveTicketUseCase)
+  return getServiceContainer().get<ArchiveTicketUseCase>(CLI_TYPES.ArchiveTicketUseCase)
 }
 
 export function getDeleteTicketUseCase(): DeleteTicketUseCase {
-  return getServiceContainer().get<DeleteTicketUseCase>(TYPES.DeleteTicketUseCase)
+  return getServiceContainer().get<DeleteTicketUseCase>(CLI_TYPES.DeleteTicketUseCase)
 }
 
 export function getGetTicketStatsUseCase(): GetTicketStatsUseCase {
-  return getServiceContainer().get<GetTicketStatsUseCase>(TYPES.GetTicketStatsUseCase)
+  return getServiceContainer().get<GetTicketStatsUseCase>(CLI_TYPES.GetTicketStatsUseCase)
 }
 
 export function getSearchTicketsUseCase(): SearchTicketsUseCase {
-  return getServiceContainer().get<SearchTicketsUseCase>(TYPES.SearchTicketsUseCase)
+  return getServiceContainer().get<SearchTicketsUseCase>(CLI_TYPES.SearchTicketsUseCase)
+}
+
+export function getUpdateTicketUseCase(): UpdateTicketUseCase {
+  return getServiceContainer().get<UpdateTicketUseCase>(CLI_TYPES.UpdateTicketUseCase)
 }
 
 export function resetServiceContainer(): void {
-  _container = null
-  resetContainer()
+  resetCliContainer()
 }

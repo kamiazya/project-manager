@@ -1,7 +1,8 @@
 import { Args, Flags } from '@oclif/core'
-import type { UpdateTicketResponse, UpdateTicketUseCase } from '@project-manager/core'
-import { TYPES, UpdateTicketRequest } from '@project-manager/core'
+import type { UpdateTicketResponse } from '@project-manager/core'
+import { UpdateTicketRequest } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
+import { getUpdateTicketUseCase } from '../utils/service-factory.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
   ticketId: string
@@ -62,7 +63,7 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, Update
     }
 
     // Get the use case from the service container
-    const updateTicketUseCase = this.getService<UpdateTicketUseCase>(TYPES.UpdateTicketUseCase)
+    const updateTicketUseCase = getUpdateTicketUseCase()
 
     // Create update request with all provided fields
     const updateRequest = new UpdateTicketRequest(

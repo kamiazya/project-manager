@@ -1,5 +1,5 @@
-import { TYPES } from '@project-manager/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { CLI_TYPES } from '../infrastructure/container.ts'
 import { getServiceContainer } from '../utils/service-factory.ts'
 import { CreateCommand } from './create.ts'
 
@@ -81,7 +81,7 @@ describe('CreateCommand', () => {
     // Mock the service container
     mockContainer = {
       get: vi.fn(type => {
-        if (type === TYPES.CreateTicketUseCase) return mockCreateTicketUseCase
+        if (type === CLI_TYPES.CreateTicketUseCase) return mockCreateTicketUseCase
         throw new Error(`Unknown service type: ${type.toString()}`)
       }),
     }

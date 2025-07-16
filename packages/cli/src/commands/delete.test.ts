@@ -1,6 +1,6 @@
-import { TYPES } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { CLI_TYPES } from '../infrastructure/container.ts'
 import { getServiceContainer } from '../utils/service-factory.ts'
 import { DeleteCommand } from './delete.ts'
 
@@ -31,8 +31,8 @@ describe('DeleteCommand', () => {
     // Mock the service container
     mockContainer = {
       get: vi.fn(type => {
-        if (type === TYPES.GetTicketByIdUseCase) return mockGetTicketByIdUseCase
-        if (type === TYPES.DeleteTicketUseCase) return mockDeleteTicketUseCase
+        if (type === CLI_TYPES.GetTicketByIdUseCase) return mockGetTicketByIdUseCase
+        if (type === CLI_TYPES.DeleteTicketUseCase) return mockDeleteTicketUseCase
         return null
       }),
     } as unknown as Container

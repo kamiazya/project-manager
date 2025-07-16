@@ -1,6 +1,6 @@
-import { TYPES } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { CLI_TYPES } from '../infrastructure/container.ts'
 import { getServiceContainer } from '../utils/service-factory.ts'
 import { UpdateCommand } from './update.ts'
 
@@ -82,7 +82,7 @@ describe('UpdateCommand', () => {
     // Mock the service container
     mockContainer = {
       get: vi.fn(type => {
-        if (type === TYPES.UpdateTicketUseCase) return mockUpdateTicketUseCase
+        if (type === CLI_TYPES.UpdateTicketUseCase) return mockUpdateTicketUseCase
         return null
       }),
     } as unknown as Container
@@ -116,7 +116,7 @@ describe('UpdateCommand', () => {
     await cmd.run()
 
     // Assert
-    expect(mockContainer.get).toHaveBeenCalledWith(TYPES.UpdateTicketUseCase)
+    expect(mockContainer.get).toHaveBeenCalledWith(CLI_TYPES.UpdateTicketUseCase)
     expect(mockUpdateTicketUseCase.execute).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'ticket-123',

@@ -1,6 +1,6 @@
-import { TYPES } from '@project-manager/core'
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { CLI_TYPES } from '../infrastructure/container.ts'
 import { getServiceContainer } from '../utils/service-factory.ts'
 import { ShowCommand } from './show.ts'
 
@@ -106,7 +106,7 @@ describe('ShowCommand', () => {
     await cmd.run()
 
     // Assert
-    expect(mockContainer.get).toHaveBeenCalledWith(TYPES.GetTicketByIdUseCase)
+    expect(mockContainer.get).toHaveBeenCalledWith(CLI_TYPES.GetTicketByIdUseCase)
     expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({
       id: 'ticket-123',
     })

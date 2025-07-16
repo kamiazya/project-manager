@@ -78,7 +78,6 @@
     "@oclif/plugin-plugins": "^5.4.44",
     "@project-manager/core": "workspace:*",
     "@project-manager/mcp-server": "workspace:*",
-    "@project-manager/shared": "workspace:*",
     "chalk": "catalog:",
     "inversify": "catalog:"
   },

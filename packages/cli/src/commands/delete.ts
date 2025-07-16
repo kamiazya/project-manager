@@ -1,8 +1,8 @@
 import { confirm } from '@inquirer/prompts'
 import { Args, Flags } from '@oclif/core'
-import type { DeleteTicketUseCase, GetTicketByIdUseCase } from '@project-manager/core'
-import { DeleteTicketRequest, GetTicketByIdRequest, TYPES } from '@project-manager/core'
+import { DeleteTicketRequest, GetTicketByIdRequest } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
+import { getDeleteTicketUseCase, getGetTicketByIdUseCase } from '../utils/service-factory.ts'
 
 interface ExecuteFlags {
   force?: boolean
@@ -32,8 +32,8 @@ export class DeleteCommand extends BaseCommand {
 
   async execute(args: { ticketId: string }, flags: ExecuteFlags): Promise<void> {
     // Get the use cases from the service container
-    const getTicketByIdUseCase = this.getService<GetTicketByIdUseCase>(TYPES.GetTicketByIdUseCase)
-    const deleteTicketUseCase = this.getService<DeleteTicketUseCase>(TYPES.DeleteTicketUseCase)
+    const getTicketByIdUseCase = getGetTicketByIdUseCase()
+    const deleteTicketUseCase = getDeleteTicketUseCase()
 
     // First, verify the ticket exists
     const getRequest = new GetTicketByIdRequest(args.ticketId)

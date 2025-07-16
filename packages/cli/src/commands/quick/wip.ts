@@ -1,8 +1,8 @@
 import { Flags } from '@oclif/core'
-import type { SearchTicketsUseCase } from '@project-manager/core'
-import { SearchTicketsRequest, TYPES } from '@project-manager/core'
+import { SearchTicketsRequest } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
 import { displayTickets } from '../../lib/table-formatter.ts'
+import { getSearchTicketsUseCase } from '../../utils/service-factory.ts'
 
 type ExecuteArgs = Record<string, never>
 
@@ -31,7 +31,7 @@ export class QuickWipCommand extends BaseCommand {
 
   async execute(_args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
     try {
-      const searchTicketsUseCase = this.getService<SearchTicketsUseCase>(TYPES.SearchTicketsUseCase)
+      const searchTicketsUseCase = getSearchTicketsUseCase()
       const request = new SearchTicketsRequest({
         status: 'in_progress',
       })

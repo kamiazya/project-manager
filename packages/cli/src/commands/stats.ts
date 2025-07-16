@@ -1,7 +1,7 @@
-import type { GetTicketStatsUseCase } from '@project-manager/core'
-import { GetTicketStatsRequest, TYPES } from '@project-manager/core'
+import { GetTicketStatsRequest } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 import { formatStats } from '../utils/output.ts'
+import { getGetTicketStatsUseCase } from '../utils/service-factory.ts'
 
 /**
  * Show ticket statistics
@@ -15,9 +15,7 @@ export class StatsCommand extends BaseCommand {
 
   async execute(_args: any, flags: any): Promise<any> {
     // Get the use case from the service container
-    const getTicketStatsUseCase = this.getService<GetTicketStatsUseCase>(
-      TYPES.GetTicketStatsUseCase
-    )
+    const getTicketStatsUseCase = getGetTicketStatsUseCase()
 
     // Execute the request
     const request = new GetTicketStatsRequest()

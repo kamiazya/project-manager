@@ -1,8 +1,9 @@
 import { Args } from '@oclif/core'
-import type { GetTicketByIdResponse, GetTicketByIdUseCase } from '@project-manager/core'
-import { GetTicketByIdRequest, TYPES } from '@project-manager/core'
+import type { GetTicketByIdResponse } from '@project-manager/core'
+import { GetTicketByIdRequest } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 import { formatTicketResponse } from '../utils/output.ts'
+import { getGetTicketByIdUseCase } from '../utils/service-factory.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
   ticketId: string
@@ -38,7 +39,7 @@ export class ShowCommand extends BaseCommand<
     }
 
     // Get the use case from the service container
-    const getTicketByIdUseCase = this.getService<GetTicketByIdUseCase>(TYPES.GetTicketByIdUseCase)
+    const getTicketByIdUseCase = getGetTicketByIdUseCase()
 
     // Execute the request
     const request = new GetTicketByIdRequest(args.ticketId)

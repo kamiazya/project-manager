@@ -1,6 +1,5 @@
 import { Flags } from '@oclif/core'
-import type { SearchTicketsUseCase } from '@project-manager/core'
-import { SearchTicketsRequest, TYPES } from '@project-manager/core'
+import { SearchTicketsRequest } from '@project-manager/core'
 import type {
   TicketPriority,
   TicketSearchCriteria,
@@ -10,6 +9,7 @@ import type {
 import { SUCCESS_MESSAGES } from '@project-manager/shared'
 import { BaseCommand } from '../lib/base-command.ts'
 import { formatTicketSummaryList } from '../utils/output.ts'
+import { getSearchTicketsUseCase } from '../utils/service-factory.ts'
 
 interface ExecuteFlags {
   status?: TicketStatus
@@ -64,7 +64,7 @@ export class ListCommand extends BaseCommand {
     if (flags.search) criteria.search = flags.search
 
     // Get the use case from the service container
-    const searchTicketsUseCase = this.getService<SearchTicketsUseCase>(TYPES.SearchTicketsUseCase)
+    const searchTicketsUseCase = getSearchTicketsUseCase()
 
     // Execute the request
     const request = new SearchTicketsRequest(criteria)
