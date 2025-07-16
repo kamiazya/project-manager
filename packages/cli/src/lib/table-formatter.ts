@@ -8,134 +8,126 @@ export interface TableFormatterOptions {
   useStatusAbbreviations?: boolean
 }
 
-export class TableFormatter {
-  /**
-   * Display tickets in either compact or table format
-   */
-  static displayTickets(
-    tickets: TicketSummary[],
-    format: 'compact' | 'table',
-    logFn: (message: string) => void,
-    options: TableFormatterOptions = {}
-  ): void {
-    if (format === 'compact') {
-      TableFormatter.displayCompactFormat(tickets, logFn, options)
+/**
+ * Display tickets in either compact or table format
+ */
+export function displayTickets(
+  tickets: TicketSummary[],
+  format: 'compact' | 'table',
+  logFn: (message: string) => void,
+  options: TableFormatterOptions = {}
+): void {
+  if (format === 'compact') {
+    displayCompactFormat(tickets, logFn, options)
+  } else {
+    displayTableFormat(tickets, logFn, options)
+  }
+}
+
+/**
+ * Display tickets in compact format
+ */
+function displayCompactFormat(
+  tickets: TicketSummary[],
+  logFn: (message: string) => void,
+  options: TableFormatterOptions
+): void {
+  tickets.forEach(ticket => {
+    if (options.customCompactFormat) {
+      logFn(options.customCompactFormat(ticket))
     } else {
-      TableFormatter.displayTableFormat(tickets, logFn, options)
-    }
-  }
+      const priority = ticket.priority?.charAt(0).toUpperCase() || 'U'
+      const type = ticket.type?.charAt(0).toUpperCase() || 'U'
 
-  /**
-   * Display tickets in compact format
-   */
-  private static displayCompactFormat(
-    tickets: TicketSummary[],
-    logFn: (message: string) => void,
-    options: TableFormatterOptions
-  ): void {
-    tickets.forEach(ticket => {
-      if (options.customCompactFormat) {
-        logFn(options.customCompactFormat(ticket))
-      } else {
-        const priority = ticket.priority?.charAt(0).toUpperCase() || 'U'
-        const type = ticket.type?.charAt(0).toUpperCase() || 'U'
-
-        let statusPart = ''
-        if (options.showStatus && ticket.status) {
-          if (options.useStatusAbbreviations) {
-            const status =
-              ticket.status === 'in_progress'
-                ? 'WIP'
-                : ticket.status?.charAt(0).toUpperCase() || 'U'
-            statusPart = status
-          } else {
-            statusPart = ` (${ticket.status})`
-          }
+      let statusPart = ''
+      if (options.showStatus && ticket.status) {
+        if (options.useStatusAbbreviations) {
+          const status =
+            ticket.status === 'in_progress' ? 'WIP' : ticket.status?.charAt(0).toUpperCase() || 'U'
+          statusPart = status
+        } else {
+          statusPart = ` (${ticket.status})`
         }
-
-        const title = TableFormatter.truncateTitle(ticket.title)
-        const statusDisplay = `${priority}${type}`
-        logFn(`${ticket.id || 'Unknown'} [${statusDisplay}]${statusPart} ${title}`)
       }
-    })
-  }
 
-  /**
-   * Display tickets in table format
-   */
-  private static displayTableFormat(
-    tickets: TicketSummary[],
-    logFn: (message: string) => void,
-    options: TableFormatterOptions
-  ): void {
-    const headers = TableFormatter.getTableHeaders(options.showStatus)
-    const rows = tickets.map(ticket => TableFormatter.getTableRow(ticket, options.showStatus))
-
-    const sectionTitle = options.sectionTitle || 'Tickets:'
-    const separator = '='.repeat(sectionTitle.length)
-
-    logFn(`\n${sectionTitle}`)
-    logFn(separator)
-    logFn(TableFormatter.formatTable(headers, rows))
-  }
-
-  /**
-   * Get table headers based on options
-   */
-  private static getTableHeaders(showStatus = false): string[] {
-    const baseHeaders = ['ID', 'Title', 'Priority', 'Type']
-    if (showStatus) {
-      baseHeaders.push('Status')
+      const title = truncateTitle(ticket.title)
+      const statusDisplay = `${priority}${type}`
+      logFn(`${ticket.id || 'Unknown'} [${statusDisplay}]${statusPart} ${title}`)
     }
-    baseHeaders.push('Created')
-    return baseHeaders
+  })
+}
+
+/**
+ * Display tickets in table format
+ */
+function displayTableFormat(
+  tickets: TicketSummary[],
+  logFn: (message: string) => void,
+  options: TableFormatterOptions
+): void {
+  const headers = getTableHeaders(options.showStatus)
+  const rows = tickets.map(ticket => getTableRow(ticket, options.showStatus))
+
+  const sectionTitle = options.sectionTitle || 'Tickets:'
+  const separator = '='.repeat(sectionTitle.length)
+
+  logFn(`\n${sectionTitle}`)
+  logFn(separator)
+  logFn(formatTable(headers, rows))
+}
+
+/**
+ * Get table headers based on options
+ */
+function getTableHeaders(showStatus = false): string[] {
+  const baseHeaders = ['ID', 'Title', 'Priority', 'Type']
+  if (showStatus) {
+    baseHeaders.push('Status')
+  }
+  baseHeaders.push('Created')
+  return baseHeaders
+}
+
+/**
+ * Get table row data for a ticket
+ */
+function getTableRow(ticket: TicketSummary, showStatus = false): string[] {
+  const row = [
+    ticket.id || 'Unknown',
+    truncateTitle(ticket.title),
+    ticket.priority || 'unknown',
+    ticket.type || 'unknown',
+  ]
+
+  if (showStatus) {
+    row.push(ticket.status || 'unknown')
   }
 
-  /**
-   * Get table row data for a ticket
-   */
-  private static getTableRow(ticket: TicketSummary, showStatus = false): string[] {
-    const row = [
-      ticket.id || 'Unknown',
-      TableFormatter.truncateTitle(ticket.title),
-      ticket.priority || 'unknown',
-      ticket.type || 'unknown',
-    ]
+  row.push(ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'N/A')
 
-    if (showStatus) {
-      row.push(ticket.status || 'unknown')
-    }
+  return row
+}
 
-    row.push(ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'N/A')
+/**
+ * Truncate title if it exceeds maximum length
+ */
+function truncateTitle(title: string | null | undefined): string {
+  if (!title) return 'Untitled'
 
-    return row
-  }
+  return title.length > MAX_TITLE_LENGTH ? `${title.substring(0, TITLE_TRUNCATE_LENGTH)}...` : title
+}
 
-  /**
-   * Truncate title if it exceeds maximum length
-   */
-  private static truncateTitle(title: string | null | undefined): string {
-    if (!title) return 'Untitled'
+/**
+ * Format data into an ASCII table
+ */
+export function formatTable(headers: string[], rows: string[][]): string {
+  const colWidths = headers.map((header, i) =>
+    Math.max(header.length, ...rows.map(row => row[i]?.length || 0))
+  )
 
-    return title.length > MAX_TITLE_LENGTH
-      ? `${title.substring(0, TITLE_TRUNCATE_LENGTH)}...`
-      : title
-  }
+  const headerRow = headers.map((header, i) => header.padEnd(colWidths[i] || 0)).join(' | ')
+  const separator = colWidths.map(width => '-'.repeat(width || 0)).join('-|-')
+  const dataRows = rows.map(row => row.map((cell, i) => cell.padEnd(colWidths[i] || 0)).join(' | '))
 
-  /**
-   * Format data into an ASCII table
-   */
-  static formatTable(headers: string[], rows: string[][]): string {
-    const colWidths = headers.map((header, i) =>
-      Math.max(header.length, ...rows.map(row => row[i]?.length || 0))
-    )
-
-    const headerRow = headers.map((header, i) => header.padEnd(colWidths[i] || 0)).join(' | ')
-    const separator = colWidths.map(width => '-'.repeat(width || 0)).join('-|-')
-    const dataRows = rows.map(row =>
-      row.map((cell, i) => cell.padEnd(colWidths[i] || 0)).join(' | ')
-    )
-
-    return [headerRow, separator, ...dataRows].join('\n')
-  }
+  return [headerRow, separator, ...dataRows].join('\n')
 }

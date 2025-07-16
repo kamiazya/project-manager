@@ -1,8 +1,8 @@
 import type { TicketSummary } from '@project-manager/core'
 import { describe, expect, test, vi } from 'vitest'
-import { TableFormatter } from './table-formatter.ts'
+import { displayTickets, formatTable } from './table-formatter.ts'
 
-describe('TableFormatter', () => {
+describe('Table Formatter Functions', () => {
   const mockTickets: TicketSummary[] = [
     {
       id: 'ticket-1',
@@ -28,7 +28,7 @@ describe('TableFormatter', () => {
     test('should display tickets in compact format', () => {
       const logFn = vi.fn()
 
-      TableFormatter.displayTickets(mockTickets, 'compact', logFn)
+      displayTickets(mockTickets, 'compact', logFn)
 
       expect(logFn).toHaveBeenCalledWith('ticket-1 [HF] Test ticket 1')
       expect(logFn).toHaveBeenCalledWith('ticket-2 [MB] Test ticket 2')
@@ -37,7 +37,7 @@ describe('TableFormatter', () => {
     test('should display tickets in compact format with status', () => {
       const logFn = vi.fn()
 
-      TableFormatter.displayTickets(mockTickets, 'compact', logFn, { showStatus: true })
+      displayTickets(mockTickets, 'compact', logFn, { showStatus: true })
 
       expect(logFn).toHaveBeenCalledWith('ticket-1 [HF] (in_progress) Test ticket 1')
       expect(logFn).toHaveBeenCalledWith('ticket-2 [MB] (pending) Test ticket 2')
@@ -46,7 +46,7 @@ describe('TableFormatter', () => {
     test('should display tickets in table format', () => {
       const logFn = vi.fn()
 
-      TableFormatter.displayTickets(mockTickets, 'table', logFn, {
+      displayTickets(mockTickets, 'table', logFn, {
         sectionTitle: 'Test Tickets:',
       })
 
@@ -71,7 +71,7 @@ describe('TableFormatter', () => {
         } as any,
       ]
 
-      TableFormatter.displayTickets(ticketsWithNulls, 'compact', logFn)
+      displayTickets(ticketsWithNulls, 'compact', logFn)
 
       expect(logFn).toHaveBeenCalledWith('Unknown [UU] Untitled')
     })
@@ -92,7 +92,7 @@ describe('TableFormatter', () => {
         },
       ]
 
-      TableFormatter.displayTickets(ticketsWithLongTitle, 'table', logFn)
+      displayTickets(ticketsWithLongTitle, 'table', logFn)
 
       const logCalls = logFn.mock.calls.map(call => call[0])
       const tableContent = logCalls.find(
@@ -112,7 +112,7 @@ describe('TableFormatter', () => {
         ['1234', 'Very Long Name', 'Inactive'],
       ]
 
-      const result = TableFormatter.formatTable(headers, rows)
+      const result = formatTable(headers, rows)
 
       expect(result).toContain('ID   | Name           | Status')
       expect(result).toContain('-----|----------------|--------')
@@ -124,7 +124,7 @@ describe('TableFormatter', () => {
       const headers = ['ID', 'Name']
       const rows: string[][] = []
 
-      const result = TableFormatter.formatTable(headers, rows)
+      const result = formatTable(headers, rows)
 
       expect(result).toContain('ID | Name')
       expect(result).toContain('---|----')

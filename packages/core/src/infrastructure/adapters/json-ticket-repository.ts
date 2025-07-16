@@ -12,7 +12,7 @@ import {
 import type { TicketRepository } from '../../application/repositories/ticket-repository.ts'
 import { Ticket } from '../../domain/entities/ticket.ts'
 import type { TicketId } from '../../domain/value-objects/ticket-id.ts'
-import { TicketMapper } from './mappers/ticket-mapper.ts'
+import * as TicketMapper from './mappers/ticket-mapper.ts'
 
 /**
  * JSON file-based implementation of the ticket repository using DDD principles.

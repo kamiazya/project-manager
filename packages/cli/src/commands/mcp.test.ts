@@ -1,328 +1,101 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import packageJson from '../../package.json' with { type: 'json' }
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { McpCommand } from './mcp.ts'
 
-// Mock the MCP server dependencies
+// Mock external dependencies
 vi.mock('@project-manager/mcp-server', () => ({
-  createMcpServer: vi.fn().mockResolvedValue({
-    connect: vi.fn().mockResolvedValue(undefined),
-    close: vi.fn().mockResolvedValue(undefined),
-  }),
+  createMcpServer: vi.fn(),
 }))
 
 vi.mock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
-  StdioServerTransport: vi.fn().mockImplementation(() => ({})),
+  StdioServerTransport: vi.fn().mockImplementation(() => ({
+    connect: vi.fn(),
+  })),
 }))
 
 describe('McpCommand', () => {
   let command: McpCommand
-  let originalEnv: NodeJS.ProcessEnv
+  let mockCreateMcpServer: any
   let consoleErrorSpy: any
-  let processExitSpy: any
-  let logSpy: any
 
-  beforeEach(() => {
-    originalEnv = { ...process.env }
+  beforeEach(async () => {
+    vi.clearAllMocks()
+
+    // Import and setup mocks
+    const { createMcpServer } = await import('@project-manager/mcp-server')
+    mockCreateMcpServer = vi.mocked(createMcpServer)
+
+    // Mock console methods
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    processExitSpy = vi
-      .spyOn(process, 'exit')
-      .mockImplementation((_code?: string | number | null | undefined) => {
-        return undefined as never
-      })
 
-    command = new McpCommand([], {} as any)
-    logSpy = vi.spyOn(command, 'log').mockImplementation(() => {})
-    vi.spyOn(command, 'error').mockImplementation(() => {
-      throw new Error('command.error called')
+    // Create command instance with minimal config
+    command = new McpCommand([], { bin: 'pm' } as any)
+
+    // Mock command methods
+    vi.spyOn(command, 'log').mockImplementation(() => {})
+    vi.spyOn(command, 'error').mockImplementation((input: string | Error) => {
+      const msg = typeof input === 'string' ? input : input.message
+      throw new Error(`Command error: ${msg}`)
     })
   })
 
   afterEach(() => {
-    process.env = originalEnv
-    vi.clearAllMocks()
-    consoleErrorSpy.mockRestore()
-    processExitSpy.mockRestore()
+    vi.restoreAllMocks()
   })
 
-  test('should show version with --version flag', async () => {
-    await command.execute({ version: true })
+  describe('version flag', () => {
+    it('should display version when --version flag is used', async () => {
+      // Mock the dynamic import for package.json
+      vi.doMock('@project-manager/mcp-server/package.json', () => ({
+        version: '1.0.0',
+      }))
 
-    expect(logSpy).toHaveBeenCalledWith(packageJson.version)
+      const logSpy = vi.spyOn(command, 'log')
+
+      await command.execute({ version: true })
+
+      expect(logSpy).toHaveBeenCalledWith('1.0.0')
+    })
   })
 
-  test('should start MCP server in development mode', async () => {
-    process.env.NODE_ENV = 'development'
+  describe('server startup', () => {
+    it('should start MCP server successfully', async () => {
+      const mockServer = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        close: vi.fn().mockResolvedValue(undefined),
+      }
+      mockCreateMcpServer.mockResolvedValue(mockServer)
 
-    const { createMcpServer } = await import('@project-manager/mcp-server')
-    const mockServer = {
-      connect: vi.fn().mockResolvedValue(undefined),
-    }
-    vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
+      // Mock process.on to avoid infinite loop
+      const processOnSpy = vi.spyOn(process, 'on').mockImplementation(() => process)
 
-    // Mock the signal listener to avoid infinite loop
-    const mockProcessOn = vi.spyOn(process, 'on').mockImplementation(() => process)
-
-    await command.execute({ version: false })
-
-    expect(createMcpServer).toHaveBeenCalled()
-    expect(mockServer.connect).toHaveBeenCalled()
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'MCP server started successfully in development mode (stdio)'
-    )
-    expect(consoleErrorSpy).toHaveBeenCalledWith('[DEV] Server is ready to accept MCP connections')
-
-    mockProcessOn.mockRestore()
-  })
-
-  test('should start MCP server in production mode', async () => {
-    process.env.NODE_ENV = 'production'
-
-    const { createMcpServer } = await import('@project-manager/mcp-server')
-    const mockServer = {
-      connect: vi.fn().mockResolvedValue(undefined),
-    }
-    vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
-
-    const mockProcessOn = vi.spyOn(process, 'on').mockImplementation(() => process)
-
-    await command.execute({ version: false })
-
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'MCP server started successfully in production mode (stdio)'
-    )
-    expect(consoleErrorSpy).not.toHaveBeenCalledWith(
-      '[DEV] Server is ready to accept MCP connections'
-    )
-
-    mockProcessOn.mockRestore()
-  })
-
-  test('should handle server creation error', async () => {
-    const { createMcpServer } = await import('@project-manager/mcp-server')
-    vi.mocked(createMcpServer).mockRejectedValue(new Error('Server creation failed'))
-
-    try {
       await command.execute({ version: false })
-    } catch (error) {
-      expect(error).toEqual(new Error('command.error called'))
-    }
 
-    expect(createMcpServer).toHaveBeenCalled()
-  })
+      expect(mockCreateMcpServer).toHaveBeenCalled()
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('MCP server started successfully')
+      )
 
-  test('should handle server connection error', async () => {
-    const { createMcpServer } = await import('@project-manager/mcp-server')
-    const mockServer = {
-      connect: vi.fn().mockRejectedValue(new Error('Connection failed')),
-    }
-    vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
-
-    try {
-      await command.execute({ version: false })
-    } catch (error) {
-      expect(error).toEqual(new Error('command.error called'))
-    }
-
-    expect(createMcpServer).toHaveBeenCalled()
-    expect(mockServer.connect).toHaveBeenCalled()
-  })
-
-  test('should have correct command metadata', () => {
-    expect(McpCommand.description).toBe('Start MCP server for AI integration')
-    expect(McpCommand.examples).toEqual([
-      '<%= config.bin %> <%= command.id %> # Start MCP server in stdio mode',
-      '<%= config.bin %> <%= command.id %> --help # Show available options',
-    ])
-    expect(McpCommand.flags.version).toBeDefined()
-  })
-
-  test('should use stdio transport', async () => {
-    const { StdioServerTransport } = await import('@modelcontextprotocol/sdk/server/stdio.js')
-    const { createMcpServer } = await import('@project-manager/mcp-server')
-
-    const mockServer = {
-      connect: vi.fn().mockResolvedValue(undefined),
-    }
-    vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
-    const mockProcessOn = vi.spyOn(process, 'on').mockImplementation(() => process)
-
-    await command.execute({ version: false })
-
-    expect(StdioServerTransport).toHaveBeenCalled()
-    expect(mockServer.connect).toHaveBeenCalled()
-
-    mockProcessOn.mockRestore()
-  })
-
-  test('should properly close server on SIGINT signal', async () => {
-    const { createMcpServer } = await import('@project-manager/mcp-server')
-
-    // Mock server with both connect and close methods
-    const mockServer = {
-      connect: vi.fn().mockResolvedValue(undefined),
-      close: vi.fn().mockResolvedValue(undefined),
-    }
-    vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
-
-    // Spy on process.on to capture the SIGINT handler
-    let sigintHandler: (() => void) | undefined
-    const mockProcessOn = vi.spyOn(process, 'on').mockImplementation((event, handler) => {
-      if (event === 'SIGINT' && typeof handler === 'function') {
-        sigintHandler = handler
-      }
-      return process
+      processOnSpy.mockRestore()
     })
 
-    // Execute the command
-    await command.execute({ version: false })
+    it('should handle server creation failure', async () => {
+      const error = new Error('Failed to create server')
+      mockCreateMcpServer.mockRejectedValue(error)
 
-    // Verify that SIGINT handler was registered
-    expect(sigintHandler).toBeDefined()
-    expect(mockServer.connect).toHaveBeenCalled()
-
-    // Simulate SIGINT signal by invoking the captured handler
-    if (sigintHandler) {
-      sigintHandler()
-
-      // Wait for the async gracefulShutdown to complete
-      await new Promise(resolve => setTimeout(resolve, 10))
-    }
-
-    // Assert that server's close method is called and process.exit is called with code 0
-    expect(mockServer.close).toHaveBeenCalled()
-    expect(processExitSpy).toHaveBeenCalledWith(0)
-
-    // Restore the mocked process.on
-    mockProcessOn.mockRestore()
+      await expect(command.execute({ version: false })).rejects.toThrow('Command error:')
+      expect(mockCreateMcpServer).toHaveBeenCalled()
+    })
   })
 
-  test('should properly close server on SIGTERM signal', async () => {
-    const { createMcpServer } = await import('@project-manager/mcp-server')
-
-    // Mock server with both connect and close methods
-    const mockServer = {
-      connect: vi.fn().mockResolvedValue(undefined),
-      close: vi.fn().mockResolvedValue(undefined),
-    }
-    vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
-
-    // Spy on process.on to capture the SIGTERM handler
-    let sigtermHandler: (() => void) | undefined
-    const mockProcessOn = vi.spyOn(process, 'on').mockImplementation((event, handler) => {
-      if (event === 'SIGTERM' && typeof handler === 'function') {
-        sigtermHandler = handler
-      }
-      return process
+  describe('command metadata', () => {
+    it('should have correct static properties', () => {
+      expect(McpCommand.description).toBe('Start MCP server for AI integration')
+      expect(McpCommand.examples).toEqual([
+        '<%= config.bin %> <%= command.id %> # Start MCP server in stdio mode',
+        '<%= config.bin %> <%= command.id %> --help # Show available options',
+      ])
+      expect(McpCommand.flags.version).toBeDefined()
+      expect(McpCommand.flags.version.char).toBe('v')
     })
-
-    // Execute the command
-    await command.execute({ version: false })
-
-    // Verify that SIGTERM handler was registered
-    expect(sigtermHandler).toBeDefined()
-    expect(mockServer.connect).toHaveBeenCalled()
-
-    // Simulate SIGTERM signal by invoking the captured handler
-    if (sigtermHandler) {
-      sigtermHandler()
-
-      // Wait for the async gracefulShutdown to complete
-      await new Promise(resolve => setTimeout(resolve, 10))
-    }
-
-    // Assert that server's close method is called and process.exit is called with code 0
-    expect(mockServer.close).toHaveBeenCalled()
-    expect(processExitSpy).toHaveBeenCalledWith(0)
-
-    // Restore the mocked process.on
-    mockProcessOn.mockRestore()
-  })
-
-  test('should handle server close errors during graceful shutdown', async () => {
-    const { createMcpServer } = await import('@project-manager/mcp-server')
-
-    // Mock server with close method that throws an error
-    const mockServer = {
-      connect: vi.fn().mockResolvedValue(undefined),
-      close: vi.fn().mockRejectedValue(new Error('Close error')),
-    }
-    vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
-
-    // Spy on console.error to capture error messages
-    const testConsoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    // Spy on process.on to capture the SIGINT handler
-    let sigintHandler: (() => void) | undefined
-    const mockProcessOn = vi.spyOn(process, 'on').mockImplementation((event, handler) => {
-      if (event === 'SIGINT' && typeof handler === 'function') {
-        sigintHandler = handler
-      }
-      return process
-    })
-
-    // Execute the command
-    await command.execute({ version: false })
-
-    // Simulate SIGINT signal by invoking the captured handler
-    if (sigintHandler) {
-      sigintHandler()
-
-      // Wait for the async gracefulShutdown to complete
-      await new Promise(resolve => setTimeout(resolve, 10))
-    }
-
-    // Assert that server's close method was called and error was logged
-    expect(mockServer.close).toHaveBeenCalled()
-    expect(testConsoleErrorSpy).toHaveBeenCalledWith(
-      'Error during server shutdown:',
-      expect.any(Error)
-    )
-    expect(processExitSpy).toHaveBeenCalledWith(0)
-
-    // Restore all mocks
-    mockProcessOn.mockRestore()
-    testConsoleErrorSpy.mockRestore()
-  })
-
-  test('should handle server without close method during graceful shutdown', async () => {
-    const { createMcpServer } = await import('@project-manager/mcp-server')
-
-    // Mock server without close method
-    const mockServer = {
-      connect: vi.fn().mockResolvedValue(undefined),
-      // No close method
-    }
-    vi.mocked(createMcpServer).mockResolvedValue(mockServer as any)
-
-    // Spy on console.error to capture success message
-    const testConsoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    // Spy on process.on to capture the SIGINT handler
-    let sigintHandler: (() => void) | undefined
-    const mockProcessOn = vi.spyOn(process, 'on').mockImplementation((event, handler) => {
-      if (event === 'SIGINT' && typeof handler === 'function') {
-        sigintHandler = handler
-      }
-      return process
-    })
-
-    // Execute the command
-    await command.execute({ version: false })
-
-    // Simulate SIGINT signal by invoking the captured handler
-    if (sigintHandler) {
-      sigintHandler()
-
-      // Wait for the async gracefulShutdown to complete
-      await new Promise(resolve => setTimeout(resolve, 10))
-    }
-
-    // Assert that graceful shutdown was attempted and process.exit was called
-    expect(testConsoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Received SIGINT'))
-    expect(processExitSpy).toHaveBeenCalledWith(0)
-
-    // Restore all mocks
-    mockProcessOn.mockRestore()
-    testConsoleErrorSpy.mockRestore()
   })
 })

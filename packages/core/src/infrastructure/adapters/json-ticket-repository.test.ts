@@ -161,7 +161,7 @@ describe('JsonTicketRepository', () => {
       await repository.save(ticket)
 
       const allTickets = await repository.findAll()
-      const foundTicket = allTickets[0]
+      const foundTicket = allTickets[0]!
 
       expect(foundTicket.id).toBeInstanceOf(TicketId)
       expect(foundTicket.title.value).toBe('Domain test')

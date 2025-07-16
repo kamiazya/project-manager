@@ -1,6 +1,5 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { Flags } from '@oclif/core'
-import { createMcpServer } from '@project-manager/mcp-server'
 import { BaseCommand } from '../lib/base-command.ts'
 
 interface ExecuteFlags {
@@ -37,6 +36,9 @@ export class McpCommand extends BaseCommand {
     }
 
     try {
+      // Dynamically import MCP server to avoid build dependencies
+      const { createMcpServer } = await import('@project-manager/mcp-server')
+
       // Create MCP server using the existing function
       const server = await createMcpServer()
 

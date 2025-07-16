@@ -2,7 +2,7 @@ import { Flags } from '@oclif/core'
 import type { SearchTicketsUseCase } from '@project-manager/core'
 import { SearchTicketsRequest, TYPES } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
-import { TableFormatter } from '../../lib/table-formatter.ts'
+import { displayTickets } from '../../lib/table-formatter.ts'
 
 /**
  * List pending tickets
@@ -41,7 +41,7 @@ export class QuickTodoCommand extends BaseCommand {
       }
 
       const outputFormat = flags.compact ? 'compact' : 'table'
-      TableFormatter.displayTickets(tickets, outputFormat, msg => this.log(msg), {
+      displayTickets(tickets, outputFormat, msg => this.log(msg), {
         sectionTitle: 'Pending Tickets:',
       })
     } catch (error) {

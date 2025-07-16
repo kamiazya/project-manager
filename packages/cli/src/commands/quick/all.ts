@@ -2,7 +2,7 @@ import { Flags } from '@oclif/core'
 import type { SearchTicketsUseCase } from '@project-manager/core'
 import { SearchTicketsRequest, TYPES } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
-import { TableFormatter } from '../../lib/table-formatter.ts'
+import { displayTickets } from '../../lib/table-formatter.ts'
 
 /**
  * List all tickets
@@ -39,7 +39,7 @@ export class QuickAllCommand extends BaseCommand {
       }
 
       const outputFormat = flags.compact ? 'compact' : 'table'
-      TableFormatter.displayTickets(tickets, outputFormat, msg => this.log(msg), {
+      displayTickets(tickets, outputFormat, msg => this.log(msg), {
         sectionTitle: 'All Tickets:',
         showStatus: true,
         useStatusAbbreviations: true,
