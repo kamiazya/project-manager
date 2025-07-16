@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
-import { cleanArchitecture } from '../../vite-plugin-architecture-fitness.ts'
+import { cleanArchitecture } from '../../etc/vite/plugins/architecture-fitness.ts'
 
 export default defineConfig({
   plugins: [

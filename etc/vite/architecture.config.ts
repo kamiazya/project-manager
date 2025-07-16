@@ -1,4 +1,4 @@
-import type { ArchitectureRules } from './vite-plugin-architecture-fitness.ts'
+import type { ArchitectureRules } from './plugins/architecture-fitness.ts'
 
 /**
  * Architecture fitness rules configuration for project-manager
