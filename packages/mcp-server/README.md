@@ -99,7 +99,7 @@ node dist/bin/mcp-server.js
    ```bash
    # For development (with hot reload)
    NODE_ENV=development pm --mcp
-   
+
    # For production
    pm --mcp
    ```
@@ -183,3 +183,7 @@ pnpm test src/tools/create-ticket.test.ts
 2. Test changes with hot reload
 3. Run tests before committing
 4. Update documentation if needed
+
+## License
+
+See the main project [LICENSE](https://github.com/kamiazya/project-manager/blob/main/LICENSE) file.

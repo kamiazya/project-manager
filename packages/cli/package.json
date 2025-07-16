@@ -6,7 +6,7 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "bin": {
-    "pm": "src/bin/pm-dev.ts"
+    "pm": "src/bin/run-dev.ts"
   },
   "exports": {
     ".": {
@@ -19,7 +19,17 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "bin": {
-      "pm": "dist/bin/pm.js"
+      "pm": "dist/bin/run.js"
+    },
+    "oclif": {
+      "commands": "./dist/commands",
+      "hooks": {
+        "init": [
+          "./dist/hooks/init/config-validation.js",
+          "./dist/hooks/init/plugin-support.js"
+        ],
+        "postrun": "./dist/hooks/postrun/cleanup.js"
+      }
     },
     "exports": {
       ".": {
@@ -28,22 +38,55 @@
       }
     },
     "executableFiles": [
-      "dist/bin/pm.js"
+      "dist/bin/run.js"
     ]
+  },
+  "oclif": {
+    "bin": "pm",
+    "dirname": "project-manager",
+    "commands": "./src/commands",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins",
+      "@oclif/plugin-autocomplete"
+    ],
+    "topicSeparator": " ",
+    "hooks": {
+      "init": [
+        "./src/hooks/init/config-validation.ts",
+        "./src/hooks/init/plugin-support.ts"
+      ],
+      "postrun": "./src/hooks/postrun/cleanup.ts"
+    },
+    "topics": {
+      "quick": {
+        "description": "Quick operations for common tasks"
+      }
+    }
   },
   "scripts": {
     "build": "vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest"
   },
   "dependencies": {
+    "@inquirer/prompts": "^7.6.0",
+    "@modelcontextprotocol/sdk": "catalog:",
+    "@oclif/core": "^4.5.0",
+    "@oclif/plugin-autocomplete": "^3.2.33",
+    "@oclif/plugin-help": "^6.2.31",
+    "@oclif/plugin-plugins": "^5.4.44",
     "@project-manager/core": "workspace:*",
+    "@project-manager/mcp-server": "workspace:*",
     "@project-manager/shared": "workspace:*",
     "chalk": "catalog:",
-    "commander": "catalog:",
     "inversify": "catalog:"
   },
   "devDependencies": {
+    "@oclif/plugin-commands": "^4.1.29",
+    "@oclif/test": "^4.1.13",
     "@types/node": "catalog:",
+    "oclif": "^4.20.6",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",

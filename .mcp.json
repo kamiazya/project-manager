@@ -11,6 +11,14 @@
     "typescript": {
       "command": "pnpm",
       "args": ["typescript-mcp"]
+    },
+    "project-manager": {
+      "command": "pnpm",
+      "args": ["pm-mcp-server"]
+    },
+    "sequential-thinking": {
+      "command": "pnpm",
+      "args": ["dlx", "@modelcontextprotocol/server-sequential-thinking"]
     }
   }
 }

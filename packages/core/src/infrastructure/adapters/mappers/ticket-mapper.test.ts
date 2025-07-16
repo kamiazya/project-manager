@@ -1,9 +1,9 @@
 import type { TicketJSON } from '@project-manager/shared'
 import { describe, expect, it } from 'vitest'
 import { Ticket } from '../../../domain/entities/ticket.ts'
-import { TicketMapper } from './ticket-mapper.ts'
+import * as TicketMapper from './ticket-mapper.ts'
 
-describe('TicketMapper', () => {
+describe('Ticket Mapper Functions', () => {
   const sampleTicketJSON: TicketJSON = {
     id: 'test-ticket-123',
     title: 'Fix login bug',
@@ -138,9 +138,9 @@ describe('TicketMapper', () => {
       const tickets = TicketMapper.toDomainList(jsonList)
 
       expect(tickets).toHaveLength(2)
-      expect(tickets[0].id.value).toBe('test-ticket-123')
-      expect(tickets[1].id.value).toBe('ticket-2')
-      expect(tickets[1].title.value).toBe('Second ticket')
+      expect(tickets[0]?.id.value).toBe('test-ticket-123')
+      expect(tickets[1]?.id.value).toBe('ticket-2')
+      expect(tickets[1]?.title.value).toBe('Second ticket')
     })
 
     it('should handle empty array', () => {
@@ -161,8 +161,8 @@ describe('TicketMapper', () => {
       const jsonList = TicketMapper.toPersistenceList([ticket1, ticket2])
 
       expect(jsonList).toHaveLength(2)
-      expect(jsonList[0].id).toBe('test-ticket-123')
-      expect(jsonList[1].title).toBe('Second ticket')
+      expect(jsonList[0]?.id).toBe('test-ticket-123')
+      expect(jsonList[1]?.title).toBe('Second ticket')
     })
 
     it('should handle empty array', () => {

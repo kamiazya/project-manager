@@ -1,4 +1,4 @@
-import { getConfig } from '@project-manager/shared'
+import { getConfig, resetConfig } from '@project-manager/shared'
 import { z } from 'zod'
 import type { McpTool } from '../types/mcp-tool.ts'
 import { handleError } from '../utils/error-handler.ts'
@@ -12,6 +12,8 @@ export const getProjectConfigTool: McpTool = {
   inputSchema: getProjectConfigSchema.shape,
   handler: async () => {
     try {
+      // Reset cache to ensure fresh config is loaded
+      resetConfig()
       const config = getConfig()
 
       return {

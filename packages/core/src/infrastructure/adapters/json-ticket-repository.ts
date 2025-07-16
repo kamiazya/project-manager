@@ -1,5 +1,5 @@
-import { existsSync } from 'node:fs'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { constants } from 'node:fs'
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import type { TicketJSON, TicketStats } from '@project-manager/shared'
 import {
@@ -12,7 +12,7 @@ import {
 import type { TicketRepository } from '../../application/repositories/ticket-repository.ts'
 import { Ticket } from '../../domain/entities/ticket.ts'
 import type { TicketId } from '../../domain/value-objects/ticket-id.ts'
-import { TicketMapper } from './mappers/ticket-mapper.ts'
+import * as TicketMapper from './mappers/ticket-mapper.ts'
 
 /**
  * JSON file-based implementation of the ticket repository using DDD principles.
@@ -176,7 +176,11 @@ export class JsonTicketRepository implements TicketRepository {
 
   private async loadTicketsFromFile(): Promise<TicketJSON[]> {
     try {
-      if (!existsSync(this.filePath)) {
+      // Check if file exists using async access
+      try {
+        await access(this.filePath, constants.F_OK)
+      } catch {
+        // File doesn't exist
         return []
       }
 
@@ -207,7 +211,12 @@ export class JsonTicketRepository implements TicketRepository {
   private async saveTicketsToFile(tickets: TicketJSON[]): Promise<void> {
     try {
       const dir = dirname(this.filePath)
-      if (!existsSync(dir)) {
+
+      // Check if directory exists using async access
+      try {
+        await access(dir, constants.F_OK)
+      } catch {
+        // Directory doesn't exist, create it
         await mkdir(dir, { recursive: true })
       }
 

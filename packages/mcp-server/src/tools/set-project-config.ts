@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { type Config, DEFAULT_CONFIG, validateConfig } from '@project-manager/shared'
+import { type Config, DEFAULT_CONFIG, resetConfig, validateConfig } from '@project-manager/shared'
 import { z } from 'zod'
 import type { McpTool } from '../types/mcp-tool.ts'
 import { handleError } from '../utils/error-handler.ts'
@@ -122,6 +122,12 @@ export const setProjectConfigTool: McpTool = {
       // Update the config
       const updatedConfig = { ...existingConfig, [key]: parsedValue }
 
+      // Validate the updated configuration
+      const validationErrors = validateConfig(updatedConfig)
+      if (validationErrors.length > 0) {
+        throw new Error(`Configuration validation errors: ${validationErrors.join(', ')}`)
+      }
+
       // Create directory if it doesn't exist
       const configDir = dirname(configPath)
       if (!existsSync(configDir)) {
@@ -130,6 +136,9 @@ export const setProjectConfigTool: McpTool = {
 
       // Write the updated config
       writeFileSync(configPath, JSON.stringify(updatedConfig, null, 2))
+
+      // Reset config cache to ensure changes are reflected
+      resetConfig()
 
       return {
         content: [

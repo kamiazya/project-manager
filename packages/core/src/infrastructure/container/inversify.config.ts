@@ -13,6 +13,7 @@ import { GetTicketByIdUseCase } from '../../application/usecases/get-ticket-by-i
 import { GetTicketStatsUseCase } from '../../application/usecases/get-ticket-stats.ts'
 import { SearchTicketsUseCase } from '../../application/usecases/search-tickets.ts'
 import { StartTicketProgressUseCase } from '../../application/usecases/start-ticket-progress.ts'
+import { UpdateTicketUseCase } from '../../application/usecases/update-ticket.ts'
 import { UpdateTicketDescriptionUseCase } from '../../application/usecases/update-ticket-description.ts'
 import { UpdateTicketPriorityUseCase } from '../../application/usecases/update-ticket-priority.ts'
 import { UpdateTicketStatusUseCase } from '../../application/usecases/update-ticket-status.ts'
@@ -64,6 +65,13 @@ export function createContainer(storagePath?: string): Container {
     .toDynamicValue(() => {
       const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
       return new GetAllTicketsUseCase(ticketRepository)
+    })
+    .inSingletonScope()
+  container
+    .bind<UpdateTicketUseCase>(TYPES.UpdateTicketUseCase)
+    .toDynamicValue(() => {
+      const ticketRepository = container.get<TicketRepository>(TicketRepositorySymbol)
+      return new UpdateTicketUseCase(ticketRepository)
     })
     .inSingletonScope()
   container

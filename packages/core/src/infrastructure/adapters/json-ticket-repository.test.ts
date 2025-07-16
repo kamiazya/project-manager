@@ -1,5 +1,5 @@
-import { existsSync } from 'node:fs'
-import { mkdtemp, rm, unlink } from 'node:fs/promises'
+import { constants } from 'node:fs'
+import { access, mkdtemp, rm, unlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { TicketNotFoundError } from '@project-manager/shared'
@@ -24,8 +24,11 @@ describe('JsonTicketRepository', () => {
 
   afterEach(async () => {
     // Clean up test file
-    if (existsSync(testFilePath)) {
+    try {
+      await access(testFilePath, constants.F_OK)
       await unlink(testFilePath)
+    } catch {
+      // File doesn't exist, nothing to clean up
     }
   })
 
@@ -161,7 +164,7 @@ describe('JsonTicketRepository', () => {
       await repository.save(ticket)
 
       const allTickets = await repository.findAll()
-      const foundTicket = allTickets[0]
+      const foundTicket = allTickets[0]!
 
       expect(foundTicket.id).toBeInstanceOf(TicketId)
       expect(foundTicket.title.value).toBe('Domain test')

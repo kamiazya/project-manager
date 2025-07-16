@@ -2,94 +2,6 @@
 
 This document contains practical tips and best practices for efficient development in the Project Manager monorepo.
 
-## Table of Contents
-
-1. [Hot-Reload Development Setup](#hot-reload-development-setup)
-2. [Advanced pnpm Configuration](#advanced-pnpm-configuration)
-   - [publishConfig for Dev/Prod Separation](#publishconfig-development-vs-production-separation)
-   - [Custom Export Conditions](#custom-export-conditions)
-   - [Package Configuration Patterns](#advanced-package-configuration-patterns)
-   - [Real Project Examples](#real-project-examples)
-3. [Monorepo Package Development](#monorepo-package-development)
-4. [Performance Optimization](#performance-optimization)
-5. [Development Workflow](#development-workflow)
-
-## Hot-Reload Development Setup
-
-### Problem: Slow Development Cycle
-
-Traditional Node.js development requires building TypeScript before execution, which significantly slows down the development cycle:
-
-- **TypeScript compilation + execution**: ~11 seconds
-- **Direct tsx execution**: ~1 second
-- **Speed improvement**: 10x faster
-
-### Solution: Development Wrapper Pattern
-
-Use tsx-based development wrappers that automatically set environment variables and provide hot-reload capability.
-
-#### Implementation Pattern
-
-**1. Create Development Wrapper**
-
-```typescript
-// packages/{package}/src/bin/{command}-dev.ts
-#!/usr/bin/env tsx
-
-/**
- * Development wrapper for {command}.
- * This script automatically sets NODE_ENV=development before executing the main command.
- *
- * In production, this file is not included (see package.json publishConfig).
- * The production binary uses {command}.ts directly.
- */
-
-// Force development environment
-process.env.NODE_ENV = 'development'
-
-// Import and execute the main command
-import './{command}.ts'
-```
-
-**2. Configure package.json**
-
-```json
-{
-  "bin": {
-    "command-name": "src/bin/command-dev.ts"
-  },
-  "publishConfig": {
-    "bin": {
-      "command-name": "dist/bin/command.js"
-    },
-    "executableFiles": [
-      "dist/bin/command.js"
-    ]
-  }
-}
-```
-
-**3. Reinstall Dependencies**
-
-After updating package.json bin configuration:
-
-```bash
-pnpm install  # Updates bin links in node_modules/.bin/
-```
-
-#### Benefits
-
-- **10x faster execution** during development
-- **Automatic environment setup** (NODE_ENV=development)
-- **Hot-reload capability** with file watching
-- **Production build integrity** maintained through publishConfig
-- **Consistent development experience** across all packages
-
-#### Examples in Project
-
-- **CLI Package**: `pm-dev.ts` → `pm` command
-- **MCP Server Package**: `mcp-server-dev.ts` → `pm-mcp-server` command
-
 ## Advanced pnpm Configuration
 
 ### publishConfig: Development vs Production Separation
@@ -299,7 +211,11 @@ This project uses these patterns extensively:
 
 #### MCP Server Package (`packages/mcp-server/`)
 
-- **Development**: `pm-mcp-server` executes `src/bin/mcp-server-dev.ts` with hot-reload
+- **Development**: `pm-mcp-server` executes `src/bin/mcp-server-dev.ts` with integrated hot-reload
+  - Automatic file watching with 300ms debounced restarts
+  - Colorful logging for enhanced development experience
+  - Graceful shutdown with 2-second timeout
+  - Environment-based automatic switching (NODE_ENV=development)
 - **Production**: `pm-mcp-server` executes `dist/bin/mcp-server.js` for deployment
 
 #### Core Package (`packages/core/`)
@@ -426,7 +342,7 @@ This ensures development activities don't interfere with production data.
 source pm-dev-alias.sh           # Load convenience aliases (optional)
 
 # 2. Start development with hot-reload
-pm-mcp-server                     # MCP server development
+pnpm pm-mcp-server               # MCP server with integrated hot reload
 pnpm pm                          # CLI development
 
 # 3. Run tests and checks
@@ -539,6 +455,27 @@ pnpm list --depth=0
 pnpm install
 ```
 
+**8. MCP Hot Reload Issues**
+
+```bash
+# Check hot reload status
+echo $NODE_ENV  # Should show 'development' for hot reload
+
+# Test MCP server startup
+timeout 5s pnpm pm-mcp-server
+
+# Look for hot reload indicators in output:
+# [Hot Reload] Starting MCP server...
+# [Hot Reload] Watching for changes in src/
+
+# Verify file watching works
+touch packages/mcp-server/src/test.ts
+# Should see: [Hot Reload] File added: src/test.ts
+
+# Force production mode
+NODE_ENV=production pnpm pm-mcp-server  # Should skip hot reload
+```
+
 ### Getting Help
 
 When encountering development issues:
@@ -599,6 +536,14 @@ timeout 5s pnpm dev 2>&1 | head -10
 # - "Server started successfully"
 # - "Watching for file changes"
 # - No compilation errors
+
+# For MCP Server hot reload specifically
+timeout 5s pnpm pm-mcp-server 2>&1 | head -10
+
+# Look for MCP hot reload indicators:
+# - "[Hot Reload] Starting MCP server..."
+# - "[Hot Reload] Watching for changes in src/"
+# - No TypeScript compilation errors
 ```
 
 #### Verification Checklist for AI
@@ -610,6 +555,14 @@ When testing hot-reload development:
 - ✅ Development wrapper sets NODE_ENV correctly
 - ✅ Watch mode starts without errors (`timeout 5s pnpm dev`)
 - ✅ File changes trigger recompilation (manual verification needed)
+
+**Additional MCP Server Hot Reload Verification:**
+
+- ✅ MCP server hot reload activates (`timeout 5s pnpm pm-mcp-server`)
+- ✅ Color-coded logging appears (`[Hot Reload]` prefix in cyan)
+- ✅ File watching works (create/modify files in `src/`)
+- ✅ Debounced restarts prevent excessive reloading
+- ✅ Production mode skips hot reload (`NODE_ENV=production pnpm pm-mcp-server`)
 
 #### Watch Mode Performance Tips
 
@@ -629,8 +582,11 @@ timeout 3s pnpm dev
 **Common Watch Mode Commands:**
 
 ```bash
-# MCP Server hot-reload
-pnpm dev  # Uses tsx watch
+# MCP Server with integrated hot-reload
+pnpm pm-mcp-server  # Intelligent file watching with debounced restarts
+
+# Alternative: Package-specific development
+cd packages/mcp-server && pnpm dev  # Legacy tsx watch mode
 
 # CLI development (no watch needed - direct tsx execution)
 pnpm pm <command>  # Direct execution via tsx

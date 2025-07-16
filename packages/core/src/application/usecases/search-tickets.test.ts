@@ -80,7 +80,7 @@ describe('SearchTicketsUseCase', () => {
     const response = await searchTicketsUseCase.execute(request)
 
     expect(response.tickets).toHaveLength(1)
-    expect(response.tickets[0].status).toBe('pending')
+    expect(response.tickets[0]?.status).toBe('pending')
   })
 
   it('should filter tickets by priority', async () => {
@@ -90,7 +90,7 @@ describe('SearchTicketsUseCase', () => {
     const response = await searchTicketsUseCase.execute(request)
 
     expect(response.tickets).toHaveLength(1)
-    expect(response.tickets[0].priority).toBe('high')
+    expect(response.tickets[0]?.priority).toBe('high')
   })
 
   it('should filter tickets by type', async () => {
@@ -100,7 +100,7 @@ describe('SearchTicketsUseCase', () => {
     const response = await searchTicketsUseCase.execute(request)
 
     expect(response.tickets).toHaveLength(1)
-    expect(response.tickets[0].type).toBe('feature')
+    expect(response.tickets[0]?.type).toBe('feature')
   })
 
   it('should filter tickets by privacy', async () => {
@@ -111,7 +111,7 @@ describe('SearchTicketsUseCase', () => {
 
     // Should return only the public ticket (Update documentation)
     expect(publicResponse.tickets).toHaveLength(1)
-    expect(publicResponse.tickets[0].title).toBe('Update documentation')
+    expect(publicResponse.tickets[0]?.title).toBe('Update documentation')
 
     // Test shareable privacy filter
     const shareableCriteria: TicketSearchCriteria = { privacy: 'shareable' }
@@ -120,7 +120,7 @@ describe('SearchTicketsUseCase', () => {
 
     // Should return only the shareable ticket (Add new feature)
     expect(shareableResponse.tickets).toHaveLength(1)
-    expect(shareableResponse.tickets[0].title).toBe('Add new feature')
+    expect(shareableResponse.tickets[0]?.title).toBe('Add new feature')
 
     // Test local-only privacy filter
     const localOnlyCriteria: TicketSearchCriteria = { privacy: 'local-only' }
@@ -129,7 +129,7 @@ describe('SearchTicketsUseCase', () => {
 
     // Should return only the local-only ticket (Fix login bug)
     expect(localOnlyResponse.tickets).toHaveLength(1)
-    expect(localOnlyResponse.tickets[0].title).toBe('Fix login bug')
+    expect(localOnlyResponse.tickets[0]?.title).toBe('Fix login bug')
 
     // Verify repository was called for each filter
     expect(vi.mocked(mockTicketRepository.findAll)).toHaveBeenCalledTimes(3)
@@ -142,7 +142,7 @@ describe('SearchTicketsUseCase', () => {
     const response = await searchTicketsUseCase.execute(request)
 
     expect(response.tickets).toHaveLength(1)
-    expect(response.tickets[0].title).toContain('login')
+    expect(response.tickets[0]?.title).toContain('login')
   })
 
   it('should filter tickets by text search in description', async () => {
@@ -152,7 +152,7 @@ describe('SearchTicketsUseCase', () => {
     const response = await searchTicketsUseCase.execute(request)
 
     expect(response.tickets).toHaveLength(1)
-    expect(response.tickets[0].title).toContain('feature')
+    expect(response.tickets[0]?.title).toContain('feature')
   })
 
   it('should perform case-insensitive search', async () => {
@@ -162,7 +162,7 @@ describe('SearchTicketsUseCase', () => {
     const response = await searchTicketsUseCase.execute(request)
 
     expect(response.tickets).toHaveLength(1)
-    expect(response.tickets[0].title.toLowerCase()).toContain('login')
+    expect(response.tickets[0]?.title.toLowerCase()).toContain('login')
   })
 
   it('should combine multiple criteria with AND logic', async () => {
@@ -176,9 +176,9 @@ describe('SearchTicketsUseCase', () => {
     const response = await searchTicketsUseCase.execute(request)
 
     expect(response.tickets).toHaveLength(1)
-    expect(response.tickets[0].status).toBe('pending')
-    expect(response.tickets[0].priority).toBe('high')
-    expect(response.tickets[0].type).toBe('bug')
+    expect(response.tickets[0]?.status).toBe('pending')
+    expect(response.tickets[0]?.priority).toBe('high')
+    expect(response.tickets[0]?.type).toBe('bug')
   })
 
   it('should return empty array when no tickets match criteria', async () => {
@@ -200,13 +200,7 @@ describe('SearchTicketsUseCase', () => {
   })
 
   it('should handle undefined search criteria gracefully', async () => {
-    const criteria: TicketSearchCriteria = {
-      status: undefined,
-      priority: undefined,
-      type: undefined,
-      privacy: undefined,
-      search: undefined,
-    }
+    const criteria: TicketSearchCriteria = {}
     const request = new SearchTicketsRequest(criteria)
 
     const response = await searchTicketsUseCase.execute(request)

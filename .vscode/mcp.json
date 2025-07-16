@@ -1,0 +1,24 @@
+{
+  "servers": {
+    "context7": {
+      "type": "sse",
+      "url": "https://mcp.context7.com/sse"
+    },
+    "deepwiki": {
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp"
+    },
+    "typescript": {
+      "command": "pnpm",
+      "args": ["typescript-mcp"]
+    },
+    "project-manager": {
+      "command": "pnpm",
+      "args": ["pm-mcp-server"]
+    },
+    "sequential-thinking": {
+      "command": "pnpm",
+      "args": ["dlx", "@modelcontextprotocol/server-sequential-thinking"]
+    }
+  }
+}

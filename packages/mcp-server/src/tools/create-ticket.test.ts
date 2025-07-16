@@ -65,8 +65,8 @@ describe('createTicketTool', () => {
 
     // Verify the use case was called with CreateTicketRequest instance
     expect(mockUseCase.execute).toHaveBeenCalled()
-    const callArg = vi.mocked(mockUseCase.execute).mock.calls[0][0]
-    expect(callArg.toCreateTicketData()).toMatchObject({
+    const callArg = vi.mocked(mockUseCase.execute).mock.calls[0]?.[0]
+    expect(callArg?.toCreateTicketData()).toMatchObject({
       title: 'Test Ticket',
       description: 'Test Description',
       priority: 'medium',

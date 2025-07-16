@@ -13,7 +13,20 @@ export default defineConfig({
     lib: {
       entry: {
         index: 'src/index.ts',
-        'bin/pm': 'src/bin/pm.ts',
+        'bin/run': 'src/bin/run.ts',
+        'commands/config': 'src/commands/config.ts',
+        'commands/create': 'src/commands/create.ts',
+        'commands/delete': 'src/commands/delete.ts',
+        'commands/list': 'src/commands/list.ts',
+        'commands/quick': 'src/commands/quick.ts',
+        'commands/show': 'src/commands/show.ts',
+        'commands/stats': 'src/commands/stats.ts',
+        'commands/update': 'src/commands/update.ts',
+        'commands/mcp': 'src/commands/mcp.ts',
+        'lib/base-command': 'src/lib/base-command.ts',
+        'hooks/init/config-validation': 'src/hooks/init/config-validation.ts',
+        'hooks/init/plugin-support': 'src/hooks/init/plugin-support.ts',
+        'hooks/postrun/cleanup': 'src/hooks/postrun/cleanup.ts',
       },
       formats: ['es'],
     },
@@ -21,7 +34,14 @@ export default defineConfig({
       external: [
         '@project-manager/core',
         '@project-manager/shared',
-        'commander',
+        '@project-manager/mcp-server',
+        '@modelcontextprotocol/sdk/server/stdio.js',
+        '@oclif/core',
+        '@oclif/plugin-help',
+        '@oclif/plugin-plugins',
+        '@oclif/plugin-autocomplete',
+        '@inquirer/prompts',
+        'inversify',
         'chalk',
         'node:fs',
         'node:path',
@@ -31,7 +51,7 @@ export default defineConfig({
       ],
       output: {
         banner: chunk => {
-          if (chunk.name === 'bin/pm') {
+          if (chunk.name === 'bin/run') {
             return '#!/usr/bin/env node'
           }
           return ''
