@@ -1,13 +1,13 @@
-import {
-  ERROR_MESSAGES,
-  TicketValidationError,
-  VALIDATION,
-  ValueObject,
-} from '@project-manager/shared'
+import { TicketValidationError } from '../types/ticket-types.ts'
+import { ValueObject } from './base-value-object.ts'
 
 interface TicketDescriptionProps {
   value: string
 }
+
+const DESCRIPTION_MAX_LENGTH = 5000
+const DESCRIPTION_EMPTY_MESSAGE = 'Description cannot be empty'
+const DESCRIPTION_TOO_LONG_MESSAGE = (max: number) => `Description cannot exceed ${max} characters`
 
 /**
  * Value object representing a Ticket Description
@@ -31,12 +31,12 @@ export class TicketDescription extends ValueObject<TicketDescriptionProps> {
     const trimmed = value.trim()
 
     if (trimmed.length === 0) {
-      throw new TicketValidationError(ERROR_MESSAGES.DESCRIPTION_EMPTY, 'description')
+      throw new TicketValidationError(DESCRIPTION_EMPTY_MESSAGE, 'description')
     }
 
-    if (trimmed.length > VALIDATION.DESCRIPTION_MAX_LENGTH) {
+    if (trimmed.length > DESCRIPTION_MAX_LENGTH) {
       throw new TicketValidationError(
-        ERROR_MESSAGES.DESCRIPTION_TOO_LONG(VALIDATION.DESCRIPTION_MAX_LENGTH),
+        DESCRIPTION_TOO_LONG_MESSAGE(DESCRIPTION_MAX_LENGTH),
         'description'
       )
     }

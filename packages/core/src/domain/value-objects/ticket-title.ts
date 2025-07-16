@@ -1,13 +1,14 @@
-import {
-  ERROR_MESSAGES,
-  TicketValidationError,
-  VALIDATION,
-  ValueObject,
-} from '@project-manager/shared'
+import { TicketValidationError } from '../types/ticket-types.ts'
+import { ValueObject } from './base-value-object.ts'
 
 interface TicketTitleProps {
   value: string
 }
+
+const TITLE_MAX_LENGTH = 200
+const TITLE_DISPLAY_MAX_LENGTH = 50
+const TITLE_EMPTY_MESSAGE = 'Title cannot be empty'
+const TITLE_TOO_LONG_MESSAGE = (max: number) => `Title cannot exceed ${max} characters`
 
 /**
  * Value object representing a Ticket Title
@@ -31,14 +32,11 @@ export class TicketTitle extends ValueObject<TicketTitleProps> {
     const trimmed = value.trim()
 
     if (trimmed.length === 0) {
-      throw new TicketValidationError(ERROR_MESSAGES.TITLE_EMPTY, 'title')
+      throw new TicketValidationError(TITLE_EMPTY_MESSAGE, 'title')
     }
 
-    if (trimmed.length > VALIDATION.TITLE_MAX_LENGTH) {
-      throw new TicketValidationError(
-        ERROR_MESSAGES.TITLE_TOO_LONG(VALIDATION.TITLE_MAX_LENGTH),
-        'title'
-      )
+    if (trimmed.length > TITLE_MAX_LENGTH) {
+      throw new TicketValidationError(TITLE_TOO_LONG_MESSAGE(TITLE_MAX_LENGTH), 'title')
     }
 
     return new TicketTitle({ value: trimmed })
@@ -48,7 +46,7 @@ export class TicketTitle extends ValueObject<TicketTitleProps> {
    * Get a truncated version of the title for display
    * @param maxLength - Maximum length for display (default from constants)
    */
-  public toDisplay(maxLength: number = VALIDATION.TITLE_DISPLAY_MAX_LENGTH): string {
+  public toDisplay(maxLength: number = TITLE_DISPLAY_MAX_LENGTH): string {
     if (maxLength <= 0) {
       return ''
     }

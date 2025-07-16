@@ -1,5 +1,5 @@
-import type { TicketStatus as TicketStatusType } from '@project-manager/shared'
-import { ValueObject } from '@project-manager/shared'
+import type { TicketStatus as TicketStatusType } from '../types/ticket-types.ts'
+import { ValueObject } from './base-value-object.ts'
 
 interface TicketStatusProps {
   value: TicketStatusType

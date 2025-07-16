@@ -1,6 +1,6 @@
-import type { TicketPrivacy, TicketType } from '@project-manager/shared'
-import { DEFAULTS, TicketValidationError } from '@project-manager/shared'
 import type { DomainEvent } from '../domain-events/domain-event.ts'
+import type { TicketPrivacy, TicketType } from '../types/ticket-types.ts'
+import { TICKET_DEFAULTS, TicketValidationError } from '../types/ticket-types.ts'
 import { TicketDescription } from '../value-objects/ticket-description.ts'
 import { TicketId } from '../value-objects/ticket-id.ts'
 import { TicketPriority } from '../value-objects/ticket-priority.ts'
@@ -78,8 +78,8 @@ export class Ticket {
       description: TicketDescription.create(data.description),
       status: data.status ? TicketStatus.create(data.status) : TicketStatus.pending(),
       priority: TicketPriority.create(data.priority),
-      type: data.type || DEFAULTS.TYPE,
-      privacy: data.privacy || DEFAULTS.PRIVACY,
+      type: data.type || TICKET_DEFAULTS.TYPE,
+      privacy: data.privacy || TICKET_DEFAULTS.PRIVACY,
       createdAt: now,
       updatedAt: now,
     })

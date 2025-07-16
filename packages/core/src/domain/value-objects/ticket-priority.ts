@@ -1,5 +1,5 @@
-import type { TicketPriority as TicketPriorityType } from '@project-manager/shared'
-import { ValueObject } from '@project-manager/shared'
+import type { TicketPriority as TicketPriorityType } from '../types/ticket-types.ts'
+import { ValueObject } from './base-value-object.ts'
 
 interface TicketPriorityProps {
   value: TicketPriorityType

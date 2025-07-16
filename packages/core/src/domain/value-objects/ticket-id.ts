@@ -1,7 +1,24 @@
-import { ERROR_MESSAGES, generateId, isValidId, ValueObject } from '@project-manager/shared'
+import { ValueObject } from './base-value-object.ts'
 
 interface TicketIdProps {
   value: string
+}
+
+const INVALID_ID_FORMAT = 'Invalid ID format'
+
+/**
+ * Generate a unique ID for tickets
+ * Creates a 8-character hex string based on current timestamp
+ */
+function generateId(): string {
+  return Date.now().toString(16).slice(-8)
+}
+
+/**
+ * Validate ID format (8 hex characters)
+ */
+function isValidId(id: string): boolean {
+  return /^[0-9a-f]{8}$/i.test(id)
 }
 
 /**
@@ -27,7 +44,7 @@ export class TicketId extends ValueObject<TicketIdProps> {
 
     // Check if the ID matches the expected format (8 hex characters)
     if (!isValidId(value)) {
-      throw new Error(ERROR_MESSAGES.INVALID_ID_FORMAT)
+      throw new Error(INVALID_ID_FORMAT)
     }
 
     return new TicketId({ value })
