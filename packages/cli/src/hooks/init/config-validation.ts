@@ -61,41 +61,51 @@ const configValidationHook: Hook<'init'> = async function (opts) {
       if (nodeEnv === 'development') {
         try {
           const { spawn } = await import('node:child_process')
-          const child = spawn('tsx', ['--version'], { stdio: 'ignore' })
 
-          // Set up timeout to prevent hanging
-          const timeout = setTimeout(() => {
-            child.kill('SIGKILL')
-            this.warn('tsx availability check timed out. MCP hot reload may not work properly.')
-            this.warn('Install tsx globally: npm install -g tsx')
-          }, 3000) // 3 second timeout
+          // Create a promise to properly handle the async spawn operation
+          await new Promise<void>(resolve => {
+            const child = spawn('tsx', ['--version'], { stdio: 'ignore' })
 
-          let hasCompleted = false
+            // Set up timeout to prevent hanging
+            const timeout = setTimeout(() => {
+              child.kill('SIGKILL')
+              this.warn('tsx availability check timed out. MCP hot reload may not work properly.')
+              this.warn('Install tsx globally: npm install -g tsx')
+              if (!hasCompleted) {
+                hasCompleted = true
+                resolve()
+              }
+            }, 3000) // 3 second timeout
 
-          // Handle successful completion
-          child.on('exit', code => {
-            if (hasCompleted) return
-            hasCompleted = true
-            clearTimeout(timeout)
+            let hasCompleted = false
 
-            if (code !== 0) {
+            // Handle successful completion
+            child.on('exit', code => {
+              if (hasCompleted) return
+              hasCompleted = true
+              clearTimeout(timeout)
+
+              if (code !== 0) {
+                this.warn(
+                  `tsx command failed with exit code ${code}. MCP hot reload may not work properly.`
+                )
+                this.warn('Install tsx globally: npm install -g tsx')
+              }
+              resolve()
+            })
+
+            // Handle process errors (e.g., command not found)
+            child.on('error', error => {
+              if (hasCompleted) return
+              hasCompleted = true
+              clearTimeout(timeout)
+
               this.warn(
-                `tsx command failed with exit code ${code}. MCP hot reload may not work properly.`
+                `tsx is not available: ${error.message}. MCP hot reload may not work properly.`
               )
               this.warn('Install tsx globally: npm install -g tsx')
-            }
-          })
-
-          // Handle process errors (e.g., command not found)
-          child.on('error', error => {
-            if (hasCompleted) return
-            hasCompleted = true
-            clearTimeout(timeout)
-
-            this.warn(
-              `tsx is not available: ${error.message}. MCP hot reload may not work properly.`
-            )
-            this.warn('Install tsx globally: npm install -g tsx')
+              resolve()
+            })
           })
         } catch (error) {
           // Handle import errors or other unexpected issues

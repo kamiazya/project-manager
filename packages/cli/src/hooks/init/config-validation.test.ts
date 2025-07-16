@@ -37,6 +37,7 @@ describe('configValidationHook', () => {
 
   afterEach(() => {
     delete process.env.NODE_ENV
+    delete process.env.CI
   })
 
   it('should pass validation when storage directory exists and file is valid', async () => {
@@ -208,9 +209,9 @@ describe('configValidationHook', () => {
     const mockChild = {
       kill: vi.fn(),
       on: vi.fn((event, callback) => {
-        // Simulate successful exit
+        // Simulate successful exit immediately
         if (event === 'exit') {
-          callback(0) // Success exit code
+          setImmediate(() => callback(0)) // Success exit code
         }
       }),
     }
@@ -220,6 +221,9 @@ describe('configValidationHook', () => {
 
     // Act
     await configValidationHook.call(mockContext, mockOptions)
+
+    // Wait for the next tick to ensure async callbacks have executed
+    await new Promise(resolve => setImmediate(resolve))
 
     // Assert
     expect(spawn).toHaveBeenCalledWith('tsx', ['--version'], { stdio: 'ignore' })
@@ -253,9 +257,9 @@ describe('configValidationHook', () => {
     const mockChild = {
       kill: vi.fn(),
       on: vi.fn((event, callback) => {
-        // Simulate failed exit
+        // Simulate failed exit immediately
         if (event === 'exit') {
-          callback(1) // Non-zero exit code
+          setImmediate(() => callback(1)) // Non-zero exit code
         }
       }),
     }
@@ -265,6 +269,9 @@ describe('configValidationHook', () => {
 
     // Act
     await configValidationHook.call(mockContext, mockOptions)
+
+    // Wait for the next tick to ensure async callbacks have executed
+    await new Promise(resolve => setImmediate(resolve))
 
     // Assert
     expect(mockContext.warn).toHaveBeenCalledWith(
@@ -284,9 +291,9 @@ describe('configValidationHook', () => {
     const mockChild = {
       kill: vi.fn(),
       on: vi.fn((event, callback) => {
-        // Simulate process error
+        // Simulate process error immediately
         if (event === 'error') {
-          callback(new Error('tsx command not found'))
+          setImmediate(() => callback(new Error('tsx command not found')))
         }
       }),
     }
@@ -296,6 +303,9 @@ describe('configValidationHook', () => {
 
     // Act
     await configValidationHook.call(mockContext, mockOptions)
+
+    // Wait for the next tick to ensure async callbacks have executed
+    await new Promise(resolve => setImmediate(resolve))
 
     // Assert
     expect(mockContext.warn).toHaveBeenCalledWith(
@@ -312,34 +322,50 @@ describe('configValidationHook', () => {
     vi.mocked(existsSync).mockReturnValue(true)
     vi.mocked(readFileSync).mockReturnValue('{"tickets": []}')
 
-    // Use Vitest's built-in timer mocking
-    vi.useFakeTimers()
-
     const mockChild = {
       kill: vi.fn(),
-      on: vi.fn(), // No callbacks called - simulates hanging process
+      on: vi.fn((event, _callback) => {
+        // Store the timeout callback for manual triggering
+        if (event === 'exit' || event === 'error') {
+          // Don't call the callback - simulate hanging process
+        }
+      }),
     }
 
     // Configure the existing spawn mock
     vi.mocked(spawn).mockReturnValue(mockChild as any)
 
-    // Act
-    const promise = configValidationHook.call(mockContext, mockOptions)
+    // Mock setTimeout to immediately call the timeout callback
+    const setTimeoutSpy = vi.spyOn(global, 'setTimeout').mockImplementation((callback, delay) => {
+      if (delay === 3000) {
+        // This is our timeout - trigger it immediately
+        setImmediate(() => {
+          if (typeof callback === 'function') {
+            callback()
+          }
+        })
+        return 123 as any // fake timeout ID
+      }
+      return setTimeout(callback as any, delay) // use original for other timeouts
+    })
 
-    // Advance timers to trigger the timeout (3000ms)
-    await vi.advanceTimersByTimeAsync(3000)
+    try {
+      // Act
+      await configValidationHook.call(mockContext, mockOptions)
 
-    await promise
+      // Wait for async operations
+      await new Promise(resolve => setImmediate(resolve))
 
-    // Assert
-    expect(mockChild.kill).toHaveBeenCalledWith('SIGKILL')
-    expect(mockContext.warn).toHaveBeenCalledWith(
-      'tsx availability check timed out. MCP hot reload may not work properly.'
-    )
-    expect(mockContext.warn).toHaveBeenCalledWith('Install tsx globally: npm install -g tsx')
-
-    // Cleanup
-    vi.useRealTimers()
+      // Assert
+      expect(mockChild.kill).toHaveBeenCalledWith('SIGKILL')
+      expect(mockContext.warn).toHaveBeenCalledWith(
+        'tsx availability check timed out. MCP hot reload may not work properly.'
+      )
+      expect(mockContext.warn).toHaveBeenCalledWith('Install tsx globally: npm install -g tsx')
+    } finally {
+      // Cleanup
+      setTimeoutSpy.mockRestore()
+    }
   })
 
   it('should prevent duplicate warnings when both error and exit events occur', async () => {
@@ -350,14 +376,27 @@ describe('configValidationHook', () => {
     vi.mocked(existsSync).mockReturnValue(true)
     vi.mocked(readFileSync).mockReturnValue('{"tickets": []}')
 
-    const callbacks: { [key: string]: (...args: any[]) => void } = {}
-
     const mockChild = {
       kill: vi.fn(),
       on: vi.fn((event, callback) => {
-        callbacks[event] = callback
+        // Simulate both error and exit events occurring in sequence
+        if (event === 'error') {
+          // Trigger error first
+          setImmediate(() => {
+            callback(new Error('tsx command not found'))
+            // Then immediately trigger exit - this should be ignored
+            if (exitHandlers.length > 0) {
+              exitHandlers[0](1)
+            }
+          })
+        } else if (event === 'exit') {
+          // Store exit handlers for later use
+          exitHandlers.push(callback)
+        }
       }),
     }
+
+    const exitHandlers: any[] = []
 
     // Configure the existing spawn mock
     vi.mocked(spawn).mockReturnValue(mockChild as any)
@@ -365,11 +404,9 @@ describe('configValidationHook', () => {
     // Act
     await configValidationHook.call(mockContext, mockOptions)
 
-    // Simulate error event firing first (which should set hasCompleted = true)
-    callbacks.error?.(new Error('tsx command not found'))
-
-    // Then simulate exit event (which should be ignored)
-    callbacks.exit?.(1)
+    // Wait for async operations to complete
+    await new Promise(resolve => setImmediate(resolve))
+    await new Promise(resolve => setImmediate(resolve))
 
     // Assert - only one set of warnings should be shown (from error event)
     expect(mockContext.warn).toHaveBeenCalledWith(
