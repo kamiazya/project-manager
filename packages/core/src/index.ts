@@ -1,4 +1,4 @@
-// Repository interfaces
+// Domain types
 
 // Common interfaces
 export type { UseCase } from './application/common/base-usecase.ts'
@@ -39,7 +39,12 @@ export { UpdateTicketDescriptionResponse } from './application/dtos/responses/up
 export { UpdateTicketPriorityResponse } from './application/dtos/responses/update-ticket-priority.ts'
 export { UpdateTicketStatusResponse } from './application/dtos/responses/update-ticket-status.ts'
 export { UpdateTicketTitleResponse } from './application/dtos/responses/update-ticket-title.ts'
+// Application DTOs
+export type { TicketStatistics } from './application/dtos/ticket-statistics.ts'
+export { createEmptyTicketStatistics } from './application/dtos/ticket-statistics.ts'
+// Repository interfaces
 export type { TicketRepository } from './application/repositories/ticket-repository.ts'
+export { TicketRepository as TicketRepositorySymbol } from './application/repositories/ticket-repository.ts'
 export { ArchiveTicketUseCase } from './application/usecases/archive-ticket.ts'
 export { CompleteTicketUseCase } from './application/usecases/complete-ticket.ts'
 // Use cases
@@ -55,28 +60,36 @@ export { UpdateTicketDescriptionUseCase } from './application/usecases/update-ti
 export { UpdateTicketPriorityUseCase } from './application/usecases/update-ticket-priority.ts'
 export { UpdateTicketStatusUseCase } from './application/usecases/update-ticket-status.ts'
 export { UpdateTicketTitleUseCase } from './application/usecases/update-ticket-title.ts'
-
-// Domain entities and types
-export type { CreateTicketData, ReconstituteTicketData } from './domain/entities/ticket.ts'
+export type {
+  CreateTicketData,
+  ReconstituteTicketData,
+  TicketProps,
+} from './domain/entities/ticket.ts'
+// Domain entities
 export { Ticket } from './domain/entities/ticket.ts'
-
-// Value objects
+export type {
+  TicketPriority,
+  TicketPrivacy,
+  TicketStatus,
+  TicketType,
+} from './domain/types/ticket-types.ts'
+export {
+  isValidTicketPriority,
+  isValidTicketPrivacy,
+  isValidTicketStatus,
+  isValidTicketType,
+  TICKET_DEFAULTS,
+  TicketValidationError,
+} from './domain/types/ticket-types.ts'
 export { TicketDescription } from './domain/value-objects/ticket-description.ts'
+// Domain value objects
 export { TicketId } from './domain/value-objects/ticket-id.ts'
-export { TicketPriority } from './domain/value-objects/ticket-priority.ts'
-export { TicketStatus } from './domain/value-objects/ticket-status.ts'
+export { TicketPriority as TicketPriorityVO } from './domain/value-objects/ticket-priority.ts'
+export { TicketStatus as TicketStatusVO } from './domain/value-objects/ticket-status.ts'
 export { TicketTitle } from './domain/value-objects/ticket-title.ts'
+
+// Domain entities and value objects are now exported at the top of the file
 
 // Infrastructure layer is NOT exported to enforce Clean Architecture
 // External packages should depend on repository interfaces, not concrete implementations
 // Infrastructure implementations are available internally but not exposed through public API
-
-// TEMPORARY: Export minimal infrastructure for backward compatibility
-// TODO: Remove these exports after refactoring CLI to use proper dependency injection
-export { JsonTicketRepository } from './infrastructure/adapters/json-ticket-repository.ts'
-export {
-  createContainer,
-  getContainer,
-  resetContainer,
-} from './infrastructure/container/inversify.config.ts'
-export { TYPES } from './infrastructure/container/types.ts'
