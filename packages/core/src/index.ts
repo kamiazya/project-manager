@@ -67,7 +67,16 @@ export { TicketPriority } from './domain/value-objects/ticket-priority.ts'
 export { TicketStatus } from './domain/value-objects/ticket-status.ts'
 export { TicketTitle } from './domain/value-objects/ticket-title.ts'
 
-// Infrastructure
+// Infrastructure layer is NOT exported to enforce Clean Architecture
+// External packages should depend on repository interfaces, not concrete implementations
+// Infrastructure implementations are available internally but not exposed through public API
+
+// TEMPORARY: Export minimal infrastructure for backward compatibility
+// TODO: Remove these exports after refactoring CLI to use proper dependency injection
 export { JsonTicketRepository } from './infrastructure/adapters/json-ticket-repository.ts'
-export * from './infrastructure/container/inversify.config.ts'
-export * from './infrastructure/container/types.ts'
+export {
+  createContainer,
+  getContainer,
+  resetContainer,
+} from './infrastructure/container/inversify.config.ts'
+export { TYPES } from './infrastructure/container/types.ts'
