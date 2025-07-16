@@ -1,9 +1,9 @@
-import type { TicketStats } from '@project-manager/shared'
+import type { TicketStatistics } from '../ticket-statistics.ts'
 
 export class GetTicketStatsResponse {
-  constructor(public readonly stats: TicketStats) {}
+  constructor(public readonly stats: TicketStatistics) {}
 
-  static fromTicketStats(stats: TicketStats): GetTicketStatsResponse {
+  static fromTicketStats(stats: TicketStatistics): GetTicketStatsResponse {
     return new GetTicketStatsResponse(stats)
   }
 }

@@ -1,6 +1,6 @@
-import type { TicketStats } from '@project-manager/shared'
 import type { Ticket } from '../../domain/entities/ticket.ts'
 import type { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import type { TicketStatistics } from '../dtos/ticket-statistics.ts'
 
 /**
  * Repository interface for Ticket aggregate
@@ -11,7 +11,7 @@ export interface TicketRepository {
   findById(id: TicketId): Promise<Ticket | null>
   findAll(): Promise<Ticket[]>
   delete(id: TicketId): Promise<void>
-  getStatistics(): Promise<TicketStats>
+  getStatistics(): Promise<TicketStatistics>
 }
 
 export const TicketRepository = Symbol('TicketRepository')

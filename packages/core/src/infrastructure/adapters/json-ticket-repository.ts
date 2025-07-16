@@ -1,7 +1,7 @@
 import { constants } from 'node:fs'
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import type { TicketJSON, TicketStats } from '@project-manager/shared'
+import type { TicketJSON } from '@project-manager/shared'
 import {
   ERROR_MESSAGES,
   FILE_SYSTEM,
@@ -9,6 +9,7 @@ import {
   StorageError,
   TicketNotFoundError,
 } from '@project-manager/shared'
+import type { TicketStatistics } from '../../application/dtos/ticket-statistics.ts'
 import type { TicketRepository } from '../../application/repositories/ticket-repository.ts'
 import { Ticket } from '../../domain/entities/ticket.ts'
 import type { TicketId } from '../../domain/value-objects/ticket-id.ts'
@@ -83,10 +84,10 @@ export class JsonTicketRepository implements TicketRepository {
     })
   }
 
-  async getStatistics(): Promise<TicketStats> {
+  async getStatistics(): Promise<TicketStatistics> {
     const tickets = await this.loadTicketsFromFile()
 
-    const stats: TicketStats = {
+    const stats: TicketStatistics = {
       total: tickets.length,
       pending: 0,
       inProgress: 0,
