@@ -2,30 +2,10 @@ import { TicketNotFoundError, TicketValidationError } from '@project-manager/sha
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Ticket } from '../../domain/entities/ticket.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
-import { UpdateTicketUseCase } from './update-ticket.ts'
-
-// Use local class for testing
-class UpdateTicketRequest {
-  constructor(
-    public readonly id: string,
-    public readonly title?: string,
-    public readonly description?: string,
-    public readonly status?: 'pending' | 'in_progress' | 'completed' | 'archived',
-    public readonly priority?: 'high' | 'medium' | 'low'
-  ) {}
-
-  hasUpdates(): boolean {
-    return (
-      this.title !== undefined ||
-      this.description !== undefined ||
-      this.status !== undefined ||
-      this.priority !== undefined
-    )
-  }
-}
+import { UpdateTicket } from './update-ticket.ts'
 
 describe('UpdateTicketUseCase', () => {
-  let useCase: UpdateTicketUseCase
+  let useCase: UpdateTicket.UseCase
   let mockRepository: TicketRepository
   let testTicket: Ticket
 
@@ -37,7 +17,7 @@ describe('UpdateTicketUseCase', () => {
       delete: vi.fn(),
       getStatistics: vi.fn(),
     }
-    useCase = new UpdateTicketUseCase(mockRepository)
+    useCase = new UpdateTicket.UseCase(mockRepository)
 
     testTicket = Ticket.create({
       title: 'Original Title',
@@ -51,7 +31,7 @@ describe('UpdateTicketUseCase', () => {
 
   describe('execute', () => {
     it('should throw TicketValidationError when no updates are provided', async () => {
-      const request = new UpdateTicketRequest('test-id')
+      const request = new UpdateTicket.Request('test-id', {})
 
       await expect(useCase.execute(request)).rejects.toThrow(TicketValidationError)
       await expect(useCase.execute(request)).rejects.toThrow(
@@ -62,7 +42,7 @@ describe('UpdateTicketUseCase', () => {
     it('should throw TicketNotFoundError when ticket does not exist', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(null)
 
-      const request = new UpdateTicketRequest('abc12345', 'New Title')
+      const request = new UpdateTicket.Request('abc12345', { title: 'New Title' })
 
       await expect(useCase.execute(request)).rejects.toThrow(TicketNotFoundError)
       await expect(useCase.execute(request)).rejects.toThrow('Ticket not found: abc12345')
@@ -71,7 +51,7 @@ describe('UpdateTicketUseCase', () => {
     it('should update title only when title is provided', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketRequest(testTicket.id.value, 'New Title')
+      const request = new UpdateTicket.Request(testTicket.id.value, { title: 'New Title' })
       const result = await useCase.execute(request)
 
       expect(testTicket.title.value).toBe('New Title')
@@ -85,7 +65,9 @@ describe('UpdateTicketUseCase', () => {
     it('should update description only when description is provided', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketRequest(testTicket.id.value, undefined, 'New Description')
+      const request = new UpdateTicket.Request(testTicket.id.value, {
+        description: 'New Description',
+      })
       const result = await useCase.execute(request)
 
       expect(testTicket.title.value).toBe('Original Title')
@@ -99,12 +81,7 @@ describe('UpdateTicketUseCase', () => {
     it('should update status only when status is provided', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketRequest(
-        testTicket.id.value,
-        undefined,
-        undefined,
-        'in_progress'
-      )
+      const request = new UpdateTicket.Request(testTicket.id.value, { status: 'in_progress' })
       const result = await useCase.execute(request)
 
       expect(testTicket.title.value).toBe('Original Title')
@@ -118,13 +95,7 @@ describe('UpdateTicketUseCase', () => {
     it('should update priority only when priority is provided', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketRequest(
-        testTicket.id.value,
-        undefined,
-        undefined,
-        undefined,
-        'high'
-      )
+      const request = new UpdateTicket.Request(testTicket.id.value, { priority: 'high' })
       const result = await useCase.execute(request)
 
       expect(testTicket.title.value).toBe('Original Title')
@@ -138,13 +109,12 @@ describe('UpdateTicketUseCase', () => {
     it('should update multiple fields when multiple fields are provided', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketRequest(
-        testTicket.id.value,
-        'New Title',
-        'New Description',
-        'in_progress',
-        'high'
-      )
+      const request = new UpdateTicket.Request(testTicket.id.value, {
+        title: 'New Title',
+        description: 'New Description',
+        status: 'in_progress',
+        priority: 'high',
+      })
       const result = await useCase.execute(request)
 
       expect(testTicket.title.value).toBe('New Title')
@@ -161,13 +131,12 @@ describe('UpdateTicketUseCase', () => {
     it('should perform only one fetch and one save operation', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketRequest(
-        testTicket.id.value,
-        'New Title',
-        'New Description',
-        'in_progress',
-        'high'
-      )
+      const request = new UpdateTicket.Request(testTicket.id.value, {
+        title: 'New Title',
+        description: 'New Description',
+        status: 'in_progress',
+        priority: 'high',
+      })
       await useCase.execute(request)
 
       expect(mockRepository.findById).toHaveBeenCalledTimes(1)
@@ -182,13 +151,12 @@ describe('UpdateTicketUseCase', () => {
       const statusSpy = vi.spyOn(testTicket, 'changeStatus')
       const prioritySpy = vi.spyOn(testTicket, 'changePriority')
 
-      const request = new UpdateTicketRequest(
-        testTicket.id.value,
-        'New Title',
-        'New Description',
-        'in_progress',
-        'high'
-      )
+      const request = new UpdateTicket.Request(testTicket.id.value, {
+        title: 'New Title',
+        description: 'New Description',
+        status: 'in_progress',
+        priority: 'high',
+      })
       await useCase.execute(request)
 
       expect(titleSpy).toHaveBeenCalledWith('New Title')
@@ -201,25 +169,22 @@ describe('UpdateTicketUseCase', () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
       // This will throw because tickets cannot transition from pending to completed
-      const request = new UpdateTicketRequest(
-        testTicket.id.value,
-        undefined,
-        undefined,
-        'completed'
-      )
+      const request = new UpdateTicket.Request(testTicket.id.value, { status: 'completed' })
 
-      await expect(useCase.execute(request)).rejects.toThrow(TicketValidationError)
+      await expect(useCase.execute(request)).rejects.toThrow(
+        'Cannot transition from pending to completed'
+      )
     })
   })
 
   describe('UpdateTicketRequest', () => {
     it('should return false for hasUpdates when no fields are provided', () => {
-      const request = new UpdateTicketRequest('test-id')
+      const request = new UpdateTicket.Request('test-id', {})
       expect(request.hasUpdates()).toBe(false)
     })
 
     it('should return true for hasUpdates when at least one field is provided', () => {
-      const request = new UpdateTicketRequest('test-id', 'New Title')
+      const request = new UpdateTicket.Request('test-id', { title: 'New Title' })
       expect(request.hasUpdates()).toBe(true)
     })
   })

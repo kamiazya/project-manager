@@ -1,4 +1,4 @@
-import { GetTicketStatsRequest } from '@project-manager/core'
+import { GetTicketStats } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 import { formatStats } from '../utils/output.ts'
 import { getGetTicketStatsUseCase } from '../utils/service-factory.ts'
@@ -18,7 +18,7 @@ export class StatsCommand extends BaseCommand {
     const getTicketStatsUseCase = getGetTicketStatsUseCase()
 
     // Execute the request
-    const request = new GetTicketStatsRequest()
+    const request = new GetTicketStats.Request()
     const response = await getTicketStatsUseCase.execute(request)
 
     // Output JSON if JSON flag is present, otherwise output formatted text

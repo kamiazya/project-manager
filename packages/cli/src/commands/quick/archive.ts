@@ -1,5 +1,5 @@
 import { Args } from '@oclif/core'
-import { ArchiveTicketRequest } from '@project-manager/core'
+import { ArchiveTicket } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
 import { getArchiveTicketUseCase } from '../../utils/service-factory.ts'
 
@@ -20,7 +20,7 @@ export class QuickArchiveCommand extends BaseCommand {
 
   async execute(args: { id: string }): Promise<any> {
     const archiveTicketUseCase = getArchiveTicketUseCase()
-    const request = new ArchiveTicketRequest(args.id)
+    const request = new ArchiveTicket.Request(args.id)
 
     await archiveTicketUseCase.execute(request)
     this.log(`Archived ticket ${args.id}`)

@@ -1,23 +1,17 @@
-import { CreateTicketUseCase } from '@project-manager/core'
-import type { Container } from 'inversify'
+import { CreateTicket } from '@project-manager/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as containerModule from '../utils/container.ts'
 import { createTicketTool } from './create-ticket.ts'
 
 describe('createTicketTool', () => {
-  let mockContainer: Container
-  let mockUseCase: CreateTicketUseCase
+  let mockUseCase: CreateTicket.UseCase
 
   beforeEach(() => {
     mockUseCase = {
       execute: vi.fn(),
-    } as unknown as CreateTicketUseCase
+    } as unknown as CreateTicket.UseCase
 
-    mockContainer = {
-      get: vi.fn().mockReturnValue(mockUseCase),
-    } as any
-
-    vi.spyOn(containerModule, 'getContainer').mockReturnValue(mockContainer as any)
+    vi.spyOn(containerModule, 'getCreateTicketUseCase').mockReturnValue(mockUseCase)
   })
 
   it('should have correct metadata', () => {

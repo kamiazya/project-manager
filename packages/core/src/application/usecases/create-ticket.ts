@@ -54,8 +54,3 @@ export namespace CreateTicket {
     }
   }
 }
-
-// Export the main use case class for compatibility
-export const CreateTicketUseCase = CreateTicket.UseCase
-export const CreateTicketRequest = CreateTicket.Request
-export const CreateTicketResponse = CreateTicket.Response

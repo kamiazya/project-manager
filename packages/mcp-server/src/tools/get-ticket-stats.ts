@@ -1,8 +1,7 @@
-import type { GetTicketStatsUseCase } from '@project-manager/core'
-import { TYPES } from '@project-manager/core'
+import { GetTicketStats } from '@project-manager/core'
 import { z } from 'zod'
 import type { McpTool } from '../types/mcp-tool.ts'
-import { getContainer } from '../utils/container.ts'
+import { getGetTicketStatsUseCase } from '../utils/container.ts'
 import { handleError } from '../utils/error-handler.ts'
 
 const getTicketStatsSchema = z.object({})
@@ -14,10 +13,9 @@ export const getTicketStatsTool: McpTool = {
   inputSchema: getTicketStatsSchema.shape,
   handler: async () => {
     try {
-      const container = getContainer()
-      const useCase = container.get<GetTicketStatsUseCase>(TYPES.GetTicketStatsUseCase)
+      const useCase = getGetTicketStatsUseCase()
 
-      const response = await useCase.execute({})
+      const response = await useCase.execute(new GetTicketStats.Request())
 
       return {
         content: [

@@ -1,5 +1,5 @@
 import { Args, Flags } from '@oclif/core'
-import { CreateTicketRequest } from '@project-manager/core'
+import { CreateTicket } from '@project-manager/core'
 import type { TicketPriority, TicketType } from '@project-manager/shared'
 import { BaseCommand } from '../../lib/base-command.ts'
 import { getCreateTicketUseCase } from '../../utils/service-factory.ts'
@@ -61,7 +61,7 @@ export class QuickNewCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void
 
     // Create ticket
     const createTicketUseCase = getCreateTicketUseCase()
-    const request = new CreateTicketRequest(args.title.trim(), flags.description, priority, type)
+    const request = new CreateTicket.Request(args.title.trim(), flags.description, priority, type)
     const ticket = await createTicketUseCase.execute(request)
 
     this.log(`Ticket ${ticket.id} created successfully.`)

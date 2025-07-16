@@ -101,8 +101,3 @@ export namespace GetAllTickets {
     }
   }
 }
-
-// Export the main use case class for compatibility
-export const GetAllTicketsUseCase = GetAllTickets.UseCase
-export const GetAllTicketsRequest = GetAllTickets.Request
-export const GetAllTicketsResponse = GetAllTickets.Response

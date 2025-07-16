@@ -1,33 +1,34 @@
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
-import type { UseCase } from '../common/base-usecase.ts'
+import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
-// Temporary compatibility classes until namespace conversion
-class DeleteTicketRequest {
-  constructor(public readonly id: string) {}
-}
-
-class DeleteTicketResponse {
-  constructor(
-    public readonly id: string,
-    public readonly success: boolean
-  ) {}
-
-  static success(id: string): DeleteTicketResponse {
-    return new DeleteTicketResponse(id, true)
+export namespace DeleteTicket {
+  export class Request {
+    constructor(public readonly id: string) {}
   }
-}
 
-/**
- * Use case for deleting a ticket.
- */
-export class DeleteTicketUseCase implements UseCase<DeleteTicketRequest, DeleteTicketResponse> {
-  constructor(private readonly ticketRepository: TicketRepository) {}
+  export class Response {
+    constructor(
+      public readonly id: string,
+      public readonly success: boolean
+    ) {}
 
-  async execute(request: DeleteTicketRequest): Promise<DeleteTicketResponse> {
-    const ticketId = TicketId.create(request.id)
-    await this.ticketRepository.delete(ticketId)
+    static success(id: string): Response {
+      return new Response(id, true)
+    }
+  }
 
-    return DeleteTicketResponse.success(request.id)
+  /**
+   * Use case for deleting a ticket.
+   */
+  export class UseCase implements IUseCase<Request, Response> {
+    constructor(private readonly ticketRepository: TicketRepository) {}
+
+    async execute(request: Request): Promise<Response> {
+      const ticketId = TicketId.create(request.id)
+      await this.ticketRepository.delete(ticketId)
+
+      return Response.success(request.id)
+    }
   }
 }

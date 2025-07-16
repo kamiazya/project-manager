@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { getSearchTicketsUseCase } from '../../utils/service-factory.ts'
 import { QuickWipCommand } from './wip.ts'
+
+// Mock service factory
+vi.mock('../../utils/service-factory.ts', () => ({
+  getSearchTicketsUseCase: vi.fn(),
+}))
 
 describe('QuickWipCommand', () => {
   let command: QuickWipCommand
@@ -18,7 +24,7 @@ describe('QuickWipCommand', () => {
       execute: vi.fn(),
     }
 
-    ;(command as any).getService = vi.fn().mockReturnValue(mockSearchTicketsUseCase)
+    vi.mocked(getSearchTicketsUseCase).mockReturnValue(mockSearchTicketsUseCase)
   })
 
   test('should have correct command metadata', () => {

@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { CLI_TYPES } from '../infrastructure/container.ts'
-import { getServiceContainer } from '../utils/service-factory.ts'
+import { getCreateTicketUseCase, getServiceContainer } from '../utils/service-factory.ts'
 import { CreateCommand } from './create.ts'
 
 // Mock service factory
 vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
+  getCreateTicketUseCase: vi.fn(),
 }))
 
 // Mock inquirer prompts
@@ -80,13 +80,11 @@ describe('CreateCommand', () => {
 
     // Mock the service container
     mockContainer = {
-      get: vi.fn(type => {
-        if (type === CLI_TYPES.CreateTicketUseCase) return mockCreateTicketUseCase
-        throw new Error(`Unknown service type: ${type.toString()}`)
-      }),
+      get: vi.fn(() => mockCreateTicketUseCase),
     }
 
     vi.mocked(getServiceContainer).mockReturnValue(mockContainer)
+    vi.mocked(getCreateTicketUseCase).mockReturnValue(mockCreateTicketUseCase)
   })
 
   it('should create ticket with command line arguments', async () => {

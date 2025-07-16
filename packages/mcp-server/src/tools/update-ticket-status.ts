@@ -1,8 +1,7 @@
-import type { UpdateTicketStatusUseCase } from '@project-manager/core'
-import { TYPES, UpdateTicketStatusRequest } from '@project-manager/core'
+import { UpdateTicketStatus } from '@project-manager/core'
 import { z } from 'zod'
 import type { McpTool } from '../types/mcp-tool.ts'
-import { getContainer } from '../utils/container.ts'
+import { getUpdateTicketStatusUseCase } from '../utils/container.ts'
 import { handleError } from '../utils/error-handler.ts'
 import { formatErrorResponse, formatSuccessResponse } from '../utils/response-formatter.ts'
 
@@ -18,10 +17,10 @@ export const updateTicketStatusTool: McpTool = {
   inputSchema: updateTicketStatusSchema.shape,
   handler: async (input: z.infer<typeof updateTicketStatusSchema>) => {
     try {
-      const container = getContainer()
-      const useCase = container.get<UpdateTicketStatusUseCase>(TYPES.UpdateTicketStatusUseCase)
+      const useCase = getUpdateTicketStatusUseCase()
 
-      const response = await useCase.execute(new UpdateTicketStatusRequest(input.id, input.status))
+      const request = new UpdateTicketStatus.Request(input.id, input.status)
+      const response = await useCase.execute(request)
 
       return formatSuccessResponse({
         ticket: {

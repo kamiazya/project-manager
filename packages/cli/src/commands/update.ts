@@ -1,6 +1,5 @@
 import { Args, Flags } from '@oclif/core'
-import type { UpdateTicketResponse } from '@project-manager/core'
-import { UpdateTicketRequest } from '@project-manager/core'
+import { UpdateTicket } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 import { getUpdateTicketUseCase } from '../utils/service-factory.ts'
 
@@ -20,7 +19,7 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Update a ticket's properties
  */
-export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, UpdateTicketResponse> {
+export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, UpdateTicket.Response> {
   static override description = 'Update ticket properties'
   static override aliases = ['u']
 
@@ -56,7 +55,10 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, Update
     }),
   }
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<UpdateTicketResponse | undefined> {
+  async execute(
+    args: ExecuteArgs,
+    flags: ExecuteFlags
+  ): Promise<UpdateTicket.Response | undefined> {
     // Validate required ticket ID
     if (!args.ticketId) {
       this.error('Ticket ID is required')
@@ -65,14 +67,22 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, Update
     // Get the use case from the service container
     const updateTicketUseCase = getUpdateTicketUseCase()
 
-    // Create update request with all provided fields
-    const updateRequest = new UpdateTicketRequest(args.ticketId, {
-      title: flags.title,
-      description: flags.description,
-      status: flags.status,
-      priority: flags.priority,
-      type: flags.type,
-    })
+    // Create update request with only defined fields
+    const updates: {
+      title?: string
+      description?: string
+      status?: 'pending' | 'in_progress' | 'completed' | 'archived'
+      priority?: 'high' | 'medium' | 'low'
+      type?: 'feature' | 'bug' | 'task'
+    } = {}
+
+    if (flags.title !== undefined) updates.title = flags.title
+    if (flags.description !== undefined) updates.description = flags.description
+    if (flags.status !== undefined) updates.status = flags.status
+    if (flags.priority !== undefined) updates.priority = flags.priority
+    if (flags.type !== undefined) updates.type = flags.type
+
+    const updateRequest = new UpdateTicket.Request(args.ticketId, updates)
 
     // Check if at least one field was provided for update
     const hasUpdates =

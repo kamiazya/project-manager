@@ -35,8 +35,3 @@ export namespace GetTicketById {
     }
   }
 }
-
-// Export the main use case class for compatibility
-export const GetTicketByIdUseCase = GetTicketById.UseCase
-export const GetTicketByIdRequest = GetTicketById.Request
-export const GetTicketByIdResponse = GetTicketById.Response

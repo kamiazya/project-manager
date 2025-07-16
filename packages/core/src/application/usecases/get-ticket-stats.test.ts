@@ -1,14 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
-import { GetTicketStatsUseCase } from './get-ticket-stats.ts'
-
-// Use local class for testing
-class GetTicketStatsRequest {
-  constructor() {}
-}
+import { GetTicketStats } from './get-ticket-stats.ts'
 
 describe('GetTicketStatsUseCase', () => {
-  let useCase: GetTicketStatsUseCase
+  let useCase: GetTicketStats.UseCase
   let mockTicketRepository: TicketRepository
 
   beforeEach(() => {
@@ -19,13 +14,13 @@ describe('GetTicketStatsUseCase', () => {
       delete: vi.fn(),
       getStatistics: vi.fn(),
     }
-    useCase = new GetTicketStatsUseCase(mockTicketRepository)
+    useCase = new GetTicketStats.UseCase(mockTicketRepository)
   })
 
   describe('execute', () => {
     it('should call repository getStatistics method and return response', async () => {
       // Arrange
-      const request = new GetTicketStatsRequest()
+      const request = new GetTicketStats.Request()
       const mockStats = {
         total: 5,
         pending: 2,
@@ -60,7 +55,7 @@ describe('GetTicketStatsUseCase', () => {
 
     it('should not call findAll method', async () => {
       // Arrange
-      const request = new GetTicketStatsRequest()
+      const request = new GetTicketStats.Request()
       const mockStats = {
         total: 0,
         pending: 0,

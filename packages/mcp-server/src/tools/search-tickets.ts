@@ -1,8 +1,7 @@
-import type { SearchTicketsUseCase } from '@project-manager/core'
-import { SearchTicketsRequest, TYPES } from '@project-manager/core'
+import { SearchTickets } from '@project-manager/core'
 import { z } from 'zod'
 import type { McpTool } from '../types/mcp-tool.ts'
-import { getContainer } from '../utils/container.ts'
+import { getSearchTicketsUseCase } from '../utils/container.ts'
 import { handleError } from '../utils/error-handler.ts'
 
 const searchTicketsSchema = z.object({
@@ -21,11 +20,10 @@ export const searchTicketsTool: McpTool = {
   inputSchema: searchTicketsSchema.shape,
   handler: async (input: z.infer<typeof searchTicketsSchema>) => {
     try {
-      const container = getContainer()
-      const useCase = container.get<SearchTicketsUseCase>(TYPES.SearchTicketsUseCase)
+      const useCase = getSearchTicketsUseCase()
 
       const response = await useCase.execute(
-        new SearchTicketsRequest({
+        new SearchTickets.Request({
           search: input.query,
           searchIn: input.searchIn,
         })
@@ -47,7 +45,7 @@ export const searchTicketsTool: McpTool = {
                   createdAt: ticket.createdAt,
                   updatedAt: ticket.updatedAt,
                 })),
-                total: response.totalCount,
+                total: response.tickets.length,
               },
               null,
               2

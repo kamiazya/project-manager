@@ -1,12 +1,13 @@
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CLI_TYPES } from '../infrastructure/container.ts'
-import { getServiceContainer } from '../utils/service-factory.ts'
+
+import { getGetTicketByIdUseCase, getServiceContainer } from '../utils/service-factory.ts'
 import { ShowCommand } from './show.ts'
 
 // Mock the service factory module
 vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
+  getGetTicketByIdUseCase: vi.fn(),
 }))
 
 // Mock the output module
@@ -78,6 +79,7 @@ describe('ShowCommand', () => {
     } as unknown as Container
 
     vi.mocked(getServiceContainer).mockReturnValue(mockContainer)
+    vi.mocked(getGetTicketByIdUseCase).mockReturnValue(mockGetTicketByIdUseCase)
   })
 
   afterEach(() => {
@@ -106,7 +108,7 @@ describe('ShowCommand', () => {
     await cmd.run()
 
     // Assert
-    expect(mockContainer.get).toHaveBeenCalledWith(CLI_TYPES.GetTicketByIdUseCase)
+    expect(getGetTicketByIdUseCase).toHaveBeenCalled()
     expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({
       id: 'ticket-123',
     })

@@ -1,8 +1,7 @@
-import type { CreateTicketUseCase } from '@project-manager/core'
-import { CreateTicketRequest, TYPES } from '@project-manager/core'
+import { CreateTicket } from '@project-manager/core'
 import { z } from 'zod'
 import type { McpTool } from '../types/mcp-tool.ts'
-import { getContainer } from '../utils/container.ts'
+import { getCreateTicketUseCase } from '../utils/container.ts'
 import { handleError } from '../utils/error-handler.ts'
 import { formatErrorResponse, formatSuccessResponse } from '../utils/response-formatter.ts'
 
@@ -24,10 +23,9 @@ export const createTicketTool: McpTool = {
   inputSchema: createTicketSchema.shape,
   handler: async (input: z.infer<typeof createTicketSchema>) => {
     try {
-      const container = getContainer()
-      const useCase = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
+      const useCase = getCreateTicketUseCase()
 
-      const request = new CreateTicketRequest(
+      const request = new CreateTicket.Request(
         input.title,
         input.description || '',
         input.priority,

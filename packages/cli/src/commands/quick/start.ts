@@ -1,5 +1,5 @@
 import { Args } from '@oclif/core'
-import { StartTicketProgressRequest } from '@project-manager/core'
+import { StartTicketProgress } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
 import { getStartTicketProgressUseCase } from '../../utils/service-factory.ts'
 
@@ -20,7 +20,7 @@ export class QuickStartCommand extends BaseCommand {
 
   async execute(args: { id: string }): Promise<any> {
     const startTicketProgressUseCase = getStartTicketProgressUseCase()
-    const request = new StartTicketProgressRequest(args.id)
+    const request = new StartTicketProgress.Request(args.id)
 
     await startTicketProgressUseCase.execute(request)
     this.log(`Started working on ticket ${args.id}`)

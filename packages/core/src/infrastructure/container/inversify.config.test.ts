@@ -6,7 +6,7 @@ import {
   type TicketRepository,
   TicketRepository as TicketRepositorySymbol,
 } from '../../application/repositories/ticket-repository.ts'
-import { CreateTicketUseCase } from '../../application/usecases/create-ticket.ts'
+import { CreateTicket } from '../../application/usecases/create-ticket.ts'
 import { createContainer, getContainer, resetContainer } from './inversify.config.ts'
 import { TYPES } from './types.ts'
 
@@ -57,7 +57,7 @@ describe('Inversify Container Configuration', () => {
 
     it('should resolve CreateTicketUseCase correctly', () => {
       const container = createContainer(tempFilePath)
-      const useCase = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
+      const useCase = container.get<CreateTicket.UseCase>(TYPES.CreateTicketUseCase)
 
       expect(useCase).toBeDefined()
       expect(typeof useCase.execute).toBe('function')
@@ -70,8 +70,8 @@ describe('Inversify Container Configuration', () => {
       const repository2 = container.get<TicketRepository>(TicketRepositorySymbol)
       expect(repository1).toBe(repository2)
 
-      const useCase1 = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
-      const useCase2 = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
+      const useCase1 = container.get<CreateTicket.UseCase>(TYPES.CreateTicketUseCase)
+      const useCase2 = container.get<CreateTicket.UseCase>(TYPES.CreateTicketUseCase)
       expect(useCase1).toBe(useCase2)
     })
   })
@@ -105,12 +105,10 @@ describe('Inversify Container Configuration', () => {
   describe('Integration', () => {
     it('should create and use ticket through the container', async () => {
       const container = createContainer(tempFilePath)
-      const useCase = container.get<CreateTicketUseCase>(TYPES.CreateTicketUseCase)
+      const useCase = container.get<CreateTicket.UseCase>(TYPES.CreateTicketUseCase)
 
-      const { CreateTicketRequest } = await import(
-        '../../application/dtos/requests/create-ticket.ts'
-      )
-      const request = new CreateTicketRequest(
+      const { CreateTicket } = await import('../../application/usecases/create-ticket.ts')
+      const request = new CreateTicket.Request(
         'Test Ticket',
         'Test Description',
         'high',

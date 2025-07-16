@@ -1,5 +1,5 @@
 import { Flags } from '@oclif/core'
-import { SearchTicketsRequest } from '@project-manager/core'
+import { SearchTickets } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
 import { displayTickets } from '../../lib/table-formatter.ts'
 import { getSearchTicketsUseCase } from '../../utils/service-factory.ts'
@@ -28,7 +28,7 @@ export class QuickAllCommand extends BaseCommand {
   ): Promise<void> {
     try {
       const searchTicketsUseCase = getSearchTicketsUseCase()
-      const request = new SearchTicketsRequest({})
+      const request = new SearchTickets.Request({})
 
       const response = await searchTicketsUseCase.execute(request)
       const tickets = response.tickets

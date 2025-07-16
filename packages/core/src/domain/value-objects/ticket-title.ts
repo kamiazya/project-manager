@@ -1,3 +1,4 @@
+import { VALIDATION } from '@project-manager/shared'
 import { TicketValidationError } from '../types/ticket-types.ts'
 import { ValueObject } from './base-value-object.ts'
 
@@ -5,9 +6,9 @@ interface TicketTitleProps {
   value: string
 }
 
-const TITLE_MAX_LENGTH = 200
-const TITLE_DISPLAY_MAX_LENGTH = 50
-const TITLE_EMPTY_MESSAGE = 'Title cannot be empty'
+const TITLE_MAX_LENGTH = VALIDATION.TITLE_MAX_LENGTH
+const TITLE_DISPLAY_MAX_LENGTH = VALIDATION.TITLE_DISPLAY_MAX_LENGTH
+const TITLE_EMPTY_MESSAGE = 'Title cannot be empty or whitespace only'
 const TITLE_TOO_LONG_MESSAGE = (max: number) => `Title cannot exceed ${max} characters`
 
 /**

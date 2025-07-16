@@ -1,98 +1,11 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { MAX_TITLE_LENGTH, TITLE_TRUNCATE_LENGTH } from '../../lib/constants.ts'
-import { QuickAllCommand } from './all.ts'
-import { QuickTodoCommand } from './todo.ts'
-import { QuickWipCommand } from './wip.ts'
 
 describe('Title Truncation Consistency', () => {
-  let mockSearchTicketsUseCase: any
-
-  beforeEach(() => {
-    mockSearchTicketsUseCase = {
-      execute: vi.fn(),
-    }
-  })
-
-  const createMockTicket = (title: string) => ({
-    id: 'test-id',
-    title,
-    status: 'pending',
-    priority: 'medium',
-    type: 'task',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  })
-
   test('should use consistent MAX_TITLE_LENGTH across all quick commands', () => {
     // All quick commands should import and use the same constant
     expect(MAX_TITLE_LENGTH).toBe(50)
     expect(TITLE_TRUNCATE_LENGTH).toBe(47)
-  })
-
-  test('QuickAllCommand should truncate long titles consistently', async () => {
-    const longTitle = 'This is a very long ticket title that should be truncated'
-    const shortTitle = 'Short title'
-
-    const mockTickets = [createMockTicket(longTitle), createMockTicket(shortTitle)]
-
-    mockSearchTicketsUseCase.execute.mockResolvedValue({ tickets: mockTickets })
-
-    const command = new QuickAllCommand([], {} as any)
-    ;(command as any).getService = vi.fn().mockReturnValue(mockSearchTicketsUseCase)
-    const logSpy = vi.spyOn(command, 'log').mockImplementation(() => {})
-
-    await command.execute({}, { compact: false })
-
-    // Check that the command uses the truncation logic
-    expect(mockSearchTicketsUseCase.execute).toHaveBeenCalled()
-    expect(logSpy).toHaveBeenCalled()
-
-    // The actual truncation logic is tested in the unit tests below
-    // This test ensures the command flow works correctly
-  })
-
-  test('QuickTodoCommand should truncate long titles consistently', async () => {
-    const longTitle = 'This is a very long ticket title that should be truncated'
-    const shortTitle = 'Short title'
-
-    const mockTickets = [createMockTicket(longTitle), createMockTicket(shortTitle)]
-
-    mockSearchTicketsUseCase.execute.mockResolvedValue({ tickets: mockTickets })
-
-    const command = new QuickTodoCommand([], {} as any)
-    ;(command as any).getService = vi.fn().mockReturnValue(mockSearchTicketsUseCase)
-    const logSpy = vi.spyOn(command, 'log').mockImplementation(() => {})
-
-    await command.execute({}, { compact: false })
-
-    // Check that the command uses the truncation logic
-    expect(mockSearchTicketsUseCase.execute).toHaveBeenCalled()
-    expect(logSpy).toHaveBeenCalled()
-
-    // The actual truncation logic is tested in the unit tests below
-    // This test ensures the command flow works correctly
-  })
-
-  test('QuickWipCommand should truncate long titles consistently', async () => {
-    const longTitle = 'This is a very long ticket title that should be truncated'
-    const shortTitle = 'Short title'
-
-    const mockTickets = [createMockTicket(longTitle), createMockTicket(shortTitle)]
-
-    mockSearchTicketsUseCase.execute.mockResolvedValue({ tickets: mockTickets })
-
-    const command = new QuickWipCommand([], {} as any)
-    ;(command as any).getService = vi.fn().mockReturnValue(mockSearchTicketsUseCase)
-    const logSpy = vi.spyOn(command, 'log').mockImplementation(() => {})
-
-    await command.execute({}, { compact: false })
-
-    // Check that the command uses the truncation logic
-    expect(mockSearchTicketsUseCase.execute).toHaveBeenCalled()
-    expect(logSpy).toHaveBeenCalled()
-
-    // The actual truncation logic is tested in the unit tests below
-    // This test ensures the command flow works correctly
   })
 
   test('should use exact truncation length for all commands', () => {

@@ -1,12 +1,13 @@
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CLI_TYPES } from '../infrastructure/container.ts'
-import { getServiceContainer } from '../utils/service-factory.ts'
+
+import { getServiceContainer, getUpdateTicketUseCase } from '../utils/service-factory.ts'
 import { UpdateCommand } from './update.ts'
 
 // Mock the service factory module
 vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
+  getUpdateTicketUseCase: vi.fn(),
 }))
 
 // Mock the oclif Command class
@@ -81,13 +82,11 @@ describe('UpdateCommand', () => {
 
     // Mock the service container
     mockContainer = {
-      get: vi.fn(type => {
-        if (type === CLI_TYPES.UpdateTicketUseCase) return mockUpdateTicketUseCase
-        return null
-      }),
+      get: vi.fn(() => mockUpdateTicketUseCase),
     } as unknown as Container
 
     vi.mocked(getServiceContainer).mockReturnValue(mockContainer)
+    vi.mocked(getUpdateTicketUseCase).mockReturnValue(mockUpdateTicketUseCase)
   })
 
   afterEach(() => {
@@ -116,14 +115,13 @@ describe('UpdateCommand', () => {
     await cmd.run()
 
     // Assert
-    expect(mockContainer.get).toHaveBeenCalledWith(CLI_TYPES.UpdateTicketUseCase)
+    expect(getUpdateTicketUseCase).toHaveBeenCalled()
     expect(mockUpdateTicketUseCase.execute).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'ticket-123',
-        title: 'New title',
-        description: undefined,
-        status: undefined,
-        priority: undefined,
+        updates: expect.objectContaining({
+          title: 'New title',
+        }),
       })
     )
     expect(logSpy).toHaveBeenCalledWith('Ticket ticket-123 updated successfully.')
@@ -157,9 +155,11 @@ describe('UpdateCommand', () => {
     expect(mockUpdateTicketUseCase.execute).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'ticket-123',
-        title: 'New title',
-        status: 'in_progress',
-        priority: 'high',
+        updates: expect.objectContaining({
+          title: 'New title',
+          status: 'in_progress',
+          priority: 'high',
+        }),
       })
     )
     expect(logSpy).toHaveBeenCalledWith('Ticket ticket-123 updated successfully.')

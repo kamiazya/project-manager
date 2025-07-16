@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { getCreateTicketUseCase } from '../../utils/service-factory.ts'
 import { QuickNewCommand } from './new.ts'
+
+// Mock service factory
+vi.mock('../../utils/service-factory.ts', () => ({
+  getCreateTicketUseCase: vi.fn(),
+}))
 
 describe('QuickNewCommand', () => {
   let command: QuickNewCommand
@@ -14,7 +20,7 @@ describe('QuickNewCommand', () => {
       execute: vi.fn().mockResolvedValue({ id: 'test-ticket-id' }),
     }
 
-    ;(command as any).getService = vi.fn().mockReturnValue(mockCreateTicketUseCase)
+    vi.mocked(getCreateTicketUseCase).mockReturnValue(mockCreateTicketUseCase)
   })
 
   test('should have correct command metadata', () => {

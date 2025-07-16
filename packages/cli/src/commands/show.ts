@@ -1,5 +1,5 @@
 import { Args } from '@oclif/core'
-import { type GetTicketById, GetTicketByIdRequest } from '@project-manager/core'
+import { GetTicketById } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 import { formatTicketResponse } from '../utils/output.ts'
 import { getGetTicketByIdUseCase } from '../utils/service-factory.ts'
@@ -41,7 +41,7 @@ export class ShowCommand extends BaseCommand<
     const getTicketByIdUseCase = getGetTicketByIdUseCase()
 
     // Execute the request
-    const request = new GetTicketByIdRequest(args.ticketId)
+    const request = new GetTicketById.Request(args.ticketId)
     const response = await getTicketByIdUseCase.execute(request)
 
     // Handle ticket not found

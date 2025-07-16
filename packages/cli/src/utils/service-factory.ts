@@ -1,88 +1,159 @@
 import {
-  ArchiveTicketUseCase,
-  CompleteTicketUseCase,
-  type CreateTicket,
-  DeleteTicketUseCase,
-  type GetAllTickets,
-  type GetTicketById,
-  GetTicketStatsUseCase,
-  SearchTicketsUseCase,
-  StartTicketProgressUseCase,
-  UpdateTicketDescriptionUseCase,
-  UpdateTicketPriorityUseCase,
-  UpdateTicketStatusUseCase,
-  UpdateTicketTitleUseCase,
-  UpdateTicketUseCase,
+  CreateTicket,
+  GetAllTickets,
+  GetTicketById,
+  type UseCaseFactory,
+  UseCaseFactoryProvider,
 } from '@project-manager/core'
-import type { Container } from 'inversify'
-import { CLI_TYPES, getCliContainer, resetCliContainer } from '../infrastructure/container.ts'
+import { Container } from 'inversify'
+import { CLI_TYPES } from '../infrastructure/container.ts'
+import { CliTicketRepository } from '../infrastructure/repository/cli-ticket-repository.ts'
 import { getStoragePath } from './config.ts'
 
-export function getServiceContainer(): Container {
-  return getCliContainer(getStoragePath())
+// Singleton factory instance
+let factoryInstance: UseCaseFactory | null = null
+
+/**
+ * Get the shared UseCaseFactory instance
+ * This provides Clean Architecture compliant access to use cases
+ */
+function getUseCaseFactory(): UseCaseFactory {
+  if (!factoryInstance) {
+    const provider = UseCaseFactoryProvider.getInstance()
+    const ticketRepository = new CliTicketRepository(getStoragePath())
+    factoryInstance = provider.createUseCaseFactory({
+      ticketRepository,
+    })
+  }
+  return factoryInstance
 }
 
-// Individual use case getters
+// Individual use case getters using factory pattern
 export function getCreateTicketUseCase(): CreateTicket.UseCase {
-  return getServiceContainer().get<CreateTicket.UseCase>(CLI_TYPES.CreateTicketUseCase)
+  return getUseCaseFactory().createCreateTicketUseCase()
 }
 
 export function getGetTicketByIdUseCase(): GetTicketById.UseCase {
-  return getServiceContainer().get<GetTicketById.UseCase>(CLI_TYPES.GetTicketByIdUseCase)
+  return getUseCaseFactory().createGetTicketByIdUseCase()
 }
 
 export function getGetAllTicketsUseCase(): GetAllTickets.UseCase {
-  return getServiceContainer().get<GetAllTickets.UseCase>(CLI_TYPES.GetAllTicketsUseCase)
+  return getUseCaseFactory().createGetAllTicketsUseCase()
 }
 
-export function getUpdateTicketTitleUseCase(): UpdateTicketTitleUseCase {
-  return getServiceContainer().get<UpdateTicketTitleUseCase>(CLI_TYPES.UpdateTicketTitleUseCase)
+export function getUpdateTicketTitleUseCase() {
+  return getUseCaseFactory().createUpdateTicketTitleUseCase()
 }
 
-export function getUpdateTicketDescriptionUseCase(): UpdateTicketDescriptionUseCase {
-  return getServiceContainer().get<UpdateTicketDescriptionUseCase>(
-    CLI_TYPES.UpdateTicketDescriptionUseCase
-  )
+export function getUpdateTicketDescriptionUseCase() {
+  return getUseCaseFactory().createUpdateTicketDescriptionUseCase()
 }
 
-export function getUpdateTicketStatusUseCase(): UpdateTicketStatusUseCase {
-  return getServiceContainer().get<UpdateTicketStatusUseCase>(CLI_TYPES.UpdateTicketStatusUseCase)
+export function getUpdateTicketStatusUseCase() {
+  return getUseCaseFactory().createUpdateTicketStatusUseCase()
 }
 
-export function getUpdateTicketPriorityUseCase(): UpdateTicketPriorityUseCase {
-  return getServiceContainer().get<UpdateTicketPriorityUseCase>(
-    CLI_TYPES.UpdateTicketPriorityUseCase
-  )
+export function getUpdateTicketPriorityUseCase() {
+  return getUseCaseFactory().createUpdateTicketPriorityUseCase()
 }
 
-export function getStartTicketProgressUseCase(): StartTicketProgressUseCase {
-  return getServiceContainer().get<StartTicketProgressUseCase>(CLI_TYPES.StartTicketProgressUseCase)
+export function getStartTicketProgressUseCase() {
+  return getUseCaseFactory().createStartTicketProgressUseCase()
 }
 
-export function getCompleteTicketUseCase(): CompleteTicketUseCase {
-  return getServiceContainer().get<CompleteTicketUseCase>(CLI_TYPES.CompleteTicketUseCase)
+export function getCompleteTicketUseCase() {
+  return getUseCaseFactory().createCompleteTicketUseCase()
 }
 
-export function getArchiveTicketUseCase(): ArchiveTicketUseCase {
-  return getServiceContainer().get<ArchiveTicketUseCase>(CLI_TYPES.ArchiveTicketUseCase)
+export function getArchiveTicketUseCase() {
+  return getUseCaseFactory().createArchiveTicketUseCase()
 }
 
-export function getDeleteTicketUseCase(): DeleteTicketUseCase {
-  return getServiceContainer().get<DeleteTicketUseCase>(CLI_TYPES.DeleteTicketUseCase)
+export function getDeleteTicketUseCase() {
+  return getUseCaseFactory().createDeleteTicketUseCase()
 }
 
-export function getGetTicketStatsUseCase(): GetTicketStatsUseCase {
-  return getServiceContainer().get<GetTicketStatsUseCase>(CLI_TYPES.GetTicketStatsUseCase)
+export function getGetTicketStatsUseCase() {
+  return getUseCaseFactory().createGetTicketStatsUseCase()
 }
 
-export function getSearchTicketsUseCase(): SearchTicketsUseCase {
-  return getServiceContainer().get<SearchTicketsUseCase>(CLI_TYPES.SearchTicketsUseCase)
+export function getSearchTicketsUseCase() {
+  return getUseCaseFactory().createSearchTicketsUseCase()
 }
 
-export function getUpdateTicketUseCase(): UpdateTicketUseCase {
-  return getServiceContainer().get<UpdateTicketUseCase>(CLI_TYPES.UpdateTicketUseCase)
+export function getUpdateTicketUseCase() {
+  return getUseCaseFactory().createUpdateTicketUseCase()
 }
 
+/**
+ * Reset the factory instance (useful for testing)
+ */
 export function resetServiceContainer(): void {
-  resetCliContainer()
+  factoryInstance = null
+  containerInstance = null
+  UseCaseFactoryProvider.resetInstance()
+}
+
+// Singleton container instance for backward compatibility
+let containerInstance: Container | null = null
+
+/**
+ * Get the dependency injection container
+ * This provides backward compatibility with existing commands
+ * @deprecated Use individual use case getters instead
+ */
+export function getServiceContainer(): Container {
+  if (!containerInstance) {
+    // Create a new container for backward compatibility
+    containerInstance = new Container()
+
+    // Ensure factory is initialized
+    const factory = getUseCaseFactory()
+
+    // Register all use cases in the container for backward compatibility
+    // This allows existing commands to work while we transition to the new pattern
+    containerInstance
+      .bind(CLI_TYPES.CreateTicketUseCase)
+      .toConstantValue(factory.createCreateTicketUseCase())
+    containerInstance
+      .bind(CLI_TYPES.GetTicketByIdUseCase)
+      .toConstantValue(factory.createGetTicketByIdUseCase())
+    containerInstance
+      .bind(CLI_TYPES.GetAllTicketsUseCase)
+      .toConstantValue(factory.createGetAllTicketsUseCase())
+    containerInstance
+      .bind(CLI_TYPES.UpdateTicketTitleUseCase)
+      .toConstantValue(factory.createUpdateTicketTitleUseCase())
+    containerInstance
+      .bind(CLI_TYPES.UpdateTicketDescriptionUseCase)
+      .toConstantValue(factory.createUpdateTicketDescriptionUseCase())
+    containerInstance
+      .bind(CLI_TYPES.UpdateTicketStatusUseCase)
+      .toConstantValue(factory.createUpdateTicketStatusUseCase())
+    containerInstance
+      .bind(CLI_TYPES.UpdateTicketPriorityUseCase)
+      .toConstantValue(factory.createUpdateTicketPriorityUseCase())
+    containerInstance
+      .bind(CLI_TYPES.StartTicketProgressUseCase)
+      .toConstantValue(factory.createStartTicketProgressUseCase())
+    containerInstance
+      .bind(CLI_TYPES.CompleteTicketUseCase)
+      .toConstantValue(factory.createCompleteTicketUseCase())
+    containerInstance
+      .bind(CLI_TYPES.ArchiveTicketUseCase)
+      .toConstantValue(factory.createArchiveTicketUseCase())
+    containerInstance
+      .bind(CLI_TYPES.DeleteTicketUseCase)
+      .toConstantValue(factory.createDeleteTicketUseCase())
+    containerInstance
+      .bind(CLI_TYPES.GetTicketStatsUseCase)
+      .toConstantValue(factory.createGetTicketStatsUseCase())
+    containerInstance
+      .bind(CLI_TYPES.SearchTicketsUseCase)
+      .toConstantValue(factory.createSearchTicketsUseCase())
+    containerInstance
+      .bind(CLI_TYPES.UpdateTicketUseCase)
+      .toConstantValue(factory.createUpdateTicketUseCase())
+  }
+  return containerInstance
 }

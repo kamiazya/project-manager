@@ -1,12 +1,17 @@
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CLI_TYPES } from '../infrastructure/container.ts'
-import { getServiceContainer } from '../utils/service-factory.ts'
+import {
+  getDeleteTicketUseCase,
+  getGetTicketByIdUseCase,
+  getServiceContainer,
+} from '../utils/service-factory.ts'
 import { DeleteCommand } from './delete.ts'
 
 // Mock the service factory module
 vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
+  getGetTicketByIdUseCase: vi.fn(),
+  getDeleteTicketUseCase: vi.fn(),
 }))
 
 // Mock inquirer prompts
@@ -30,14 +35,12 @@ describe('DeleteCommand', () => {
 
     // Mock the service container
     mockContainer = {
-      get: vi.fn(type => {
-        if (type === CLI_TYPES.GetTicketByIdUseCase) return mockGetTicketByIdUseCase
-        if (type === CLI_TYPES.DeleteTicketUseCase) return mockDeleteTicketUseCase
-        return null
-      }),
+      get: vi.fn(() => mockDeleteTicketUseCase),
     } as unknown as Container
 
     vi.mocked(getServiceContainer).mockReturnValue(mockContainer)
+    vi.mocked(getGetTicketByIdUseCase).mockReturnValue(mockGetTicketByIdUseCase)
+    vi.mocked(getDeleteTicketUseCase).mockReturnValue(mockDeleteTicketUseCase)
   })
 
   afterEach(() => {

@@ -1,36 +1,35 @@
 import { ERROR_MESSAGES, TicketNotFoundError } from '@project-manager/shared'
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
-import type { UseCase } from '../common/base-usecase.ts'
+import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import { TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
-// Temporary compatibility classes until namespace conversion
-class CompleteTicketRequest {
-  constructor(public readonly id: string) {}
-}
+export namespace CompleteTicket {
+  export class Request {
+    constructor(public readonly id: string) {}
+  }
 
-class CompleteTicketResponse extends TicketResponse {}
+  export class Response extends TicketResponse {}
 
-/**
- * Use case for completing a ticket.
- */
-export class CompleteTicketUseCase
-  implements UseCase<CompleteTicketRequest, CompleteTicketResponse>
-{
-  constructor(private readonly ticketRepository: TicketRepository) {}
+  /**
+   * Use case for completing a ticket.
+   */
+  export class UseCase implements IUseCase<Request, Response> {
+    constructor(private readonly ticketRepository: TicketRepository) {}
 
-  async execute(request: CompleteTicketRequest): Promise<CompleteTicketResponse> {
-    const ticketId = TicketId.create(request.id)
-    const ticket = await this.ticketRepository.findById(ticketId)
+    async execute(request: Request): Promise<Response> {
+      const ticketId = TicketId.create(request.id)
+      const ticket = await this.ticketRepository.findById(ticketId)
 
-    if (!ticket) {
-      throw new TicketNotFoundError(ERROR_MESSAGES.TICKET_NOT_FOUND(request.id))
+      if (!ticket) {
+        throw new TicketNotFoundError(ERROR_MESSAGES.TICKET_NOT_FOUND(request.id))
+      }
+
+      // Use domain business operation
+      ticket.complete()
+
+      await this.ticketRepository.save(ticket)
+      return TicketResponse.fromTicket(ticket) as Response
     }
-
-    // Use domain business operation
-    ticket.complete()
-
-    await this.ticketRepository.save(ticket)
-    return TicketResponse.fromTicket(ticket) as CompleteTicketResponse
   }
 }

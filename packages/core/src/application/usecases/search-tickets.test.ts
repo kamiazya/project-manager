@@ -2,15 +2,10 @@ import type { TicketSearchCriteria } from '@project-manager/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Ticket } from '../../domain/entities/ticket.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
-import { SearchTicketsUseCase } from './search-tickets.ts'
-
-// Use local class for testing
-class SearchTicketsRequest {
-  constructor(public readonly criteria: TicketSearchCriteria) {}
-}
+import { SearchTickets } from './search-tickets.ts'
 
 describe('SearchTicketsUseCase', () => {
-  let searchTicketsUseCase: SearchTicketsUseCase
+  let searchTicketsUseCase: SearchTickets.UseCase
   let mockTicketRepository: TicketRepository
   let sampleTickets: Ticket[]
 
@@ -25,7 +20,7 @@ describe('SearchTicketsUseCase', () => {
     }
 
     // Create use case with mock repository
-    searchTicketsUseCase = new SearchTicketsUseCase(mockTicketRepository)
+    searchTicketsUseCase = new SearchTickets.UseCase(mockTicketRepository)
 
     // Create sample tickets for testing
     sampleTickets = [
@@ -69,7 +64,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should return all tickets when no criteria provided', async () => {
     const criteria: TicketSearchCriteria = {}
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -79,7 +74,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should filter tickets by status', async () => {
     const criteria: TicketSearchCriteria = { status: 'pending' }
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -89,7 +84,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should filter tickets by priority', async () => {
     const criteria: TicketSearchCriteria = { priority: 'high' }
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -99,7 +94,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should filter tickets by type', async () => {
     const criteria: TicketSearchCriteria = { type: 'feature' }
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -110,7 +105,7 @@ describe('SearchTicketsUseCase', () => {
   it('should filter tickets by privacy', async () => {
     // Test public privacy filter
     const publicCriteria: TicketSearchCriteria = { privacy: 'public' }
-    const publicRequest = new SearchTicketsRequest(publicCriteria)
+    const publicRequest = new SearchTickets.Request(publicCriteria)
     const publicResponse = await searchTicketsUseCase.execute(publicRequest)
 
     // Should return only the public ticket (Update documentation)
@@ -119,7 +114,7 @@ describe('SearchTicketsUseCase', () => {
 
     // Test shareable privacy filter
     const shareableCriteria: TicketSearchCriteria = { privacy: 'shareable' }
-    const shareableRequest = new SearchTicketsRequest(shareableCriteria)
+    const shareableRequest = new SearchTickets.Request(shareableCriteria)
     const shareableResponse = await searchTicketsUseCase.execute(shareableRequest)
 
     // Should return only the shareable ticket (Add new feature)
@@ -128,7 +123,7 @@ describe('SearchTicketsUseCase', () => {
 
     // Test local-only privacy filter
     const localOnlyCriteria: TicketSearchCriteria = { privacy: 'local-only' }
-    const localOnlyRequest = new SearchTicketsRequest(localOnlyCriteria)
+    const localOnlyRequest = new SearchTickets.Request(localOnlyCriteria)
     const localOnlyResponse = await searchTicketsUseCase.execute(localOnlyRequest)
 
     // Should return only the local-only ticket (Fix login bug)
@@ -141,7 +136,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should filter tickets by text search in title', async () => {
     const criteria: TicketSearchCriteria = { search: 'login' }
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -151,7 +146,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should filter tickets by text search in description', async () => {
     const criteria: TicketSearchCriteria = { search: 'dashboard' }
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -161,7 +156,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should perform case-insensitive search', async () => {
     const criteria: TicketSearchCriteria = { search: 'LOGIN' }
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -175,7 +170,7 @@ describe('SearchTicketsUseCase', () => {
       priority: 'high',
       type: 'bug',
     }
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -187,7 +182,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should return empty array when no tickets match criteria', async () => {
     const criteria: TicketSearchCriteria = { status: 'archived' }
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -196,7 +191,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should handle empty search string', async () => {
     const criteria: TicketSearchCriteria = { search: '' }
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 
@@ -205,7 +200,7 @@ describe('SearchTicketsUseCase', () => {
 
   it('should handle undefined search criteria gracefully', async () => {
     const criteria: TicketSearchCriteria = {}
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
 
     const response = await searchTicketsUseCase.execute(request)
 

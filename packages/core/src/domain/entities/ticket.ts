@@ -181,6 +181,14 @@ export class Ticket {
   }
 
   /**
+   * Business operation: Change ticket type
+   */
+  public changeType(newType: 'feature' | 'bug' | 'task'): void {
+    this.props.type = newType
+    this.updateTimestamp()
+  }
+
+  /**
    * Business operation: Start progress on the ticket
    */
   public startProgress(): void {

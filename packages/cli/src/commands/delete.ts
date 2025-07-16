@@ -1,6 +1,6 @@
 import { confirm } from '@inquirer/prompts'
 import { Args, Flags } from '@oclif/core'
-import { DeleteTicketRequest, GetTicketByIdRequest } from '@project-manager/core'
+import { DeleteTicket, GetTicketById } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 import { getDeleteTicketUseCase, getGetTicketByIdUseCase } from '../utils/service-factory.ts'
 
@@ -36,7 +36,7 @@ export class DeleteCommand extends BaseCommand {
     const deleteTicketUseCase = getDeleteTicketUseCase()
 
     // First, verify the ticket exists
-    const getRequest = new GetTicketByIdRequest(args.ticketId)
+    const getRequest = new GetTicketById.Request(args.ticketId)
     const ticket = await getTicketByIdUseCase.execute(getRequest)
 
     // Handle ticket not found
@@ -57,7 +57,7 @@ export class DeleteCommand extends BaseCommand {
     }
 
     // Delete the ticket
-    const deleteRequest = new DeleteTicketRequest(args.ticketId)
+    const deleteRequest = new DeleteTicket.Request(args.ticketId)
     await deleteTicketUseCase.execute(deleteRequest)
 
     this.log(`Ticket ${args.ticketId} deleted successfully.`)

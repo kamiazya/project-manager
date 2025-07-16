@@ -1,5 +1,5 @@
 import { Args } from '@oclif/core'
-import { CompleteTicketRequest } from '@project-manager/core'
+import { CompleteTicket } from '@project-manager/core'
 import { BaseCommand } from '../../lib/base-command.ts'
 import { getCompleteTicketUseCase } from '../../utils/service-factory.ts'
 
@@ -20,7 +20,7 @@ export class QuickDoneCommand extends BaseCommand {
 
   async execute(args: { id: string }): Promise<any> {
     const completeTicketUseCase = getCompleteTicketUseCase()
-    const request = new CompleteTicketRequest(args.id)
+    const request = new CompleteTicket.Request(args.id)
 
     await completeTicketUseCase.execute(request)
     this.log(`Completed ticket ${args.id}`)

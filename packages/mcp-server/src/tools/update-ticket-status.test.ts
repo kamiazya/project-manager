@@ -1,23 +1,17 @@
-import { UpdateTicketStatusUseCase } from '@project-manager/core'
-import type { Container } from 'inversify'
+import { UpdateTicketStatus } from '@project-manager/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as containerModule from '../utils/container.ts'
 import { updateTicketStatusTool } from './update-ticket-status.ts'
 
 describe('updateTicketStatusTool', () => {
-  let mockContainer: Container
-  let mockUseCase: UpdateTicketStatusUseCase
+  let mockUseCase: UpdateTicketStatus.UseCase
 
   beforeEach(() => {
     mockUseCase = {
       execute: vi.fn(),
-    } as unknown as UpdateTicketStatusUseCase
+    } as unknown as UpdateTicketStatus.UseCase
 
-    mockContainer = {
-      get: vi.fn().mockReturnValue(mockUseCase),
-    } as any
-
-    vi.spyOn(containerModule, 'getContainer').mockReturnValue(mockContainer as any)
+    vi.spyOn(containerModule, 'getUpdateTicketStatusUseCase').mockReturnValue(mockUseCase)
   })
 
   it('should have correct metadata', () => {

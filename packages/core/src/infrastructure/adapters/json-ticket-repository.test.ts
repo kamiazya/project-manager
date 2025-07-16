@@ -2,10 +2,10 @@ import { constants } from 'node:fs'
 import { access, mkdtemp, rm, unlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { TicketNotFoundError } from '@project-manager/shared'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { Ticket } from '../../domain/entities/ticket.ts'
 import { TicketId } from '../../domain/value-objects/ticket-id.ts'
+import { TicketNotFoundError } from '../errors/infrastructure-errors.ts'
 import { JsonTicketRepository } from './json-ticket-repository.ts'
 
 describe('JsonTicketRepository', () => {
@@ -81,6 +81,9 @@ describe('JsonTicketRepository', () => {
         priority: 'high',
       })
 
+      // Add small delay to ensure different timestamps for ID generation
+      await new Promise(resolve => setTimeout(resolve, 1))
+
       const ticket2 = Ticket.create({
         title: 'Ticket 2',
         description: 'Description 2',
@@ -136,6 +139,9 @@ describe('JsonTicketRepository', () => {
         description: 'Description 1',
         priority: 'high',
       })
+
+      // Add small delay to ensure different timestamps for ID generation
+      await new Promise(resolve => setTimeout(resolve, 1))
 
       const ticket2 = Ticket.create({
         title: 'Ticket 2',
@@ -270,6 +276,9 @@ describe('JsonTicketRepository', () => {
         description: 'Description 1',
         priority: 'high',
       })
+
+      // Add small delay to ensure different timestamps for ID generation
+      await new Promise(resolve => setTimeout(resolve, 1))
 
       const ticket2 = Ticket.create({
         title: 'Concurrent 2',

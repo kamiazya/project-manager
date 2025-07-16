@@ -4,21 +4,26 @@ interface TicketIdProps {
   value: string
 }
 
-const INVALID_ID_FORMAT = 'Invalid ID format'
+const INVALID_ID_FORMAT = 'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
 
 /**
  * Generate a unique ID for tickets
- * Creates a 8-character hex string based on current timestamp
+ * Creates a 8-character hex string based on current timestamp and random component
  */
 function generateId(): string {
-  return Date.now().toString(16).slice(-8)
+  // Combine timestamp with random component for better uniqueness
+  const timestamp = Date.now().toString(16).slice(-6)
+  const random = Math.floor(Math.random() * 256)
+    .toString(16)
+    .padStart(2, '0')
+  return timestamp + random
 }
 
 /**
  * Validate ID format (8 hex characters)
  */
 function isValidId(id: string): boolean {
-  return /^[0-9a-f]{8}$/i.test(id)
+  return /^[0-9a-f]{8}$/.test(id)
 }
 
 /**

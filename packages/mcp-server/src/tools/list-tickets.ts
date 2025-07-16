@@ -1,8 +1,7 @@
-import type { GetAllTicketsUseCase } from '@project-manager/core'
-import { type GetAllTicketsFilters, GetAllTicketsRequest, TYPES } from '@project-manager/core'
+import { GetAllTickets, type GetAllTicketsFilters } from '@project-manager/core'
 import { z } from 'zod'
 import type { McpTool } from '../types/mcp-tool.ts'
-import { getContainer } from '../utils/container.ts'
+import { getGetAllTicketsUseCase } from '../utils/container.ts'
 import { handleError } from '../utils/error-handler.ts'
 
 const listTicketsSchema = z.object({
@@ -22,8 +21,7 @@ export const listTicketsTool: McpTool = {
   inputSchema: listTicketsSchema.shape,
   handler: async (input: z.infer<typeof listTicketsSchema>) => {
     try {
-      const container = getContainer()
-      const useCase = container.get<GetAllTicketsUseCase>(TYPES.GetAllTicketsUseCase)
+      const useCase = getGetAllTicketsUseCase()
 
       // Pass filters directly to the use case, filtering out undefined values
       const filters: GetAllTicketsFilters = {}
@@ -32,7 +30,7 @@ export const listTicketsTool: McpTool = {
       if (input.type !== undefined) filters.type = input.type
       if (input.limit !== undefined) filters.limit = input.limit
 
-      const request = new GetAllTicketsRequest(filters)
+      const request = new GetAllTickets.Request(filters)
 
       const response = await useCase.execute(request)
       const tickets = response.tickets

@@ -165,8 +165,8 @@ export class JsonTicketRepository implements TicketRepository {
     try {
       return await operation()
     } finally {
-      this.writeLock.delete(lockKey)
       releaseLock!()
+      this.writeLock.delete(lockKey)
     }
   }
 

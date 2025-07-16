@@ -1,6 +1,6 @@
 import { input, select } from '@inquirer/prompts'
 import { Args, Flags } from '@oclif/core'
-import { CreateTicketRequest } from '@project-manager/core'
+import { CreateTicket } from '@project-manager/core'
 import { BaseCommand } from '../lib/base-command.ts'
 import { getCreateTicketUseCase } from '../utils/service-factory.ts'
 
@@ -107,7 +107,7 @@ export class CreateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void> 
 
     // Create ticket
     const createTicketUseCase = getCreateTicketUseCase()
-    const request = new CreateTicketRequest(
+    const request = new CreateTicket.Request(
       title.trim(),
       description,
       priority as 'high' | 'medium' | 'low',

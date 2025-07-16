@@ -1,12 +1,13 @@
 import type { Container } from 'inversify'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CLI_TYPES } from '../infrastructure/container.ts'
-import { getServiceContainer } from '../utils/service-factory.ts'
+
+import { getGetTicketStatsUseCase, getServiceContainer } from '../utils/service-factory.ts'
 import { StatsCommand } from './stats.ts'
 
 // Mock the service factory module
 vi.mock('../utils/service-factory.ts', () => ({
   getServiceContainer: vi.fn(),
+  getGetTicketStatsUseCase: vi.fn(),
 }))
 
 // Mock the output module to check formatted output
@@ -69,6 +70,7 @@ describe('StatsCommand', () => {
     } as unknown as Container
 
     vi.mocked(getServiceContainer).mockReturnValue(mockContainer)
+    vi.mocked(getGetTicketStatsUseCase).mockReturnValue(mockGetTicketStatsUseCase)
   })
 
   afterEach(() => {
@@ -96,7 +98,7 @@ describe('StatsCommand', () => {
     await cmd.run()
 
     // Assert
-    expect(mockContainer.get).toHaveBeenCalledWith(CLI_TYPES.GetTicketStatsUseCase)
+    expect(getGetTicketStatsUseCase).toHaveBeenCalled()
     expect(mockGetTicketStatsUseCase.execute).toHaveBeenCalled()
     expect(logSpy).toHaveBeenCalledWith('Total: 10 tickets')
   })

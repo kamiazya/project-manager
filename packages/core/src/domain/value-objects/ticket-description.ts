@@ -6,7 +6,7 @@ interface TicketDescriptionProps {
 }
 
 const DESCRIPTION_MAX_LENGTH = 5000
-const DESCRIPTION_EMPTY_MESSAGE = 'Description cannot be empty'
+const DESCRIPTION_EMPTY_MESSAGE = 'Description cannot be empty or whitespace only'
 const DESCRIPTION_TOO_LONG_MESSAGE = (max: number) => `Description cannot exceed ${max} characters`
 
 /**

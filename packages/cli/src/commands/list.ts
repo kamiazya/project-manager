@@ -1,5 +1,5 @@
 import { Flags } from '@oclif/core'
-import { SearchTicketsRequest } from '@project-manager/core'
+import { SearchTickets } from '@project-manager/core'
 import type {
   TicketPriority,
   TicketSearchCriteria,
@@ -67,7 +67,7 @@ export class ListCommand extends BaseCommand {
     const searchTicketsUseCase = getSearchTicketsUseCase()
 
     // Execute the request
-    const request = new SearchTicketsRequest(criteria)
+    const request = new SearchTickets.Request(criteria)
     const response = await searchTicketsUseCase.execute(request)
 
     // Handle JSON output

@@ -3,25 +3,21 @@
 // Common interfaces
 export type { UseCase } from './application/common/base-usecase.ts'
 export { TicketResponse } from './application/common/ticket.response.ts'
-// Use case namespaces and compatibility exports
-export {
-  CreateTicket,
-  CreateTicketRequest,
-  CreateTicketResponse,
-  CreateTicketUseCase,
-} from './application/usecases/create-ticket.ts'
-export {
-  GetAllTickets,
-  GetAllTicketsRequest,
-  GetAllTicketsResponse,
-  GetAllTicketsUseCase,
-} from './application/usecases/get-all-tickets.ts'
-export {
-  GetTicketById,
-  GetTicketByIdRequest,
-  GetTicketByIdResponse,
-  GetTicketByIdUseCase,
-} from './application/usecases/get-ticket-by-id.ts'
+// Use case namespaces
+export { ArchiveTicket } from './application/usecases/archive-ticket.ts'
+export { CompleteTicket } from './application/usecases/complete-ticket.ts'
+export { CreateTicket } from './application/usecases/create-ticket.ts'
+export { DeleteTicket } from './application/usecases/delete-ticket.ts'
+export { GetAllTickets } from './application/usecases/get-all-tickets.ts'
+export { GetTicketById } from './application/usecases/get-ticket-by-id.ts'
+export { GetTicketStats } from './application/usecases/get-ticket-stats.ts'
+export { SearchTickets } from './application/usecases/search-tickets.ts'
+export { StartTicketProgress } from './application/usecases/start-ticket-progress.ts'
+export { UpdateTicket } from './application/usecases/update-ticket.ts'
+export { UpdateTicketDescription } from './application/usecases/update-ticket-description.ts'
+export { UpdateTicketPriority } from './application/usecases/update-ticket-priority.ts'
+export { UpdateTicketStatus } from './application/usecases/update-ticket-status.ts'
+export { UpdateTicketTitle } from './application/usecases/update-ticket-title.ts'
 
 // Import namespaces to enable type extraction
 import { GetAllTickets } from './application/usecases/get-all-tickets.ts'
@@ -30,70 +26,22 @@ import { GetAllTickets } from './application/usecases/get-all-tickets.ts'
 export type GetAllTicketsFilters = GetAllTickets.Filters
 export type TicketSummary = GetAllTickets.TicketSummary
 
-// Legacy ticket statistics (TODO: refactor to namespace pattern)
 export type { TicketStatistics } from './application/common/ticket-statistics.ts'
+// Legacy ticket statistics (TODO: refactor to namespace pattern)
 export { createEmptyTicketStatistics } from './application/common/ticket-statistics.ts'
-// Repository interfaces
 export type { TicketRepository } from './application/repositories/ticket-repository.ts'
+// Repository interfaces
 export { TicketRepository as TicketRepositorySymbol } from './application/repositories/ticket-repository.ts'
 
-// Legacy use cases (TODO: convert to namespace pattern)
-export { ArchiveTicketUseCase } from './application/usecases/archive-ticket.ts'
-export { CompleteTicketUseCase } from './application/usecases/complete-ticket.ts'
-export { DeleteTicketUseCase } from './application/usecases/delete-ticket.ts'
-export { GetTicketStatsUseCase } from './application/usecases/get-ticket-stats.ts'
-export { SearchTicketsUseCase } from './application/usecases/search-tickets.ts'
-export { StartTicketProgressUseCase } from './application/usecases/start-ticket-progress.ts'
-export { UpdateTicketUseCase } from './application/usecases/update-ticket.ts'
-export { UpdateTicketDescriptionUseCase } from './application/usecases/update-ticket-description.ts'
-export { UpdateTicketPriorityUseCase } from './application/usecases/update-ticket-priority.ts'
-export { UpdateTicketStatusUseCase } from './application/usecases/update-ticket-status.ts'
-export { UpdateTicketTitleUseCase } from './application/usecases/update-ticket-title.ts'
+// Import additional namespaces to enable type extraction
+import { SearchTickets } from './application/usecases/search-tickets.ts'
+import { UpdateTicket } from './application/usecases/update-ticket.ts'
 
-// Legacy DTO compatibility exports (TODO: remove after namespace conversion)
-export class SearchTicketsRequest {
-  constructor(public readonly criteria: any) {}
-}
-export class ArchiveTicketRequest {
-  constructor(public readonly id: string) {}
-}
-export class CompleteTicketRequest {
-  constructor(public readonly id: string) {}
-}
-export class DeleteTicketRequest {
-  constructor(public readonly id: string) {}
-}
-export class StartTicketProgressRequest {
-  constructor(public readonly id: string) {}
-}
-export class UpdateTicketRequest {
-  constructor(
-    public readonly id: string,
-    public readonly updates: any
-  ) {}
+// Extract specific types from namespaces
+export type SearchCriteria = SearchTickets.SearchCriteria
+export type UpdateTicketData = UpdateTicket.Request
 
-  hasUpdates(): boolean {
-    return !!(
-      this.updates.title ||
-      this.updates.description ||
-      this.updates.status ||
-      this.updates.priority ||
-      this.updates.type
-    )
-  }
-}
-export class UpdateTicketResponse {
-  constructor(public readonly ticket: any) {}
-}
-export class GetTicketStatsRequest {
-  constructor() {}
-}
-export class UpdateTicketStatusRequest {
-  constructor(
-    public readonly id: string,
-    public readonly status: string
-  ) {}
-}
+// Legacy use cases (converted to namespace pattern) - all exports now available through namespace pattern above
 
 // NOTE: Infrastructure layer exports removed to comply with Clean Architecture
 // MCP server should use proper dependency injection instead of directly accessing container
@@ -131,6 +79,12 @@ export { TicketTitle } from './domain/value-objects/ticket-title.ts'
 // External packages should depend on repository interfaces, not concrete implementations
 // Infrastructure implementations are available internally but not exposed through public API
 
-// NOTE: Infrastructure layer exports removed to comply with Clean Architecture
-// CLI and MCP server should use proper dependency injection instead of directly accessing infrastructure
-// TODO: Implement proper dependency injection factory pattern
+export { UseCaseFactory } from './application/factories/use-case-factory.ts'
+// Use Case Factory Pattern - Clean Architecture compliant dependency injection
+export {
+  type UseCaseFactoryConfig,
+  UseCaseFactoryProvider,
+} from './application/factories/use-case-factory-provider.ts'
+
+// Infrastructure types are not exported to maintain Clean Architecture boundaries
+// Use UseCaseFactory pattern for dependency injection instead
