@@ -35,31 +35,46 @@ async function testTransform(plugin: Plugin, code: string, id: string) {
 
 const mockRules: ArchitectureRules = {
   layers: [
-    { name: 'domain', patterns: ['**/domain/**'], allowedDependencies: ['shared'] },
+    { name: 'presentation', patterns: ['**/apps/**'], allowedDependencies: ['sdk'] },
     {
-      name: 'application',
-      patterns: ['**/application/**'],
-      allowedDependencies: ['domain', 'shared'],
+      name: 'sdk',
+      patterns: ['**/packages/sdk/**'],
+      allowedDependencies: ['application', 'domain', 'infrastructure', 'base'],
     },
     {
       name: 'infrastructure',
-      patterns: ['**/infrastructure/**'],
-      allowedDependencies: ['application', 'domain', 'shared'],
+      patterns: ['**/packages/infrastructure/**'],
+      allowedDependencies: ['application', 'domain', 'base'],
     },
-    { name: 'shared', patterns: ['**/shared/**'], allowedDependencies: [] },
+    {
+      name: 'application',
+      patterns: ['**/packages/application/**'],
+      allowedDependencies: ['domain', 'base'],
+    },
+    { name: 'domain', patterns: ['**/packages/domain/**'], allowedDependencies: ['base'] },
+    { name: 'base', patterns: ['**/packages/base/**'], allowedDependencies: [] },
   ],
   imports: [
     {
-      pattern: '**/domain/**',
-      forbidden: ['**/infrastructure/**'],
+      pattern: '**/packages/domain/**',
+      forbidden: ['**/packages/infrastructure/**'],
       message: 'Domain cannot import from infrastructure.',
+    },
+    {
+      pattern: '**/apps/**',
+      forbidden: [
+        '**/packages/domain/**',
+        '**/packages/application/**',
+        '**/packages/infrastructure/**',
+      ],
+      message: 'Apps can only import from SDK.',
     },
   ],
   exports: [
     {
-      pattern: '**/shared/index.ts',
-      forbidden: ['**/domain/**'],
-      message: 'Shared index cannot export from domain.',
+      pattern: '**/packages/base/index.ts',
+      forbidden: ['**/packages/domain/**'],
+      message: 'Base package cannot export from domain.',
     },
   ],
   checks: {
@@ -69,13 +84,15 @@ const mockRules: ArchitectureRules = {
   },
 }
 
-// Absolute paths for realistic testing
+// Absolute paths for realistic testing with new monorepo structure
 const baseDir = resolve(process.cwd(), 'project')
-const domainFile = resolve(baseDir, 'src/domain/entity.ts')
-const applicationFile = resolve(baseDir, 'src/application/service.ts')
-const infrastructureFile = resolve(baseDir, 'src/infrastructure/repository.ts')
-const sharedFile = resolve(baseDir, 'src/shared/utils.ts')
-const sharedIndexFile = resolve(baseDir, 'src/shared/index.ts')
+const presentationFile = resolve(baseDir, 'apps/cli/src/command.ts')
+const sdkFile = resolve(baseDir, 'packages/sdk/src/index.ts')
+const infrastructureFile = resolve(baseDir, 'packages/infrastructure/src/repository.ts')
+const applicationFile = resolve(baseDir, 'packages/application/src/service.ts')
+const domainFile = resolve(baseDir, 'packages/domain/src/entity.ts')
+const baseFile = resolve(baseDir, 'packages/base/src/utils.ts')
+const baseIndexFile = resolve(baseDir, 'packages/base/index.ts')
 
 describe('architectureFitnessPlugin', () => {
   describe('Layer Violations', () => {
@@ -83,24 +100,32 @@ describe('architectureFitnessPlugin', () => {
 
     it('should not throw for allowed dependencies', async () => {
       // application -> domain
-      await expect(testResolveId(plugin, './domain/entity', applicationFile)).resolves.not.toThrow()
+      await expect(
+        testResolveId(plugin, '../domain/entity', applicationFile)
+      ).resolves.not.toThrow()
 
       // infrastructure -> application
       await expect(
-        testResolveId(plugin, './application/service', infrastructureFile)
+        testResolveId(plugin, '../application/service', infrastructureFile)
+      ).resolves.not.toThrow()
+
+      // apps -> sdk
+      await expect(
+        testResolveId(plugin, '../../packages/sdk/src/index', presentationFile)
       ).resolves.not.toThrow()
     })
 
     it('should throw for disallowed dependencies', async () => {
-      // domain -> application
-      const importPath = '../application/service.ts'
+      // domain -> application (absolute path to ensure pattern matching)
+      const importPath = resolve(baseDir, 'packages/application/src/service.ts')
       await expect(testResolveId(plugin, importPath, domainFile)).rejects.toThrow(
         /Architecture Violation \(Layer Boundary\)/
       )
     })
 
     it('should throw a correctly formatted error message for layer violations', async () => {
-      const importPath = '../infrastructure/repository.ts'
+      // domain -> infrastructure (absolute path to ensure pattern matching)
+      const importPath = resolve(baseDir, 'packages/infrastructure/src/repository.ts')
       await expect(testResolveId(plugin, importPath, domainFile)).rejects.toThrow(
         'domain layer cannot import from infrastructure layer'
       )
@@ -113,45 +138,45 @@ describe('architectureFitnessPlugin', () => {
     const importTestRules: ArchitectureRules = {
       ...mockRules,
       layers: [
-        // Remove the original 'application' layer and add a new one
-        ...mockRules.layers.filter(l => l.name !== 'application'),
+        // Remove the original 'presentation' layer and add a new one
+        ...mockRules.layers.filter(l => l.name !== 'presentation'),
         {
-          name: 'application',
-          patterns: ['**/application/**'],
+          name: 'presentation',
+          patterns: ['**/apps/**'],
           // Allow depending on infrastructure ONLY for this test suite
-          allowedDependencies: ['domain', 'shared', 'infrastructure'],
+          allowedDependencies: ['sdk', 'infrastructure'],
         },
       ],
       // Also, the original import rule was for the domain layer.
-      // We need a rule that applies to the application layer for this test.
+      // We need a rule that applies to the presentation layer for this test.
       imports: [
         {
-          pattern: '**/application/**',
-          forbidden: ['**/infrastructure/**'],
-          message: 'Application cannot import directly from infrastructure.',
+          pattern: '**/apps/**',
+          forbidden: ['**/packages/infrastructure/**'],
+          message: 'Apps cannot import directly from infrastructure.',
         },
       ],
     }
     const plugin = architectureFitnessPlugin(importTestRules)
 
     it('should throw for forbidden imports when layer dependency is allowed', async () => {
-      const importPath = '../infrastructure/repository.ts'
-      await expect(testResolveId(plugin, importPath, applicationFile)).rejects.toThrow(
+      const importPath = '../../packages/infrastructure/src/repository.ts'
+      await expect(testResolveId(plugin, importPath, presentationFile)).rejects.toThrow(
         /Architecture Violation \(Import Restriction\)/
       )
     })
 
     it('should use the custom message for import violations', async () => {
-      const importPath = '../infrastructure/repository.ts'
-      await expect(testResolveId(plugin, importPath, applicationFile)).rejects.toThrow(
-        'Application cannot import directly from infrastructure.'
+      const importPath = '../../packages/infrastructure/src/repository.ts'
+      await expect(testResolveId(plugin, importPath, presentationFile)).rejects.toThrow(
+        'Apps cannot import directly from infrastructure.'
       )
     })
 
     it('should not throw for allowed imports', async () => {
       // This import is allowed by both layer and import rules.
-      const importPath = '../domain/entity.ts'
-      await expect(testResolveId(plugin, importPath, applicationFile)).resolves.not.toThrow()
+      const importPath = '../../packages/sdk/src/index.ts'
+      await expect(testResolveId(plugin, importPath, presentationFile)).resolves.not.toThrow()
     })
   })
 
@@ -159,22 +184,22 @@ describe('architectureFitnessPlugin', () => {
     const plugin = architectureFitnessPlugin(mockRules)
 
     it('should throw for forbidden exports', async () => {
-      const code = `export { MyEntity } from './domain/entity.ts'`
-      await expect(testTransform(plugin, code, sharedIndexFile)).rejects.toThrow(
+      const code = `export { MyEntity } from './packages/domain/entity.ts'`
+      await expect(testTransform(plugin, code, baseIndexFile)).rejects.toThrow(
         /Architecture Violation \(Export Restriction\)/
       )
     })
 
     it('should use the custom message for export violations', async () => {
-      const code = `export { MyEntity } from './domain/entity.ts'`
-      await expect(testTransform(plugin, code, sharedIndexFile)).rejects.toThrow(
-        'Shared index cannot export from domain.'
+      const code = `export { MyEntity } from './packages/domain/entity.ts'`
+      await expect(testTransform(plugin, code, baseIndexFile)).rejects.toThrow(
+        'Base package cannot export from domain.'
       )
     })
 
     it('should not throw for allowed exports', async () => {
-      const code = `export { myUtil } from './utils.ts'`
-      await expect(testTransform(plugin, code, sharedIndexFile)).resolves.not.toThrow()
+      const code = `export { myUtil } from './src/utils.ts'`
+      await expect(testTransform(plugin, code, baseIndexFile)).resolves.not.toThrow()
     })
   })
 
@@ -201,8 +226,8 @@ describe('architectureFitnessPlugin', () => {
       ).resolves.not.toThrow()
 
       // Test an export violation - should not throw
-      const code = `export { MyEntity } from './domain/entity.ts'`
-      await expect(testTransform(plugin, code, sharedIndexFile)).resolves.not.toThrow()
+      const code = `export { MyEntity } from './packages/domain/entity.ts'`
+      await expect(testTransform(plugin, code, baseIndexFile)).resolves.not.toThrow()
     })
   })
 })
