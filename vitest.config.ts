@@ -1,3 +1,4 @@
+import { cpus } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 
@@ -11,6 +12,41 @@ export default defineConfig({
       'etc/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
     exclude: ['node_modules', 'dist', '.git', '.cache'],
+    // Parallel execution settings - threads is slightly faster but forks is more compatible
+    // pool: 'threads', // Uncomment for maximum speed (may have compatibility issues)
+    pool: 'forks', // Default, more stable and compatible
+    poolOptions: {
+      threads: {
+        // Optimize thread count based on CPU cores
+        // Leave 1 core for system operations, cap at 8 for memory efficiency
+        maxThreads: Math.max(Math.min(8, cpus().length - 1), 1),
+        minThreads: Math.max(Math.floor(cpus().length / 2), 1),
+        // Keep single thread disabled for parallel execution
+        singleThread: false,
+        // Keep isolation enabled for test safety
+        isolate: true,
+        // Enable atomics for better thread synchronization
+        useAtomics: true,
+      },
+    },
+    // Improve test isolation and performance
+    isolate: true,
+    passWithNoTests: true,
+    // Reporter settings for better parallel output
+    reporters: process.env.CI ? ['verbose'] : ['default'],
+    // Enable file parallelism for maximum performance
+    fileParallelism: true,
+    // Keep sequential execution by default to avoid race conditions
+    // Individual test files can opt-in to concurrent execution with test.concurrent
+    sequence: {
+      concurrent: false, // Keep sequential for safety
+    },
+    // Maximum number of concurrent tests when explicitly using test.concurrent
+    maxConcurrency: 8, // Increased from default 5 for better performance
+    // Test timeouts - reasonable defaults
+    testTimeout: 30000,
+    hookTimeout: 30000,
+    teardownTimeout: 10000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
