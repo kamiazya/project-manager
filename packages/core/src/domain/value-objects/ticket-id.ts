@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { ValueObject } from './base-value-object.ts'
 
 interface TicketIdProps {
@@ -8,15 +9,11 @@ const INVALID_ID_FORMAT = 'Ticket ID must be exactly 8 hexadecimal characters (0
 
 /**
  * Generate a unique ID for tickets
- * Creates a 8-character hex string based on current timestamp and random component
+ * Creates a 8-character hex string using cryptographically strong randomness.
  */
 function generateId(): string {
-  // Combine timestamp with random component for better uniqueness
-  const timestamp = Date.now().toString(16).slice(-6)
-  const random = Math.floor(Math.random() * 256)
-    .toString(16)
-    .padStart(2, '0')
-  return timestamp + random
+  // Use crypto for robust, collision-resistant IDs
+  return randomBytes(4).toString('hex')
 }
 
 /**

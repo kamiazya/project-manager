@@ -116,10 +116,8 @@ describe('JsonTicketRepository - Integration Tests', () => {
         })
       )
 
-      // Save all tickets sequentially to ensure consistency
-      for (const ticket of tickets) {
-        await repository.save(ticket)
-      }
+      // Save all tickets concurrently
+      await Promise.all(tickets.map(ticket => repository.save(ticket)))
 
       // All tickets should be saved
       const savedTickets = await repository.findAll()
@@ -314,10 +312,8 @@ describe('JsonTicketRepository - Integration Tests', () => {
 
       const startTime = Date.now()
 
-      // Save all tickets
-      for (const ticket of largeDataset) {
-        await repository.save(ticket)
-      }
+      // Save all tickets concurrently for a better performance test
+      await Promise.all(largeDataset.map(ticket => repository.save(ticket)))
 
       const saveTime = Date.now() - startTime
 
@@ -326,8 +322,8 @@ describe('JsonTicketRepository - Integration Tests', () => {
       const savedTickets = await repository.findAll()
       const retrieveTime = Date.now() - retrieveStartTime
 
-      // Verify most tickets were saved (some may be lost due to rapid sequential saves)
-      expect(savedTickets.length).toBeGreaterThan(80) // Allow for some potential race conditions
+      // Verify ALL tickets were saved. No data loss.
+      expect(savedTickets).toHaveLength(100)
 
       // Performance should be reasonable (adjust thresholds as needed)
       expect(saveTime).toBeLessThan(10000) // 10 seconds for 100 saves

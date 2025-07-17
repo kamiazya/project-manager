@@ -22,7 +22,8 @@ import * as TicketMapper from './mappers/ticket-mapper.ts'
  */
 export class JsonTicketRepository implements TicketRepository {
   private readonly filePath: string
-  private readonly writeLock = new Map<string, Promise<void>>()
+  private isLocked = false
+  private readonly waiting: (() => void)[] = []
 
   constructor(filePath?: string) {
     this.filePath = filePath || getStoragePath()
@@ -148,25 +149,33 @@ export class JsonTicketRepository implements TicketRepository {
   }
 
   private async withFileLock<T>(operation: () => Promise<T>): Promise<T> {
-    const lockKey = this.filePath
-    const existingLock = this.writeLock.get(lockKey)
-
-    if (existingLock) {
-      await existingLock
-    }
-
-    let releaseLock: () => void
-    const newLock = new Promise<void>(resolve => {
-      releaseLock = resolve
-    })
-
-    this.writeLock.set(lockKey, newLock)
-
+    await this.acquire()
     try {
       return await operation()
     } finally {
-      releaseLock!()
-      this.writeLock.delete(lockKey)
+      this.release()
+    }
+  }
+
+  private acquire(): Promise<void> {
+    if (!this.isLocked) {
+      this.isLocked = true
+      return Promise.resolve()
+    }
+
+    return new Promise(resolve => {
+      this.waiting.push(resolve)
+    })
+  }
+
+  private release(): void {
+    if (this.waiting.length > 0) {
+      const next = this.waiting.shift()
+      if (next) {
+        next()
+      }
+    } else {
+      this.isLocked = false
     }
   }
 

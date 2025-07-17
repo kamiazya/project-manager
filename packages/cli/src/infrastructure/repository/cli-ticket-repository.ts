@@ -1,157 +1,67 @@
 /**
  * CLI-specific ticket repository implementation
  * This implements the TicketRepository interface for CLI usage
- * Following Clean Architecture principles
+ * Following Clean Architecture principles.
+ *
+ * This class is a Decorator for another TicketRepository. It wraps a concrete
+ * repository implementation (like JsonTicketRepository) and can add
+ * CLI-specific behaviors (e.g., logging) while delegating the core
+ * persistence logic.
  */
 
-import { constants } from 'node:fs'
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname } from 'node:path'
-import type { TicketRepository, TicketStatistics } from '@project-manager/core'
-import { Ticket, TicketId } from '@project-manager/core'
+import type { Ticket, TicketId, TicketRepository, TicketStatistics } from '@project-manager/core'
 
 /**
- * JSON representation of a ticket for persistence
- */
-interface TicketJSON {
-  id: string
-  title: string
-  description: string
-  status: 'pending' | 'in_progress' | 'completed' | 'archived'
-  priority: 'high' | 'medium' | 'low'
-  type: 'feature' | 'bug' | 'task'
-  privacy: 'local-only' | 'shareable' | 'public'
-  createdAt: string
-  updatedAt: string
-}
-
-/**
- * CLI-specific implementation of TicketRepository
- * Stores tickets in JSON format on the local filesystem
+ * CLI-specific implementation of TicketRepository.
+ * Acts as a decorator, wrapping another repository to provide a separation
+ * of concerns for the CLI interface.
  */
 export class CliTicketRepository implements TicketRepository {
-  private readonly filePath: string
+  private readonly innerRepository: TicketRepository
 
-  constructor(filePath: string) {
-    this.filePath = filePath
+  /**
+   * Constructs a new CliTicketRepository.
+   * @param repository The concrete TicketRepository instance to wrap.
+   */
+  constructor(repository: TicketRepository) {
+    this.innerRepository = repository
   }
 
+  /**
+   * Saves a ticket by delegating to the inner repository.
+   * Can be extended to add CLI-specific logging.
+   */
   async save(ticket: Ticket): Promise<void> {
-    const tickets = await this.loadTickets()
-    const ticketJson = this.ticketToJson(ticket)
-
-    const existingIndex = tickets.findIndex(t => t.id === ticketJson.id)
-    if (existingIndex >= 0) {
-      tickets[existingIndex] = ticketJson
-    } else {
-      tickets.push(ticketJson)
-    }
-
-    await this.saveTickets(tickets)
+    // Example of CLI-specific behavior:
+    // console.log(`[CLI] Saving ticket: ${ticket.title.value}`);
+    await this.innerRepository.save(ticket)
   }
 
+  /**
+   * Finds a ticket by ID by delegating to the inner repository.
+   */
   async findById(id: TicketId): Promise<Ticket | null> {
-    const tickets = await this.loadTickets()
-    const ticketJson = tickets.find(t => t.id === id.value)
-    return ticketJson ? this.jsonToTicket(ticketJson) : null
+    return this.innerRepository.findById(id)
   }
 
+  /**
+   * Finds all tickets by delegating to the inner repository.
+   */
   async findAll(): Promise<Ticket[]> {
-    const tickets = await this.loadTickets()
-    return tickets.map(json => this.jsonToTicket(json))
+    return this.innerRepository.findAll()
   }
 
+  /**
+   * Deletes a ticket by ID by delegating to the inner repository.
+   */
   async delete(id: TicketId): Promise<void> {
-    const tickets = await this.loadTickets()
-    const filteredTickets = tickets.filter(t => t.id !== id.value)
-    await this.saveTickets(filteredTickets)
+    await this.innerRepository.delete(id)
   }
 
+  /**
+   * Gets statistics by delegating to the inner repository.
+   */
   async getStatistics(): Promise<TicketStatistics> {
-    const tickets = await this.loadTickets()
-
-    const stats: TicketStatistics = {
-      total: tickets.length,
-      pending: 0,
-      inProgress: 0,
-      completed: 0,
-      archived: 0,
-      byPriority: { high: 0, medium: 0, low: 0 },
-      byType: { feature: 0, bug: 0, task: 0 },
-    }
-
-    for (const ticket of tickets) {
-      // Count by status
-      switch (ticket.status) {
-        case 'pending':
-          stats.pending++
-          break
-        case 'in_progress':
-          stats.inProgress++
-          break
-        case 'completed':
-          stats.completed++
-          break
-        case 'archived':
-          stats.archived++
-          break
-      }
-
-      // Count by priority
-      stats.byPriority[ticket.priority]++
-
-      // Count by type
-      stats.byType[ticket.type]++
-    }
-
-    return stats
-  }
-
-  private async loadTickets(): Promise<TicketJSON[]> {
-    try {
-      await access(this.filePath, constants.F_OK)
-      const data = await readFile(this.filePath, 'utf-8')
-      return JSON.parse(data) as TicketJSON[]
-    } catch (error) {
-      // File doesn't exist or is corrupt, return empty array
-      return []
-    }
-  }
-
-  private async saveTickets(tickets: TicketJSON[]): Promise<void> {
-    // Ensure directory exists
-    const dir = dirname(this.filePath)
-    await mkdir(dir, { recursive: true })
-
-    // Write tickets to file
-    await writeFile(this.filePath, JSON.stringify(tickets, null, 2), 'utf-8')
-  }
-
-  private ticketToJson(ticket: Ticket): TicketJSON {
-    return {
-      id: ticket.id.value,
-      title: ticket.title.value,
-      description: ticket.description.value,
-      status: ticket.status.value,
-      priority: ticket.priority.value,
-      type: ticket.type,
-      privacy: ticket.privacy,
-      createdAt: ticket.createdAt.toISOString(),
-      updatedAt: ticket.updatedAt.toISOString(),
-    }
-  }
-
-  private jsonToTicket(json: TicketJSON): Ticket {
-    return Ticket.reconstitute({
-      id: json.id,
-      title: json.title,
-      description: json.description,
-      status: json.status,
-      priority: json.priority,
-      type: json.type,
-      privacy: json.privacy,
-      createdAt: json.createdAt,
-      updatedAt: json.updatedAt,
-    })
+    return this.innerRepository.getStatistics()
   }
 }
