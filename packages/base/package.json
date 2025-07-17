@@ -1,0 +1,122 @@
+{
+  "name": "@project-manager/base",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Base package with Shared Kernel and Common Infrastructure patterns",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "@project-manager/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./kernel/configuration": {
+      "@project-manager/source": "./src/kernel/configuration/index.ts",
+      "types": "./dist/kernel/configuration/index.d.ts",
+      "import": "./dist/kernel/configuration/index.js"
+    },
+    "./kernel/configuration/schemas": {
+      "@project-manager/source": "./src/kernel/configuration/schemas/index.ts",
+      "types": "./dist/kernel/configuration/schemas/index.d.ts",
+      "import": "./dist/kernel/configuration/schemas/index.js"
+    },
+    "./kernel/events": {
+      "@project-manager/source": "./src/kernel/events/index.ts",
+      "types": "./dist/kernel/events/index.d.ts",
+      "import": "./dist/kernel/events/index.js"
+    },
+    "./kernel/types": {
+      "@project-manager/source": "./src/kernel/types/index.ts",
+      "types": "./dist/kernel/types/index.d.ts",
+      "import": "./dist/kernel/types/index.js"
+    },
+    "./common/configuration": {
+      "@project-manager/source": "./src/common/configuration/index.ts",
+      "types": "./dist/common/configuration/index.d.ts",
+      "import": "./dist/common/configuration/index.js"
+    },
+    "./common/patterns": {
+      "@project-manager/source": "./src/common/patterns/index.ts",
+      "types": "./dist/common/patterns/index.d.ts",
+      "import": "./dist/common/patterns/index.js"
+    },
+    "./common/errors": {
+      "@project-manager/source": "./src/common/errors/index.ts",
+      "types": "./dist/common/errors/index.d.ts",
+      "import": "./dist/common/errors/index.js"
+    },
+    "./common/utils": {
+      "@project-manager/source": "./src/common/utils/index.ts",
+      "types": "./dist/common/utils/index.d.ts",
+      "import": "./dist/common/utils/index.js"
+    },
+    "./common/logging": {
+      "@project-manager/source": "./src/common/logging/index.ts",
+      "types": "./dist/common/logging/index.d.ts",
+      "import": "./dist/common/logging/index.js"
+    }
+  },
+  "publishConfig": {
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./kernel/configuration": {
+        "types": "./dist/kernel/configuration/index.d.ts",
+        "import": "./dist/kernel/configuration/index.js"
+      },
+      "./kernel/configuration/schemas": {
+        "types": "./dist/kernel/configuration/schemas/index.d.ts",
+        "import": "./dist/kernel/configuration/schemas/index.js"
+      },
+      "./kernel/events": {
+        "types": "./dist/kernel/events/index.d.ts",
+        "import": "./dist/kernel/events/index.js"
+      },
+      "./kernel/types": {
+        "types": "./dist/kernel/types/index.d.ts",
+        "import": "./dist/kernel/types/index.js"
+      },
+      "./common/configuration": {
+        "types": "./dist/common/configuration/index.d.ts",
+        "import": "./dist/common/configuration/index.js"
+      },
+      "./common/patterns": {
+        "types": "./dist/common/patterns/index.d.ts",
+        "import": "./dist/common/patterns/index.js"
+      },
+      "./common/errors": {
+        "types": "./dist/common/errors/index.d.ts",
+        "import": "./dist/common/errors/index.js"
+      },
+      "./common/utils": {
+        "types": "./dist/common/utils/index.d.ts",
+        "import": "./dist/common/utils/index.js"
+      },
+      "./common/logging": {
+        "types": "./dist/common/logging/index.d.ts",
+        "import": "./dist/common/logging/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "vitest"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^6.0.0",
+    "vite-plugin-dts": "^4.0.0",
+    "vitest": "^3.0.0"
+  }
+}
