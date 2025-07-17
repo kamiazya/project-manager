@@ -22,10 +22,13 @@ export const searchTicketsTool: McpTool = {
     try {
       const useCase = getSearchTicketsUseCase()
 
+      // Parse input to apply defaults
+      const parsedInput = searchTicketsSchema.parse(input)
+
       const response = await useCase.execute(
         new SearchTickets.Request({
-          search: input.query,
-          searchIn: input.searchIn,
+          search: parsedInput.query,
+          searchIn: parsedInput.searchIn,
         })
       )
 

@@ -28,6 +28,7 @@
     "@project-manager/cli": "workspace:*",
     "@project-manager/mcp-server": "workspace:*",
     "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "markdownlint-cli2": "catalog:",

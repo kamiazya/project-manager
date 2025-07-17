@@ -12,6 +12,7 @@ export default defineConfig({
     ],
     exclude: ['node_modules', 'dist', '.git', '.cache'],
     coverage: {
+      provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
@@ -20,6 +21,14 @@ export default defineConfig({
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/*.d.ts',
       ],
+      thresholds: {
+        global: {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80,
+        },
+      },
     },
     typecheck: {
       enabled: true,
