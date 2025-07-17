@@ -60,7 +60,14 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['@project-manager/shared', 'node:fs/promises', 'node:fs', 'node:path', 'node:os'],
+      external: [
+        '@project-manager/shared',
+        'node:fs/promises',
+        'node:fs',
+        'node:path',
+        'node:os',
+        'node:crypto',
+      ],
     },
     outDir: 'dist',
     sourcemap: true,

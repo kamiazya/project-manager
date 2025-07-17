@@ -23,29 +23,25 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: [
-        '@modelcontextprotocol/sdk',
-        '@modelcontextprotocol/sdk/server/index.ts',
-        '@modelcontextprotocol/sdk/server/stdio.ts',
-        'zod',
-        '@project-manager/core',
-        '@project-manager/shared',
-        'node:fs',
-        'node:path',
-        'node:url',
-        'node:os',
-        'node:child_process',
-        'node:crypto',
-        'node:http',
-        'async_hooks',
-        'buffer',
-        'string_decoder',
-        'inversify',
-        'raw-body',
-        'content-type',
-        'safer-buffer',
-        'iconv-lite',
-      ],
+      external: id => {
+        // External all Node.js built-in modules and their sub-paths
+        if (id.startsWith('node:')) return true
+        // External all our internal packages
+        if (id.startsWith('@project-manager/')) return true
+        // External all third-party packages
+        return [
+          '@modelcontextprotocol/sdk',
+          'zod',
+          'async_hooks',
+          'buffer',
+          'string_decoder',
+          'inversify',
+          'raw-body',
+          'content-type',
+          'safer-buffer',
+          'iconv-lite',
+        ].includes(id)
+      },
       output: {
         banner: chunk => {
           if (chunk.name === 'bin/mcp-server') {
