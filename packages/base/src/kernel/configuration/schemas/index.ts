@@ -5,6 +5,9 @@
  * for application configuration
  */
 
-// Placeholder for configuration schemas
-// These will be implemented in Phase 1.3
-export type ConfigurationSchemas = {}
+// Main configuration schema
+export * from './app-config.ts'
+export * from './storage-config.ts'
+// Component configuration schemas
+export * from './ticket-config.ts'
+export * from './ui-config.ts'
