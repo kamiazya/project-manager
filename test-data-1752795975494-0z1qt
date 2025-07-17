@@ -1,0 +1,13 @@
+[
+  {
+    "id": "d6c3b187",
+    "title": "Test Ticket",
+    "description": "Test Description",
+    "status": "pending",
+    "priority": "medium",
+    "type": "task",
+    "privacy": "local-only",
+    "createdAt": "2025-07-17T23:46:15.494Z",
+    "updatedAt": "2025-07-17T23:46:15.494Z"
+  }
+]

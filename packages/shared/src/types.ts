@@ -1,7 +1,7 @@
 export type TicketStatus = 'pending' | 'in_progress' | 'completed' | 'archived'
 export type TicketPriority = 'high' | 'medium' | 'low'
 export type TicketType = 'feature' | 'bug' | 'task'
-export type TicketPrivacy = 'local-only' | 'shareable' | 'public'
+export type TicketPrivacy = 'public' | 'team' | 'local-only'
 
 /**
  * Validates if a string is a valid TicketStatus

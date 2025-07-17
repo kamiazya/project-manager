@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import {
-  AppConfigValidation,
-  StorageConfigValidation,
-  TicketConfigValidation,
-  UIConfigValidation,
-} from './index.ts'
+import { AppConfigValidation } from './app-config.ts'
+import { StorageConfigValidation } from './storage-config.ts'
+import { TicketConfigValidation } from './ticket-config.ts'
+import { UIConfigValidation } from './ui-config.ts'
 
 describe('Configuration Schemas', () => {
   describe('TicketConfigValidation', () => {

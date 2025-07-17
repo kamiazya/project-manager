@@ -93,13 +93,16 @@ export class OverrideLoader<T = unknown> extends BaseConfigurationLoader<T> {
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
-      if (!(key in current) || typeof current[key] !== 'object') {
-        current[key] = {}
+      if (!key || !(key in current) || typeof current[key] !== 'object') {
+        current[key!] = {}
       }
-      current = current[key] as Record<string, unknown>
+      current = current[key!] as Record<string, unknown>
     }
 
-    current[keys[keys.length - 1]] = value
+    const finalKey = keys[keys.length - 1]
+    if (finalKey) {
+      current[finalKey] = value
+    }
   }
 
   /**
@@ -128,13 +131,16 @@ export class OverrideLoader<T = unknown> extends BaseConfigurationLoader<T> {
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
-      if (!(key in current) || typeof current[key] !== 'object') {
+      if (!key || !(key in current) || typeof current[key] !== 'object') {
         return // Path doesn't exist
       }
-      current = current[key] as Record<string, unknown>
+      current = current[key!] as Record<string, unknown>
     }
 
-    delete current[keys[keys.length - 1]]
+    const finalKey = keys[keys.length - 1]
+    if (finalKey) {
+      delete current[finalKey]
+    }
   }
 }
 
@@ -181,13 +187,16 @@ export class OverrideUtils {
 
       for (let i = 0; i < keys.length - 1; i++) {
         const k = keys[i]
-        if (!(k in current) || typeof current[k] !== 'object') {
-          current[k] = {}
+        if (!k || !(k in current) || typeof current[k] !== 'object') {
+          current[k!] = {}
         }
-        current = current[k] as Record<string, unknown>
+        current = current[k!] as Record<string, unknown>
       }
 
-      current[keys[keys.length - 1]] = value
+      const finalKey = keys[keys.length - 1]
+      if (finalKey) {
+        current[finalKey] = value
+      }
     }
 
     return result

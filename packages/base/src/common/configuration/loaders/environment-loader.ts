@@ -90,13 +90,16 @@ export class EnvironmentLoader<T = unknown> extends BaseConfigurationLoader<T> {
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
-      if (!(key in current) || typeof current[key] !== 'object') {
-        current[key] = {}
+      if (!key || !(key in current) || typeof current[key] !== 'object') {
+        current[key!] = {}
       }
-      current = current[key] as Record<string, unknown>
+      current = current[key!] as Record<string, unknown>
     }
 
-    current[keys[keys.length - 1]] = value
+    const finalKey = keys[keys.length - 1]
+    if (finalKey) {
+      current[finalKey] = value
+    }
   }
 }
 

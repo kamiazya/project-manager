@@ -1,0 +1,24 @@
+[
+  {
+    "id": "f3580f5a",
+    "title": "Bug Report",
+    "description": "Critical bug",
+    "status": "pending",
+    "priority": "high",
+    "type": "bug",
+    "privacy": "local-only",
+    "createdAt": "2025-07-17T23:46:23.162Z",
+    "updatedAt": "2025-07-17T23:46:23.162Z"
+  },
+  {
+    "id": "24ed6674",
+    "title": "Feature Request",
+    "description": "New feature",
+    "status": "pending",
+    "priority": "medium",
+    "type": "feature",
+    "privacy": "local-only",
+    "createdAt": "2025-07-17T23:46:23.162Z",
+    "updatedAt": "2025-07-17T23:46:23.162Z"
+  }
+]

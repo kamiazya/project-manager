@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import {
-  CascadingConfigurationResolver,
-  EnvironmentLoader,
-  JsonFileLoader,
-  OverrideLoader,
-} from './index.ts'
+import { EnvironmentLoader } from './loaders/environment-loader.ts'
+import { OverrideLoader } from './loaders/override-loader.ts'
+import { CascadingConfigurationResolver } from './resolvers/cascading-resolver.ts'
 
 describe('Configuration Infrastructure', () => {
   describe('EnvironmentLoader', () => {
@@ -161,12 +158,12 @@ describe('Configuration Infrastructure', () => {
     it('should resolve configuration from multiple loaders', async () => {
       const config = await resolver.resolve()
 
-      expect(config.ticket?.defaultPriority).toBe('high') // From override (higher priority)
-      expect(config.ui?.enable?.color?.output).toBe(true) // From environment
+      expect((config as any).ticket?.defaultPriority).toBe('high') // From override (higher priority)
+      expect((config as any).ui?.enable?.color?.output).toBe(true) // From environment
 
       // Check that configuration is merged properly
-      expect(config.ticket).toBeDefined()
-      expect(config.ui).toBeDefined()
+      expect((config as any).ticket).toBeDefined()
+      expect((config as any).ui).toBeDefined()
     })
 
     it('should respect loader priority', async () => {
@@ -175,7 +172,7 @@ describe('Configuration Infrastructure', () => {
 
       const config = await resolver.resolve()
 
-      expect(config.ticket?.defaultType).toBe('feature') // Override wins
+      expect((config as any).ticket?.defaultType).toBe('feature') // Override wins
     })
 
     it('should get specific values', async () => {
@@ -200,10 +197,10 @@ describe('Configuration Infrastructure', () => {
       const results = await resolver.getDetailedResults()
 
       expect(results).toHaveLength(2)
-      expect(results[0].priority).toBe(200) // Override loader (higher priority)
-      expect(results[1].priority).toBe(100) // Environment loader
-      expect(results[0].success).toBe(true)
-      expect(results[1].success).toBe(true)
+      expect(results[0]!.priority).toBe(200) // Override loader (higher priority)
+      expect(results[1]!.priority).toBe(100) // Environment loader
+      expect(results[0]!.success).toBe(true)
+      expect(results[1]!.success).toBe(true)
     })
   })
 })

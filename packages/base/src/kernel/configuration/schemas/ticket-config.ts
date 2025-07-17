@@ -66,14 +66,79 @@ export interface TicketConfigSchema {
   readonly autoGenerateIds: boolean
 
   /**
-   * ID generation format (hex, uuid, sequential)
+   * ID generation format (hex, uuid, sequential, timestamp)
    */
-  readonly idFormat: 'hex' | 'uuid' | 'sequential'
+  readonly idFormat: 'hex' | 'uuid' | 'sequential' | 'timestamp'
 
   /**
    * Length of generated IDs (for hex format)
    */
   readonly idLength: number
+
+  /**
+   * Allowed status transitions
+   */
+  readonly allowStatusTransitions: Record<TicketStatus, TicketStatus[]>
+
+  /**
+   * Require assignee for progress
+   */
+  readonly requireAssigneeForProgress: boolean
+
+  /**
+   * Allow multiple assignees
+   */
+  readonly allowMultipleAssignees: boolean
+
+  /**
+   * Notify on status change
+   */
+  readonly notifyOnStatusChange: boolean
+
+  /**
+   * Notify on assignment change
+   */
+  readonly notifyOnAssignmentChange: boolean
+
+  /**
+   * Notify on priority change
+   */
+  readonly notifyOnPriorityChange: boolean
+
+  /**
+   * Enable comments
+   */
+  readonly enableComments: boolean
+
+  /**
+   * Enable attachments
+   */
+  readonly enableAttachments: boolean
+
+  /**
+   * Enable tasks
+   */
+  readonly enableTasks: boolean
+
+  /**
+   * Enable labels
+   */
+  readonly enableLabels: boolean
+
+  /**
+   * Enable relationships
+   */
+  readonly enableRelationships: boolean
+
+  /**
+   * Auto-archive completed tickets after days
+   */
+  readonly autoArchiveCompletedAfterDays: number
+
+  /**
+   * Auto-close stale tickets after days
+   */
+  readonly autoCloseStaleAfterDays: number
 }
 
 /**

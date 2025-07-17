@@ -2,27 +2,27 @@ import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
+  test: {
+    name: 'base',
+    environment: 'node',
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: ['node_modules/', 'dist/', '**/*.test.ts', '**/*.config.ts'],
+    },
+  },
   plugins: [
     dts({
       entryRoot: 'src',
       outDir: 'dist',
       insertTypesEntry: true,
-    }),
+    }) as any,
   ],
   build: {
     lib: {
-      entry: {
-        index: 'src/index.ts',
-        'kernel/configuration/index': 'src/kernel/configuration/index.ts',
-        'kernel/configuration/schemas/index': 'src/kernel/configuration/schemas/index.ts',
-        'kernel/events/index': 'src/kernel/events/index.ts',
-        'kernel/types/index': 'src/kernel/types/index.ts',
-        'common/configuration/index': 'src/common/configuration/index.ts',
-        'common/patterns/index': 'src/common/patterns/index.ts',
-        'common/errors/index': 'src/common/errors/index.ts',
-        'common/utils/index': 'src/common/utils/index.ts',
-        'common/logging/index': 'src/common/logging/index.ts',
-      },
+      entry: 'src/index.ts',
       name: 'ProjectManagerBase',
       formats: ['es'],
     },

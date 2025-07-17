@@ -89,16 +89,17 @@ export const AppConfigValidation = {
   /**
    * Validate version string
    */
-  isValidVersion: (value: string): boolean => {
+  isValidVersion: (value: unknown): value is string => {
+    if (typeof value !== 'string') return false
     // Basic semver validation
     const semverRegex = /^\d+\.\d+\.\d+(-[a-zA-Z0-9-]+)?(\+[a-zA-Z0-9-]+)?$/
-    return typeof value === 'string' && semverRegex.test(value)
+    return semverRegex.test(value)
   },
 
   /**
    * Validate update check interval
    */
-  isValidUpdateInterval: (value: number): boolean => {
+  isValidUpdateInterval: (value: unknown): value is number => {
     return typeof value === 'number' && value >= 1 && value <= 24 * 7 // Max 1 week
   },
 

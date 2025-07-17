@@ -1,0 +1,13 @@
+[
+  {
+    "id": "dc060167",
+    "title": "Test Ticket",
+    "description": "Test Description",
+    "status": "in_progress",
+    "priority": "medium",
+    "type": "task",
+    "privacy": "local-only",
+    "createdAt": "2025-07-17T23:46:15.505Z",
+    "updatedAt": "2025-07-17T23:46:15.506Z"
+  }
+]

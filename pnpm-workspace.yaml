@@ -1,5 +1,6 @@
 packages:
   - packages/*
+  - apps/*
 
 catalog:
   '@modelcontextprotocol/sdk': ^1.15.1

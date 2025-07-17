@@ -11,51 +11,6 @@
       "@project-manager/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./kernel/configuration": {
-      "@project-manager/source": "./src/kernel/configuration/index.ts",
-      "types": "./dist/kernel/configuration/index.d.ts",
-      "import": "./dist/kernel/configuration/index.js"
-    },
-    "./kernel/configuration/schemas": {
-      "@project-manager/source": "./src/kernel/configuration/schemas/index.ts",
-      "types": "./dist/kernel/configuration/schemas/index.d.ts",
-      "import": "./dist/kernel/configuration/schemas/index.js"
-    },
-    "./kernel/events": {
-      "@project-manager/source": "./src/kernel/events/index.ts",
-      "types": "./dist/kernel/events/index.d.ts",
-      "import": "./dist/kernel/events/index.js"
-    },
-    "./kernel/types": {
-      "@project-manager/source": "./src/kernel/types/index.ts",
-      "types": "./dist/kernel/types/index.d.ts",
-      "import": "./dist/kernel/types/index.js"
-    },
-    "./common/configuration": {
-      "@project-manager/source": "./src/common/configuration/index.ts",
-      "types": "./dist/common/configuration/index.d.ts",
-      "import": "./dist/common/configuration/index.js"
-    },
-    "./common/patterns": {
-      "@project-manager/source": "./src/common/patterns/index.ts",
-      "types": "./dist/common/patterns/index.d.ts",
-      "import": "./dist/common/patterns/index.js"
-    },
-    "./common/errors": {
-      "@project-manager/source": "./src/common/errors/index.ts",
-      "types": "./dist/common/errors/index.d.ts",
-      "import": "./dist/common/errors/index.js"
-    },
-    "./common/utils": {
-      "@project-manager/source": "./src/common/utils/index.ts",
-      "types": "./dist/common/utils/index.d.ts",
-      "import": "./dist/common/utils/index.js"
-    },
-    "./common/logging": {
-      "@project-manager/source": "./src/common/logging/index.ts",
-      "types": "./dist/common/logging/index.d.ts",
-      "import": "./dist/common/logging/index.js"
     }
   },
   "publishConfig": {
@@ -65,42 +20,6 @@
       ".": {
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js"
-      },
-      "./kernel/configuration": {
-        "types": "./dist/kernel/configuration/index.d.ts",
-        "import": "./dist/kernel/configuration/index.js"
-      },
-      "./kernel/configuration/schemas": {
-        "types": "./dist/kernel/configuration/schemas/index.d.ts",
-        "import": "./dist/kernel/configuration/schemas/index.js"
-      },
-      "./kernel/events": {
-        "types": "./dist/kernel/events/index.d.ts",
-        "import": "./dist/kernel/events/index.js"
-      },
-      "./kernel/types": {
-        "types": "./dist/kernel/types/index.d.ts",
-        "import": "./dist/kernel/types/index.js"
-      },
-      "./common/configuration": {
-        "types": "./dist/common/configuration/index.d.ts",
-        "import": "./dist/common/configuration/index.js"
-      },
-      "./common/patterns": {
-        "types": "./dist/common/patterns/index.d.ts",
-        "import": "./dist/common/patterns/index.js"
-      },
-      "./common/errors": {
-        "types": "./dist/common/errors/index.d.ts",
-        "import": "./dist/common/errors/index.js"
-      },
-      "./common/utils": {
-        "types": "./dist/common/utils/index.d.ts",
-        "import": "./dist/common/utils/index.js"
-      },
-      "./common/logging": {
-        "types": "./dist/common/logging/index.d.ts",
-        "import": "./dist/common/logging/index.js"
       }
     }
   },

@@ -770,24 +770,32 @@ export class Ticket {
 
 ## Code Organization
 
-### Package Structure
+### Package Structure (Clean Architecture)
 
 ```
-packages/
-├── core/                 # Domain logic
-│   ├── entities/        # Domain entities
-│   ├── value-objects/   # Value objects
-│   ├── services/        # Domain services
-│   ├── repositories/    # Repository interfaces
-│   └── use-cases/       # Application services
-├── infrastructure/       # Infrastructure implementations
-│   ├── persistence/     # Repository implementations
-│   ├── external/        # External service adapters
-│   └── config/          # Configuration
-└── presentation/         # User interfaces
-    ├── cli/            # CLI commands
-    ├── api/            # REST API
-    └── shared/         # Shared UI utilities
+project-manager/
+├── apps/                    # Applications (final deliverables)
+│   ├── cli/                 # CLI application
+│   └── mcp-server/          # MCP server for AI integration
+└── packages/                # Libraries (Clean Architecture layers)
+    ├── domain/              # Domain Layer - Core business logic
+    │   ├── entities/        # Rich domain entities
+    │   ├── value-objects/   # Immutable value objects
+    │   └── services/        # Domain services
+    ├── application/         # Application Layer - Use cases
+    │   ├── usecases/        # Single-responsibility use cases
+    │   ├── repositories/    # Repository interfaces
+    │   └── factories/       # Use case factories
+    ├── infrastructure/      # Infrastructure Layer - External concerns
+    │   ├── adapters/        # Repository implementations
+    │   ├── config/          # Configuration implementations
+    │   └── types/           # Infrastructure-specific types
+    ├── sdk/                 # SDK Layer - Facade pattern
+    │   └── src/             # Unified API for external consumers
+    ├── base/                # Foundation Layer - Shared infrastructure
+    │   ├── configuration/   # Configuration framework
+    │   └── types/           # Common types and utilities
+    └── shared/              # Shared utilities
 ```
 
 ### Import Organization
@@ -801,8 +809,10 @@ import { join } from 'path';
 import { injectable, inject } from 'inversify';
 import { z } from 'zod';
 
-// 3. Internal packages
-import { Ticket, TicketStatus } from '@project-manager/core';
+// 3. Internal packages (Clean Architecture layers)
+import { Ticket, TicketStatus } from '@project-manager/domain';
+import { CreateTicketUseCase } from '@project-manager/application';
+import { JsonTicketRepository } from '@project-manager/infrastructure';
 
 // 4. Relative imports
 import { validateInput } from './validators';

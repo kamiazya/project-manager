@@ -58,7 +58,7 @@ describe('ValueObject (shared)', () => {
       const value = SimpleValue.create('test')
 
       // Props should be frozen
-      expect(Object.isFrozen(value.props)).toBe(true)
+      expect(Object.isFrozen((value as any).props)).toBe(true)
     })
 
     it('should prevent modification of nested properties', () => {
@@ -86,9 +86,9 @@ describe('ValueObject (shared)', () => {
       })()
 
       // Properties should be accessible but not modifiable
-      expect(nested.props.simple.value).toBe('test')
-      expect(nested.props.complex.data.id).toBe(123)
-      expect(nested.props.complex.data.label).toBe('label')
+      expect((nested as any).props.simple.value).toBe('test')
+      expect((nested as any).props.complex.data.id).toBe(123)
+      expect((nested as any).props.complex.data.label).toBe('label')
     })
   })
 

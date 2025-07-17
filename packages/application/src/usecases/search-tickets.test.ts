@@ -1,0 +1,209 @@
+import { Ticket } from '@project-manager/domain'
+import type { TicketSearchCriteria } from '@project-manager/shared'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import { SearchTickets } from './search-tickets.ts'
+
+describe('SearchTicketsUseCase', () => {
+  let searchTicketsUseCase: SearchTickets.UseCase
+  let mockTicketRepository: TicketRepository
+  let sampleTickets: Ticket[]
+
+  beforeEach(() => {
+    // Create mock repository
+    mockTicketRepository = {
+      findAll: vi.fn(),
+      findById: vi.fn(),
+      save: vi.fn(),
+      delete: vi.fn(),
+      getStatistics: vi.fn(),
+    }
+
+    // Create use case with mock repository
+    searchTicketsUseCase = new SearchTickets.UseCase(mockTicketRepository)
+
+    // Create sample tickets for testing
+    sampleTickets = [
+      Ticket.reconstitute({
+        id: '12345678',
+        title: 'Fix login bug',
+        description: 'Users cannot login with email',
+        status: 'pending',
+        priority: 'high',
+        type: 'bug',
+        privacy: 'local-only',
+        createdAt: '2023-01-01T00:00:00.000Z',
+        updatedAt: '2023-01-01T00:00:00.000Z',
+      }),
+      Ticket.reconstitute({
+        id: '87654321',
+        title: 'Add new feature',
+        description: 'Implement user dashboard',
+        status: 'in_progress',
+        priority: 'medium',
+        type: 'feature',
+        privacy: 'team',
+        createdAt: '2023-01-02T00:00:00.000Z',
+        updatedAt: '2023-01-02T00:00:00.000Z',
+      }),
+      Ticket.reconstitute({
+        id: 'abcdef01',
+        title: 'Update documentation',
+        description: 'Fix typos in README',
+        status: 'completed',
+        priority: 'low',
+        type: 'task',
+        privacy: 'public',
+        createdAt: '2023-01-03T00:00:00.000Z',
+        updatedAt: '2023-01-03T00:00:00.000Z',
+      }),
+    ]
+
+    vi.mocked(mockTicketRepository.findAll).mockResolvedValue(sampleTickets)
+  })
+
+  it('should return all tickets when no criteria provided', async () => {
+    const criteria: TicketSearchCriteria = {}
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(3)
+    expect(vi.mocked(mockTicketRepository.findAll)).toHaveBeenCalledTimes(1)
+  })
+
+  it('should filter tickets by status', async () => {
+    const criteria: TicketSearchCriteria = { status: 'pending' }
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(1)
+    expect(response.tickets[0]?.status).toBe('pending')
+  })
+
+  it('should filter tickets by priority', async () => {
+    const criteria: TicketSearchCriteria = { priority: 'high' }
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(1)
+    expect(response.tickets[0]?.priority).toBe('high')
+  })
+
+  it('should filter tickets by type', async () => {
+    const criteria: TicketSearchCriteria = { type: 'feature' }
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(1)
+    expect(response.tickets[0]?.type).toBe('feature')
+  })
+
+  it('should filter tickets by privacy', async () => {
+    // Test public privacy filter
+    const publicCriteria: TicketSearchCriteria = { privacy: 'public' }
+    const publicRequest = new SearchTickets.Request(publicCriteria)
+    const publicResponse = await searchTicketsUseCase.execute(publicRequest)
+
+    // Should return only the public ticket (Update documentation)
+    expect(publicResponse.tickets).toHaveLength(1)
+    expect(publicResponse.tickets[0]?.title).toBe('Update documentation')
+
+    // Test team privacy filter
+    const teamCriteria: TicketSearchCriteria = { privacy: 'team' }
+    const teamRequest = new SearchTickets.Request(teamCriteria)
+    const teamResponse = await searchTicketsUseCase.execute(teamRequest)
+
+    // Should return only the team ticket (Add new feature)
+    expect(teamResponse.tickets).toHaveLength(1)
+    expect(teamResponse.tickets[0]?.title).toBe('Add new feature')
+
+    // Test local-only privacy filter
+    const localOnlyCriteria: TicketSearchCriteria = { privacy: 'local-only' }
+    const localOnlyRequest = new SearchTickets.Request(localOnlyCriteria)
+    const localOnlyResponse = await searchTicketsUseCase.execute(localOnlyRequest)
+
+    // Should return only the local-only ticket (Fix login bug)
+    expect(localOnlyResponse.tickets).toHaveLength(1)
+    expect(localOnlyResponse.tickets[0]?.title).toBe('Fix login bug')
+
+    // Verify repository was called for each filter
+    expect(vi.mocked(mockTicketRepository.findAll)).toHaveBeenCalledTimes(3)
+  })
+
+  it('should filter tickets by text search in title', async () => {
+    const criteria: TicketSearchCriteria = { search: 'login' }
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(1)
+    expect(response.tickets[0]?.title).toContain('login')
+  })
+
+  it('should filter tickets by text search in description', async () => {
+    const criteria: TicketSearchCriteria = { search: 'dashboard' }
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(1)
+    expect(response.tickets[0]?.title).toContain('feature')
+  })
+
+  it('should perform case-insensitive search', async () => {
+    const criteria: TicketSearchCriteria = { search: 'LOGIN' }
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(1)
+    expect(response.tickets[0]?.title.toLowerCase()).toContain('login')
+  })
+
+  it('should combine multiple criteria with AND logic', async () => {
+    const criteria: TicketSearchCriteria = {
+      status: 'pending',
+      priority: 'high',
+      type: 'bug',
+    }
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(1)
+    expect(response.tickets[0]?.status).toBe('pending')
+    expect(response.tickets[0]?.priority).toBe('high')
+    expect(response.tickets[0]?.type).toBe('bug')
+  })
+
+  it('should return empty array when no tickets match criteria', async () => {
+    const criteria: TicketSearchCriteria = { status: 'archived' }
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(0)
+  })
+
+  it('should handle empty search string', async () => {
+    const criteria: TicketSearchCriteria = { search: '' }
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(3)
+  })
+
+  it('should handle undefined search criteria gracefully', async () => {
+    const criteria: TicketSearchCriteria = {}
+    const request = new SearchTickets.Request(criteria)
+
+    const response = await searchTicketsUseCase.execute(request)
+
+    expect(response.tickets).toHaveLength(3)
+  })
+})
