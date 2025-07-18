@@ -2,14 +2,18 @@
  * Tests for ProjectManagerSDK
  */
 
+import { mkdtemp, rm } from 'fs/promises'
 import { Container } from 'inversify'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { tmpdir } from 'os'
+import { join } from 'path'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { ProjectManagerSDK } from './project-manager-sdk.ts'
 import { SDKContainer } from './sdk-container.ts'
 
 describe('ProjectManagerSDK', () => {
   let container: Container
   let sdk: ProjectManagerSDK
+  let tempDir: string
 
   beforeEach(async () => {
     // Reset all singletons and caches to ensure test isolation
@@ -19,13 +23,20 @@ describe('ProjectManagerSDK', () => {
     const { UseCaseFactoryProvider } = await import('@project-manager/application')
     UseCaseFactoryProvider.resetInstance()
 
-    // Use unique storage path for each test to avoid data contamination
-    const uniquePath = `./test-data-${Date.now()}-${Math.random().toString(36).substring(7)}`
+    // Create temporary directory for test data
+    tempDir = await mkdtemp(join(tmpdir(), 'pm-sdk-test-'))
     container = await SDKContainer.create({
       environment: 'test',
-      storagePath: uniquePath,
+      storagePath: join(tempDir, 'tickets.json'),
     })
     sdk = await ProjectManagerSDK.create(container)
+  })
+
+  afterEach(async () => {
+    // Clean up temporary directory
+    if (tempDir) {
+      await rm(tempDir, { recursive: true, force: true })
+    }
   })
 
   describe('tickets', () => {
