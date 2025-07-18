@@ -10,6 +10,11 @@
 export * from './shared/patterns/base-value-object.ts'
 // Shared Domain Patterns
 export * from './shared/patterns/domain-event.ts'
+// Ticket Management Context - Configuration
+export {
+  TicketDefaultsAdapter,
+  type TicketDomainDefaults,
+} from './ticket-management/configuration/ticket-defaults-adapter.ts'
 // Ticket Management Context - Entities
 export {
   type CreateTicketData,
