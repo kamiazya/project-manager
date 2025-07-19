@@ -60,11 +60,9 @@ describe('TicketTitle', () => {
       const ticketTitle = TicketTitle.create(longTitle)
 
       const displayed = ticketTitle.toDisplay()
-      expect(displayed).toHaveLength(VALIDATION.TITLE_DISPLAY_MAX_LENGTH)
+      expect(displayed).toHaveLength(40)
       expect(displayed.endsWith('...')).toBe(true)
-      expect(displayed).toBe(
-        `${longTitle.substring(0, VALIDATION.TITLE_DISPLAY_MAX_LENGTH - 3)}...`
-      )
+      expect(displayed).toBe(`${longTitle.substring(0, 40 - 3)}...`)
     })
 
     it('should use custom max length when provided', () => {

@@ -1,6 +1,7 @@
 import type { Ticket } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
-import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import { TicketResponse } from '../common/ticket.response.ts'
+import type { TicketQueryFilters, TicketRepository } from '../repositories/ticket-repository.ts'
 
 export namespace GetAllTickets {
   /**
@@ -21,40 +22,13 @@ export namespace GetAllTickets {
   }
 
   /**
-   * Summary representation of a ticket
-   */
-  export class TicketSummary {
-    constructor(
-      public readonly id: string,
-      public readonly title: string,
-      public readonly status: string,
-      public readonly priority: string,
-      public readonly type: string,
-      public readonly createdAt: string,
-      public readonly updatedAt: string
-    ) {}
-
-    static fromTicket(ticket: Ticket): TicketSummary {
-      return new TicketSummary(
-        ticket.id.value,
-        ticket.title.value,
-        ticket.status.value,
-        ticket.priority.value,
-        ticket.type,
-        ticket.createdAt.toISOString(),
-        ticket.updatedAt.toISOString()
-      )
-    }
-  }
-
-  /**
    * Response DTO for ticket list
    */
   export class Response {
-    constructor(public readonly tickets: TicketSummary[]) {}
+    constructor(public readonly tickets: TicketResponse[]) {}
 
     static fromTickets(tickets: Ticket[]): Response {
-      return new Response(tickets.map(ticket => TicketSummary.fromTicket(ticket)))
+      return new Response(tickets.map(ticket => TicketResponse.fromTicket(ticket)))
     }
   }
 
@@ -65,39 +39,28 @@ export namespace GetAllTickets {
     constructor(private readonly ticketRepository: TicketRepository) {}
 
     async execute(request: Request): Promise<Response> {
-      const tickets = await this.ticketRepository.findAll()
       const { filters } = request
 
-      // Apply filters if provided
-      let filteredTickets = tickets
+      // Check if any filters are provided
+      const hasFilters = filters.status || filters.priority || filters.type || filters.limit
 
-      if (filters.status || filters.priority || filters.type) {
-        filteredTickets = tickets.filter(ticket => {
-          // Filter by status
-          if (filters.status && ticket.status.value !== filters.status) {
-            return false
-          }
+      let tickets: Ticket[]
 
-          // Filter by priority
-          if (filters.priority && ticket.priority.value !== filters.priority) {
-            return false
-          }
-
-          // Filter by type
-          if (filters.type && ticket.type !== filters.type) {
-            return false
-          }
-
-          return true
-        })
+      if (hasFilters) {
+        // Use repository-level filtering for better performance
+        const queryFilters: TicketQueryFilters = {
+          status: filters.status,
+          priority: filters.priority,
+          type: filters.type,
+          limit: filters.limit,
+        }
+        tickets = await this.ticketRepository.findAllWithFilters(queryFilters)
+      } else {
+        // No filters, get all tickets
+        tickets = await this.ticketRepository.findAll()
       }
 
-      // Apply limit if provided
-      if (filters.limit && filters.limit > 0) {
-        filteredTickets = filteredTickets.slice(0, filters.limit)
-      }
-
-      return Response.fromTickets(filteredTickets)
+      return Response.fromTickets(tickets)
     }
   }
 }

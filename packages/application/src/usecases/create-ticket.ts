@@ -11,21 +11,24 @@ export namespace CreateTicket {
     constructor(
       public readonly title: string,
       public readonly description: string,
-      public readonly priority?: 'high' | 'medium' | 'low',
-      public readonly type?: 'feature' | 'bug' | 'task',
-      public readonly privacy?: 'local-only' | 'team' | 'public'
+      public readonly priority: string,
+      public readonly type: string,
+      public readonly status: string
     ) {}
 
     /**
      * Convert request to domain create data
      */
     toCreateTicketData(): CreateTicketData {
+      // Validate priority
+      const priority = this.priority
+
       return {
         title: this.title,
         description: this.description,
-        priority: this.priority || 'medium',
-        type: this.type || 'task',
-        privacy: this.privacy || 'local-only',
+        priority: priority,
+        type: this.type,
+        status: this.status,
       }
     }
   }

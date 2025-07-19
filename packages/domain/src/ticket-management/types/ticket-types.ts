@@ -1,60 +1,60 @@
 /**
- * Domain types for the Ticket aggregate
- * These are pure domain types without external dependencies
+ * Domain types for Ticket management
  */
-
-export type TicketStatus = 'pending' | 'in_progress' | 'completed' | 'archived'
-export type TicketPriority = 'high' | 'medium' | 'low'
-export type TicketType = 'feature' | 'bug' | 'task'
-export type TicketPrivacy = 'public' | 'team' | 'local-only'
+import type { Brand } from '@project-manager/base'
 
 /**
- * Domain defaults for ticket creation
+ * Possible states of a ticket in its lifecycle
  */
-export const TICKET_DEFAULTS = {
-  TYPE: 'task' as TicketType,
-  PRIORITY: 'medium' as TicketPriority,
-  PRIVACY: 'local-only' as TicketPrivacy,
-  STATUS: 'pending' as TicketStatus,
-} as const
+export type TicketStatusKey = Brand<string, 'TicketStatusKey'>
 
 /**
- * Validates if a string is a valid TicketStatus
+ * Types of tickets based on their nature
  */
-export function isValidTicketStatus(value: string): value is TicketStatus {
-  return ['pending', 'in_progress', 'completed', 'archived'].includes(value)
-}
+export type TicketTypeKey = Brand<string, 'TicketTypeKey'>
 
 /**
- * Validates if a string is a valid TicketPriority
+ * Priority levels for tickets
  */
-export function isValidTicketPriority(value: string): value is TicketPriority {
-  return ['high', 'medium', 'low'].includes(value)
-}
+export type TicketPriorityKey = Brand<string, 'TicketPriorityKey'>
 
 /**
- * Validates if a string is a valid TicketType
+ * Validation pattern for ticket keys: lowercase letters and underscores, 1+ characters
  */
-export function isValidTicketType(value: string): value is TicketType {
-  return ['feature', 'bug', 'task'].includes(value)
-}
+const TICKET_KEY_PATTERN = /^[a-z_]+$/
 
 /**
- * Validates if a string is a valid TicketPrivacy
+ * Create a ticket status from a string
  */
-export function isValidTicketPrivacy(value: string): value is TicketPrivacy {
-  return ['public', 'team', 'local-only'].includes(value)
-}
-
-/**
- * Domain error for ticket validation
- */
-export class TicketValidationError extends Error {
-  constructor(
-    message: string,
-    public readonly field?: string
-  ) {
-    super(message)
-    this.name = 'TicketValidationError'
+export function createTicketStatus(value: string): TicketStatusKey {
+  if (!value || !TICKET_KEY_PATTERN.test(value)) {
+    throw new Error(
+      `Invalid ticket status: ${value}. Must contain only lowercase letters and underscores.`
+    )
   }
+  return value as TicketStatusKey
+}
+
+/**
+ * Create a ticket type from a string
+ */
+export function createTicketType(value: string): TicketTypeKey {
+  if (!value || !TICKET_KEY_PATTERN.test(value)) {
+    throw new Error(
+      `Invalid ticket type: ${value}. Must contain only lowercase letters and underscores.`
+    )
+  }
+  return value as TicketTypeKey
+}
+
+/**
+ * Create a ticket priority from a string
+ */
+export function createTicketPriority(value: string): TicketPriorityKey {
+  if (!value || !TICKET_KEY_PATTERN.test(value)) {
+    throw new Error(
+      `Invalid ticket priority: ${value}. Must contain only lowercase letters and underscores.`
+    )
+  }
+  return value as TicketPriorityKey
 }

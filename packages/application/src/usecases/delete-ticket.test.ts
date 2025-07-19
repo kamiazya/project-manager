@@ -14,8 +14,9 @@ describe('DeleteTicket', () => {
       save: vi.fn(),
       findById: vi.fn(),
       findAll: vi.fn(),
+      findAllWithFilters: vi.fn(),
+      searchTickets: vi.fn(),
       delete: vi.fn().mockResolvedValue(undefined),
-      getStatistics: vi.fn(),
     }
     deleteTicketUseCase = new DeleteTicket.UseCase(mockTicketRepository)
   })

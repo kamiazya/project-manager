@@ -1,85 +1,37 @@
-import { GetTicketById } from '@project-manager/application'
+import type { ProjectManagerSDK } from '@project-manager/sdk'
 import { z } from 'zod'
-import type { McpTool } from '../types/mcp-tool.ts'
-import { getGetTicketByIdUseCase } from '../utils/container.ts'
-import { handleError } from '../utils/error-handler.ts'
+import { BaseTool } from '../lib/base-tool.ts'
 
 const getTicketByIdSchema = z.object({
   id: z.string().min(1).describe('The ticket ID'),
 })
 
-export const getTicketByIdTool: McpTool = {
-  name: 'get_ticket',
-  title: 'Get Ticket',
-  description: 'Get a ticket by ID',
-  inputSchema: getTicketByIdSchema.shape,
-  handler: async (input: z.infer<typeof getTicketByIdSchema>) => {
-    try {
-      const useCase = getGetTicketByIdUseCase()
+class GetTicketByIdTool extends BaseTool<typeof getTicketByIdSchema> {
+  readonly name = 'get_ticket'
+  readonly title = 'Get Ticket'
+  readonly description = 'Get a ticket by ID'
+  readonly inputSchema = getTicketByIdSchema.shape
 
-      const response = await useCase.execute(new GetTicketById.Request(input.id))
+  protected async execute(input: z.infer<typeof getTicketByIdSchema>, sdk: ProjectManagerSDK) {
+    const ticket = await sdk.tickets.getById(input.id)
 
-      if (!response) {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: JSON.stringify(
-                {
-                  success: false,
-                  error: 'Ticket not found',
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          isError: true,
-        }
-      }
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(
-              {
-                success: true,
-                ticket: {
-                  id: response.id,
-                  title: response.title,
-                  description: response.description,
-                  status: response.status,
-                  priority: response.priority,
-                  type: response.type,
-                  createdAt: response.createdAt,
-                  updatedAt: response.updatedAt,
-                },
-              },
-              null,
-              2
-            ),
-          },
-        ],
-      }
-    } catch (error) {
-      const errorInfo = handleError(error)
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(
-              {
-                success: false,
-                ...errorInfo,
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
+    if (!ticket) {
+      throw new Error('Ticket not found')
     }
-  },
+
+    return {
+      ticket: {
+        id: ticket.id,
+        title: ticket.title,
+        description: ticket.description,
+        status: ticket.status,
+        priority: ticket.priority,
+        type: ticket.type,
+        createdAt: ticket.createdAt,
+        updatedAt: ticket.updatedAt,
+      },
+    }
+  }
 }
+
+export const getTicketByIdTool = new GetTicketByIdTool()

@@ -12,6 +12,12 @@ class MockTicketRepository implements TicketRepository {
   async findAll(): Promise<any[]> {
     return []
   }
+  async findAllWithFilters(): Promise<any[]> {
+    return []
+  }
+  async searchTickets(): Promise<any[]> {
+    return []
+  }
   async delete(): Promise<void> {}
   async getStatistics(): Promise<any> {
     return {}
@@ -24,6 +30,12 @@ class AlternativeTicketRepository implements TicketRepository {
     return null
   }
   async findAll(): Promise<any[]> {
+    return []
+  }
+  async findAllWithFilters(): Promise<any[]> {
+    return []
+  }
+  async searchTickets(): Promise<any[]> {
     return []
   }
   async delete(): Promise<void> {}
@@ -295,6 +307,8 @@ describe('UseCaseFactoryProvider', () => {
         save: vi.fn(),
         findById: vi.fn(),
         findAll: vi.fn(),
+        findAllWithFilters: vi.fn(),
+        searchTickets: vi.fn(),
         delete: vi.fn(),
         getStatistics: vi.fn(),
       })
@@ -315,6 +329,8 @@ describe('UseCaseFactoryProvider', () => {
         save: vi.fn(),
         findById: vi.fn(),
         findAll: vi.fn(),
+        findAllWithFilters: vi.fn(),
+        searchTickets: vi.fn(),
         delete: vi.fn(),
         getStatistics: vi.fn(),
       } as any
@@ -338,6 +354,12 @@ describe('UseCaseFactoryProvider', () => {
           return null
         }
         async findAll(): Promise<any[]> {
+          return []
+        }
+        async findAllWithFilters(): Promise<any[]> {
+          return []
+        }
+        async searchTickets(): Promise<any[]> {
           return []
         }
         async delete(): Promise<void> {}
@@ -459,6 +481,12 @@ describe('UseCaseFactoryProvider', () => {
               return null
             }
             async findAll(): Promise<any[]> {
+              return []
+            }
+            async findAllWithFilters(): Promise<any[]> {
+              return []
+            }
+            async searchTickets(): Promise<any[]> {
               return []
             }
             async delete(): Promise<void> {}

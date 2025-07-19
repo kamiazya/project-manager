@@ -1,20 +1,12 @@
 import { Flags } from '@oclif/core'
-import { SearchTickets } from '@project-manager/application'
-import type {
-  TicketPriority,
-  TicketSearchCriteria,
-  TicketStatus,
-  TicketType,
-} from '@project-manager/shared'
-import { SUCCESS_MESSAGES } from '@project-manager/shared'
+import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '@project-manager/domain'
+import type { SearchTicketsRequest } from '@project-manager/sdk'
 import { BaseCommand } from '../lib/base-command.ts'
-import { formatTicketSummaryList } from '../utils/output.ts'
-import { getSearchTicketsUseCase } from '../utils/service-factory.ts'
 
 interface ExecuteFlags {
-  status?: TicketStatus
-  priority?: TicketPriority
-  type?: TicketType
+  status?: TicketStatusKey
+  priority?: TicketPriorityKey
+  type?: TicketTypeKey
   search?: string
   format?: 'table' | 'json' | 'compact'
   json?: boolean
@@ -56,34 +48,30 @@ export class ListCommand extends BaseCommand {
 
   async execute(_args: Record<string, never>, flags: ExecuteFlags): Promise<any[] | undefined> {
     // Build search criteria from flags (remove undefined values)
-    const criteria: TicketSearchCriteria = {}
+    const criteria: SearchTicketsRequest = {}
 
     if (flags.status) criteria.status = flags.status
     if (flags.priority) criteria.priority = flags.priority
     if (flags.type) criteria.type = flags.type
-    if (flags.search) criteria.search = flags.search
+    if (flags.search) criteria.query = flags.search
 
-    // Get the use case from the service container
-    const searchTicketsUseCase = getSearchTicketsUseCase()
-
-    // Execute the request
-    const request = new SearchTickets.Request(criteria)
-    const response = await searchTicketsUseCase.execute(request)
+    // Execute the search using SDK
+    const tickets = await this.sdk.tickets.search(criteria)
 
     // Handle JSON output
     if (flags.json) {
-      return response.tickets
+      return tickets
     }
 
     // Format and display results
-    const output = formatTicketSummaryList(response.tickets, {
-      format: flags.format || 'table',
-    })
+    const output = tickets
+      .map(ticket => `${ticket.id}: ${ticket.title} [${ticket.status}]`)
+      .join('\n')
     this.log(output)
 
     // Show summary message
-    if (response.tickets.length > 0) {
-      this.log(`\n${SUCCESS_MESSAGES.TICKETS_FOUND(response.tickets.length)}`)
+    if (tickets.length > 0) {
+      this.log(`\nFound${tickets.length} ticket(s)`)
     }
 
     return undefined

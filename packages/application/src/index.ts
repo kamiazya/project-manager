@@ -6,14 +6,19 @@
  * Should not contain any infrastructure concerns.
  */
 
-// Re-export Domain layer types for consumers
+// Re-export Domain layer types for consumers (excluding errors that we override)
 export * from '@project-manager/domain'
-
 // Common application interfaces and base classes
 export * from './common/base-usecase.ts'
+// Application layer errors (override domain errors)
+export {
+  ApplicationError,
+  RepositoryError,
+  TicketNotFoundError,
+  TicketValidationError,
+  UseCaseExecutionError,
+} from './common/errors/application-errors.ts'
 export * from './common/ticket.response.ts'
-export * from './common/ticket-statistics.ts'
-// Factories
 export * from './factories/use-case-factory.ts'
 export * from './factories/use-case-factory-provider.ts'
 // Repository interfaces (will be implemented in infrastructure layer)
@@ -25,7 +30,6 @@ export * from './usecases/create-ticket.ts'
 export * from './usecases/delete-ticket.ts'
 export * from './usecases/get-all-tickets.ts'
 export * from './usecases/get-ticket-by-id.ts'
-export * from './usecases/get-ticket-stats.ts'
 export * from './usecases/search-tickets.ts'
 export * from './usecases/start-ticket-progress.ts'
 export * from './usecases/update-ticket.ts'

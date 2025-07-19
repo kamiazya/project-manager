@@ -1,10 +1,9 @@
 import { Command } from '@oclif/core'
-import type { Container } from 'inversify'
-import { getServiceContainer } from '../utils/service-factory.ts'
+import { ProjectManagerSDK, ProjectManagerSDKFactory } from '@project-manager/sdk'
 
 /**
  * Base command class that provides common functionality for all commands.
- * Integrates with the existing service factory and dependency injection system.
+ * Integrates with the ProjectManagerSDK for unified access to project management functionality.
  *
  * @template TArgs - Type for command arguments
  * @template TFlags - Type for command flags
@@ -26,6 +25,12 @@ import { getServiceContainer } from '../utils/service-factory.ts'
  *     // TypeScript provides full type safety for args and flags
  *     if (args.title) { ... }
  *     if (flags.priority) { ... }
+ *
+ *     // Access SDK directly
+ *     const result = await this.sdk.tickets.create({
+ *       title: args.title,
+ *       description: 'New ticket'
+ *     })
  *   }
  * }
  */
@@ -34,8 +39,8 @@ export abstract class BaseCommand<
   TFlags extends Record<string, unknown> = Record<string, unknown>,
   TResult = unknown,
 > extends Command {
-  // Public container property allows easy mock injection during testing
-  public container!: Container
+  // Public SDK property allows easy access to all project management functionality
+  public sdk!: ProjectManagerSDK
 
   /**
    * Enable JSON flag support for all commands by default.
@@ -45,18 +50,16 @@ export abstract class BaseCommand<
 
   /**
    * oclif lifecycle method called before command execution.
-   * Initializes the dependency injection container.
+   * Initializes the ProjectManagerSDK.
    */
   async init(): Promise<void> {
     await super.init()
-    this.container = getServiceContainer()
-  }
 
-  /**
-   * Get a service by its identifier from the dependency injection container.
-   */
-  protected getService<T>(identifier: symbol): T {
-    return this.container.get<T>(identifier)
+    // Get environment (development/production)
+    const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production'
+
+    // Initialize SDK for CLI usage
+    this.sdk = await ProjectManagerSDKFactory.forCLI({ environment })
   }
 
   /**

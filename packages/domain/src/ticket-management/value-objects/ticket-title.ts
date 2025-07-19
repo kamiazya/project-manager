@@ -1,20 +1,12 @@
-// Constants (previously from shared package)
-const VALIDATION = {
-  TITLE_MAX_LENGTH: 200,
-  TITLE_DISPLAY_MAX_LENGTH: 40,
-}
-
 import { ValueObject } from '../../shared/patterns/base-value-object.ts'
-import { TicketValidationError } from '../types/ticket-types.ts'
+import { TicketValidationError } from '../types/errors.ts'
 
 interface TicketTitleProps {
   value: string
 }
 
-const TITLE_MAX_LENGTH = VALIDATION.TITLE_MAX_LENGTH
-const TITLE_DISPLAY_MAX_LENGTH = VALIDATION.TITLE_DISPLAY_MAX_LENGTH
-const TITLE_EMPTY_MESSAGE = 'Title cannot be empty or whitespace only'
-const TITLE_TOO_LONG_MESSAGE = (max: number) => `Title cannot exceed ${max} characters`
+const TITLE_MAX_LENGTH = 200
+const TITLE_DISPLAY_MAX_LENGTH = 40
 
 /**
  * Value object representing a Ticket Title
@@ -38,11 +30,11 @@ export class TicketTitle extends ValueObject<TicketTitleProps> {
     const trimmed = value.trim()
 
     if (trimmed.length === 0) {
-      throw new TicketValidationError(TITLE_EMPTY_MESSAGE, 'title')
+      throw new TicketValidationError('Title cannot be empty or whitespace only', 'title')
     }
 
     if (trimmed.length > TITLE_MAX_LENGTH) {
-      throw new TicketValidationError(TITLE_TOO_LONG_MESSAGE(TITLE_MAX_LENGTH), 'title')
+      throw new TicketValidationError(`Title cannot exceed ${TITLE_MAX_LENGTH} characters`, 'title')
     }
 
     return new TicketTitle({ value: trimmed })

@@ -3,12 +3,7 @@
  * These types are specific to the infrastructure layer and handle persistence concerns
  */
 
-import type {
-  TicketPriority,
-  TicketPrivacy,
-  TicketStatus,
-  TicketType,
-} from '@project-manager/domain'
+import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '@project-manager/domain'
 
 /**
  * JSON representation of a ticket for persistence
@@ -18,10 +13,9 @@ export interface TicketJSON {
   id: string
   title: string
   description: string
-  status: TicketStatus
-  priority: TicketPriority
-  type: TicketType
-  privacy: TicketPrivacy
+  status: TicketStatusKey
+  priority: TicketPriorityKey
+  type: TicketTypeKey
   createdAt: string
   updatedAt: string
 }

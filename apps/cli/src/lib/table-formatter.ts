@@ -1,6 +1,6 @@
-import type { GetAllTickets } from '@project-manager/application'
+import type { TicketResponse } from '@project-manager/sdk'
 
-type TicketSummary = GetAllTickets.TicketSummary
+type TicketSummary = TicketResponse
 
 import { MAX_TITLE_LENGTH, TITLE_TRUNCATE_LENGTH } from './constants.ts'
 

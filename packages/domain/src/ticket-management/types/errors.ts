@@ -18,18 +18,6 @@ export class TicketError extends Error {
 }
 
 /**
- * Error thrown when a ticket is not found
- */
-export class TicketNotFoundError extends TicketError {
-  public readonly ticketId: string
-
-  constructor(ticketId: string) {
-    super(`Ticket not found: ${ticketId}`, 'TICKET_NOT_FOUND')
-    this.ticketId = ticketId
-  }
-}
-
-/**
  * Error thrown when ticket validation fails
  */
 export class TicketValidationError extends TicketError {
@@ -39,23 +27,4 @@ export class TicketValidationError extends TicketError {
     super(message, 'VALIDATION_ERROR')
     this.field = field
   }
-}
-
-/**
- * Error thrown when storage operations fail
- */
-export class StorageError extends TicketError {
-  public readonly originalError: Error | undefined
-
-  constructor(message: string, originalError?: Error) {
-    super(message, 'STORAGE_ERROR')
-    this.originalError = originalError
-  }
-}
-
-/**
- * Type guard to check if an error is a TicketError
- */
-export function isTicketError(error: any): error is TicketError {
-  return error instanceof TicketError
 }

@@ -30,8 +30,7 @@
   "dependencies": {
     "@project-manager/application": "workspace:*",
     "@project-manager/domain": "workspace:*",
-    "@project-manager/base": "workspace:*",
-    "inversify": "catalog:"
+    "@project-manager/base": "workspace:*"
   },
   "devDependencies": {
     "typescript": "catalog:",

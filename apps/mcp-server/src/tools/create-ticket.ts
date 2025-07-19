@@ -1,9 +1,7 @@
-import { CreateTicket } from '@project-manager/application'
+import { createTicketPriority, createTicketStatus, createTicketType } from '@project-manager/domain'
+import type { ProjectManagerSDK } from '@project-manager/sdk'
 import { z } from 'zod'
-import type { McpTool } from '../types/mcp-tool.ts'
-import { getCreateTicketUseCase } from '../utils/container.ts'
-import { handleError } from '../utils/error-handler.ts'
-import { formatErrorResponse, formatSuccessResponse } from '../utils/response-formatter.ts'
+import { BaseTool } from '../lib/base-tool.ts'
 
 const createTicketSchema = z.object({
   title: z.string().min(1).describe('The ticket title'),
@@ -16,39 +14,34 @@ const createTicketSchema = z.object({
   type: z.enum(['feature', 'bug', 'task']).optional().default('task').describe('The ticket type'),
 })
 
-export const createTicketTool: McpTool = {
-  name: 'create_ticket',
-  title: 'Create Ticket',
-  description: 'Create a new ticket',
-  inputSchema: createTicketSchema.shape,
-  handler: async (input: z.infer<typeof createTicketSchema>) => {
-    try {
-      const useCase = getCreateTicketUseCase()
+class CreateTicketTool extends BaseTool<typeof createTicketSchema> {
+  readonly name = 'create_ticket'
+  readonly title = 'Create Ticket'
+  readonly description = 'Create a new ticket'
+  readonly inputSchema = createTicketSchema.shape
 
-      const request = new CreateTicket.Request(
-        input.title,
-        input.description || '',
-        input.priority,
-        input.type
-      )
+  protected async execute(input: z.infer<typeof createTicketSchema>, sdk: ProjectManagerSDK) {
+    const ticket = await sdk.tickets.create({
+      title: input.title,
+      description: input.description || '',
+      priority: createTicketPriority(input.priority),
+      type: createTicketType(input.type),
+      status: createTicketStatus('pending'), // Default status for new tickets
+    })
 
-      const response = await useCase.execute(request)
-
-      return formatSuccessResponse({
-        ticket: {
-          id: response.id,
-          title: response.title,
-          description: response.description,
-          status: response.status,
-          priority: response.priority,
-          type: response.type,
-          createdAt: response.createdAt,
-          updatedAt: response.updatedAt,
-        },
-      })
-    } catch (error) {
-      const errorInfo = handleError(error)
-      return formatErrorResponse(errorInfo)
+    return {
+      ticket: {
+        id: ticket.id,
+        title: ticket.title,
+        description: ticket.description,
+        status: ticket.status,
+        priority: ticket.priority,
+        type: ticket.type,
+        createdAt: ticket.createdAt,
+        updatedAt: ticket.updatedAt,
+      },
     }
-  },
+  }
 }
+
+export const createTicketTool = new CreateTicketTool()

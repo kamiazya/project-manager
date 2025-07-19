@@ -81,7 +81,6 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@project-manager/shared': fileURLToPath(new URL('./packages/shared/src', import.meta.url)),
       '@project-manager/base': fileURLToPath(new URL('./packages/base/src', import.meta.url)),
       '@project-manager/domain': fileURLToPath(new URL('./packages/domain/src', import.meta.url)),
       '@project-manager/application': fileURLToPath(
@@ -96,7 +95,6 @@ export default defineConfig({
   optimizeDeps: {
     // Include workspace packages to avoid resolution issues
     include: [
-      '@project-manager/shared',
       '@project-manager/base',
       '@project-manager/domain',
       '@project-manager/application',

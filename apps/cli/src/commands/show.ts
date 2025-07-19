@@ -1,8 +1,6 @@
 import { Args } from '@oclif/core'
-import { GetTicketById } from '@project-manager/application'
+import type { TicketResponse } from '@project-manager/sdk'
 import { BaseCommand } from '../lib/base-command.ts'
-import { formatTicketResponse } from '../utils/output.ts'
-import { getGetTicketByIdUseCase } from '../utils/service-factory.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
   ticketId: string
@@ -18,7 +16,7 @@ interface ExecuteFlags extends Record<string, unknown> {
 export class ShowCommand extends BaseCommand<
   ExecuteArgs,
   ExecuteFlags,
-  GetTicketById.Response | undefined
+  TicketResponse | undefined
 > {
   static override description = 'Show ticket details'
 
@@ -29,33 +27,26 @@ export class ShowCommand extends BaseCommand<
     }),
   }
 
-  async execute(
-    args: ExecuteArgs,
-    flags: ExecuteFlags
-  ): Promise<GetTicketById.Response | undefined> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<TicketResponse | undefined> {
     if (!args.ticketId) {
       this.error('Ticket ID is required')
     }
 
-    // Get the use case from the service container
-    const getTicketByIdUseCase = getGetTicketByIdUseCase()
-
-    // Execute the request
-    const request = new GetTicketById.Request(args.ticketId)
-    const response = await getTicketByIdUseCase.execute(request)
+    // Get ticket using SDK
+    const ticket = await this.sdk.tickets.getById(args.ticketId)
 
     // Handle ticket not found
-    if (!response) {
+    if (!ticket) {
       this.error(`Ticket not found: ${args.ticketId}`)
     }
 
     // Handle JSON output
     if (flags.json) {
-      return response
+      return ticket
     }
 
     // Format and display the ticket
-    const output = formatTicketResponse(response, { format: 'table' })
+    const output = `ID: ${ticket.id}\nTitle: ${ticket.title}\nStatus: ${ticket.status}\nPriority: ${ticket.priority}\nType: ${ticket.type}\nDescription: ${ticket.description}\nCreated: ${ticket.createdAt}\nUpdated: ${ticket.updatedAt}`
     this.log(output)
 
     return undefined

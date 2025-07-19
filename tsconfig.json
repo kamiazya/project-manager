@@ -32,15 +32,7 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "customConditions": ["@project-manager/source"],
-    "paths": {
-      "@project-manager/shared": ["packages/shared/src"],
-      "@project-manager/base": ["packages/base/src"],
-      "@project-manager/domain": ["packages/domain/src"],
-      "@project-manager/application": ["packages/application/src"],
-      "@project-manager/infrastructure": ["packages/infrastructure/src"],
-      "@project-manager/sdk": ["packages/sdk/src"]
-    }
+    "customConditions": ["@project-manager/source"]
   },
   "include": ["packages/*/src/**/*.ts", "apps/*/src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

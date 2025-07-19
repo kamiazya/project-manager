@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { TicketValidationError } from '../types/ticket-types.ts'
+import { TicketValidationError } from '../types/errors.ts'
 import { TicketDescription } from './ticket-description.ts'
 
 describe('TicketDescription', () => {

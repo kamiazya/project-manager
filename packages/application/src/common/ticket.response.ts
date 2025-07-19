@@ -11,7 +11,6 @@ export class TicketResponse {
     public readonly status: string,
     public readonly priority: string,
     public readonly type: string,
-    public readonly privacy: string,
     public readonly createdAt: string,
     public readonly updatedAt: string
   ) {}
@@ -21,10 +20,9 @@ export class TicketResponse {
       ticket.id.value,
       ticket.title.value,
       ticket.description.value,
-      ticket.status.value,
-      ticket.priority.value,
+      ticket.status,
+      ticket.priority,
       ticket.type,
-      ticket.privacy,
       ticket.createdAt.toISOString(),
       ticket.updatedAt.toISOString()
     )

@@ -1,7 +1,11 @@
 import { Args, Flags } from '@oclif/core'
-import { UpdateTicket } from '@project-manager/application'
+import {
+  createTicketPriority,
+  createTicketType,
+  type TicketPriorityKey,
+  type TicketTypeKey,
+} from '@project-manager/domain'
 import { BaseCommand } from '../lib/base-command.ts'
-import { getUpdateTicketUseCase } from '../utils/service-factory.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
   ticketId: string
@@ -10,7 +14,6 @@ interface ExecuteArgs extends Record<string, unknown> {
 interface ExecuteFlags extends Record<string, unknown> {
   title?: string
   description?: string
-  status?: 'pending' | 'in_progress' | 'completed' | 'archived'
   priority?: 'high' | 'medium' | 'low'
   type?: 'feature' | 'bug' | 'task'
   json?: boolean // Inherited from BaseCommand
@@ -19,7 +22,7 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Update a ticket's properties
  */
-export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, UpdateTicket.Response> {
+export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
   static override description = 'Update ticket properties'
   static override aliases = ['u']
 
@@ -39,11 +42,6 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, Update
       char: 'd',
       description: 'Update ticket description',
     }),
-    status: Flags.string({
-      char: 's',
-      description: 'Update ticket status',
-      options: ['pending', 'in_progress', 'completed', 'archived'],
-    }),
     priority: Flags.string({
       char: 'p',
       description: 'Update ticket priority',
@@ -55,44 +53,36 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, Update
     }),
   }
 
-  async execute(
-    args: ExecuteArgs,
-    flags: ExecuteFlags
-  ): Promise<UpdateTicket.Response | undefined> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any | undefined> {
     // Validate required ticket ID
     if (!args.ticketId) {
       this.error('Ticket ID is required')
     }
 
-    // Get the use case from the service container
-    const updateTicketUseCase = getUpdateTicketUseCase()
-
     // Create update request with only defined fields
     const updates: {
       title?: string
       description?: string
-      status?: 'pending' | 'in_progress' | 'completed' | 'archived'
-      priority?: 'high' | 'medium' | 'low'
-      type?: 'feature' | 'bug' | 'task'
+      priority?: TicketPriorityKey
+      type?: TicketTypeKey
     } = {}
 
     if (flags.title !== undefined) updates.title = flags.title
     if (flags.description !== undefined) updates.description = flags.description
-    if (flags.status !== undefined) updates.status = flags.status
-    if (flags.priority !== undefined) updates.priority = flags.priority
-    if (flags.type !== undefined) updates.type = flags.type
-
-    const updateRequest = new UpdateTicket.Request(args.ticketId, updates)
+    if (flags.priority !== undefined) updates.priority = createTicketPriority(flags.priority)
+    if (flags.type !== undefined) updates.type = createTicketType(flags.type)
 
     // Check if at least one field was provided for update
-    const hasUpdates =
-      flags.title || flags.description || flags.status || flags.priority || flags.type
+    const hasUpdates = flags.title || flags.description || flags.priority || flags.type
     if (!hasUpdates) {
       this.error('At least one field must be specified for update')
     }
 
-    // Execute the update operation (single I/O operation)
-    const updatedTicket = await updateTicketUseCase.execute(updateRequest)
+    // Execute the update operation using SDK
+    const updatedTicket = await this.sdk.tickets.update({
+      id: args.ticketId,
+      ...updates,
+    })
 
     // Note: type updates would need a separate use case if implemented
     if (flags.type !== undefined) {

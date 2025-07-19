@@ -27,7 +27,6 @@ export default defineConfig({
     rollupOptions: {
       external: [
         '@project-manager/domain',
-        '@project-manager/shared',
         '@project-manager/base',
         'node:fs/promises',
         'node:fs',

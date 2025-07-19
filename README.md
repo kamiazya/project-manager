@@ -63,39 +63,33 @@ Project Manager is an open-source tool that enables effective collaboration betw
 
 ## Development Status
 
-🎉 **Clean Architecture Implementation Complete** - Migration to Clean Architecture successfully completed!
-
-### Architecture Achievements
-
-- ✅ **Clean Architecture**: Domain-driven design with proper layer separation
-- ✅ **Monorepo Structure**: Organized packages and applications
-- ✅ **Test Coverage**: 913/915 tests passing (99.8% success rate)
-- ✅ **SDK Package**: Facade pattern for unified API access
-- ✅ **Dependency Injection**: Proper IoC container implementation
-- ✅ **Apps Structure**: CLI and MCP server as separate applications
+The project is in active development with a focus on enhancing AI collaboration capabilities and refining the Clean Architecture implementation. The core features are complete, and we are now working on additional functionalities and integrations.
 
 ### Completed Features
 
-- ✅ **Domain Layer**: Rich domain models with business logic encapsulation
-- ✅ **Application Layer**: Use cases with Clean Architecture patterns
-- ✅ **Infrastructure Layer**: Repository implementations and external adapters
 - ✅ **CLI Application**: Full CRUD operations with service layer
-- ✅ **MCP Server**: 9 AI integration tools with hot reload
+- ✅ **MCP Server**: AI integration tools
 - ✅ **TypeScript SDK**: Unified API with Facade pattern
 - ✅ **Project configuration**: XDG-compliant configuration management
 
 ### Current Focus
 
-- ✅ **Clean Architecture Migration Completed**: Successfully migrated to Clean Architecture
+- Enhancing Domain Layer with rich business logic
 - Epic and roadmap management features
 - External system integration (GitHub Issues, Jira)
-- Advanced AI collaboration protocols
+- Advanced AI collaboration
 
 ## Quick Start
+
+> **Note**: This project is not published to npm yet.
+> So this is not truly a "quick start" guide, but rather a "how to run the project" guide.
 
 ### Basic CLI Usage
 
 ```bash
+# Clone the repository
+git clone https://github.com/kamiazya/project-manager.git
+
 # Install dependencies
 pnpm install
 

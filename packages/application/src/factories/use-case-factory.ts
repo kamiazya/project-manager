@@ -11,7 +11,6 @@ import { CreateTicket } from '../usecases/create-ticket.ts'
 import { DeleteTicket } from '../usecases/delete-ticket.ts'
 import { GetAllTickets } from '../usecases/get-all-tickets.ts'
 import { GetTicketById } from '../usecases/get-ticket-by-id.ts'
-import { GetTicketStats } from '../usecases/get-ticket-stats.ts'
 import { SearchTickets } from '../usecases/search-tickets.ts'
 import { StartTicketProgress } from '../usecases/start-ticket-progress.ts'
 import { UpdateTicket } from '../usecases/update-ticket.ts'
@@ -54,10 +53,6 @@ export class UseCaseFactory {
     return new DeleteTicket.UseCase(this.ticketRepository)
   }
 
-  createGetTicketStatsUseCase(): GetTicketStats.UseCase {
-    return new GetTicketStats.UseCase(this.ticketRepository)
-  }
-
   createSearchTicketsUseCase(): SearchTickets.UseCase {
     return new SearchTickets.UseCase(this.ticketRepository)
   }
@@ -84,5 +79,13 @@ export class UseCaseFactory {
 
   createUpdateTicketTitleUseCase(): UpdateTicketTitle.UseCase {
     return new UpdateTicketTitle.UseCase(this.ticketRepository)
+  }
+
+  /**
+   * Get the ticket repository instance
+   * For advanced usage where direct repository access is needed
+   */
+  getTicketRepository(): TicketRepository {
+    return this.ticketRepository
   }
 }

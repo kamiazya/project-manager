@@ -5,29 +5,9 @@
  * following the Facade pattern to simplify complex subsystem interactions.
  */
 
-import type {
-  CreateTicket,
-  DeleteTicket,
-  GetAllTickets,
-  GetTicketById,
-  GetTicketStats,
-  SearchTickets,
-  TicketRepository,
-  TicketStatistics,
-  UpdateTicket,
-  UpdateTicketStatus,
-  UseCaseFactory,
-} from '@project-manager/application'
-import type { AppConfigSchema } from '@project-manager/base'
-import type {
-  Ticket,
-  TicketId,
-  TicketPriority,
-  TicketPrivacy,
-  TicketStatus,
-  TicketType,
-} from '@project-manager/domain'
-import type { Container } from 'inversify'
+import type { TicketRepository, UseCaseFactory } from '@project-manager/application'
+// import type { AppConfigSchema } from '@project-manager/base'
+import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '@project-manager/domain'
 
 /**
  * Request/Response DTOs for SDK operations
@@ -35,26 +15,24 @@ import type { Container } from 'inversify'
 export interface CreateTicketRequest {
   title: string
   description: string
-  priority?: TicketPriority
-  type?: TicketType
-  privacy?: TicketPrivacy
+  priority?: TicketPriorityKey
+  type?: TicketTypeKey
+  status?: TicketStatusKey
 }
 
 export interface UpdateTicketRequest {
   id: string
   title?: string
   description?: string
-  priority?: TicketPriority
-  type?: TicketType
-  privacy?: TicketPrivacy
+  priority?: TicketPriorityKey
+  type?: TicketTypeKey
 }
 
 export interface SearchTicketsRequest {
   query?: string
-  status?: TicketStatus
-  priority?: TicketPriority
-  type?: TicketType
-  privacy?: TicketPrivacy
+  status?: TicketStatusKey
+  priority?: TicketPriorityKey
+  type?: TicketTypeKey
   searchIn?: ('title' | 'description')[]
 }
 
@@ -62,10 +40,9 @@ export interface TicketResponse {
   id: string
   title: string
   description: string
-  status: TicketStatus
-  priority: TicketPriority
-  type: TicketType
-  privacy: TicketPrivacy
+  status: TicketStatusKey
+  priority: TicketPriorityKey
+  type: TicketTypeKey
   createdAt: string
   updatedAt: string
 }
@@ -74,13 +51,13 @@ export interface TicketResponse {
  * Main SDK class providing unified access to Project Manager functionality
  */
 export class ProjectManagerSDK {
-  private constructor(private readonly container: Container) {}
+  private constructor(private readonly useCaseFactory: UseCaseFactory) {}
 
   /**
    * Factory method to create SDK instance
    */
-  static async create(container: Container): Promise<ProjectManagerSDK> {
-    return new ProjectManagerSDK(container)
+  static async create(useCaseFactory: UseCaseFactory): Promise<ProjectManagerSDK> {
+    return new ProjectManagerSDK(useCaseFactory)
   }
 
   /**
@@ -91,13 +68,13 @@ export class ProjectManagerSDK {
      * Create a new ticket
      */
     create: async (request: CreateTicketRequest): Promise<TicketResponse> => {
-      const useCase = this.container.get<CreateTicket.UseCase>('CreateTicketUseCase')
+      const useCase = this.useCaseFactory.createCreateTicketUseCase()
       const createRequest = new (await import('@project-manager/application')).CreateTicket.Request(
         request.title,
         request.description,
-        request.priority,
-        request.type,
-        request.privacy
+        request.priority as string,
+        request.type as string,
+        request.status || 'pending'
       )
 
       const response = await useCase.execute(createRequest)
@@ -108,7 +85,7 @@ export class ProjectManagerSDK {
      * Get ticket by ID
      */
     getById: async (id: string): Promise<TicketResponse | null> => {
-      const useCase = this.container.get<GetTicketById.UseCase>('GetTicketByIdUseCase')
+      const useCase = this.useCaseFactory.createGetTicketByIdUseCase()
       const request = new (await import('@project-manager/application')).GetTicketById.Request(id)
 
       const response = await useCase.execute(request)
@@ -119,7 +96,7 @@ export class ProjectManagerSDK {
      * Get all tickets
      */
     getAll: async (): Promise<TicketResponse[]> => {
-      const useCase = this.container.get<GetAllTickets.UseCase>('GetAllTicketsUseCase')
+      const useCase = this.useCaseFactory.createGetAllTicketsUseCase()
       const request = new (await import('@project-manager/application')).GetAllTickets.Request({})
 
       const response = await useCase.execute(request)
@@ -130,14 +107,14 @@ export class ProjectManagerSDK {
      * Update ticket
      */
     update: async (request: UpdateTicketRequest): Promise<TicketResponse> => {
-      const useCase = this.container.get<UpdateTicket.UseCase>('UpdateTicketUseCase')
+      const useCase = this.useCaseFactory.createUpdateTicketUseCase()
       const updateRequest = new (await import('@project-manager/application')).UpdateTicket.Request(
         request.id,
         {
           title: request.title,
           description: request.description,
-          priority: request.priority,
-          type: request.type,
+          priority: request.priority as 'high' | 'medium' | 'low' | undefined,
+          type: request.type as 'feature' | 'bug' | 'task' | undefined,
         }
       )
 
@@ -148,11 +125,11 @@ export class ProjectManagerSDK {
     /**
      * Update ticket status
      */
-    updateStatus: async (id: string, status: TicketStatus): Promise<TicketResponse> => {
-      const useCase = this.container.get<UpdateTicketStatus.UseCase>('UpdateTicketStatusUseCase')
+    updateStatus: async (id: string, status: TicketStatusKey): Promise<TicketResponse> => {
+      const useCase = this.useCaseFactory.createUpdateTicketStatusUseCase()
       const request = new (await import('@project-manager/application')).UpdateTicketStatus.Request(
         id,
-        status
+        status as 'pending' | 'in_progress' | 'completed' | 'archived'
       )
 
       const response = await useCase.execute(request)
@@ -163,7 +140,7 @@ export class ProjectManagerSDK {
      * Delete ticket
      */
     delete: async (id: string): Promise<void> => {
-      const useCase = this.container.get<DeleteTicket.UseCase>('DeleteTicketUseCase')
+      const useCase = this.useCaseFactory.createDeleteTicketUseCase()
       const request = new (await import('@project-manager/application')).DeleteTicket.Request(id)
 
       await useCase.execute(request)
@@ -173,7 +150,7 @@ export class ProjectManagerSDK {
      * Search tickets
      */
     search: async (request: SearchTicketsRequest): Promise<TicketResponse[]> => {
-      const useCase = this.container.get<SearchTickets.UseCase>('SearchTicketsUseCase')
+      const useCase = this.useCaseFactory.createSearchTicketsUseCase()
       const searchRequest = new (
         await import('@project-manager/application')
       ).SearchTickets.Request({
@@ -181,23 +158,11 @@ export class ProjectManagerSDK {
         status: request.status,
         priority: request.priority,
         type: request.type,
-        privacy: request.privacy,
         searchIn: request.searchIn,
       })
 
       const response = await useCase.execute(searchRequest)
       return response.tickets.map(ticket => this.mapTicketResponseToSDKResponse(ticket))
-    },
-
-    /**
-     * Get ticket statistics
-     */
-    getStats: async (): Promise<TicketStatistics> => {
-      const useCase = this.container.get<GetTicketStats.UseCase>('GetTicketStatsUseCase')
-      const request = new (await import('@project-manager/application')).GetTicketStats.Request()
-
-      const response = await useCase.execute(request)
-      return response
     },
   }
 
@@ -208,8 +173,7 @@ export class ProjectManagerSDK {
     /**
      * Get current configuration
      */
-    get: async (): Promise<AppConfigSchema> => {
-      const factory = this.container.get<UseCaseFactory>('UseCaseFactory')
+    get: async (): Promise<Record<string, any>> => {
       // TODO: Implement configuration use case
       throw new Error('Configuration management not yet implemented')
     },
@@ -217,10 +181,28 @@ export class ProjectManagerSDK {
     /**
      * Update configuration
      */
-    update: async (config: Partial<AppConfigSchema>): Promise<void> => {
-      const factory = this.container.get<UseCaseFactory>('UseCaseFactory')
+    update: async (config: Partial<Record<string, any>>): Promise<void> => {
       // TODO: Implement configuration update use case
       throw new Error('Configuration management not yet implemented')
+    },
+
+    /**
+     * Get storage path from SDK configuration
+     */
+    getStoragePath: async (): Promise<string> => {
+      const repository = this.useCaseFactory.getTicketRepository()
+      if ('storagePath' in repository && typeof repository.storagePath === 'string') {
+        return repository.storagePath
+      }
+      // Fallback to infrastructure default
+      return await this.getDefaultStoragePathInternal()
+    },
+
+    /**
+     * Get default storage path (XDG-compliant)
+     */
+    getDefaultStoragePath: async (): Promise<string> => {
+      return await this.getDefaultStoragePathInternal()
     },
   }
 
@@ -232,8 +214,23 @@ export class ProjectManagerSDK {
      * Get ticket repository instance
      */
     getTicketRepository: (): TicketRepository => {
-      return this.container.get<TicketRepository>('TicketRepository')
+      return this.useCaseFactory.getTicketRepository()
     },
+  }
+
+  /**
+   * Helper method to get default storage path
+   */
+  private async getDefaultStoragePathInternal(): Promise<string> {
+    const { homedir } = await import('node:os')
+    const { join } = await import('node:path')
+
+    const homeDir = homedir()
+    const configHome = process.env.XDG_CONFIG_HOME || join(homeDir, '.config')
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const dirName = isDevelopment ? 'project-manager-dev' : 'project-manager'
+
+    return join(configHome, dirName, 'tickets.json')
   }
 
   /**
@@ -247,7 +244,6 @@ export class ProjectManagerSDK {
       status: ticketResponse.status,
       priority: ticketResponse.priority,
       type: ticketResponse.type,
-      privacy: ticketResponse.privacy,
       createdAt: ticketResponse.createdAt,
       updatedAt: ticketResponse.updatedAt,
     }

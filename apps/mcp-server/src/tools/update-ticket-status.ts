@@ -1,42 +1,35 @@
-import { UpdateTicketStatus } from '@project-manager/application'
+import { createTicketStatus } from '@project-manager/domain'
+import type { ProjectManagerSDK } from '@project-manager/sdk'
 import { z } from 'zod'
-import type { McpTool } from '../types/mcp-tool.ts'
-import { getUpdateTicketStatusUseCase } from '../utils/container.ts'
-import { handleError } from '../utils/error-handler.ts'
-import { formatErrorResponse, formatSuccessResponse } from '../utils/response-formatter.ts'
+import { BaseTool } from '../lib/base-tool.ts'
 
 const updateTicketStatusSchema = z.object({
   id: z.string().min(1).describe('The ticket ID'),
   status: z.enum(['pending', 'in_progress', 'completed', 'archived']).describe('The new status'),
 })
 
-export const updateTicketStatusTool: McpTool = {
-  name: 'update_ticket_status',
-  title: 'Update Ticket Status',
-  description: 'Update the status of a ticket',
-  inputSchema: updateTicketStatusSchema.shape,
-  handler: async (input: z.infer<typeof updateTicketStatusSchema>) => {
-    try {
-      const useCase = getUpdateTicketStatusUseCase()
+class UpdateTicketStatusTool extends BaseTool<typeof updateTicketStatusSchema> {
+  readonly name = 'update_ticket_status'
+  readonly title = 'Update Ticket Status'
+  readonly description = 'Update the status of a ticket'
+  readonly inputSchema = updateTicketStatusSchema.shape
 
-      const request = new UpdateTicketStatus.Request(input.id, input.status)
-      const response = await useCase.execute(request)
+  protected async execute(input: z.infer<typeof updateTicketStatusSchema>, sdk: ProjectManagerSDK) {
+    const ticket = await sdk.tickets.updateStatus(input.id, createTicketStatus(input.status))
 
-      return formatSuccessResponse({
-        ticket: {
-          id: response.id,
-          title: response.title,
-          description: response.description,
-          status: response.status,
-          priority: response.priority,
-          type: response.type,
-          createdAt: response.createdAt,
-          updatedAt: response.updatedAt,
-        },
-      })
-    } catch (error) {
-      const errorInfo = handleError(error)
-      return formatErrorResponse(errorInfo)
+    return {
+      ticket: {
+        id: ticket.id,
+        title: ticket.title,
+        description: ticket.description,
+        status: ticket.status,
+        priority: ticket.priority,
+        type: ticket.type,
+        createdAt: ticket.createdAt,
+        updatedAt: ticket.updatedAt,
+      },
     }
-  },
+  }
 }
+
+export const updateTicketStatusTool = new UpdateTicketStatusTool()

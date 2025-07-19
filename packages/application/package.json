@@ -29,8 +29,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@project-manager/domain": "workspace:*",
-    "@project-manager/shared": "workspace:*"
+    "@project-manager/base": "workspace:*",
+    "@project-manager/domain": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

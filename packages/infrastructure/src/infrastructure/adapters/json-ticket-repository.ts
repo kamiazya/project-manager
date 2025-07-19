@@ -1,7 +1,11 @@
 import { constants } from 'node:fs'
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import type { TicketRepository, TicketStatistics } from '@project-manager/application'
+import type {
+  TicketQueryFilters,
+  TicketRepository,
+  TicketSearchCriteria,
+} from '@project-manager/application'
 import { Ticket, type TicketId } from '@project-manager/domain'
 import { ERROR_MESSAGES, FILE_SYSTEM, getStoragePath } from '../config/infrastructure-config.ts'
 import { StorageError, TicketNotFoundError } from '../errors/infrastructure-errors.ts'
@@ -65,6 +69,98 @@ export class JsonTicketRepository implements TicketRepository {
     return TicketMapper.toDomainList(tickets)
   }
 
+  async findAllWithFilters(filters: TicketQueryFilters): Promise<Ticket[]> {
+    const tickets = await this.loadTicketsFromFile()
+
+    // Apply filters at the persistence layer for better performance
+    let filteredTickets = tickets
+
+    // Filter by status
+    if (filters.status) {
+      filteredTickets = filteredTickets.filter(ticket => ticket.status === filters.status)
+    }
+
+    // Filter by priority
+    if (filters.priority) {
+      filteredTickets = filteredTickets.filter(ticket => ticket.priority === filters.priority)
+    }
+
+    // Filter by type
+    if (filters.type) {
+      filteredTickets = filteredTickets.filter(ticket => ticket.type === filters.type)
+    }
+
+    // Apply limit and offset
+    if (filters.offset && filters.offset > 0) {
+      filteredTickets = filteredTickets.slice(filters.offset)
+    }
+
+    if (filters.limit && filters.limit > 0) {
+      filteredTickets = filteredTickets.slice(0, filters.limit)
+    }
+
+    // Convert filtered persistence objects to domain objects
+    return TicketMapper.toDomainList(filteredTickets)
+  }
+
+  async searchTickets(criteria: TicketSearchCriteria): Promise<Ticket[]> {
+    const tickets = await this.loadTicketsFromFile()
+
+    // Apply filters at the persistence layer for better performance
+    let filteredTickets = tickets
+
+    // Filter by status
+    if (criteria.status) {
+      filteredTickets = filteredTickets.filter(ticket => ticket.status === criteria.status)
+    }
+
+    // Filter by priority
+    if (criteria.priority) {
+      filteredTickets = filteredTickets.filter(ticket => ticket.priority === criteria.priority)
+    }
+
+    // Filter by type
+    if (criteria.type) {
+      filteredTickets = filteredTickets.filter(ticket => ticket.type === criteria.type)
+    }
+
+    // Filter by text search in title/description
+    if (criteria.search && criteria.search.trim() !== '') {
+      const searchLower = criteria.search.toLowerCase()
+      const searchIn = criteria.searchIn || ['title', 'description'] // Default to both fields
+
+      filteredTickets = filteredTickets.filter(ticket => {
+        let hasMatch = false
+
+        // Check title if included in searchIn
+        if (searchIn.includes('title')) {
+          const titleMatch = ticket.title.toLowerCase().includes(searchLower)
+          if (titleMatch) hasMatch = true
+        }
+
+        // Check description if included in searchIn
+        if (searchIn.includes('description')) {
+          const descriptionMatch = ticket.description.toLowerCase().includes(searchLower)
+          if (descriptionMatch) hasMatch = true
+        }
+
+        return hasMatch
+      })
+    }
+
+    // Apply limit and offset
+    if (criteria.offset && criteria.offset > 0) {
+      filteredTickets = filteredTickets.slice(criteria.offset)
+    }
+
+    if (criteria.limit && criteria.limit > 0) {
+      filteredTickets = filteredTickets.slice(0, criteria.limit)
+    }
+
+    // Convert filtered persistence objects to domain objects
+    return TicketMapper.toDomainList(filteredTickets)
+  }
+
   async delete(id: TicketId): Promise<void> {
     await this.withFileLock(async () => {
       const tickets = await this.loadTicketsFromFile()
@@ -76,74 +172,6 @@ export class JsonTicketRepository implements TicketRepository {
 
       await this.saveTicketsToFile(filteredTickets)
     })
-  }
-
-  async getStatistics(): Promise<TicketStatistics> {
-    const tickets = await this.loadTicketsFromFile()
-
-    const stats: TicketStatistics = {
-      total: tickets.length,
-      pending: 0,
-      inProgress: 0,
-      completed: 0,
-      archived: 0,
-      byPriority: {
-        high: 0,
-        medium: 0,
-        low: 0,
-      },
-      byType: {
-        feature: 0,
-        bug: 0,
-        task: 0,
-      },
-    }
-
-    for (const ticket of tickets) {
-      // Count by status
-      switch (ticket.status) {
-        case 'pending':
-          stats.pending++
-          break
-        case 'in_progress':
-          stats.inProgress++
-          break
-        case 'completed':
-          stats.completed++
-          break
-        case 'archived':
-          stats.archived++
-          break
-      }
-
-      // Count by priority
-      switch (ticket.priority) {
-        case 'high':
-          stats.byPriority.high++
-          break
-        case 'medium':
-          stats.byPriority.medium++
-          break
-        case 'low':
-          stats.byPriority.low++
-          break
-      }
-
-      // Count by type
-      switch (ticket.type) {
-        case 'feature':
-          stats.byType.feature++
-          break
-        case 'bug':
-          stats.byType.bug++
-          break
-        case 'task':
-          stats.byType.task++
-          break
-      }
-    }
-
-    return stats
   }
 
   private async withFileLock<T>(operation: () => Promise<T>): Promise<T> {

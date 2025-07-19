@@ -1,20 +1,15 @@
-import type { DomainEvent } from '../../shared/patterns/domain-event.ts'
-import type { TicketPrivacy, TicketType } from '../types/ticket-types.ts'
-import { TICKET_DEFAULTS, TicketValidationError } from '../types/ticket-types.ts'
+import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '../types/ticket-types.ts'
 import { TicketDescription } from '../value-objects/ticket-description.ts'
 import { TicketId } from '../value-objects/ticket-id.ts'
-import { TicketPriority } from '../value-objects/ticket-priority.ts'
-import { TicketStatus } from '../value-objects/ticket-status.ts'
 import { TicketTitle } from '../value-objects/ticket-title.ts'
 
 export interface TicketProps {
   id: TicketId
   title: TicketTitle
+  type: TicketTypeKey
   description: TicketDescription
-  status: TicketStatus
-  priority: TicketPriority
-  type: TicketType
-  privacy: TicketPrivacy
+  status: TicketStatusKey
+  priority: TicketPriorityKey
   createdAt: Date
   updatedAt: Date
 }
@@ -22,20 +17,18 @@ export interface TicketProps {
 export interface CreateTicketData {
   title: string
   description: string
-  priority: 'high' | 'medium' | 'low'
-  type?: TicketType
-  privacy?: TicketPrivacy
-  status?: 'pending' | 'in_progress' | 'completed' | 'archived'
+  priority: string
+  type: string
+  status: string
 }
 
 export interface ReconstituteTicketData {
   id: string
   title: string
   description: string
-  status: 'pending' | 'in_progress' | 'completed' | 'archived'
-  priority: 'high' | 'medium' | 'low'
-  type: TicketType
-  privacy: TicketPrivacy
+  status: TicketStatusKey
+  priority: TicketPriorityKey
+  type: TicketTypeKey
   createdAt: string
   updatedAt: string
 }
@@ -46,24 +39,9 @@ export interface ReconstituteTicketData {
  */
 export class Ticket {
   private readonly props: TicketProps
-  private readonly _domainEvents: DomainEvent[] = []
 
   private constructor(props: TicketProps) {
     this.props = props
-  }
-
-  /**
-   * Get domain events (for future event sourcing capabilities)
-   */
-  get domainEvents(): DomainEvent[] {
-    return [...this._domainEvents]
-  }
-
-  /**
-   * Clear domain events (typically called after events are dispatched)
-   */
-  public clearEvents(): void {
-    this._domainEvents.length = 0
   }
 
   /**
@@ -76,10 +54,9 @@ export class Ticket {
       id: TicketId.create(),
       title: TicketTitle.create(data.title),
       description: TicketDescription.create(data.description),
-      status: data.status ? TicketStatus.create(data.status) : TicketStatus.pending(),
-      priority: TicketPriority.create(data.priority),
-      type: data.type || TICKET_DEFAULTS.TYPE,
-      privacy: data.privacy || TICKET_DEFAULTS.PRIVACY,
+      status: data.status as TicketStatusKey,
+      priority: data.priority as TicketPriorityKey,
+      type: data.type as TicketTypeKey,
       createdAt: now,
       updatedAt: now,
     })
@@ -93,10 +70,9 @@ export class Ticket {
       id: TicketId.fromValue(data.id),
       title: TicketTitle.create(data.title),
       description: TicketDescription.create(data.description),
-      status: TicketStatus.create(data.status),
-      priority: TicketPriority.create(data.priority),
+      status: data.status,
+      priority: data.priority,
       type: data.type,
-      privacy: data.privacy,
       createdAt: new Date(data.createdAt),
       updatedAt: new Date(data.updatedAt),
     })
@@ -115,20 +91,16 @@ export class Ticket {
     return this.props.description
   }
 
-  get status(): TicketStatus {
+  get status(): TicketStatusKey {
     return this.props.status
   }
 
-  get priority(): TicketPriority {
+  get priority(): TicketPriorityKey {
     return this.props.priority
   }
 
-  get type(): TicketType {
+  get type(): TicketTypeKey {
     return this.props.type
-  }
-
-  get privacy(): TicketPrivacy {
-    return this.props.privacy
   }
 
   get createdAt(): Date {
@@ -158,69 +130,49 @@ export class Ticket {
   /**
    * Business operation: Change ticket status
    */
-  public changeStatus(newStatus: 'pending' | 'in_progress' | 'completed' | 'archived'): void {
-    const targetStatus = TicketStatus.create(newStatus)
-
-    if (!this.props.status.canTransitionTo(newStatus)) {
-      throw new TicketValidationError(
-        `Cannot transition from ${this.props.status.value} to ${newStatus}`,
-        'status'
-      )
-    }
-
-    this.props.status = targetStatus
+  public changeStatus(newStatus: TicketStatusKey): void {
+    this.props.status = newStatus
     this.updateTimestamp()
   }
 
   /**
    * Business operation: Change ticket priority
    */
-  public changePriority(newPriority: 'high' | 'medium' | 'low'): void {
-    this.props.priority = TicketPriority.create(newPriority)
+  public changePriority(newPriority: TicketPriorityKey): void {
+    this.props.priority = newPriority
     this.updateTimestamp()
   }
 
   /**
    * Business operation: Change ticket type
    */
-  public changeType(newType: 'feature' | 'bug' | 'task'): void {
+  public changeType(newType: TicketTypeKey): void {
     this.props.type = newType
     this.updateTimestamp()
   }
 
   /**
-   * Business operation: Start progress on the ticket
+   * Business operation: Start progress on ticket
    */
   public startProgress(): void {
-    this.changeStatus('in_progress')
+    this.props.status = 'in_progress' as TicketStatusKey
+    this.updateTimestamp()
   }
 
   /**
-   * Business operation: Complete the ticket
+   * Business operation: Complete ticket
    */
   public complete(): void {
-    this.changeStatus('completed')
+    this.props.status = 'completed' as TicketStatusKey
+    this.updateTimestamp()
   }
 
   /**
-   * Business operation: Archive the ticket
+   * Business operation: Archive ticket
    */
   public archive(): void {
-    this.changeStatus('archived')
-  }
-
-  /**
-   * Check if the ticket is in a final state
-   */
-  public isFinalized(): boolean {
-    return this.props.status.isFinal()
-  }
-
-  /**
-   * Check if the ticket is active
-   */
-  public isActive(): boolean {
-    return this.props.status.isActive()
+    this.props.status = 'archived' as TicketStatusKey
+    this.updateTimestamp()
   }
 
   private updateTimestamp(): void {

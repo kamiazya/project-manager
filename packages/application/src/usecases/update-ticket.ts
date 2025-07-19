@@ -1,6 +1,11 @@
-import { TicketId } from '@project-manager/domain'
-import { TicketNotFoundError, TicketValidationError } from '@project-manager/shared'
+import {
+  TicketId,
+  type TicketPriorityKey,
+  type TicketStatusKey,
+  type TicketTypeKey,
+} from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
+import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.js'
 import { TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
@@ -52,7 +57,11 @@ export namespace UpdateTicket {
     async execute(request: Request): Promise<Response> {
       // Validate that at least one field is provided for update
       if (!request.hasUpdates()) {
-        throw new TicketValidationError('At least one field must be provided for update', 'update')
+        throw new TicketValidationError(
+          'At least one field must be provided for update',
+          'update',
+          'UpdateTicket'
+        )
       }
 
       // Single fetch operation
@@ -60,7 +69,7 @@ export namespace UpdateTicket {
       const ticket = await this.ticketRepository.findById(ticketId)
 
       if (!ticket) {
-        throw new TicketNotFoundError(request.id)
+        throw new TicketNotFoundError(request.id, 'UpdateTicket')
       }
 
       // Apply all updates using domain methods (includes validation)
@@ -73,15 +82,15 @@ export namespace UpdateTicket {
       }
 
       if (request.updates.status !== undefined) {
-        ticket.changeStatus(request.updates.status)
+        ticket.changeStatus(request.updates.status as TicketStatusKey)
       }
 
       if (request.updates.priority !== undefined) {
-        ticket.changePriority(request.updates.priority)
+        ticket.changePriority(request.updates.priority as TicketPriorityKey)
       }
 
       if (request.updates.type !== undefined) {
-        ticket.changeType(request.updates.type)
+        ticket.changeType(request.updates.type as TicketTypeKey)
       }
 
       // Single save operation

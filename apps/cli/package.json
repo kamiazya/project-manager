@@ -80,9 +80,9 @@
     "@project-manager/base": "workspace:*",
     "@project-manager/domain": "workspace:*",
     "@project-manager/infrastructure": "workspace:*",
-    "@project-manager/shared": "workspace:*",
-    "chalk": "catalog:",
-    "inversify": "catalog:"
+    "@project-manager/sdk": "workspace:*",
+    "@project-manager/mcp-server": "workspace:*",
+    "chalk": "catalog:"
   },
   "devDependencies": {
     "@oclif/plugin-commands": "^4.1.29",

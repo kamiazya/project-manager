@@ -12,7 +12,6 @@ describe('TicketResponse', () => {
         'pending',
         'high',
         'bug',
-        'local-only',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T11:00:00.000Z'
       )
@@ -23,7 +22,6 @@ describe('TicketResponse', () => {
       expect(response.status).toBe('pending')
       expect(response.priority).toBe('high')
       expect(response.type).toBe('bug')
-      expect(response.privacy).toBe('local-only')
       expect(response.createdAt).toBe('2023-01-01T10:00:00.000Z')
       expect(response.updatedAt).toBe('2023-01-01T11:00:00.000Z')
     })
@@ -36,7 +34,6 @@ describe('TicketResponse', () => {
         'pending',
         'medium',
         'task',
-        'team',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T10:00:00.000Z'
       )
@@ -48,7 +45,7 @@ describe('TicketResponse', () => {
     })
 
     it('should handle empty string values', () => {
-      const response = new TicketResponse('', '', '', '', '', '', '', '', '')
+      const response = new TicketResponse('', '', '', '', '', '', '', '')
 
       expect(response.id).toBe('')
       expect(response.title).toBe('')
@@ -56,7 +53,6 @@ describe('TicketResponse', () => {
       expect(response.status).toBe('')
       expect(response.priority).toBe('')
       expect(response.type).toBe('')
-      expect(response.privacy).toBe('')
       expect(response.createdAt).toBe('')
       expect(response.updatedAt).toBe('')
     })
@@ -69,7 +65,6 @@ describe('TicketResponse', () => {
         'pending',
         'high',
         'feature',
-        'public',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T11:00:00.000Z'
       )
@@ -91,7 +86,6 @@ describe('TicketResponse', () => {
         'in_progress',
         'low',
         'task',
-        'local-only',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T10:00:00.000Z'
       )
@@ -114,7 +108,6 @@ describe('TicketResponse', () => {
         'completed',
         'medium',
         'feature',
-        'team',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T12:00:00.000Z'
       )
@@ -126,7 +119,6 @@ describe('TicketResponse', () => {
         'status',
         'priority',
         'type',
-        'privacy',
         'createdAt',
         'updatedAt',
       ]
@@ -145,7 +137,6 @@ describe('TicketResponse', () => {
         'archived',
         'low',
         'task',
-        'public',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T10:30:00.000Z'
       )
@@ -167,7 +158,6 @@ describe('TicketResponse', () => {
         'pending',
         'high',
         'bug',
-        'local-only',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T10:15:00.000Z'
       )
@@ -177,7 +167,7 @@ describe('TicketResponse', () => {
       expect(spread.id).toBe(response.id)
       expect(spread.title).toBe(response.title)
       expect(spread.description).toBe(response.description)
-      expect(Object.keys(spread)).toHaveLength(9)
+      expect(Object.keys(spread)).toHaveLength(8)
     })
   })
 
@@ -187,10 +177,9 @@ describe('TicketResponse', () => {
         id: { value: 'TKT-STATIC' },
         title: { value: 'Static method test' },
         description: { value: 'Testing static factory method' },
-        status: { value: 'in_progress' },
-        priority: { value: 'medium' },
+        status: 'in_progress',
+        priority: 'medium',
         type: 'feature',
-        privacy: 'team',
         createdAt: new Date('2023-01-01T10:00:00.000Z'),
         updatedAt: new Date('2023-01-01T11:30:00.000Z'),
       } as Ticket
@@ -203,7 +192,6 @@ describe('TicketResponse', () => {
       expect(response.status).toBe('in_progress')
       expect(response.priority).toBe('medium')
       expect(response.type).toBe('feature')
-      expect(response.privacy).toBe('team')
       expect(response.createdAt).toBe('2023-01-01T10:00:00.000Z')
       expect(response.updatedAt).toBe('2023-01-01T11:30:00.000Z')
     })
@@ -216,10 +204,9 @@ describe('TicketResponse', () => {
         id: { value: 'TKT-DATE' },
         title: { value: 'Date conversion test' },
         description: { value: 'Testing date to ISO string conversion' },
-        status: { value: 'completed' },
-        priority: { value: 'low' },
+        status: 'completed',
+        priority: 'low',
         type: 'task',
-        privacy: 'public',
         createdAt: createdDate,
         updatedAt: updatedDate,
       } as Ticket
@@ -245,10 +232,9 @@ describe('TicketResponse', () => {
           id: { value: `TKT-EDGE-${index}` },
           title: { value: `Edge case ${index}` },
           description: { value: `Testing edge case date ${index}` },
-          status: { value: 'pending' },
-          priority: { value: 'medium' },
+          status: 'pending',
+          priority: 'medium',
           type: 'task',
-          privacy: 'local-only',
           createdAt: date,
           updatedAt: date,
         } as Ticket
@@ -265,10 +251,9 @@ describe('TicketResponse', () => {
         id: { value: 'TKT-🎉-测试-αβγ' },
         title: { value: 'Unicode title: 🚀 测试标题 Ελληνικά' },
         description: { value: 'Unicode description: 🎯 测试描述 русский العربية' },
-        status: { value: 'pending' },
-        priority: { value: 'high' },
+        status: 'pending',
+        priority: 'high',
         type: 'feature',
-        privacy: 'public',
         createdAt: new Date('2023-01-01T10:00:00.000Z'),
         updatedAt: new Date('2023-01-01T10:00:00.000Z'),
       } as Ticket
@@ -285,10 +270,9 @@ describe('TicketResponse', () => {
         id: { value: 'TKT-"quotes"-\\backslash-\n-newline' },
         title: { value: 'Title with "quotes" and \\backslashes and \n newlines' },
         description: { value: 'Description with\n"multiple"\t\\special\r\ncharacters' },
-        status: { value: 'in_progress' },
-        priority: { value: 'medium' },
+        status: 'in_progress',
+        priority: 'medium',
         type: 'bug',
-        privacy: 'team',
         createdAt: new Date('2023-01-01T10:00:00.000Z'),
         updatedAt: new Date('2023-01-01T10:00:00.000Z'),
       } as Ticket
@@ -309,10 +293,9 @@ describe('TicketResponse', () => {
         id: { value: longId },
         title: { value: longTitle },
         description: { value: longDescription },
-        status: { value: 'archived' },
-        priority: { value: 'low' },
+        status: 'archived',
+        priority: 'low',
         type: 'task',
-        privacy: 'local-only',
         createdAt: new Date('2023-01-01T10:00:00.000Z'),
         updatedAt: new Date('2023-01-01T10:00:00.000Z'),
       } as Ticket
@@ -337,7 +320,6 @@ describe('TicketResponse', () => {
         'completed',
         'high',
         'feature',
-        'public',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T12:00:00.000Z'
       )
@@ -351,7 +333,6 @@ describe('TicketResponse', () => {
       expect(parsed.status).toBe(response.status)
       expect(parsed.priority).toBe(response.priority)
       expect(parsed.type).toBe(response.type)
-      expect(parsed.privacy).toBe(response.privacy)
       expect(parsed.createdAt).toBe(response.createdAt)
       expect(parsed.updatedAt).toBe(response.updatedAt)
     })
@@ -364,7 +345,6 @@ describe('TicketResponse', () => {
         'pending',
         'medium',
         'bug',
-        'team',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T10:30:00.000Z'
       )
@@ -384,7 +364,6 @@ describe('TicketResponse', () => {
         'in_progress',
         'high',
         'task',
-        'local-only',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T10:00:00.000Z'
       )
@@ -404,7 +383,6 @@ describe('TicketResponse', () => {
         'archived',
         'low',
         'feature',
-        'public',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T10:00:00.000Z'
       )
@@ -425,6 +403,7 @@ describe('TicketResponse', () => {
         description: 'Testing integration with real Ticket entity',
         priority: 'medium',
         type: 'task',
+        status: 'pending',
       })
 
       const response = TicketResponse.fromTicket(ticket)
@@ -435,7 +414,6 @@ describe('TicketResponse', () => {
       expect(response.status).toBe('pending') // Default status
       expect(response.priority).toBe('medium') // Default priority
       expect(response.type).toBe('task') // Default type
-      expect(response.privacy).toBe('local-only') // Default privacy
       expect(response.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
       expect(response.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
     })
@@ -446,6 +424,7 @@ describe('TicketResponse', () => {
         description: 'Testing with modified ticket properties',
         priority: 'high',
         type: 'bug',
+        status: 'pending',
       })
 
       // Simulate ticket modifications
@@ -471,7 +450,6 @@ describe('TicketResponse', () => {
           'pending',
           'high',
           'task',
-          'local-only',
           '2023-01-01T10:00:00.000Z',
           '2023-01-01T10:00:00.000Z'
         ),
@@ -482,7 +460,6 @@ describe('TicketResponse', () => {
           'in_progress',
           'medium',
           'bug',
-          'team',
           '2023-01-01T11:00:00.000Z',
           '2023-01-01T11:30:00.000Z'
         ),
@@ -493,7 +470,6 @@ describe('TicketResponse', () => {
           'completed',
           'low',
           'feature',
-          'public',
           '2023-01-01T12:00:00.000Z',
           '2023-01-01T15:00:00.000Z'
         ),
@@ -520,7 +496,6 @@ describe('TicketResponse', () => {
           'pending',
           'high',
           'bug',
-          'local-only',
           '2023-01-01T10:00:00.000Z',
           '2023-01-01T10:00:00.000Z'
         ),
@@ -531,7 +506,6 @@ describe('TicketResponse', () => {
           'in_progress',
           'medium',
           'task',
-          'team',
           '2023-01-01T11:00:00.000Z',
           '2023-01-01T11:30:00.000Z'
         ),
@@ -542,7 +516,6 @@ describe('TicketResponse', () => {
           'completed',
           'low',
           'feature',
-          'public',
           '2023-01-01T12:00:00.000Z',
           '2023-01-01T15:00:00.000Z'
         ),
@@ -553,7 +526,6 @@ describe('TicketResponse', () => {
           'archived',
           'high',
           'bug',
-          'local-only',
           '2023-01-01T13:00:00.000Z',
           '2023-01-01T14:00:00.000Z'
         ),
@@ -600,7 +572,6 @@ describe('TicketResponse', () => {
             'pending',
             'medium',
             'task',
-            'local-only',
             '2023-01-01T10:00:00.000Z',
             '2023-01-01T10:00:00.000Z'
           )
@@ -622,6 +593,7 @@ describe('TicketResponse', () => {
             description: `Performance test description ${i}`,
             priority: 'medium',
             type: 'task',
+            status: 'pending',
           })
         )
       }
@@ -645,7 +617,6 @@ describe('TicketResponse', () => {
             'pending',
             'medium',
             'task',
-            'local-only',
             '2023-01-01T10:00:00.000Z',
             '2023-01-01T10:00:00.000Z'
           )
@@ -676,10 +647,9 @@ describe('TicketResponse', () => {
         id: { value: 'test-id' },
         title: { value: 'test-title' },
         description: { value: '' },
-        status: { value: 'pending' },
-        priority: { value: 'medium' },
+        status: 'pending',
+        priority: 'medium',
         type: 'task',
-        privacy: 'local-only',
         createdAt: new Date('invalid'), // This will create an invalid date
         updatedAt: new Date(NaN), // This will create an invalid date
       } as any
@@ -693,10 +663,9 @@ describe('TicketResponse', () => {
         id: { value: '' },
         title: { value: '' },
         description: { value: '' },
-        status: { value: '' },
-        priority: { value: '' },
+        status: '',
+        priority: '',
         type: '',
-        privacy: '',
         createdAt: new Date('2023-01-01T10:00:00.000Z'),
         updatedAt: new Date('2023-01-01T10:00:00.000Z'),
       } as any
@@ -717,7 +686,6 @@ describe('TicketResponse', () => {
         'pending',
         'medium',
         'task',
-        'local-only',
         '2023-01-01T10:00:00.000Z',
         '2023-01-01T10:00:00.000Z'
       )

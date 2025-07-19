@@ -119,15 +119,15 @@ importers:
       '@project-manager/infrastructure':
         specifier: workspace:*
         version: link:../../packages/infrastructure
-      '@project-manager/shared':
+      '@project-manager/mcp-server':
         specifier: workspace:*
-        version: link:../../packages/shared
+        version: link:../mcp-server
+      '@project-manager/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       chalk:
         specifier: 'catalog:'
         version: 5.4.1
-      inversify:
-        specifier: 'catalog:'
-        version: 7.5.4(reflect-metadata@0.2.2)
     devDependencies:
       '@oclif/plugin-commands':
         specifier: ^4.1.29
@@ -171,12 +171,9 @@ importers:
       '@project-manager/infrastructure':
         specifier: workspace:*
         version: link:../../packages/infrastructure
-      '@project-manager/shared':
+      '@project-manager/sdk':
         specifier: workspace:*
-        version: link:../../packages/shared
-      inversify:
-        specifier: 'catalog:'
-        version: 7.5.4(reflect-metadata@0.2.2)
+        version: link:../../packages/sdk
       zod:
         specifier: ^3.25.56
         version: 3.25.76
@@ -199,12 +196,12 @@ importers:
 
   packages/application:
     dependencies:
+      '@project-manager/base':
+        specifier: workspace:*
+        version: link:../base
       '@project-manager/domain':
         specifier: workspace:*
         version: link:../domain
-      '@project-manager/shared':
-        specifier: workspace:*
-        version: link:../shared
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -223,6 +220,10 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.8)(tsx@4.20.3)(yaml@2.8.0)
 
   packages/base:
+    dependencies:
+      dequal:
+        specifier: ^2.0.3
+        version: 2.0.3
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -273,9 +274,6 @@ importers:
       '@project-manager/domain':
         specifier: workspace:*
         version: link:../domain
-      inversify:
-        specifier: 'catalog:'
-        version: 7.5.4(reflect-metadata@0.2.2)
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -310,28 +308,6 @@ importers:
       inversify:
         specifier: 'catalog:'
         version: 7.5.4(reflect-metadata@0.2.2)
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 24.0.12
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-      vite:
-        specifier: 'catalog:'
-        version: 6.3.5(@types/node@24.0.12)(tsx@4.20.3)(yaml@2.8.0)
-      vite-plugin-dts:
-        specifier: 'catalog:'
-        version: 4.5.4(@types/node@24.0.12)(rollup@4.44.2)(typescript@5.8.3)(vite@6.3.5(@types/node@24.0.12)(tsx@4.20.3)(yaml@2.8.0))
-      vitest:
-        specifier: 'catalog:'
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.0.12)(tsx@4.20.3)(yaml@2.8.0)
-
-  packages/shared:
-    dependencies:
-      dequal:
-        specifier: ^2.0.3
-        version: 2.0.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

@@ -30,7 +30,9 @@
     "test:watch": "vitest",
     "dev": "vitest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "dequal": "^2.0.3"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0",

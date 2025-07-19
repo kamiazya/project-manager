@@ -9,10 +9,9 @@ export function toPersistence(ticket: Ticket): TicketJSON {
     id: ticket.id.value,
     title: ticket.title.value,
     description: ticket.description.value,
-    status: ticket.status.value,
-    priority: ticket.priority.value,
+    status: ticket.status,
+    priority: ticket.priority,
     type: ticket.type,
-    privacy: ticket.privacy,
     createdAt: ticket.createdAt.toISOString(),
     updatedAt: ticket.updatedAt.toISOString(),
   }
@@ -29,7 +28,6 @@ export function toDomain(json: TicketJSON): Ticket {
     status: json.status,
     priority: json.priority,
     type: json.type,
-    privacy: json.privacy,
     createdAt: json.createdAt,
     updatedAt: json.updatedAt,
   }

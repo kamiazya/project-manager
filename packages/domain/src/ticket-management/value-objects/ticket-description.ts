@@ -1,13 +1,9 @@
 import { ValueObject } from '../../shared/patterns/base-value-object.ts'
-import { TicketValidationError } from '../types/ticket-types.ts'
+import { TicketValidationError } from '../types/errors.ts'
 
 interface TicketDescriptionProps {
   value: string
 }
-
-const DESCRIPTION_MAX_LENGTH = 5000
-const DESCRIPTION_EMPTY_MESSAGE = 'Description cannot be empty or whitespace only'
-const DESCRIPTION_TOO_LONG_MESSAGE = (max: number) => `Description cannot exceed ${max} characters`
 
 /**
  * Value object representing a Ticket Description
@@ -31,14 +27,14 @@ export class TicketDescription extends ValueObject<TicketDescriptionProps> {
     const trimmed = value.trim()
 
     if (trimmed.length === 0) {
-      throw new TicketValidationError(DESCRIPTION_EMPTY_MESSAGE, 'description')
-    }
-
-    if (trimmed.length > DESCRIPTION_MAX_LENGTH) {
       throw new TicketValidationError(
-        DESCRIPTION_TOO_LONG_MESSAGE(DESCRIPTION_MAX_LENGTH),
+        'Description cannot be empty or whitespace only',
         'description'
       )
+    }
+
+    if (trimmed.length > 5000) {
+      throw new TicketValidationError('Description cannot exceed 5000 characters', 'description')
     }
 
     return new TicketDescription({ value: trimmed })

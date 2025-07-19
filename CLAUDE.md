@@ -34,14 +34,11 @@ The system implements Clean Architecture with local-first approach and external 
 
 ### Current Status
 
-🎉 **Clean Architecture Implementation Complete** - The project has successfully migrated to Clean Architecture:
-
 - ✅ **Domain Layer**: Rich domain models with business logic encapsulation
 - ✅ **Application Layer**: Use cases with single responsibility principle
 - ✅ **Infrastructure Layer**: Repository implementations and external adapters
 - ✅ **SDK Layer**: Facade pattern for unified API access
 - ✅ **Applications**: CLI and MCP server as separate applications
-- ✅ **Test Coverage**: 913/915 tests passing (99.8% success rate)
 - ✅ **Monorepo Structure**: Organized packages and applications with pnpm workspaces
 
 ## Language and Communication Policy
@@ -128,8 +125,8 @@ AI assistants working on this project MUST use the project-manager system itself
    - Complete tickets promptly when work is finished
 
 4. **Planning and Coordination**
-   - Use `pnpm pm todo` to check work queue before starting
-   - Use `pnpm pm wip` to track current active work
+   - Use `pnpm pm quick todo` to check work queue before starting
+   - Use `pnpm pm quick wip` to track current active work
    - Create dependent tickets for complex multi-step tasks
    - Use epics for large initiatives requiring multiple tickets
 
@@ -137,20 +134,20 @@ AI assistants working on this project MUST use the project-manager system itself
 
 ```bash
 # Before starting feature implementation
-pnpm pm new "Implement user authentication system" -d "Add login/logout with JWT tokens" -p h --type feature
+pnpm pm create "Implement user authentication system" -d "Add login/logout with JWT tokens" -p h --type feature
 # Note: Capture the ticket ID from the output for use in subsequent commands
 
 # Start work on the ticket (use actual ticket ID from above)
-pnpm pm start 1751764474
+pnpm pm quick start 1751764474
 
 # Add progress updates (comment command not yet implemented - use workaround)
-pnpm pm new "Progress on #1751764474: JWT library research" -d "Researched JWT libraries, selected jsonwebtoken for implementation" -p l --type task
+pnpm pm create "Progress on #1751764474: JWT library research" -d "Researched JWT libraries, selected jsonwebtoken for implementation" -p l --type task
 
 # Create dependent tickets as needed
-pnpm pm new "Design authentication middleware" -d "Create Express middleware for JWT validation" -p m --depends-on 1751764474
+pnpm pm create "Design authentication middleware" -d "Create Express middleware for JWT validation" -p m --depends-on 1751764474
 
 # Complete when finished
-pnpm pm done 1751764474
+pnpm pm quick done 1751764474
 ```
 
 **AI Self-Validation Process**:
@@ -261,10 +258,10 @@ When encountering usability issues or improvement opportunities, create specific
 
 ```bash
 # Report usability issues
-pnpm pm new "Improve clarity of pm-todo output" -d "Current output format difficult to scan quickly" -p m --type improvement
+pnpm pm create "Improve clarity of pm-todo output" -d "Current output format difficult to scan quickly" -p m --type improvement
 
 # Suggest enhancements
-pnpm pm new "Add ticket template support" -d "Common ticket patterns need templates for efficiency" -p l --type enhancement
+pnpm pm create "Add ticket template support" -d "Common ticket patterns need templates for efficiency" -p l --type enhancement
 ```
 
 **Error Handling Protocol**:
@@ -272,7 +269,7 @@ pnpm pm new "Add ticket template support" -d "Common ticket patterns need templa
 If project-manager CLI commands fail during the workflow:
 
 1. **Document the error**: Note the exact command and error message
-2. **Create a bug ticket**: `pnpm pm new "CLI command error: [command]" -d "Error details and reproduction steps" -p h --type bug`
+2. **Create a bug ticket**: `pnpm pm create "CLI command error: [command]" -d "Error details and reproduction steps" -p h --type bug`
 3. **Use fallback method**: Continue with manual tracking until the issue is resolved
 4. **Report to human developer**: Mention the error and ticket ID for immediate attention
 
@@ -414,11 +411,11 @@ pnpm run typecheck
 ```bash
 # Direct tsx execution from monorepo root (recommended for development)
 pnpm pm <command>                     # Run CLI directly via apps/cli
-pnpm pm new "Task" -p h               # Create high-priority task
-pnpm pm todo                          # List pending tickets
-pnpm pm wip                           # List work-in-progress
-pnpm pm start <ticket-id>             # Start working on ticket
-pnpm pm done <ticket-id>              # Complete ticket
+pnpm pm create "Task" -p h            # Create high-priority task
+pnpm pm quick todo                    # List pending tickets
+pnpm pm quick wip                     # List work-in-progress
+pnpm pm quick start <ticket-id>       # Start working on ticket
+pnpm pm quick done <ticket-id>        # Complete ticket
 
 # SDK usage in TypeScript projects
 import { createProjectManagerSDK } from '@project-manager/sdk'
@@ -465,25 +462,6 @@ node apps/cli/dist/bin/run.js <command>
 # Test specific applications
 cd apps/cli && pnpm build && node dist/bin/run.js <command>
 cd apps/mcp-server && pnpm build && node dist/bin/mcp-server.js
-```
-
-**Development Aliases**
-
-For maximum productivity, use the development aliases:
-
-```bash
-# Load development aliases
-source pm-dev-alias.sh
-
-# Fast development commands (tsx) - Simplified shortcuts
-pm new "Task" -p h                   # Create task
-pm-todo                              # List pending
-pm-wip                               # List in-progress
-pm-start <id>                        # Start ticket
-pm-done <id>                         # Complete ticket
-
-# Production testing (build)
-pm-build todo                        # Test built version
 ```
 
 **Performance Comparison**
@@ -550,7 +528,7 @@ project-manager/
 
 ```bash
 # CLI commands work from monorepo root
-pnpm pm new "Feature" -d "Description" -p h
+pnpm pm create "Feature" -d "Description" -p h
 
 # MCP server development
 pnpm pm-mcp-server  # Hot reload development

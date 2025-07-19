@@ -12,8 +12,9 @@
 import type {
   Ticket,
   TicketId,
+  TicketQueryFilters,
   TicketRepository,
-  TicketStatistics,
+  TicketSearchCriteria,
 } from '@project-manager/application'
 
 /**
@@ -57,6 +58,13 @@ export class CliTicketRepository implements TicketRepository {
   }
 
   /**
+   * Finds all tickets with filters by delegating to the inner repository.
+   */
+  async findAllWithFilters(filters: TicketQueryFilters): Promise<Ticket[]> {
+    return this.innerRepository.findAllWithFilters(filters)
+  }
+
+  /**
    * Deletes a ticket by ID by delegating to the inner repository.
    */
   async delete(id: TicketId): Promise<void> {
@@ -64,9 +72,9 @@ export class CliTicketRepository implements TicketRepository {
   }
 
   /**
-   * Gets statistics by delegating to the inner repository.
+   * Searches tickets by delegating to the inner repository.
    */
-  async getStatistics(): Promise<TicketStatistics> {
-    return this.innerRepository.getStatistics()
+  async searchTickets(criteria: TicketSearchCriteria): Promise<Ticket[]> {
+    return this.innerRepository.searchTickets(criteria)
   }
 }

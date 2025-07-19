@@ -1,6 +1,6 @@
 import { Ticket } from '@project-manager/domain'
-import { TicketNotFoundError, TicketValidationError } from '@project-manager/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { UpdateTicket } from './update-ticket.ts'
 
@@ -14,8 +14,9 @@ describe('UpdateTicketUseCase', () => {
       findById: vi.fn(),
       save: vi.fn(),
       findAll: vi.fn(),
+      findAllWithFilters: vi.fn(),
+      searchTickets: vi.fn(),
       delete: vi.fn(),
-      getStatistics: vi.fn(),
     }
     useCase = new UpdateTicket.UseCase(mockRepository)
 
@@ -25,7 +26,6 @@ describe('UpdateTicketUseCase', () => {
       priority: 'medium',
       status: 'pending',
       type: 'task',
-      privacy: 'local-only',
     })
   })
 
@@ -45,7 +45,7 @@ describe('UpdateTicketUseCase', () => {
       const request = new UpdateTicket.Request('abc12345', { title: 'New Title' })
 
       await expect(useCase.execute(request)).rejects.toThrow(TicketNotFoundError)
-      await expect(useCase.execute(request)).rejects.toThrow('Ticket not found: abc12345')
+      await expect(useCase.execute(request)).rejects.toThrow("Ticket with ID 'abc12345' not found")
     })
 
     it('should update title only when title is provided', async () => {
@@ -56,8 +56,8 @@ describe('UpdateTicketUseCase', () => {
 
       expect(testTicket.title.value).toBe('New Title')
       expect(testTicket.description.value).toBe('Original Description')
-      expect(testTicket.priority.value).toBe('medium')
-      expect(testTicket.status.value).toBe('pending')
+      expect(testTicket.priority).toBe('medium')
+      expect(testTicket.status).toBe('pending')
       expect(mockRepository.save).toHaveBeenCalledWith(testTicket)
       expect(result.title).toBe('New Title')
     })
@@ -72,8 +72,8 @@ describe('UpdateTicketUseCase', () => {
 
       expect(testTicket.title.value).toBe('Original Title')
       expect(testTicket.description.value).toBe('New Description')
-      expect(testTicket.priority.value).toBe('medium')
-      expect(testTicket.status.value).toBe('pending')
+      expect(testTicket.priority).toBe('medium')
+      expect(testTicket.status).toBe('pending')
       expect(mockRepository.save).toHaveBeenCalledWith(testTicket)
       expect(result.description).toBe('New Description')
     })
@@ -86,8 +86,8 @@ describe('UpdateTicketUseCase', () => {
 
       expect(testTicket.title.value).toBe('Original Title')
       expect(testTicket.description.value).toBe('Original Description')
-      expect(testTicket.priority.value).toBe('medium')
-      expect(testTicket.status.value).toBe('in_progress')
+      expect(testTicket.priority).toBe('medium')
+      expect(testTicket.status).toBe('in_progress')
       expect(mockRepository.save).toHaveBeenCalledWith(testTicket)
       expect(result.status).toBe('in_progress')
     })
@@ -100,8 +100,8 @@ describe('UpdateTicketUseCase', () => {
 
       expect(testTicket.title.value).toBe('Original Title')
       expect(testTicket.description.value).toBe('Original Description')
-      expect(testTicket.priority.value).toBe('high')
-      expect(testTicket.status.value).toBe('pending')
+      expect(testTicket.priority).toBe('high')
+      expect(testTicket.status).toBe('pending')
       expect(mockRepository.save).toHaveBeenCalledWith(testTicket)
       expect(result.priority).toBe('high')
     })
@@ -119,8 +119,8 @@ describe('UpdateTicketUseCase', () => {
 
       expect(testTicket.title.value).toBe('New Title')
       expect(testTicket.description.value).toBe('New Description')
-      expect(testTicket.priority.value).toBe('high')
-      expect(testTicket.status.value).toBe('in_progress')
+      expect(testTicket.priority).toBe('high')
+      expect(testTicket.status).toBe('in_progress')
       expect(mockRepository.save).toHaveBeenCalledWith(testTicket)
       expect(result.title).toBe('New Title')
       expect(result.description).toBe('New Description')
@@ -165,15 +165,15 @@ describe('UpdateTicketUseCase', () => {
       expect(prioritySpy).toHaveBeenCalledWith('high')
     })
 
-    it('should propagate domain validation errors', async () => {
+    it('should allow transition from pending to completed (no validation)', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      // This will throw because tickets cannot transition from pending to completed
+      // This should succeed because there are no status transition restrictions
       const request = new UpdateTicket.Request(testTicket.id.value, { status: 'completed' })
 
-      await expect(useCase.execute(request)).rejects.toThrow(
-        'Cannot transition from pending to completed'
-      )
+      const result = await useCase.execute(request)
+      expect(result.status).toBe('completed')
+      expect(mockRepository.save).toHaveBeenCalledWith(testTicket)
     })
   })
 

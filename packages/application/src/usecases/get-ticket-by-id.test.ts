@@ -12,8 +12,9 @@ describe('GetTicketByIdUseCase', () => {
       save: vi.fn(),
       findById: vi.fn(),
       findAll: vi.fn(),
+      findAllWithFilters: vi.fn(),
+      searchTickets: vi.fn(),
       delete: vi.fn(),
-      getStatistics: vi.fn(),
     }
     useCase = new GetTicketById.UseCase(mockTicketRepository)
   })
@@ -28,7 +29,7 @@ describe('GetTicketByIdUseCase', () => {
         description: 'Test Description',
         priority: 'medium',
         type: 'task',
-        privacy: 'local-only',
+        status: 'pending',
       })
 
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(mockTicket)

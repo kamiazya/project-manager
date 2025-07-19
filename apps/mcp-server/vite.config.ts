@@ -40,7 +40,6 @@ export default defineConfig({
           'async_hooks',
           'buffer',
           'string_decoder',
-          'inversify',
           'raw-body',
           'content-type',
           'safer-buffer',

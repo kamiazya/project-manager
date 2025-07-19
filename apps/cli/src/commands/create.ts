@@ -1,8 +1,7 @@
 import { input, select } from '@inquirer/prompts'
 import { Args, Flags } from '@oclif/core'
-import { CreateTicket } from '@project-manager/application'
+import { createTicketPriority, createTicketType } from '@project-manager/domain'
 import { BaseCommand } from '../lib/base-command.ts'
-import { getCreateTicketUseCase } from '../utils/service-factory.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
   title?: string
@@ -105,15 +104,13 @@ export class CreateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void> 
       })
     }
 
-    // Create ticket
-    const createTicketUseCase = getCreateTicketUseCase()
-    const request = new CreateTicket.Request(
-      title.trim(),
+    // Create ticket using SDK
+    const ticket = await this.sdk.tickets.create({
+      title: title.trim(),
       description,
-      priority as 'high' | 'medium' | 'low',
-      type as 'feature' | 'bug' | 'task'
-    )
-    const ticket = await createTicketUseCase.execute(request)
+      priority: createTicketPriority(priority),
+      type: createTicketType(type),
+    })
 
     this.log(`Ticket ${ticket.id} created successfully.`)
   }

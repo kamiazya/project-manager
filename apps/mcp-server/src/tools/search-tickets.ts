@@ -1,8 +1,6 @@
-import { SearchTickets } from '@project-manager/application'
+import type { ProjectManagerSDK } from '@project-manager/sdk'
 import { z } from 'zod'
-import type { McpTool } from '../types/mcp-tool.ts'
-import { getSearchTicketsUseCase } from '../utils/container.ts'
-import { handleError } from '../utils/error-handler.ts'
+import { BaseTool } from '../lib/base-tool.ts'
 
 const searchTicketsSchema = z.object({
   query: z.string().min(1).describe('The search query'),
@@ -13,67 +11,32 @@ const searchTicketsSchema = z.object({
     .describe('Fields to search in'),
 })
 
-export const searchTicketsTool: McpTool = {
-  name: 'search_tickets',
-  title: 'Search Tickets',
-  description: 'Search tickets by query',
-  inputSchema: searchTicketsSchema.shape,
-  handler: async (input: z.infer<typeof searchTicketsSchema>) => {
-    try {
-      const useCase = getSearchTicketsUseCase()
+class SearchTicketsTool extends BaseTool<typeof searchTicketsSchema> {
+  readonly name = 'search_tickets'
+  readonly title = 'Search Tickets'
+  readonly description = 'Search tickets by query'
+  readonly inputSchema = searchTicketsSchema.shape
 
-      // Parse input to apply defaults
-      const parsedInput = searchTicketsSchema.parse(input)
+  protected async execute(input: z.infer<typeof searchTicketsSchema>, sdk: ProjectManagerSDK) {
+    const tickets = await sdk.tickets.search({
+      query: input.query,
+      searchIn: input.searchIn,
+    })
 
-      const response = await useCase.execute(
-        new SearchTickets.Request({
-          search: parsedInput.query,
-          searchIn: parsedInput.searchIn,
-        })
-      )
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(
-              {
-                success: true,
-                tickets: response.tickets.map(ticket => ({
-                  id: ticket.id,
-                  title: ticket.title,
-                  status: ticket.status,
-                  priority: ticket.priority,
-                  type: ticket.type,
-                  createdAt: ticket.createdAt,
-                  updatedAt: ticket.updatedAt,
-                })),
-                total: response.tickets.length,
-              },
-              null,
-              2
-            ),
-          },
-        ],
-      }
-    } catch (error) {
-      const errorInfo = handleError(error)
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(
-              {
-                success: false,
-                ...errorInfo,
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
+    return {
+      tickets: tickets.map(ticket => ({
+        id: ticket.id,
+        title: ticket.title,
+        description: ticket.description,
+        status: ticket.status,
+        priority: ticket.priority,
+        type: ticket.type,
+        createdAt: ticket.createdAt,
+        updatedAt: ticket.updatedAt,
+      })),
+      total: tickets.length,
     }
-  },
+  }
 }
+
+export const searchTicketsTool = new SearchTicketsTool()

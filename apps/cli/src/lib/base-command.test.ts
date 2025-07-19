@@ -1,11 +1,13 @@
-import type { Container } from 'inversify'
+import { ProjectManagerSDK, ProjectManagerSDKFactory } from '@project-manager/sdk'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getServiceContainer } from '../utils/service-factory.ts'
 import { BaseCommand } from './base-command.ts'
 
-// Mock the service factory module
-vi.mock('../utils/service-factory.ts', () => ({
-  getServiceContainer: vi.fn(),
+// Mock the SDK module
+vi.mock('@project-manager/sdk', () => ({
+  ProjectManagerSDK: vi.fn(),
+  ProjectManagerSDKFactory: {
+    forCLI: vi.fn(),
+  },
 }))
 
 // Mock the oclif Command class
@@ -41,27 +43,35 @@ vi.mock('@oclif/core', () => ({
 }))
 
 describe('BaseCommand', () => {
-  let mockContainer: Container
+  let mockSDK: ProjectManagerSDK
 
   beforeEach(() => {
-    // Mock the service container
-    mockContainer = {
-      get: vi.fn(),
-    } as unknown as Container
+    // Mock the SDK
+    mockSDK = {
+      tickets: {
+        create: vi.fn(),
+        getById: vi.fn(),
+        getAll: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        search: vi.fn(),
+        getStats: vi.fn(),
+      },
+    } as unknown as ProjectManagerSDK
 
-    // Mock getServiceContainer to return our mock container
-    vi.mocked(getServiceContainer).mockReturnValue(mockContainer)
+    // Mock ProjectManagerSDKFactory to return our mock SDK
+    vi.mocked(ProjectManagerSDKFactory.forCLI).mockResolvedValue(mockSDK)
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('should initialize service container', async () => {
+  it('should initialize SDK', async () => {
     class TestCommand extends BaseCommand {
       async execute(): Promise<void> {
-        // Check that the container was initialized
-        expect(this.container).toBe(mockContainer)
+        // Check that the SDK was initialized
+        expect(this.sdk).toBe(mockSDK)
       }
     }
 
@@ -69,7 +79,8 @@ describe('BaseCommand', () => {
     await cmd.init() // init is now called explicitly
     await cmd.run()
 
-    expect(getServiceContainer).toHaveBeenCalledTimes(1)
+    expect(ProjectManagerSDKFactory.forCLI).toHaveBeenCalledTimes(1)
+    expect(ProjectManagerSDKFactory.forCLI).toHaveBeenCalledWith({ environment: 'production' })
   })
 
   it('should handle errors gracefully', async () => {
@@ -88,17 +99,14 @@ describe('BaseCommand', () => {
     await expect(cmd.run()).rejects.toThrow('Test error')
   })
 
-  it('should provide access to services', async () => {
-    const mockTicketService = {
-      getAll: vi.fn().mockResolvedValue([]),
-    }
-
-    mockContainer.get = vi.fn().mockReturnValue(mockTicketService)
+  it('should provide access to SDK methods', async () => {
+    const mockTickets = [{ id: '1', title: 'Test ticket' }]
+    mockSDK.tickets.getAll = vi.fn().mockResolvedValue(mockTickets)
 
     class TestCommand extends BaseCommand {
       async execute(): Promise<void> {
-        const ticketService = this.getService('TicketService' as any)
-        expect(ticketService).toBe(mockTicketService)
+        const tickets = await this.sdk.tickets.getAll()
+        expect(tickets).toBe(mockTickets)
       }
     }
 
@@ -106,6 +114,6 @@ describe('BaseCommand', () => {
     await cmd.init()
     await cmd.run()
 
-    expect(mockContainer.get).toHaveBeenCalledWith('TicketService')
+    expect(mockSDK.tickets.getAll).toHaveBeenCalledTimes(1)
   })
 })
