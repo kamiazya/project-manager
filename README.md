@@ -16,15 +16,18 @@ Project Manager is an open-source tool that enables effective collaboration betw
 
 ### Current
 
-- ✅ Local ticket management (CRUD operations)
-- ✅ CLI for developer productivity
-- ✅ MCP (Model Context Protocol) server for AI integration
-  - Ticket management tools
-  - Project configuration management
+- ✅ **Clean Architecture Implementation**: Domain-driven design with clear separation of concerns
+- ✅ **Local ticket management**: Full CRUD operations with Clean Architecture patterns
+- ✅ **CLI Application**: Developer-friendly command-line interface (apps/cli)
+- ✅ **MCP Server**: Model Context Protocol server for AI integration (apps/mcp-server)
+  - 9 AI integration tools
   - Hot reload development mode
-- ✅ Project configuration management
-- Language-aware workflows (local native language, remote project language)
-- AI-powered language bridging (through MCP and integrated AI services)
+  - Real-time project context sharing
+- ✅ **TypeScript SDK**: Facade pattern for unified API access (packages/sdk)
+- ✅ **Layered Architecture**: Domain, Application, Infrastructure separation
+- ✅ **Dependency Injection**: Inversify-based DI container for Clean Architecture
+- ✅ **Project configuration management**: XDG-compliant configuration
+- ✅ **Language-aware workflows**: Native language development with AI bridging
 
 ### Planned
 
@@ -60,27 +63,33 @@ Project Manager is an open-source tool that enables effective collaboration betw
 
 ## Development Status
 
-🔨 **Active Development** - Core features implemented and functional
+The project is in active development with a focus on enhancing AI collaboration capabilities and refining the Clean Architecture implementation. The core features are complete, and we are now working on additional functionalities and integrations.
 
 ### Completed Features
 
-- ✅ Local ticket management system
-- ✅ CLI with full CRUD operations
-- ✅ MCP server for AI integration (9 tools available)
-- ✅ Project configuration management
-- ✅ Hot reload development workflow
+- ✅ **CLI Application**: Full CRUD operations with service layer
+- ✅ **MCP Server**: AI integration tools
+- ✅ **TypeScript SDK**: Unified API with Facade pattern
+- ✅ **Project configuration**: XDG-compliant configuration management
 
 ### Current Focus
 
-- Expanding MCP tool capabilities
-- Improving AI integration workflows
-- Documentation and usability enhancements
+- Enhancing Domain Layer with rich business logic
+- Epic and roadmap management features
+- External system integration (GitHub Issues, Jira)
+- Advanced AI collaboration
 
 ## Quick Start
+
+> **Note**: This project is not published to npm yet.
+> So this is not truly a "quick start" guide, but rather a "how to run the project" guide.
 
 ### Basic CLI Usage
 
 ```bash
+# Clone the repository
+git clone https://github.com/kamiazya/project-manager.git
+
 # Install dependencies
 pnpm install
 
@@ -97,28 +106,38 @@ pnpm pm start <ticket-id>
 pnpm pm done <ticket-id>
 ```
 
+### SDK Usage (TypeScript)
+
+```typescript
+import { createProjectManagerSDK } from '@project-manager/sdk'
+
+// Create SDK instance
+const sdk = await createProjectManagerSDK({
+  storagePath: './my-project-data',
+  environment: 'development'
+})
+
+// Use the SDK
+const ticket = await sdk.tickets.create({
+  title: 'Implement user authentication',
+  description: 'Add JWT-based authentication',
+  priority: 'high',
+  type: 'feature'
+})
+
+const allTickets = await sdk.tickets.getAll()
+const stats = await sdk.tickets.getStats()
+```
+
 ### MCP Server for AI Integration
 
 ```bash
-# Start MCP server for AI integration
+# Start MCP server (from monorepo root)
+pnpm pm-mcp-server             # Development mode with hot reload
+NODE_ENV=production pnpm pm-mcp-server  # Production mode
 
-# Unix/Linux/macOS
-NODE_ENV=development pm --mcp  # Development mode with hot reload
-
-# Windows (Command Prompt)
-set NODE_ENV=development && pm --mcp
-
-# Windows (PowerShell)
-$env:NODE_ENV="development"; pm --mcp
-
-# Cross-platform (using cross-env - recommended)
-npx cross-env NODE_ENV=development pm --mcp
-
-# Production mode (all platforms)
-pm --mcp
-
-# Or from the MCP server package
-cd packages/mcp-server
+# Or run directly from apps directory
+cd apps/mcp-server
 pnpm dev                       # Development mode
 pnpm build && node dist/bin/mcp-server.js  # Production mode
 ```
@@ -129,7 +148,32 @@ The MCP server provides 9 tools for AI integration:
 - Project configuration management
 - Project information retrieval
 
-See [MCP Server README](./packages/mcp-server/README.md) for detailed usage instructions.
+See [MCP Server README](./apps/mcp-server/README.md) for detailed AI integration instructions.
+
+## Project Structure
+
+The project follows Clean Architecture principles with clear separation of concerns:
+
+```
+├── apps/                    # Applications (final deliverables)
+│   ├── cli/                 # CLI application
+│   └── mcp-server/          # MCP server for AI integration
+└── packages/                # Libraries and shared code
+    ├── base/                # Foundation package (configuration, types)
+    ├── domain/              # Domain layer (entities, value objects)
+    ├── application/         # Application layer (use cases, interfaces)
+    ├── infrastructure/      # Infrastructure layer (repositories, adapters)
+    ├── sdk/                 # TypeScript SDK with Facade pattern
+    └── shared/              # Shared utilities and types
+```
+
+### Architecture Layers
+
+- **Domain Layer** (`packages/domain`): Core business logic, entities, and value objects
+- **Application Layer** (`packages/application`): Use cases, repository interfaces, and application services
+- **Infrastructure Layer** (`packages/infrastructure`): Repository implementations, external adapters
+- **SDK Layer** (`packages/sdk`): Unified API facade for external consumers
+- **Applications** (`apps/`): CLI and MCP server applications using the layered architecture
 
 ## Contributing
 
