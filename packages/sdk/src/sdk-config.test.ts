@@ -3,7 +3,7 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createProjectManagerSDK, ProjectManagerSDKFactory } from './index.ts'
+import { createProjectManagerSDK } from './index.ts'
 import { SDKContainer } from './sdk-container.ts'
 
 describe('SDK Configuration Management', () => {
@@ -47,56 +47,49 @@ describe('SDK Configuration Management', () => {
     })
   })
 
-  describe('ProjectManagerSDKFactory', () => {
-    it('should create SDK for CLI application', async () => {
-      const sdk = await ProjectManagerSDKFactory.forCLI()
-      expect(sdk).toBeDefined()
-    })
-
-    it('should create SDK for CLI application with development environment', async () => {
-      const sdk = await ProjectManagerSDKFactory.forCLI({
-        environment: 'development',
+  describe('createProjectManagerSDK configurations', () => {
+    it('should create SDK with production environment', async () => {
+      const sdk = await createProjectManagerSDK({
+        environment: 'production',
       })
       expect(sdk).toBeDefined()
     })
 
-    it('should create SDK for MCP server', async () => {
-      const sdk = await ProjectManagerSDKFactory.forMCP()
-      expect(sdk).toBeDefined()
-    })
-
-    it('should create SDK for MCP server with development environment', async () => {
-      const sdk = await ProjectManagerSDKFactory.forMCP({
+    it('should create SDK with development environment', async () => {
+      const sdk = await createProjectManagerSDK({
         environment: 'development',
       })
       expect(sdk).toBeDefined()
     })
 
     it('should create SDK for testing', async () => {
-      const sdk = await ProjectManagerSDKFactory.forTesting()
+      const sdk = await createProjectManagerSDK({
+        environment: 'test',
+      })
       expect(sdk).toBeDefined()
     })
 
-    it('should create SDK for testing with custom storage path', async () => {
-      const sdk = await ProjectManagerSDKFactory.forTesting({
+    it('should create SDK with custom storage path', async () => {
+      const sdk = await createProjectManagerSDK({
+        environment: 'test',
         storagePath: '/tmp/test-tickets.json',
       })
       expect(sdk).toBeDefined()
     })
 
-    it('should create SDK for testing with custom data directory', async () => {
-      const sdk = await ProjectManagerSDKFactory.forTesting({
-        dataDirectory: '/tmp/test-data',
-      })
-      expect(sdk).toBeDefined()
-    })
+    it('should create SDK with custom repository', async () => {
+      const mockRepository = {
+        save: async () => {},
+        findById: async () => null,
+        findAll: async () => [],
+        findAllWithFilters: async () => [],
+        searchTickets: async () => [],
+        delete: async () => {},
+      }
 
-    it('should create SDK with custom configuration', async () => {
-      const sdk = await ProjectManagerSDKFactory.withConfig({
-        appType: 'custom',
+      const sdk = await createProjectManagerSDK({
         environment: 'test',
-        enableDebugLogging: true,
-        storagePath: '/tmp/custom-tickets.json',
+        customRepository: mockRepository,
       })
       expect(sdk).toBeDefined()
     })
@@ -106,15 +99,11 @@ describe('SDK Configuration Management', () => {
     it('should resolve configuration values correctly', () => {
       const config = {
         environment: 'development' as const,
-        appType: 'cli' as const,
-        enableDebugLogging: true,
         storagePath: '/custom/path/tickets.json',
       }
 
       const resolved = SDKContainer.getResolvedConfig(config)
       expect(resolved.environment).toBe('development')
-      expect(resolved.appType).toBe('cli')
-      expect(resolved.enableDebugLogging).toBe(true)
       expect(resolved.storagePath).toBe('/custom/path/tickets.json')
     })
 
@@ -123,8 +112,6 @@ describe('SDK Configuration Management', () => {
 
       const resolved = SDKContainer.getResolvedConfig(config)
       expect(resolved.environment).toBe('production')
-      expect(resolved.appType).toBe('sdk')
-      expect(resolved.enableDebugLogging).toBe(false)
       expect(resolved.storagePath).toBe('XDG-compliant default')
     })
   })

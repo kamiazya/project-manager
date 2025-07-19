@@ -1,4 +1,4 @@
-import { type ReconstituteTicketData, Ticket } from '@project-manager/domain'
+import { Ticket } from '@project-manager/domain'
 import type { TicketJSON } from '../../types/persistence-types.ts'
 
 /**
@@ -21,7 +21,7 @@ export function toPersistence(ticket: Ticket): TicketJSON {
  * Convert persistence format (JSON) to domain Ticket
  */
 export function toDomain(json: TicketJSON): Ticket {
-  const data: ReconstituteTicketData = {
+  return Ticket.reconstitute({
     id: json.id,
     title: json.title,
     description: json.description,
@@ -30,9 +30,7 @@ export function toDomain(json: TicketJSON): Ticket {
     type: json.type,
     createdAt: json.createdAt,
     updatedAt: json.updatedAt,
-  }
-
-  return Ticket.reconstitute(data)
+  })
 }
 
 /**

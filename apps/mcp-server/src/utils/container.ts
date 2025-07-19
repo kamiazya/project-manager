@@ -1,17 +1,15 @@
 /**
- * MCP Container - Following CLI BaseCommand pattern for SDK management
+ * MCP Container - Now used for SDK dependency injection
  *
- * Since MCP tools now use BaseTool class with DI SDK pattern,
- * this container file is maintained for backward compatibility only.
- * All tools now use the BaseTool class which handles SDK initialization.
+ * MCP tools now receive SDK from external source for process consistency.
+ * This container provides utilities for testing and development.
  */
 
 /**
- * Reset the SDK instance (useful for testing)
- * This delegates to BaseTool.resetSDK() for consistency
+ * Reset container state (useful for testing)
+ * Since SDK is now injected externally, this is primarily for test cleanup
  */
 export async function resetContainer(): Promise<void> {
-  // Import here to avoid circular dependencies
-  const { BaseTool } = await import('../lib/base-tool.ts')
-  BaseTool.resetSDK()
+  // No SDK state to reset since it's injected externally
+  // This function is kept for backward compatibility in tests
 }

@@ -4,16 +4,18 @@
  * without exposing infrastructure layer details
  */
 
-import type { TicketRepository } from '../repositories/ticket-repository.ts'
-import { CreateTicket } from '../usecases/create-ticket.ts'
-import { DeleteTicket } from '../usecases/delete-ticket.ts'
-import { GetAllTickets } from '../usecases/get-all-tickets.ts'
-import { GetTicketById } from '../usecases/get-ticket-by-id.ts'
-import { SearchTickets } from '../usecases/search-tickets.ts'
-import { UpdateTicketContent } from '../usecases/update-ticket-content.ts'
-import { UpdateTicketPriority } from '../usecases/update-ticket-priority.ts'
-import { UpdateTicketStatus } from '../usecases/update-ticket-status.ts'
-import { UpdateTicketTitle } from '../usecases/update-ticket-title.ts'
+import type { TicketRepository } from '@project-manager/application'
+import {
+  CreateTicket,
+  DeleteTicket,
+  GetAllTickets,
+  GetTicketById,
+  SearchTickets,
+  UpdateTicketContent,
+  UpdateTicketPriority,
+  UpdateTicketStatus,
+  UpdateTicketTitle,
+} from '@project-manager/application'
 
 /**
  * Factory for creating use cases with injected dependencies

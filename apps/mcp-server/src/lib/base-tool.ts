@@ -1,15 +1,13 @@
-import { ProjectManagerSDK, ProjectManagerSDKFactory } from '@project-manager/sdk'
+import type { ProjectManagerSDK } from '@project-manager/sdk'
 import { z } from 'zod'
 import type { McpTool } from '../types/mcp-tool.ts'
 import { formatErrorResponse, formatSuccessResponse } from '../utils/response-formatter.ts'
 
 /**
- * Base class for MCP tools that provides DI SDK access similar to CLI BaseCommand.
- * This ensures consistent architecture patterns between CLI and MCP server.
+ * Base class for MCP tools that provides error handling and execution logic.
+ * Now receives SDK from external source for process consistency.
  */
 export abstract class BaseTool<TInput extends z.ZodSchema> implements McpTool {
-  private static sdkInstance: ProjectManagerSDK | null = null
-
   // Abstract properties that concrete tools must define
   abstract readonly name: string
   abstract readonly title: string
@@ -17,23 +15,19 @@ export abstract class BaseTool<TInput extends z.ZodSchema> implements McpTool {
   abstract readonly inputSchema: any
 
   /**
-   * Get or initialize the ProjectManagerSDK instance
-   * Follows singleton pattern for performance
+   * Legacy handler for backward compatibility (not recommended)
+   * @deprecated Use handleWithSDK instead
    */
-  private async getSDK(): Promise<ProjectManagerSDK> {
-    if (!BaseTool.sdkInstance) {
-      const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production'
-      BaseTool.sdkInstance = await ProjectManagerSDKFactory.forMCP({ environment })
-    }
-    return BaseTool.sdkInstance
+  handler = async (_input: z.infer<TInput>) => {
+    throw new Error('BaseTool: handler called without SDK. Use handleWithSDK instead.')
   }
 
   /**
-   * MCP tool handler that provides error handling and SDK injection
+   * MCP tool handler that receives SDK from external source
+   * This ensures process-wide SDK consistency
    */
-  handler = async (input: z.infer<TInput>) => {
+  handleWithSDK = async (input: z.infer<TInput>, sdk: ProjectManagerSDK) => {
     try {
-      const sdk = await this.getSDK()
       const result = await this.execute(input, sdk)
       return formatSuccessResponse(result)
     } catch (error) {
@@ -50,11 +44,4 @@ export abstract class BaseTool<TInput extends z.ZodSchema> implements McpTool {
    * Receives parsed input and SDK instance for operations.
    */
   protected abstract execute(input: z.infer<TInput>, sdk: ProjectManagerSDK): Promise<any>
-
-  /**
-   * Reset SDK instance (useful for testing)
-   */
-  static resetSDK(): void {
-    BaseTool.sdkInstance = null
-  }
 }

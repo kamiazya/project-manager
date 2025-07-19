@@ -30,7 +30,6 @@ export default defineConfig({
         '@project-manager/application',
         '@project-manager/domain',
         '@project-manager/base',
-        'inversify',
         'node:fs/promises',
         'node:fs',
         'node:path',

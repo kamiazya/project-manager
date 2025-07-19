@@ -19,10 +19,10 @@ export {
   UseCaseExecutionError,
 } from './common/errors/application-errors.ts'
 export * from './common/ticket.response.ts'
-export * from './factories/use-case-factory.ts'
-export * from './factories/use-case-factory-provider.ts'
 // Repository interfaces (will be implemented in infrastructure layer)
 export * from './repositories/ticket-repository.ts'
+// Services
+export * from './services/storage-config.ts'
 // Use cases
 export * from './usecases/create-ticket.ts'
 export * from './usecases/delete-ticket.ts'

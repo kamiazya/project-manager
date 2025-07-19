@@ -1,4 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { ProjectManagerSDK } from '@project-manager/sdk'
 import packageJson from '../package.json' with { type: 'json' }
 import { createTicketTool } from './tools/create-ticket.ts'
 import { getTicketByIdTool } from './tools/get-ticket-by-id.ts'
@@ -15,13 +16,14 @@ const tools: McpTool[] = [
   updateTicketStatusTool,
   searchTicketsTool,
 ]
-export async function createMcpServer() {
+
+export async function createMcpServer(sdk: ProjectManagerSDK) {
   const server = new McpServer({
     name: 'project-manager-mcp',
     version: packageJson.version,
   })
 
-  // Register all tools using the helper function
+  // Register all tools with SDK injection
   for (const tool of tools) {
     server.registerTool(
       tool.name,
@@ -30,7 +32,10 @@ export async function createMcpServer() {
         description: tool.description,
         inputSchema: tool.inputSchema,
       },
-      tool.handler
+      async (input: any) => {
+        // Use injected SDK instead of tool's internal SDK
+        return await tool.handleWithSDK(input, sdk)
+      }
     )
   }
 

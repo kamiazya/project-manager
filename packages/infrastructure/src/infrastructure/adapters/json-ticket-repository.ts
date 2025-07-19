@@ -7,7 +7,6 @@ import type {
   TicketSearchCriteria,
 } from '@project-manager/application'
 import { Ticket, type TicketId } from '@project-manager/domain'
-import { FILE_SYSTEM, getStoragePath } from '../config/infrastructure-config.ts'
 import { StorageError, TicketNotFoundError } from '../errors/infrastructure-errors.ts'
 import type { TicketJSON } from '../types/persistence-types.ts'
 import * as TicketMapper from './mappers/ticket-mapper.ts'
@@ -20,15 +19,19 @@ import * as TicketMapper from './mappers/ticket-mapper.ts'
  * - Uses value objects (TicketId) instead of primitive strings
  * - Delegates mapping logic to TicketMapper
  * - Domain objects remain pure without persistence concerns
- * - Receives storage path through constructor for better testability and configuration
+ * - Requires storage path through constructor for explicit dependency management
+ * - No infrastructure layer configuration dependencies
  */
 export class JsonTicketRepository implements TicketRepository {
   private readonly filePath: string
   private isLocked = false
   private readonly waiting: (() => void)[] = []
 
-  constructor(filePath?: string) {
-    this.filePath = filePath || getStoragePath()
+  constructor(filePath: string) {
+    if (!filePath.trim()) {
+      throw new Error('filePath is required for JsonTicketRepository')
+    }
+    this.filePath = filePath.trim()
   }
 
   async save(ticket: Ticket): Promise<void> {
@@ -215,7 +218,7 @@ export class JsonTicketRepository implements TicketRepository {
         return []
       }
 
-      const content = await readFile(this.filePath, FILE_SYSTEM.FILE_ENCODING)
+      const content = await readFile(this.filePath, 'utf-8')
       if (!content.trim()) {
         return []
       }
@@ -251,8 +254,8 @@ export class JsonTicketRepository implements TicketRepository {
         await mkdir(dir, { recursive: true })
       }
 
-      const content = JSON.stringify(tickets, null, FILE_SYSTEM.JSON_INDENT)
-      await writeFile(this.filePath, content, FILE_SYSTEM.FILE_ENCODING)
+      const content = JSON.stringify(tickets, null, 2)
+      await writeFile(this.filePath, content, 'utf-8')
     } catch (error) {
       throw new StorageError(
         `Failed to write file: ${this.filePath}`,

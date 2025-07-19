@@ -1,5 +1,5 @@
 import { Command } from '@oclif/core'
-import { ProjectManagerSDK, ProjectManagerSDKFactory } from '@project-manager/sdk'
+import { createProjectManagerSDK, ProjectManagerSDK } from '@project-manager/sdk'
 
 /**
  * Base command class that provides common functionality for all commands.
@@ -60,7 +60,9 @@ export abstract class BaseCommand<
       const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production'
 
       // Initialize SDK for CLI usage
-      this.sdk = await ProjectManagerSDKFactory.forCLI({ environment })
+      this.sdk = await createProjectManagerSDK({
+        environment,
+      })
     } catch (error) {
       if (error instanceof Error) {
         this.error(`Failed to initialize SDK: ${error.message}`)

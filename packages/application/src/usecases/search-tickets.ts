@@ -1,7 +1,7 @@
 import type { Ticket } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
-import type { TicketRepository, TicketSearchCriteria } from '../repositories/ticket-repository.ts'
+import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 export namespace SearchTickets {
   /**
@@ -44,8 +44,8 @@ export namespace SearchTickets {
     async execute(request: Request): Promise<Response> {
       const { criteria } = request
 
-      // Convert SearchCriteria to TicketSearchCriteria for repository
-      const searchCriteria: TicketSearchCriteria = {
+      // Use repository-level search with filtering and pagination
+      const tickets = await this.ticketRepository.searchTickets({
         status: criteria.status,
         priority: criteria.priority,
         type: criteria.type,
@@ -53,10 +53,7 @@ export namespace SearchTickets {
         searchIn: criteria.searchIn,
         limit: criteria.limit,
         offset: criteria.offset,
-      }
-
-      // Use repository-level search with filtering and pagination
-      const tickets = await this.ticketRepository.searchTickets(searchCriteria)
+      })
 
       return Response.fromTickets(tickets)
     }

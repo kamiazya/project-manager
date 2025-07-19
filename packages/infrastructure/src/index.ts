@@ -18,8 +18,5 @@ export type {
 } from '@project-manager/domain'
 // Infrastructure implementations
 export * from './infrastructure/adapters/json-ticket-repository.ts'
-export * from './infrastructure/adapters/mappers/ticket-mapper.ts'
-export * from './infrastructure/config/infrastructure-config.ts'
-export * from './infrastructure/container/types.ts'
 export * from './infrastructure/errors/infrastructure-errors.ts'
 export * from './infrastructure/types/persistence-types.ts'

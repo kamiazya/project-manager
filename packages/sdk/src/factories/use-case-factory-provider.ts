@@ -4,7 +4,7 @@
  * Following Clean Architecture principles
  */
 
-import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import type { TicketRepository } from '@project-manager/application'
 import { UseCaseFactory } from './use-case-factory.ts'
 
 /**

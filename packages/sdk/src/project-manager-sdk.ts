@@ -17,8 +17,8 @@ import {
   type TicketRepository,
   UpdateTicketContent,
   UpdateTicketStatus,
-  type UseCaseFactory,
 } from '@project-manager/application'
+import type { UseCaseFactory } from './factories/use-case-factory.ts'
 // import type { AppConfigSchema } from '@project-manager/base'
 
 /**

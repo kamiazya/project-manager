@@ -1,13 +1,11 @@
-import { ProjectManagerSDK, ProjectManagerSDKFactory } from '@project-manager/sdk'
+import { createProjectManagerSDK, ProjectManagerSDK } from '@project-manager/sdk'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BaseCommand } from './base-command.ts'
 
 // Mock the SDK module
 vi.mock('@project-manager/sdk', () => ({
   ProjectManagerSDK: vi.fn(),
-  ProjectManagerSDKFactory: {
-    forCLI: vi.fn(),
-  },
+  createProjectManagerSDK: vi.fn(),
 }))
 
 // Mock the oclif Command class
@@ -59,8 +57,8 @@ describe('BaseCommand', () => {
       },
     } as unknown as ProjectManagerSDK
 
-    // Mock ProjectManagerSDKFactory to return our mock SDK
-    vi.mocked(ProjectManagerSDKFactory.forCLI).mockResolvedValue(mockSDK)
+    // Mock createProjectManagerSDK to return our mock SDK
+    vi.mocked(createProjectManagerSDK).mockResolvedValue(mockSDK)
   })
 
   afterEach(() => {
@@ -79,8 +77,10 @@ describe('BaseCommand', () => {
     await cmd.init() // init is now called explicitly
     await cmd.run()
 
-    expect(ProjectManagerSDKFactory.forCLI).toHaveBeenCalledTimes(1)
-    expect(ProjectManagerSDKFactory.forCLI).toHaveBeenCalledWith({ environment: 'production' })
+    expect(createProjectManagerSDK).toHaveBeenCalledTimes(1)
+    expect(createProjectManagerSDK).toHaveBeenCalledWith({
+      environment: 'production',
+    })
   })
 
   it('should handle errors gracefully', async () => {

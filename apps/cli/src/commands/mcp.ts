@@ -39,8 +39,8 @@ export class McpCommand extends BaseCommand {
       // Dynamically import MCP server to avoid build dependencies
       const { createMcpServer } = await import('@project-manager/mcp-server')
 
-      // Create MCP server using the existing function
-      const server = await createMcpServer()
+      // Create MCP server using the SDK from CLI for process consistency
+      const server = await createMcpServer(this.sdk)
 
       // Use stdio transport for mcp.json compatibility
       const transport = new StdioServerTransport()

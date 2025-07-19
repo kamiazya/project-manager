@@ -96,7 +96,13 @@ async function main() {
     }
 
     console.error('Starting MCP server...')
-    const server = await createMcpServer()
+
+    // Initialize SDK for MCP server
+    const { createProjectManagerSDK } = await import('@project-manager/sdk')
+    const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production'
+    const sdk = await createProjectManagerSDK({ environment })
+
+    const server = await createMcpServer(sdk)
 
     if (isHttpMode) {
       // Store transports by session ID for stateful mode

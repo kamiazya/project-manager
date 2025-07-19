@@ -4,7 +4,8 @@
  * Creates and configures the Dependency Injection container for the SDK
  */
 
-import type { TicketRepository, UseCaseFactory } from '@project-manager/application'
+import type { TicketRepository } from '@project-manager/application'
+import type { UseCaseFactory } from './factories/use-case-factory.ts'
 
 /**
  * SDK Configuration options
@@ -23,26 +24,10 @@ export interface SDKConfig {
   environment?: 'development' | 'production' | 'test'
 
   /**
-   * Application type for context-specific configuration
-   */
-  appType?: 'cli' | 'mcp' | 'sdk' | 'custom'
-
-  /**
    * Custom repository implementation
    * For advanced use cases or testing
    */
   customRepository?: TicketRepository
-
-  /**
-   * Enable debug logging
-   */
-  enableDebugLogging?: boolean
-
-  /**
-   * Custom data directory override
-   * Takes precedence over storagePath
-   */
-  dataDirectory?: string
 }
 
 /**
@@ -69,14 +54,15 @@ export class SDKContainer {
     // 1. dataDirectory (custom override)
     // 2. storagePath (direct path)
     // 3. XDG-compliant default with app type consideration
-    const storagePath = SDKContainer.resolveStoragePath(config, infrastructureModule)
+    const storagePath = SDKContainer.resolveStoragePath(config, applicationModule)
 
     // Configure repository
     const repository =
       config.customRepository || new infrastructureModule.JsonTicketRepository(storagePath)
 
     // Configure Use Case Factory
-    const provider = applicationModule.UseCaseFactoryProvider.getInstance()
+    const { UseCaseFactoryProvider } = await import('./factories/use-case-factory-provider.ts')
+    const provider = UseCaseFactoryProvider.getInstance()
     const factory = provider.createUseCaseFactory({ ticketRepository: repository })
 
     // Don't cache instance in test environment to ensure test isolation
@@ -93,37 +79,21 @@ export class SDKContainer {
     SDKContainer.instance = null
 
     // Also reset the underlying UseCaseFactoryProvider for test isolation
-    const applicationModule = await import('@project-manager/application')
-    applicationModule.UseCaseFactoryProvider.resetInstance()
+    const { UseCaseFactoryProvider } = await import('./factories/use-case-factory-provider.ts')
+    UseCaseFactoryProvider.resetInstance()
   }
 
   /**
-   * Resolve storage path with priority order and app type consideration
+   * Resolve storage path with priority order
    */
-  private static resolveStoragePath(config: SDKConfig, infrastructureModule: any): string {
-    // Priority 1: Custom data directory override
-    if (config.dataDirectory) {
-      return `${config.dataDirectory}/tickets.json`
-    }
-
-    // Priority 2: Direct storage path
+  private static resolveStoragePath(config: SDKConfig, applicationModule: any): string {
+    // Priority 1: Direct storage path
     if (config.storagePath) {
       return config.storagePath
     }
 
-    // Priority 3: XDG-compliant default with app type consideration
-    const environment = config.environment || 'production'
-    const appType = config.appType || 'sdk'
-
-    // For development, use app-specific subdirectories to avoid conflicts
-    if (environment === 'development') {
-      const baseDir = infrastructureModule.getStoragePath()
-      const appDir = baseDir.replace('tickets.json', `${appType}/tickets.json`)
-      return appDir
-    }
-
-    // For production and test, use standard path
-    return infrastructureModule.getStoragePath()
+    // Priority 2: XDG-compliant default
+    return applicationModule.StorageConfigService.resolveStoragePath()
   }
 
   /**
@@ -132,14 +102,10 @@ export class SDKContainer {
   static getResolvedConfig(config: SDKConfig): {
     storagePath: string
     environment: string
-    appType: string
-    enableDebugLogging: boolean
   } {
     return {
       storagePath: config.storagePath || 'XDG-compliant default',
       environment: config.environment || 'production',
-      appType: config.appType || 'sdk',
-      enableDebugLogging: config.enableDebugLogging || false,
     }
   }
 
@@ -148,7 +114,7 @@ export class SDKContainer {
    */
   static async getStoragePath(config: SDKConfig = {}): Promise<string> {
     // This is a helper method that can be called without creating the full container
-    const infrastructureModule = await import('@project-manager/infrastructure')
-    return SDKContainer.resolveStoragePath(config, infrastructureModule)
+    const applicationModule = await import('@project-manager/application')
+    return SDKContainer.resolveStoragePath(config, applicationModule)
   }
 }

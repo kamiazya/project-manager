@@ -1,5 +1,5 @@
+import type { TicketRepository } from '@project-manager/application'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { UseCaseFactory } from './use-case-factory.ts'
 import { type UseCaseFactoryConfig, UseCaseFactoryProvider } from './use-case-factory-provider.ts'
 
