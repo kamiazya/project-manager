@@ -1,6 +1,6 @@
 import type { Ticket } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
-import { TicketResponse } from '../common/ticket.response.ts'
+import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository, TicketSearchCriteria } from '../repositories/ticket-repository.ts'
 
 export namespace SearchTickets {
@@ -13,6 +13,8 @@ export namespace SearchTickets {
     type?: string
     search?: string
     searchIn?: string[]
+    limit?: number
+    offset?: number
   }
 
   /**
@@ -29,7 +31,7 @@ export namespace SearchTickets {
     constructor(public readonly tickets: TicketResponse[]) {}
 
     static fromTickets(tickets: Ticket[]): Response {
-      return new Response(tickets.map(ticket => TicketResponse.fromTicket(ticket)))
+      return new Response(tickets.map(ticket => createTicketResponse(ticket)))
     }
   }
 
@@ -42,16 +44,18 @@ export namespace SearchTickets {
     async execute(request: Request): Promise<Response> {
       const { criteria } = request
 
-      // Convert UseCase SearchCriteria to Repository TicketSearchCriteria
+      // Convert SearchCriteria to TicketSearchCriteria for repository
       const searchCriteria: TicketSearchCriteria = {
-        status: criteria.status as any,
-        priority: criteria.priority as any,
-        type: criteria.type as any,
+        status: criteria.status,
+        priority: criteria.priority,
+        type: criteria.type,
         search: criteria.search,
-        searchIn: criteria.searchIn as ('title' | 'description')[],
+        searchIn: criteria.searchIn,
+        limit: criteria.limit,
+        offset: criteria.offset,
       }
 
-      // Use repository-level search for better performance
+      // Use repository-level search with filtering and pagination
       const tickets = await this.ticketRepository.searchTickets(searchCriteria)
 
       return Response.fromTickets(tickets)

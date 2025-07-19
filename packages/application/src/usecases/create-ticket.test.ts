@@ -23,10 +23,10 @@ describe('CreateTicket', () => {
     it('should create request with all fields', () => {
       const request = new CreateTicket.Request(
         'Fix login bug',
-        'Users cannot login with email',
         'high',
         'bug',
-        'pending'
+        'pending',
+        'Users cannot login with email'
       )
 
       expect(request.title).toBe('Fix login bug')
@@ -39,10 +39,10 @@ describe('CreateTicket', () => {
     it('should convert to CreateTicketData', () => {
       const request = new CreateTicket.Request(
         'Fix login bug',
-        'Users cannot login with email',
         'medium',
         'task',
-        'pending'
+        'pending',
+        'Users cannot login with email'
       )
 
       const createData = request.toCreateTicketData()
@@ -59,10 +59,10 @@ describe('CreateTicket', () => {
     it('should create ticket with valid data', async () => {
       const request = new CreateTicket.Request(
         'Fix login bug',
-        'Users cannot login with email',
         'high',
         'bug',
-        'pending'
+        'pending',
+        'Users cannot login with email'
       )
 
       const response = await createTicketUseCase.execute(request)
@@ -81,17 +81,17 @@ describe('CreateTicket', () => {
     it('should generate unique IDs for multiple tickets', async () => {
       const request1 = new CreateTicket.Request(
         'Ticket 1',
-        'Description 1',
         'medium',
         'task',
-        'pending'
+        'pending',
+        'Description 1'
       )
       const request2 = new CreateTicket.Request(
         'Ticket 2',
-        'Description 2',
         'medium',
         'task',
-        'pending'
+        'pending',
+        'Description 2'
       )
 
       const response1 = await createTicketUseCase.execute(request1)
@@ -105,10 +105,10 @@ describe('CreateTicket', () => {
     it('should set creation and update timestamps', async () => {
       const request = new CreateTicket.Request(
         'Test',
-        'Test description',
         'medium',
         'task',
-        'pending'
+        'pending',
+        'Test description'
       )
 
       const response = await createTicketUseCase.execute(request)
@@ -121,17 +121,27 @@ describe('CreateTicket', () => {
 
   describe('Input Validation', () => {
     it('should throw error for empty title', async () => {
-      const request = new CreateTicket.Request('', 'Valid description', 'medium', 'task', 'pending')
+      const request = new CreateTicket.Request('', 'medium', 'task', 'pending', 'Valid description')
 
       await expect(createTicketUseCase.execute(request)).rejects.toThrow(TicketValidationError)
       expect(mockTicketRepository.save).not.toHaveBeenCalled()
     })
 
-    it('should throw error for empty description', async () => {
-      const request = new CreateTicket.Request('Valid title', '', 'medium', 'task', 'pending')
+    it('should handle newlines and tabs in description', async () => {
+      const descriptionWithFormatting = `Line 1
+Line 2	Tabbed content`
+      const request = new CreateTicket.Request(
+        'Valid title',
+        'medium',
+        'task',
+        'pending',
+        descriptionWithFormatting
+      )
 
-      await expect(createTicketUseCase.execute(request)).rejects.toThrow(TicketValidationError)
-      expect(mockTicketRepository.save).not.toHaveBeenCalled()
+      const response = await createTicketUseCase.execute(request)
+
+      expect(response.description).toBe(descriptionWithFormatting)
+      expect(mockTicketRepository.save).toHaveBeenCalled()
     })
   })
 
@@ -141,10 +151,10 @@ describe('CreateTicket', () => {
 
       const request = new CreateTicket.Request(
         'Test ticket',
-        'Test description',
         'medium',
         'task',
-        'pending'
+        'pending',
+        'Test description'
       )
 
       await expect(createTicketUseCase.execute(request)).rejects.toThrow('Database error')

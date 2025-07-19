@@ -1,13 +1,12 @@
 import { Flags } from '@oclif/core'
 import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '@project-manager/domain'
-import type { SearchTicketsRequest } from '@project-manager/sdk'
 import { BaseCommand } from '../lib/base-command.ts'
 
 interface ExecuteFlags {
   status?: TicketStatusKey
   priority?: TicketPriorityKey
   type?: TicketTypeKey
-  search?: string
+  query?: string
   format?: 'table' | 'json' | 'compact'
   json?: boolean
 }
@@ -22,21 +21,20 @@ export class ListCommand extends BaseCommand {
   static override flags = {
     status: Flags.string({
       char: 's',
-      description: 'Filter by status (pending, in_progress, completed, archived)',
-      options: ['pending', 'in_progress', 'completed', 'archived'],
+      description: 'Filter by status (e,g, pending, in_progress, completed, archived)',
     }),
     priority: Flags.string({
       char: 'p',
-      description: 'Filter by priority (high, medium, low)',
+      description: 'Filter by priority (e.g. high, medium, low)',
       options: ['high', 'medium', 'low'],
     }),
     type: Flags.string({
       char: 't',
-      description: 'Filter by type (feature, bug, task)',
-      options: ['feature', 'bug', 'task'],
+      description: 'Filter by type (e.g. feature, bug, task)',
     }),
-    search: Flags.string({
-      description: 'Search tickets by title or description (partial match)',
+    query: Flags.string({
+      description: 'Search query to filter tickets by title or description',
+      char: 'q',
     }),
     format: Flags.string({
       char: 'f',
@@ -47,16 +45,13 @@ export class ListCommand extends BaseCommand {
   }
 
   async execute(_args: Record<string, never>, flags: ExecuteFlags): Promise<any[] | undefined> {
-    // Build search criteria from flags (remove undefined values)
-    const criteria: SearchTicketsRequest = {}
-
-    if (flags.status) criteria.status = flags.status
-    if (flags.priority) criteria.priority = flags.priority
-    if (flags.type) criteria.type = flags.type
-    if (flags.search) criteria.query = flags.search
-
     // Execute the search using SDK
-    const tickets = await this.sdk.tickets.search(criteria)
+    const tickets = await this.sdk.tickets.search({
+      status: flags.status,
+      priority: flags.priority,
+      type: flags.type,
+      query: flags.query,
+    })
 
     // Handle JSON output
     if (flags.json) {

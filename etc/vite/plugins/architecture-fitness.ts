@@ -66,12 +66,20 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
   } = rules
 
   // Helper functions
+  const convertGlobToRegex = (pattern: string): RegExp => {
+    // Escape all regex special characters except '*'
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+    // Replace '*' with '.*' and add anchors for full string matching
+    const regexPattern = `^${escaped.replace(/\*/g, '.*')}$`
+    return new RegExp(regexPattern)
+  }
+
   const detectLayer = (filePath: string): LayerDefinition | null => {
     const normalizedPath = filePath.replace(/\\/g, '/')
     return (
       layers.find(layer =>
         layer.patterns.some(pattern => {
-          const regex = new RegExp(pattern.replace(/\*/g, '.*'))
+          const regex = convertGlobToRegex(pattern)
           return regex.test(normalizedPath)
         })
       ) || null
@@ -83,7 +91,7 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
   }
 
   const matchesPattern = (path: string, pattern: string): boolean => {
-    const regex = new RegExp(pattern.replace(/\*/g, '.*'))
+    const regex = convertGlobToRegex(pattern)
     return regex.test(path.replace(/\\/g, '/'))
   }
 

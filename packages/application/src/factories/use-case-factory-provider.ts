@@ -40,6 +40,26 @@ export class UseCaseFactoryProvider {
    * Uses caching to avoid recreating expensive resources
    */
   createUseCaseFactory(config: UseCaseFactoryConfig): UseCaseFactory {
+    // Validate config parameter
+    if (!config) {
+      throw new Error('UseCaseFactoryConfig is required')
+    }
+
+    // Validate ticketRepository exists
+    if (!config.ticketRepository) {
+      throw new Error('ticketRepository is required in config')
+    }
+
+    // Validate ticketRepository has a constructor
+    if (!config.ticketRepository.constructor) {
+      throw new Error('ticketRepository must have a valid constructor')
+    }
+
+    // Validate constructor has a name (for caching)
+    if (!config.ticketRepository.constructor.name) {
+      throw new Error('ticketRepository constructor must have a name for caching')
+    }
+
     const cacheKey = config.ticketRepository.constructor.name
 
     if (this.factoryCache.has(cacheKey)) {

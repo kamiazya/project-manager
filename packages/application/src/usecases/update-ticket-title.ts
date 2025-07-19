@@ -1,7 +1,7 @@
 import { TicketId } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError } from '../common/errors/application-errors.js'
-import { TicketResponse } from '../common/ticket.response.ts'
+import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 export namespace UpdateTicketTitle {
@@ -18,7 +18,7 @@ export namespace UpdateTicketTitle {
   /**
    * Response DTO for title update result
    */
-  export class Response extends TicketResponse {}
+  export type Response = TicketResponse
 
   /**
    * Use case for updating a ticket's title.
@@ -38,7 +38,7 @@ export namespace UpdateTicketTitle {
       ticket.updateTitle(request.newTitle)
 
       await this.ticketRepository.save(ticket)
-      return TicketResponse.fromTicket(ticket) as Response
+      return createTicketResponse(ticket)
     }
   }
 }

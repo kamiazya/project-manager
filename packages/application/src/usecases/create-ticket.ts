@@ -1,6 +1,6 @@
 import { type CreateTicketData, Ticket } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
-import { TicketResponse } from '../common/ticket.response.ts'
+import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 export namespace CreateTicket {
@@ -10,25 +10,22 @@ export namespace CreateTicket {
   export class Request {
     constructor(
       public readonly title: string,
-      public readonly description: string,
       public readonly priority: string,
       public readonly type: string,
-      public readonly status: string
+      public readonly status: string,
+      public readonly description?: string
     ) {}
 
     /**
      * Convert request to domain create data
      */
     toCreateTicketData(): CreateTicketData {
-      // Validate priority
-      const priority = this.priority
-
       return {
-        title: this.title,
-        description: this.description,
-        priority: priority,
+        title: this.title.trim(), // Normalize title
+        description: this.description?.trim(),
+        priority: this.priority,
         type: this.type,
-        status: this.status,
+        status: this.status || 'pending', // Default status for new tickets
       }
     }
   }
@@ -36,7 +33,7 @@ export namespace CreateTicket {
   /**
    * Response DTO for ticket creation
    */
-  export class Response extends TicketResponse {}
+  export type Response = TicketResponse
 
   /**
    * Use case for creating a new ticket.
@@ -53,7 +50,7 @@ export namespace CreateTicket {
       await this.ticketRepository.save(ticket)
 
       // Return response DTO
-      return TicketResponse.fromTicket(ticket) as Response
+      return createTicketResponse(ticket)
     }
   }
 }

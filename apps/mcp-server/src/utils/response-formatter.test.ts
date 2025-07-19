@@ -92,8 +92,8 @@ describe('response-formatter', () => {
       const response = formatSuccessResponse(data)
 
       const parsedText = JSON.parse(response.content[0]!.text)
-      // Data success property overrides the initial true value due to spread order
-      expect(parsedText.success).toBe(false)
+      // Ensure formatter's success flag takes precedence
+      expect(parsedText.success).toBe(true)
       expect(parsedText.message).toBe('Override test')
     })
 
@@ -101,10 +101,9 @@ describe('response-formatter', () => {
       const data = 'simple string'
       const response = formatSuccessResponse(data)
 
-      expect(response.content[0]!.text).toContain('"success": true')
-      // String gets spread as indexed character properties
-      expect(response.content[0]!.text).toContain('"0": "s"')
-      expect(response.content[0]!.text).toContain('"1": "i"')
+      const parsedText = JSON.parse(response.content[0]!.text)
+      expect(parsedText.success).toBe(true)
+      expect(parsedText.value).toBe('simple string')
     })
 
     it('should handle number data', () => {
@@ -226,9 +225,9 @@ describe('response-formatter', () => {
 
       const parsedText = JSON.parse(response.content[0]!.text)
       expect(parsedText.success).toBe(false)
-      // Error objects don't have enumerable properties, so only success is spread
-      expect(Object.keys(parsedText)).toEqual(['success'])
-      expect(response.isError).toBe(true)
+      expect(parsedText.message).toBe('Test error message')
+      expect(parsedText.name).toBe('Error')
+      expect(parsedText.stack).toContain('Test error message')
     })
 
     it('should handle string error', () => {

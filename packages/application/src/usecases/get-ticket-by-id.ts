@@ -1,6 +1,6 @@
 import { TicketId } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
-import { TicketResponse } from '../common/ticket.response.ts'
+import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 export namespace GetTicketById {
@@ -14,7 +14,7 @@ export namespace GetTicketById {
   /**
    * Response DTO for ticket retrieval
    */
-  export class Response extends TicketResponse {}
+  export type Response = TicketResponse
 
   /**
    * Use case for retrieving a ticket by its ID.
@@ -31,7 +31,7 @@ export namespace GetTicketById {
         return null
       }
 
-      return TicketResponse.fromTicket(ticket) as Response
+      return createTicketResponse(ticket)
     }
   }
 }

@@ -8,7 +8,7 @@ export function toPersistence(ticket: Ticket): TicketJSON {
   return {
     id: ticket.id.value,
     title: ticket.title.value,
-    description: ticket.description.value,
+    description: ticket.description?.value,
     status: ticket.status,
     priority: ticket.priority,
     type: ticket.type,

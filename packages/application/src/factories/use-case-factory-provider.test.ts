@@ -384,9 +384,11 @@ describe('UseCaseFactoryProvider', () => {
       // Reset to start fresh
       UseCaseFactoryProvider.resetInstance()
 
-      const promises = Array.from({ length: 10 }, () =>
-        Promise.resolve(UseCaseFactoryProvider.getInstance())
-      )
+      const promises = Array.from({ length: 10 }, async () => {
+        // Add small random delay to increase chance of race conditions
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 10))
+        return UseCaseFactoryProvider.getInstance()
+      })
 
       const instances = await Promise.all(promises)
 
@@ -400,9 +402,11 @@ describe('UseCaseFactoryProvider', () => {
     it('should handle concurrent factory creation safely', async () => {
       const provider = UseCaseFactoryProvider.getInstance()
 
-      const promises = Array.from({ length: 10 }, () =>
-        Promise.resolve(provider.createUseCaseFactory(config))
-      )
+      const promises = Array.from({ length: 10 }, async () => {
+        // Add small random delay to increase chance of race conditions
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 5))
+        return provider.createUseCaseFactory(config)
+      })
 
       const factories = await Promise.all(promises)
 
@@ -416,16 +420,28 @@ describe('UseCaseFactoryProvider', () => {
     it('should handle concurrent cache operations safely', async () => {
       const provider = UseCaseFactoryProvider.getInstance()
 
-      // Create factory first
-      const initialFactory = provider.createUseCaseFactory(config)
-
-      // Concurrent operations
+      // Concurrent operations with realistic async behavior
       const operations = [
-        Promise.resolve(provider.createUseCaseFactory(config)),
-        Promise.resolve(provider.resetCache()),
-        Promise.resolve(provider.createUseCaseFactory(config)),
-        Promise.resolve(provider.resetCache()),
-        Promise.resolve(provider.createUseCaseFactory(config)),
+        (async () => {
+          await new Promise(resolve => setTimeout(resolve, Math.random() * 5))
+          return provider.createUseCaseFactory(config)
+        })(),
+        (async () => {
+          await new Promise(resolve => setTimeout(resolve, Math.random() * 5))
+          return provider.resetCache()
+        })(),
+        (async () => {
+          await new Promise(resolve => setTimeout(resolve, Math.random() * 5))
+          return provider.createUseCaseFactory(config)
+        })(),
+        (async () => {
+          await new Promise(resolve => setTimeout(resolve, Math.random() * 5))
+          return provider.resetCache()
+        })(),
+        (async () => {
+          await new Promise(resolve => setTimeout(resolve, Math.random() * 5))
+          return provider.createUseCaseFactory(config)
+        })(),
       ]
 
       await Promise.all(operations)

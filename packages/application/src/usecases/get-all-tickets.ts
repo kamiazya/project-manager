@@ -1,6 +1,6 @@
 import type { Ticket } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
-import { TicketResponse } from '../common/ticket.response.ts'
+import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketQueryFilters, TicketRepository } from '../repositories/ticket-repository.ts'
 
 export namespace GetAllTickets {
@@ -8,9 +8,9 @@ export namespace GetAllTickets {
    * Filters for querying tickets
    */
   export interface Filters {
-    status?: 'pending' | 'in_progress' | 'completed' | 'archived'
-    priority?: 'high' | 'medium' | 'low'
-    type?: 'feature' | 'bug' | 'task'
+    status?: string
+    priority?: string
+    type?: string
     limit?: number
   }
 
@@ -28,7 +28,7 @@ export namespace GetAllTickets {
     constructor(public readonly tickets: TicketResponse[]) {}
 
     static fromTickets(tickets: Ticket[]): Response {
-      return new Response(tickets.map(ticket => TicketResponse.fromTicket(ticket)))
+      return new Response(tickets.map(ticket => createTicketResponse(ticket)))
     }
   }
 

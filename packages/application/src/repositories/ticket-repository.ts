@@ -4,9 +4,9 @@ import type { Ticket, TicketId } from '@project-manager/domain'
  * Filters for querying tickets at repository level
  */
 export interface TicketQueryFilters {
-  status?: 'pending' | 'in_progress' | 'completed' | 'archived'
-  priority?: 'high' | 'medium' | 'low'
-  type?: 'feature' | 'bug' | 'task'
+  status?: string
+  priority?: string
+  type?: string
   limit?: number
   offset?: number
 }
@@ -15,11 +15,11 @@ export interface TicketQueryFilters {
  * Search criteria for text-based ticket search
  */
 export interface TicketSearchCriteria {
-  status?: 'pending' | 'in_progress' | 'completed' | 'archived'
-  priority?: 'high' | 'medium' | 'low'
-  type?: 'feature' | 'bug' | 'task'
+  status?: string
+  priority?: string
+  type?: string
   search?: string
-  searchIn?: ('title' | 'description')[]
+  searchIn?: string[]
   limit?: number
   offset?: number
 }

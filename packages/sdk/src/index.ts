@@ -9,7 +9,7 @@ export type {
   CreateTicketRequest,
   SearchTicketsRequest,
   TicketResponse,
-  UpdateTicketRequest,
+  UpdateTicketContentRequest,
 } from './project-manager-sdk.ts'
 export { ProjectManagerSDK } from './project-manager-sdk.ts'
 export type { SDKConfig } from './sdk-container.ts'

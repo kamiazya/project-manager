@@ -1,4 +1,9 @@
 import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '../types/ticket-types.ts'
+import {
+  createTicketPriority,
+  createTicketStatus,
+  createTicketType,
+} from '../types/ticket-types.ts'
 import { TicketDescription } from '../value-objects/ticket-description.ts'
 import { TicketId } from '../value-objects/ticket-id.ts'
 import { TicketTitle } from '../value-objects/ticket-title.ts'
@@ -7,7 +12,7 @@ export interface TicketProps {
   id: TicketId
   title: TicketTitle
   type: TicketTypeKey
-  description: TicketDescription
+  description?: TicketDescription
   status: TicketStatusKey
   priority: TicketPriorityKey
   createdAt: Date
@@ -16,19 +21,19 @@ export interface TicketProps {
 
 export interface CreateTicketData {
   title: string
-  description: string
   priority: string
   type: string
   status: string
+  description?: string
 }
 
 export interface ReconstituteTicketData {
   id: string
   title: string
-  description: string
-  status: TicketStatusKey
-  priority: TicketPriorityKey
-  type: TicketTypeKey
+  description?: string
+  status: string
+  priority: string
+  type: string
   createdAt: string
   updatedAt: string
 }
@@ -53,10 +58,10 @@ export class Ticket {
     return new Ticket({
       id: TicketId.create(),
       title: TicketTitle.create(data.title),
-      description: TicketDescription.create(data.description),
-      status: data.status as TicketStatusKey,
-      priority: data.priority as TicketPriorityKey,
-      type: data.type as TicketTypeKey,
+      description: data.description ? TicketDescription.create(data.description) : undefined,
+      status: createTicketStatus(data.status),
+      priority: createTicketPriority(data.priority),
+      type: createTicketType(data.type),
       createdAt: now,
       updatedAt: now,
     })
@@ -69,10 +74,10 @@ export class Ticket {
     return new Ticket({
       id: TicketId.fromValue(data.id),
       title: TicketTitle.create(data.title),
-      description: TicketDescription.create(data.description),
-      status: data.status,
-      priority: data.priority,
-      type: data.type,
+      description: data.description ? TicketDescription.create(data.description) : undefined,
+      status: createTicketStatus(data.status),
+      priority: createTicketPriority(data.priority),
+      type: createTicketType(data.type),
       createdAt: new Date(data.createdAt),
       updatedAt: new Date(data.updatedAt),
     })
@@ -87,7 +92,7 @@ export class Ticket {
     return this.props.title
   }
 
-  get description(): TicketDescription {
+  get description(): TicketDescription | undefined {
     return this.props.description
   }
 
@@ -148,30 +153,6 @@ export class Ticket {
    */
   public changeType(newType: TicketTypeKey): void {
     this.props.type = newType
-    this.updateTimestamp()
-  }
-
-  /**
-   * Business operation: Start progress on ticket
-   */
-  public startProgress(): void {
-    this.props.status = 'in_progress' as TicketStatusKey
-    this.updateTimestamp()
-  }
-
-  /**
-   * Business operation: Complete ticket
-   */
-  public complete(): void {
-    this.props.status = 'completed' as TicketStatusKey
-    this.updateTimestamp()
-  }
-
-  /**
-   * Business operation: Archive ticket
-   */
-  public archive(): void {
-    this.props.status = 'archived' as TicketStatusKey
     this.updateTimestamp()
   }
 

@@ -2,7 +2,16 @@ import type { TicketResponse } from '@project-manager/sdk'
 
 type TicketSummary = TicketResponse
 
-import { MAX_TITLE_LENGTH, TITLE_TRUNCATE_LENGTH } from './constants.ts'
+/**
+ * Maximum title length before truncation in table displays
+ */
+const MAX_TITLE_LENGTH = 50
+
+/**
+ * Number of characters to show before adding ellipsis
+ * (MAX_TITLE_LENGTH - 3 for "...")
+ */
+const TITLE_TRUNCATE_LENGTH = MAX_TITLE_LENGTH - 3
 
 export interface TableFormatterOptions {
   showStatus?: boolean

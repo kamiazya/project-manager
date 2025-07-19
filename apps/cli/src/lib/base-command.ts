@@ -55,11 +55,19 @@ export abstract class BaseCommand<
   async init(): Promise<void> {
     await super.init()
 
-    // Get environment (development/production)
-    const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production'
+    try {
+      // Get environment (development/production)
+      const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production'
 
-    // Initialize SDK for CLI usage
-    this.sdk = await ProjectManagerSDKFactory.forCLI({ environment })
+      // Initialize SDK for CLI usage
+      this.sdk = await ProjectManagerSDKFactory.forCLI({ environment })
+    } catch (error) {
+      if (error instanceof Error) {
+        this.error(`Failed to initialize SDK: ${error.message}`)
+      } else {
+        this.error('Failed to initialize SDK due to an unknown error')
+      }
+    }
   }
 
   /**

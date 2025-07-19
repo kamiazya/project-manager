@@ -1,18 +1,29 @@
-import { TicketId, type TicketPriorityKey } from '@project-manager/domain'
+import { createTicketPriority, TicketId, type TicketPriorityKey } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError } from '../common/errors/application-errors.js'
-import { TicketResponse } from '../common/ticket.response.ts'
+import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 export namespace UpdateTicketPriority {
+  /**
+   * Request DTO for updating ticket priority
+   */
   export class Request {
+    public readonly validatedPriority: TicketPriorityKey
+
     constructor(
       public readonly id: string,
-      public readonly newPriority: 'high' | 'medium' | 'low'
-    ) {}
+      public readonly newPriority: string
+    ) {
+      // Validate priority immediately upon construction
+      this.validatedPriority = createTicketPriority(newPriority)
+    }
   }
 
-  export class Response extends TicketResponse {}
+  /**
+   * Response DTO for priority update result
+   */
+  export type Response = TicketResponse
 
   /**
    * Use case for updating a ticket's priority.
@@ -28,11 +39,11 @@ export namespace UpdateTicketPriority {
         throw new TicketNotFoundError(request.id, 'UpdateTicketPriority')
       }
 
-      // Use domain method for business logic
-      ticket.changePriority(request.newPriority as TicketPriorityKey)
+      // Use the validated priority from the Request DTO
+      ticket.changePriority(request.validatedPriority)
 
       await this.ticketRepository.save(ticket)
-      return TicketResponse.fromTicket(ticket) as Response
+      return createTicketResponse(ticket)
     }
   }
 }

@@ -17,8 +17,6 @@ export const TYPES = {
   UpdateTicketStatusUseCase: Symbol.for('UpdateTicketStatusUseCase'),
   UpdateTicketPriorityUseCase: Symbol.for('UpdateTicketPriorityUseCase'),
   StartTicketProgressUseCase: Symbol.for('StartTicketProgressUseCase'),
-  CompleteTicketUseCase: Symbol.for('CompleteTicketUseCase'),
-  ArchiveTicketUseCase: Symbol.for('ArchiveTicketUseCase'),
   DeleteTicketUseCase: Symbol.for('DeleteTicketUseCase'),
   GetTicketStatsUseCase: Symbol.for('GetTicketStatsUseCase'),
   SearchTicketsUseCase: Symbol.for('SearchTicketsUseCase'),

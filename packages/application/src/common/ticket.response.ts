@@ -1,30 +1,31 @@
 import type { Ticket } from '@project-manager/domain'
 
 /**
- * Standard ticket response DTO used across multiple use cases
+ * Standard ticket response interface for data transfer
  */
-export class TicketResponse {
-  constructor(
-    public readonly id: string,
-    public readonly title: string,
-    public readonly description: string,
-    public readonly status: string,
-    public readonly priority: string,
-    public readonly type: string,
-    public readonly createdAt: string,
-    public readonly updatedAt: string
-  ) {}
+export interface TicketResponse {
+  readonly id: string
+  readonly title: string
+  readonly status: string
+  readonly priority: string
+  readonly type: string
+  readonly createdAt: string
+  readonly updatedAt: string
+  readonly description?: string
+}
 
-  static fromTicket(ticket: Ticket): TicketResponse {
-    return new TicketResponse(
-      ticket.id.value,
-      ticket.title.value,
-      ticket.description.value,
-      ticket.status,
-      ticket.priority,
-      ticket.type,
-      ticket.createdAt.toISOString(),
-      ticket.updatedAt.toISOString()
-    )
+/**
+ * Factory function to create TicketResponse from domain entity
+ */
+export function createTicketResponse(ticket: Ticket): TicketResponse {
+  return {
+    id: ticket.id.value,
+    title: ticket.title.value,
+    status: ticket.status,
+    priority: ticket.priority,
+    type: ticket.type,
+    createdAt: ticket.createdAt.toISOString(),
+    updatedAt: ticket.updatedAt.toISOString(),
+    description: ticket.description?.value,
   }
 }

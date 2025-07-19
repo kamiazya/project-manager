@@ -51,23 +51,20 @@ export default defineConfig({
       entryRoot: 'src',
       outDir: 'dist',
       insertTypesEntry: true,
-    }),
+    }) as any,
   ],
   build: {
     lib: {
       entry: {
         index: 'src/index.ts',
         'bin/run': 'src/bin/run.ts',
-        'commands/config': 'src/commands/config.ts',
         'commands/create': 'src/commands/create.ts',
         'commands/delete': 'src/commands/delete.ts',
         'commands/list': 'src/commands/list.ts',
-        'commands/quick': 'src/commands/quick.ts',
         'commands/show': 'src/commands/show.ts',
         'commands/update': 'src/commands/update.ts',
         'commands/mcp': 'src/commands/mcp.ts',
         'lib/base-command': 'src/lib/base-command.ts',
-        'hooks/init/config-validation': 'src/hooks/init/config-validation.ts',
         'hooks/init/plugin-support': 'src/hooks/init/plugin-support.ts',
         'hooks/postrun/cleanup': 'src/hooks/postrun/cleanup.ts',
       },
@@ -77,7 +74,6 @@ export default defineConfig({
       external: [
         '@project-manager/application',
         '@project-manager/base',
-        '@project-manager/application',
         '@project-manager/domain',
         '@project-manager/mcp-server',
         '@modelcontextprotocol/sdk/server/stdio.js',

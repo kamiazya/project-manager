@@ -1,10 +1,4 @@
 import { Args, Flags } from '@oclif/core'
-import {
-  createTicketPriority,
-  createTicketType,
-  type TicketPriorityKey,
-  type TicketTypeKey,
-} from '@project-manager/domain'
 import { BaseCommand } from '../lib/base-command.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
@@ -14,8 +8,6 @@ interface ExecuteArgs extends Record<string, unknown> {
 interface ExecuteFlags extends Record<string, unknown> {
   title?: string
   description?: string
-  priority?: 'high' | 'medium' | 'low'
-  type?: 'feature' | 'bug' | 'task'
   json?: boolean // Inherited from BaseCommand
 }
 
@@ -42,15 +34,6 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
       char: 'd',
       description: 'Update ticket description',
     }),
-    priority: Flags.string({
-      char: 'p',
-      description: 'Update ticket priority',
-      options: ['high', 'medium', 'low'],
-    }),
-    type: Flags.string({
-      description: 'Update ticket type',
-      options: ['feature', 'bug', 'task'],
-    }),
   }
 
   async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any | undefined> {
@@ -59,35 +42,12 @@ export class UpdateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
       this.error('Ticket ID is required')
     }
 
-    // Create update request with only defined fields
-    const updates: {
-      title?: string
-      description?: string
-      priority?: TicketPriorityKey
-      type?: TicketTypeKey
-    } = {}
-
-    if (flags.title !== undefined) updates.title = flags.title
-    if (flags.description !== undefined) updates.description = flags.description
-    if (flags.priority !== undefined) updates.priority = createTicketPriority(flags.priority)
-    if (flags.type !== undefined) updates.type = createTicketType(flags.type)
-
-    // Check if at least one field was provided for update
-    const hasUpdates = flags.title || flags.description || flags.priority || flags.type
-    if (!hasUpdates) {
-      this.error('At least one field must be specified for update')
-    }
-
     // Execute the update operation using SDK
-    const updatedTicket = await this.sdk.tickets.update({
+    const updatedTicket = await this.sdk.tickets.updateContent({
       id: args.ticketId,
-      ...updates,
+      title: flags.title,
+      description: flags.description,
     })
-
-    // Note: type updates would need a separate use case if implemented
-    if (flags.type !== undefined) {
-      this.warn('Type updates are not yet implemented and will be ignored')
-    }
 
     // Handle JSON output
     if (flags.json) {

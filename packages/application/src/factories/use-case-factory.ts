@@ -5,16 +5,12 @@
  */
 
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
-import { ArchiveTicket } from '../usecases/archive-ticket.ts'
-import { CompleteTicket } from '../usecases/complete-ticket.ts'
 import { CreateTicket } from '../usecases/create-ticket.ts'
 import { DeleteTicket } from '../usecases/delete-ticket.ts'
 import { GetAllTickets } from '../usecases/get-all-tickets.ts'
 import { GetTicketById } from '../usecases/get-ticket-by-id.ts'
 import { SearchTickets } from '../usecases/search-tickets.ts'
-import { StartTicketProgress } from '../usecases/start-ticket-progress.ts'
-import { UpdateTicket } from '../usecases/update-ticket.ts'
-import { UpdateTicketDescription } from '../usecases/update-ticket-description.ts'
+import { UpdateTicketContent } from '../usecases/update-ticket-content.ts'
 import { UpdateTicketPriority } from '../usecases/update-ticket-priority.ts'
 import { UpdateTicketStatus } from '../usecases/update-ticket-status.ts'
 import { UpdateTicketTitle } from '../usecases/update-ticket-title.ts'
@@ -41,14 +37,6 @@ export class UseCaseFactory {
   }
 
   // Namespace pattern use cases
-  createArchiveTicketUseCase(): ArchiveTicket.UseCase {
-    return new ArchiveTicket.UseCase(this.ticketRepository)
-  }
-
-  createCompleteTicketUseCase(): CompleteTicket.UseCase {
-    return new CompleteTicket.UseCase(this.ticketRepository)
-  }
-
   createDeleteTicketUseCase(): DeleteTicket.UseCase {
     return new DeleteTicket.UseCase(this.ticketRepository)
   }
@@ -57,16 +45,8 @@ export class UseCaseFactory {
     return new SearchTickets.UseCase(this.ticketRepository)
   }
 
-  createStartTicketProgressUseCase(): StartTicketProgress.UseCase {
-    return new StartTicketProgress.UseCase(this.ticketRepository)
-  }
-
-  createUpdateTicketUseCase(): UpdateTicket.UseCase {
-    return new UpdateTicket.UseCase(this.ticketRepository)
-  }
-
-  createUpdateTicketDescriptionUseCase(): UpdateTicketDescription.UseCase {
-    return new UpdateTicketDescription.UseCase(this.ticketRepository)
+  createUpdateTicketContentUseCase(): UpdateTicketContent.UseCase {
+    return new UpdateTicketContent.UseCase(this.ticketRepository)
   }
 
   createUpdateTicketPriorityUseCase(): UpdateTicketPriority.UseCase {

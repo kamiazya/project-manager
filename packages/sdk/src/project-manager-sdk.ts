@@ -5,44 +5,54 @@
  * following the Facade pattern to simplify complex subsystem interactions.
  */
 
-import type { TicketRepository, UseCaseFactory } from '@project-manager/application'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+import {
+  type TicketResponse as ApplicationLayerTicketResponse,
+  CreateTicket,
+  DeleteTicket,
+  GetAllTickets,
+  GetTicketById,
+  SearchTickets,
+  type TicketRepository,
+  UpdateTicketContent,
+  UpdateTicketStatus,
+  type UseCaseFactory,
+} from '@project-manager/application'
 // import type { AppConfigSchema } from '@project-manager/base'
-import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '@project-manager/domain'
 
 /**
  * Request/Response DTOs for SDK operations
  */
 export interface CreateTicketRequest {
   title: string
-  description: string
-  priority?: TicketPriorityKey
-  type?: TicketTypeKey
-  status?: TicketStatusKey
+  priority: string
+  type: string
+  status: string
+  description?: string
 }
 
-export interface UpdateTicketRequest {
+export interface UpdateTicketContentRequest {
   id: string
   title?: string
   description?: string
-  priority?: TicketPriorityKey
-  type?: TicketTypeKey
 }
 
 export interface SearchTicketsRequest {
   query?: string
-  status?: TicketStatusKey
-  priority?: TicketPriorityKey
-  type?: TicketTypeKey
+  status?: string
+  priority?: string
+  type?: string
   searchIn?: ('title' | 'description')[]
 }
 
 export interface TicketResponse {
   id: string
   title: string
-  description: string
-  status: TicketStatusKey
-  priority: TicketPriorityKey
-  type: TicketTypeKey
+  description?: string
+  status: string
+  priority: string
+  type: string
   createdAt: string
   updatedAt: string
 }
@@ -69,12 +79,11 @@ export class ProjectManagerSDK {
      */
     create: async (request: CreateTicketRequest): Promise<TicketResponse> => {
       const useCase = this.useCaseFactory.createCreateTicketUseCase()
-      const createRequest = new (await import('@project-manager/application')).CreateTicket.Request(
+      const createRequest = new CreateTicket.Request(
         request.title,
-        request.description,
-        request.priority as string,
-        request.type as string,
-        request.status || 'pending'
+        request.priority,
+        request.type,
+        request.status
       )
 
       const response = await useCase.execute(createRequest)
@@ -86,7 +95,7 @@ export class ProjectManagerSDK {
      */
     getById: async (id: string): Promise<TicketResponse | null> => {
       const useCase = this.useCaseFactory.createGetTicketByIdUseCase()
-      const request = new (await import('@project-manager/application')).GetTicketById.Request(id)
+      const request = new GetTicketById.Request(id)
 
       const response = await useCase.execute(request)
       return response ? this.mapTicketResponseToSDKResponse(response) : null
@@ -97,26 +106,21 @@ export class ProjectManagerSDK {
      */
     getAll: async (): Promise<TicketResponse[]> => {
       const useCase = this.useCaseFactory.createGetAllTicketsUseCase()
-      const request = new (await import('@project-manager/application')).GetAllTickets.Request({})
+      const request = new GetAllTickets.Request({})
 
       const response = await useCase.execute(request)
       return response.tickets.map(ticket => this.mapTicketResponseToSDKResponse(ticket))
     },
 
     /**
-     * Update ticket
+     * Update ticket content (title and description)
      */
-    update: async (request: UpdateTicketRequest): Promise<TicketResponse> => {
-      const useCase = this.useCaseFactory.createUpdateTicketUseCase()
-      const updateRequest = new (await import('@project-manager/application')).UpdateTicket.Request(
-        request.id,
-        {
-          title: request.title,
-          description: request.description,
-          priority: request.priority as 'high' | 'medium' | 'low' | undefined,
-          type: request.type as 'feature' | 'bug' | 'task' | undefined,
-        }
-      )
+    updateContent: async (request: UpdateTicketContentRequest): Promise<TicketResponse> => {
+      const useCase = this.useCaseFactory.createUpdateTicketContentUseCase()
+      const updateRequest = new UpdateTicketContent.Request(request.id, {
+        title: request.title,
+        description: request.description,
+      })
 
       const response = await useCase.execute(updateRequest)
       return this.mapTicketResponseToSDKResponse(response)
@@ -125,12 +129,9 @@ export class ProjectManagerSDK {
     /**
      * Update ticket status
      */
-    updateStatus: async (id: string, status: TicketStatusKey): Promise<TicketResponse> => {
+    updateStatus: async (id: string, status: string): Promise<TicketResponse> => {
       const useCase = this.useCaseFactory.createUpdateTicketStatusUseCase()
-      const request = new (await import('@project-manager/application')).UpdateTicketStatus.Request(
-        id,
-        status as 'pending' | 'in_progress' | 'completed' | 'archived'
-      )
+      const request = new UpdateTicketStatus.Request(id, status)
 
       const response = await useCase.execute(request)
       return this.mapTicketResponseToSDKResponse(response)
@@ -141,7 +142,7 @@ export class ProjectManagerSDK {
      */
     delete: async (id: string): Promise<void> => {
       const useCase = this.useCaseFactory.createDeleteTicketUseCase()
-      const request = new (await import('@project-manager/application')).DeleteTicket.Request(id)
+      const request = new DeleteTicket.Request(id)
 
       await useCase.execute(request)
     },
@@ -151,9 +152,7 @@ export class ProjectManagerSDK {
      */
     search: async (request: SearchTicketsRequest): Promise<TicketResponse[]> => {
       const useCase = this.useCaseFactory.createSearchTicketsUseCase()
-      const searchRequest = new (
-        await import('@project-manager/application')
-      ).SearchTickets.Request({
+      const searchRequest = new SearchTickets.Request({
         search: request.query,
         status: request.status,
         priority: request.priority,
@@ -181,7 +180,7 @@ export class ProjectManagerSDK {
     /**
      * Update configuration
      */
-    update: async (config: Partial<Record<string, any>>): Promise<void> => {
+    update: async (_config: Partial<Record<string, any>>): Promise<void> => {
       // TODO: Implement configuration update use case
       throw new Error('Configuration management not yet implemented')
     },
@@ -195,14 +194,14 @@ export class ProjectManagerSDK {
         return repository.storagePath
       }
       // Fallback to infrastructure default
-      return await this.getDefaultStoragePathInternal()
+      return this.getDefaultStoragePathInternal()
     },
 
     /**
      * Get default storage path (XDG-compliant)
      */
     getDefaultStoragePath: async (): Promise<string> => {
-      return await this.getDefaultStoragePathInternal()
+      return this.getDefaultStoragePathInternal()
     },
   }
 
@@ -221,10 +220,7 @@ export class ProjectManagerSDK {
   /**
    * Helper method to get default storage path
    */
-  private async getDefaultStoragePathInternal(): Promise<string> {
-    const { homedir } = await import('node:os')
-    const { join } = await import('node:path')
-
+  private getDefaultStoragePathInternal(): string {
     const homeDir = homedir()
     const configHome = process.env.XDG_CONFIG_HOME || join(homeDir, '.config')
     const isDevelopment = process.env.NODE_ENV === 'development'
@@ -236,7 +232,9 @@ export class ProjectManagerSDK {
   /**
    * Helper method to map TicketResponse from Application layer to SDK Response DTO
    */
-  private mapTicketResponseToSDKResponse(ticketResponse: any): TicketResponse {
+  private mapTicketResponseToSDKResponse(
+    ticketResponse: ApplicationLayerTicketResponse
+  ): TicketResponse {
     return {
       id: ticketResponse.id,
       title: ticketResponse.title,

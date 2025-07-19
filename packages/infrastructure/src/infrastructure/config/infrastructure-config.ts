@@ -21,16 +21,6 @@ export const ENV_VARS = {
   HOME: 'HOME',
 } as const
 
-// Error messages for infrastructure operations
-export const ERROR_MESSAGES = {
-  TICKET_NOT_FOUND: (id: string) => `Ticket not found: ${id}`,
-  OPERATION_FAILED: {
-    READ: 'Failed to read file:',
-    write: 'Failed to write file:',
-    delete: 'Failed to delete file:',
-  },
-} as const
-
 /**
  * Get the default storage directory path following XDG Base Directory specification
  */

@@ -76,7 +76,7 @@ export function createFilePath(value: string): FilePath {
  * Create a timestamp from a number
  */
 export function createTimestamp(value: number = Date.now()): Timestamp {
-  if (typeof value !== 'number' || value < 0 || isNaN(value)) {
+  if (typeof value !== 'number' || value < 0 || Number.isNaN(value)) {
     throw new Error(`Invalid timestamp: ${value}`)
   }
   return value as Timestamp

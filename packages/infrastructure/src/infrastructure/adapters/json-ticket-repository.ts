@@ -7,7 +7,7 @@ import type {
   TicketSearchCriteria,
 } from '@project-manager/application'
 import { Ticket, type TicketId } from '@project-manager/domain'
-import { ERROR_MESSAGES, FILE_SYSTEM, getStoragePath } from '../config/infrastructure-config.ts'
+import { FILE_SYSTEM, getStoragePath } from '../config/infrastructure-config.ts'
 import { StorageError, TicketNotFoundError } from '../errors/infrastructure-errors.ts'
 import type { TicketJSON } from '../types/persistence-types.ts'
 import * as TicketMapper from './mappers/ticket-mapper.ts'
@@ -139,7 +139,7 @@ export class JsonTicketRepository implements TicketRepository {
         }
 
         // Check description if included in searchIn
-        if (searchIn.includes('description')) {
+        if (searchIn.includes('description') && ticket.description) {
           const descriptionMatch = ticket.description.toLowerCase().includes(searchLower)
           if (descriptionMatch) hasMatch = true
         }
@@ -167,7 +167,7 @@ export class JsonTicketRepository implements TicketRepository {
       const filteredTickets = tickets.filter(t => t.id !== id.value)
 
       if (filteredTickets.length === tickets.length) {
-        throw new TicketNotFoundError(ERROR_MESSAGES.TICKET_NOT_FOUND(id.value), id.value)
+        throw new TicketNotFoundError(`Ticket not found: ${id.value}`, id.value)
       }
 
       await this.saveTicketsToFile(filteredTickets)
@@ -233,7 +233,7 @@ export class JsonTicketRepository implements TicketRepository {
         return []
       }
       throw new StorageError(
-        `${ERROR_MESSAGES.OPERATION_FAILED.READ} ${this.filePath}`,
+        `Failed to read file: ${this.filePath}`,
         error instanceof Error ? error : undefined
       )
     }
@@ -255,7 +255,7 @@ export class JsonTicketRepository implements TicketRepository {
       await writeFile(this.filePath, content, FILE_SYSTEM.FILE_ENCODING)
     } catch (error) {
       throw new StorageError(
-        `${ERROR_MESSAGES.OPERATION_FAILED.write} ${this.filePath}`,
+        `Failed to write file: ${this.filePath}`,
         error instanceof Error ? error : undefined
       )
     }

@@ -12,7 +12,7 @@ import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '@project
 export interface TicketJSON {
   id: string
   title: string
-  description: string
+  description?: string
   status: TicketStatusKey
   priority: TicketPriorityKey
   type: TicketTypeKey
