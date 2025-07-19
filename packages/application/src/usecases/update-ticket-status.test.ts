@@ -1,4 +1,4 @@
-import { Ticket, TicketId } from '@project-manager/domain'
+import { Ticket } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TicketNotFoundError } from '../common/errors/application-errors.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
