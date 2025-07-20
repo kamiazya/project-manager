@@ -5,30 +5,18 @@
  * Provides a unified Facade interface to all Project Manager functionality
  */
 
-import { ProjectManagerSDK } from './project-manager-sdk.ts'
-import type { SDKConfig } from './sdk-container.ts'
-import { createSDKContainer } from './sdk-container.ts'
-
+// Re-export application interfaces that are exposed through SDK
+export type { DevelopmentProcessService } from '@project-manager/application'
 export type {
   CreateTicketRequest,
+  SDKConfig,
   SearchTicketsRequest,
   TicketResponse,
   UpdateTicketContentRequest,
 } from './project-manager-sdk.ts'
-export { ProjectManagerSDK } from './project-manager-sdk.ts'
-export type { SDKConfig } from './sdk-container.ts'
 export {
-  createSDKContainer,
-  getResolvedSDKConfig,
-  getSDKStoragePath,
-  resetSDKContainer,
-  SDKContainer,
-} from './sdk-container.ts'
+  createProjectManagerSDK,
+  ProjectManagerSDK,
+} from './project-manager-sdk.ts'
 
-/**
- * Convenience factory function for creating SDK instance
- */
-export async function createProjectManagerSDK(config: SDKConfig = {}) {
-  const useCaseFactory = await createSDKContainer(config)
-  return ProjectManagerSDK.create(useCaseFactory)
-}
+// Note: Internal types and inversify are not exported to keep the API clean

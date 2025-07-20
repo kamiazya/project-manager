@@ -28,6 +28,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       name: 'ProjectManagerBase',
+      fileName: 'index',
       formats: ['es'],
     },
     rollupOptions: {

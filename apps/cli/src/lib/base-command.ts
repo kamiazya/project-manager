@@ -57,11 +57,9 @@ export abstract class BaseCommand<
 
     try {
       // Get environment (development/production)
-      const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production'
-
-      // Initialize SDK for CLI usage
+      // Initialize SDK for CLI usage with auto mode detection
       this.sdk = await createProjectManagerSDK({
-        environment,
+        environment: 'auto', // SDK will auto-detect based on environment
       })
     } catch (error) {
       if (error instanceof Error) {

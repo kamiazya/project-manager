@@ -17,9 +17,9 @@ describe('Module resolution debugging', () => {
     if (infrastructureModule.JsonTicketRepository) {
       console.log('JsonTicketRepository found in exports')
 
-      // Create an instance and check its source
+      // Create an instance and check its type
       const tempRepo = new infrastructureModule.JsonTicketRepository('/tmp/test')
-      console.log('Instance created, repositoryId:', tempRepo.repositoryId)
+      console.log('Instance created, constructor name:', tempRepo.constructor.name)
     } else {
       console.log('JsonTicketRepository NOT found in exports')
     }

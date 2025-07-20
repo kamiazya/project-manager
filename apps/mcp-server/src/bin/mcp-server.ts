@@ -2,14 +2,15 @@ import { randomUUID } from 'node:crypto'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
+import {
+  type EnvironmentMode,
+  getEnvironmentDisplayName,
+  isDevelopmentLike,
+  shouldLogVerbose,
+} from '@project-manager/base'
+import { NodeEnvironmentDetectionService } from '@project-manager/infrastructure'
 import packageJson from '../../package.json' with { type: 'json' }
 import { createMcpServer } from '../index.ts'
-import {
-  isDevelopment,
-  logDevelopmentInfo,
-  setupDevelopmentSignalHandlers,
-  writePidFile,
-} from '../utils/dev-helpers.ts'
 
 /**
  * Helper function to parse request body as JSON
@@ -52,6 +53,10 @@ function sendParseErrorResponse(res: ServerResponse, error: unknown): void {
 }
 
 async function main() {
+  // Detect environment early - outside try block so it's available in catch
+  const environmentService = new NodeEnvironmentDetectionService()
+  const environment: EnvironmentMode = environmentService.detectEnvironment()
+
   try {
     // Handle command line arguments
     const args = process.argv.slice(2)
@@ -88,19 +93,28 @@ async function main() {
       process.exit(0)
     }
 
-    // Setup development environment
-    if (isDevelopment()) {
-      setupDevelopmentSignalHandlers()
-      writePidFile()
-      logDevelopmentInfo()
-    }
-
     console.error('Starting MCP server...')
 
     // Initialize SDK for MCP server
     const { createProjectManagerSDK } = await import('@project-manager/sdk')
-    const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production'
-    const sdk = await createProjectManagerSDK({ environment })
+    const sdk = await createProjectManagerSDK({ environment: 'auto' })
+
+    // Setup development environment using SDK services
+    if (isDevelopmentLike(environment)) {
+      if (sdk.development.isAvailable()) {
+        const processService = sdk.development.getProcessService()
+        await processService.registerProcess(process.pid)
+
+        if (shouldLogVerbose(environment)) {
+          const environmentDisplayName = getEnvironmentDisplayName(environment)
+          console.error(`[DEV] MCP Server started in ${environmentDisplayName} environment`)
+          console.error(`[DEV] Process ID: ${process.pid}`)
+          console.error(`[DEV] Node version: ${process.version}`)
+          console.error(`[DEV] Working directory: ${process.cwd()}`)
+          console.error(`[DEV] Hot reload enabled - make changes to see them applied automatically`)
+        }
+      }
+    }
 
     const server = await createMcpServer(sdk)
 
@@ -111,7 +125,7 @@ async function main() {
       // Create HTTP server
       const httpServer = createServer(async (req, res) => {
         // Enable CORS for development
-        if (isDevelopment()) {
+        if (isDevelopmentLike(environment)) {
           res.setHeader('Access-Control-Allow-Origin', '*')
           res.setHeader('Access-Control-Allow-Methods', 'POST, GET, DELETE, OPTIONS')
           res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Mcp-Session-Id')
@@ -255,13 +269,13 @@ async function main() {
 
       // Start HTTP server
       httpServer.listen(port, '127.0.0.1', () => {
-        const mode = isDevelopment() ? 'development' : 'production'
+        const environmentDisplayName = getEnvironmentDisplayName(environment)
         const statefulMode = isStateless ? 'stateless' : 'stateful'
         console.error(
-          `MCP HTTP server started on http://127.0.0.1:${port} in ${mode} mode (${statefulMode})`
+          `MCP HTTP server started on http://127.0.0.1:${port} in ${environmentDisplayName} environment (${statefulMode})`
         )
 
-        if (isDevelopment()) {
+        if (isDevelopmentLike(environment)) {
           console.error('[DEV] Server is ready to accept HTTP connections')
           console.error('[DEV] To restart the server, save any file in the src/ directory')
           console.error(
@@ -282,17 +296,19 @@ async function main() {
       const transport = new StdioServerTransport()
       await server.connect(transport)
 
-      const mode = isDevelopment() ? 'development' : 'production'
-      console.error(`MCP server started successfully in ${mode} mode (stdio)`)
+      const environmentDisplayName = getEnvironmentDisplayName(environment)
+      console.error(
+        `MCP server started successfully in ${environmentDisplayName} environment (stdio)`
+      )
 
-      if (isDevelopment()) {
+      if (isDevelopmentLike(environment)) {
         console.error('[DEV] Server is ready to accept connections')
         console.error('[DEV] To restart the server, save any file in the src/ directory')
       }
     }
   } catch (error) {
     console.error('Failed to start MCP server:', error)
-    if (isDevelopment()) {
+    if (isDevelopmentLike(environment)) {
       console.error('[DEV] Check the error above and save a file to restart')
     }
     process.exit(1)

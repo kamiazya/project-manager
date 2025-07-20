@@ -8,8 +8,10 @@
  * The production binary uses run.ts directly.
  */
 
-// Force development environment
-process.env.NODE_ENV = 'development'
+// Set development environment as default if not specified
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'development'
+}
 
 // Import and execute the main runner
 import './run.ts'

@@ -47,10 +47,16 @@ export class McpCommand extends BaseCommand {
       await server.connect(transport)
 
       // Log to stderr so it doesn't interfere with MCP protocol on stdout
-      const mode = process.env.NODE_ENV === 'development' ? 'development' : 'production'
-      console.error(`MCP server started successfully in ${mode} mode (stdio)`)
+      const { getEnvironmentDisplayName, isDevelopmentLike } = await import('@project-manager/base')
+      const { NodeEnvironmentDetectionService } = await import('@project-manager/infrastructure')
+      const environmentService = new NodeEnvironmentDetectionService()
+      const environment = environmentService.detectEnvironment()
+      const environmentDisplayName = getEnvironmentDisplayName(environment)
+      console.error(
+        `MCP server started successfully in ${environmentDisplayName} environment (stdio)`
+      )
 
-      if (process.env.NODE_ENV === 'development') {
+      if (isDevelopmentLike(environment)) {
         console.error('[DEV] Server is ready to accept MCP connections')
         console.error('[DEV] Communication via stdin/stdout for mcp.json compatibility')
       }

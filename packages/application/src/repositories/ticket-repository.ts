@@ -19,16 +19,8 @@ export interface TicketQueryCriteria {
  * Uses domain objects (value objects) instead of primitives
  */
 export interface TicketRepository {
-  /**
-   * Static identifier for repository type - minification-safe and stable across instances
-   * This should be implemented as a readonly property by concrete implementations
-   */
-  readonly repositoryId: string
-
   save(ticket: Ticket): Promise<void>
   findById(id: TicketId): Promise<Ticket | null>
   queryTickets(criteria: TicketQueryCriteria): Promise<Ticket[]>
   delete(id: TicketId): Promise<void>
 }
-
-export const TicketRepository = Symbol('TicketRepository')

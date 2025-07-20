@@ -5,18 +5,37 @@
  * following the Facade pattern to simplify complex subsystem interactions.
  */
 
-import { homedir } from 'node:os'
-import { join } from 'node:path'
 import {
   type TicketResponse as ApplicationLayerTicketResponse,
+  CreateTicket,
   DeleteTicket,
+  type DevelopmentProcessService,
+  type EnvironmentDetectionService,
   GetTicketById,
-  type TicketRepository,
+  SearchTickets,
   UpdateTicketContent,
   UpdateTicketStatus,
 } from '@project-manager/application'
-import type { UseCaseFactory } from './factories/use-case-factory.ts'
-// import type { AppConfigSchema } from '@project-manager/base'
+import { type EnvironmentMode, isDevelopmentLike } from '@project-manager/base'
+import type { Container } from 'inversify'
+import { createContainer } from './internal/container.ts'
+import { TYPES } from './internal/types.ts'
+
+/**
+ * SDK Configuration options
+ */
+export interface SDKConfig {
+  /**
+   * Environment operational mode
+   * - 'auto': Automatically detect environment based on runtime context (default)
+   * - 'production': File-based storage, production optimizations
+   * - 'development': File-based storage with debug features
+   * - 'testing': Memory-based storage for tests
+   * - 'in-memory': Memory-based storage for temporary use
+   * - 'isolated': File-based storage in isolated directory
+   */
+  environment?: EnvironmentMode | 'auto'
+}
 
 /**
  * Request/Response DTOs for SDK operations
@@ -58,13 +77,20 @@ export interface TicketResponse {
  * Main SDK class providing unified access to Project Manager functionality
  */
 export class ProjectManagerSDK {
-  private constructor(private readonly useCaseFactory: UseCaseFactory) {}
+  private container: Container
+  private config: SDKConfig
+
+  private constructor(container: Container, config: SDKConfig) {
+    this.container = container
+    this.config = config
+  }
 
   /**
    * Factory method to create SDK instance
    */
-  static async create(useCaseFactory: UseCaseFactory): Promise<ProjectManagerSDK> {
-    return new ProjectManagerSDK(useCaseFactory)
+  static async create(config: SDKConfig = {}): Promise<ProjectManagerSDK> {
+    const container = createContainer(config)
+    return new ProjectManagerSDK(container, config)
   }
 
   /**
@@ -75,7 +101,7 @@ export class ProjectManagerSDK {
      * Create a new ticket
      */
     create: async (request: CreateTicketRequest): Promise<TicketResponse> => {
-      const useCase = this.useCaseFactory.createCreateTicketUseCase()
+      const useCase = this.container.get<CreateTicket.UseCase>(TYPES.CreateTicketUseCase)
 
       const response = await useCase.execute({
         title: request.title,
@@ -91,8 +117,8 @@ export class ProjectManagerSDK {
      * Get ticket by ID
      */
     getById: async (id: string): Promise<TicketResponse | null> => {
-      const useCase = this.useCaseFactory.createGetTicketByIdUseCase()
-      const request: GetTicketById.Request = { id }
+      const useCase = this.container.get<GetTicketById.UseCase>(TYPES.GetTicketByIdUseCase)
+      const request = { id }
 
       const response = await useCase.execute(request)
       return response ? this.mapTicketResponseToSDKResponse(response) : null
@@ -102,8 +128,10 @@ export class ProjectManagerSDK {
      * Update ticket content (title and description)
      */
     updateContent: async (request: UpdateTicketContentRequest): Promise<TicketResponse> => {
-      const useCase = this.useCaseFactory.createUpdateTicketContentUseCase()
-      const updateRequest: UpdateTicketContent.Request = {
+      const useCase = this.container.get<UpdateTicketContent.UseCase>(
+        TYPES.UpdateTicketContentUseCase
+      )
+      const updateRequest = {
         id: request.id,
         updates: {
           title: request.title,
@@ -119,8 +147,10 @@ export class ProjectManagerSDK {
      * Update ticket status
      */
     updateStatus: async (id: string, status: string): Promise<TicketResponse> => {
-      const useCase = this.useCaseFactory.createUpdateTicketStatusUseCase()
-      const request: UpdateTicketStatus.Request = { id, newStatus: status }
+      const useCase = this.container.get<UpdateTicketStatus.UseCase>(
+        TYPES.UpdateTicketStatusUseCase
+      )
+      const request = { id, newStatus: status }
 
       const response = await useCase.execute(request)
       return this.mapTicketResponseToSDKResponse(response)
@@ -130,8 +160,8 @@ export class ProjectManagerSDK {
      * Delete ticket
      */
     delete: async (id: string): Promise<void> => {
-      const useCase = this.useCaseFactory.createDeleteTicketUseCase()
-      const request: DeleteTicket.Request = { id }
+      const useCase = this.container.get<DeleteTicket.UseCase>(TYPES.DeleteTicketUseCase)
+      const request = { id }
 
       await useCase.execute(request)
     },
@@ -140,7 +170,7 @@ export class ProjectManagerSDK {
      * Search tickets
      */
     search: async (request: SearchTicketsRequest): Promise<TicketResponse[]> => {
-      const useCase = this.useCaseFactory.createSearchTicketsUseCase()
+      const useCase = this.container.get<SearchTickets.UseCase>(TYPES.SearchTicketsUseCase)
 
       const response = await useCase.execute({
         criteria: {
@@ -151,72 +181,47 @@ export class ProjectManagerSDK {
           searchIn: request.searchIn,
         },
       })
-      return response.tickets.map(ticket => this.mapTicketResponseToSDKResponse(ticket))
+      return response.tickets.map((ticket: ApplicationLayerTicketResponse) =>
+        this.mapTicketResponseToSDKResponse(ticket)
+      )
     },
   }
 
   /**
-   * Configuration Management
+   * Development Process Management Operations
+   * Available only in development-like modes (development, testing, isolated)
    */
-  public readonly configuration = {
+  public readonly development = {
     /**
-     * Get current configuration
+     * Get the development process service
+     * @returns Development process service if available in current mode
+     * @throws Error if not available in current mode
      */
-    get: async (): Promise<Record<string, any>> => {
-      // TODO: Implement configuration use case
-      throw new Error('Configuration management not yet implemented')
-    },
-
-    /**
-     * Update configuration
-     */
-    update: async (_config: Partial<Record<string, any>>): Promise<void> => {
-      // TODO: Implement configuration update use case
-      throw new Error('Configuration management not yet implemented')
-    },
-
-    /**
-     * Get storage path from SDK configuration
-     */
-    getStoragePath: async (): Promise<string> => {
-      const repository = this.useCaseFactory.getTicketRepository()
-      if ('storagePath' in repository && typeof repository.storagePath === 'string') {
-        return repository.storagePath
+    getProcessService: (): DevelopmentProcessService => {
+      const envService = this.container.get<EnvironmentDetectionService>(
+        TYPES.EnvironmentDetectionService
+      )
+      const environment = envService.resolveEnvironment(this.config.environment)
+      if (!isDevelopmentLike(environment)) {
+        throw new Error(
+          `Development process service is not available in '${environment}' environment. Available in: development, testing, isolated environments.`
+        )
       }
-      // Fallback to infrastructure default
-      return this.getDefaultStoragePathInternal()
+
+      return this.container.get<DevelopmentProcessService>(TYPES.DevelopmentProcessService)
     },
 
     /**
-     * Get default storage path (XDG-compliant)
+     * Check if development process service is available in current environment
+     * @returns true if development process service is available
      */
-    getDefaultStoragePath: async (): Promise<string> => {
-      return this.getDefaultStoragePathInternal()
+    isAvailable: (): boolean => {
+      const envService = this.container.get<EnvironmentDetectionService>(
+        TYPES.EnvironmentDetectionService
+      )
+      const environment = envService.resolveEnvironment(this.config.environment)
+      return isDevelopmentLike(environment)
     },
-  }
-
-  /**
-   * Repository Access (for advanced usage)
-   */
-  public readonly repository = {
-    /**
-     * Get ticket repository instance
-     */
-    getTicketRepository: (): TicketRepository => {
-      return this.useCaseFactory.getTicketRepository()
-    },
-  }
-
-  /**
-   * Helper method to get default storage path
-   */
-  private getDefaultStoragePathInternal(): string {
-    const homeDir = homedir()
-    const configHome = process.env.XDG_CONFIG_HOME || join(homeDir, '.config')
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    const dirName = isDevelopment ? 'project-manager-dev' : 'project-manager'
-
-    return join(configHome, dirName, 'tickets.json')
   }
 
   /**
@@ -236,4 +241,11 @@ export class ProjectManagerSDK {
       updatedAt: ticketResponse.updatedAt,
     }
   }
+}
+
+/**
+ * Convenience factory function for creating SDK instance
+ */
+export async function createProjectManagerSDK(config: SDKConfig = {}) {
+  return ProjectManagerSDK.create(config)
 }

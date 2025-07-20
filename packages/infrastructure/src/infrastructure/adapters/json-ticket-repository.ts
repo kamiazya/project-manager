@@ -24,11 +24,6 @@ export class JsonTicketRepository implements TicketRepository {
   private isLocked = false
   private readonly waiting: (() => void)[] = []
 
-  /**
-   * Repository identifier for caching - minification-safe and stable across instances
-   */
-  public readonly repositoryId = 'JsonTicketRepository'
-
   constructor(filePath: string) {
     if (!filePath.trim()) {
       throw new Error('filePath is required for JsonTicketRepository')

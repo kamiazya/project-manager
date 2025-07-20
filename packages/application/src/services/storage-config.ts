@@ -10,8 +10,9 @@
 export interface StorageConfigService {
   /**
    * Get the default storage directory path
+   * @param mode Optional SDK mode to override auto-detection
    */
-  getDefaultStorageDir(): string
+  getDefaultStorageDir(mode?: string): string
 
   /**
    * Get the default storage file path
@@ -23,8 +24,3 @@ export interface StorageConfigService {
    */
   resolveStoragePath(customPath?: string): string
 }
-
-/**
- * Symbol for dependency injection of StorageConfigService
- */
-export const StorageConfigService = Symbol('StorageConfigService')

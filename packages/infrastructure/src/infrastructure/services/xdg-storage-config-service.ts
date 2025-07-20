@@ -32,16 +32,29 @@ export class XdgStorageConfigService implements StorageConfigService {
 
   /**
    * Get the default storage directory path following XDG Base Directory specification
+   * @param mode Optional SDK mode to override auto-detection
    */
-  getDefaultStorageDir(): string {
+  getDefaultStorageDir(mode?: string): string {
     const homeDir = homedir()
     const configHome = process.env[ENV_VARS.XDG_CONFIG_HOME] || join(homeDir, '.config')
 
-    // Use separate directory for development environment
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    const dirName = isDevelopment
-      ? `${STORAGE_CONFIG.CONFIG_DIR_NAME}-dev`
-      : STORAGE_CONFIG.CONFIG_DIR_NAME
+    // Use SDK mode system for directory naming
+    let dirName: string
+    if (mode) {
+      // If mode is provided, use it directly for directory naming
+      dirName =
+        mode === 'development'
+          ? `${STORAGE_CONFIG.CONFIG_DIR_NAME}-dev`
+          : mode === 'production'
+            ? STORAGE_CONFIG.CONFIG_DIR_NAME
+            : `${STORAGE_CONFIG.CONFIG_DIR_NAME}-${mode}`
+    } else {
+      // Fallback to environment variable for backward compatibility
+      const isDevelopment = process.env.NODE_ENV === 'development'
+      dirName = isDevelopment
+        ? `${STORAGE_CONFIG.CONFIG_DIR_NAME}-dev`
+        : STORAGE_CONFIG.CONFIG_DIR_NAME
+    }
 
     return join(configHome, dirName)
   }
