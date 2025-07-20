@@ -188,6 +188,29 @@ export class ProjectManagerSDK {
   }
 
   /**
+   * Environment Operations
+   */
+  public readonly environment = {
+    /**
+     * Get current environment mode
+     */
+    getEnvironment: () => {
+      const envService = this.container.get<EnvironmentDetectionService>(
+        TYPES.EnvironmentDetectionService
+      )
+      return envService.resolveEnvironment(this.config.environment)
+    },
+
+    /**
+     * Check if current environment is development-like
+     */
+    isDevelopmentLike: () => {
+      const environment = this.environment.getEnvironment()
+      return isDevelopmentLike(environment)
+    },
+  }
+
+  /**
    * Development Process Management Operations
    * Available only in development-like modes (development, testing, isolated)
    */

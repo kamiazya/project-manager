@@ -1,7 +1,4 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
-import { Flags } from '@oclif/core'
-import { getEnvironmentDisplayName, isDevelopmentLike } from '@project-manager/base'
-import { NodeEnvironmentDetectionService } from '@project-manager/infrastructure'
 import { createMcpServer } from '@project-manager/mcp-server'
 import { BaseCommand } from '../lib/base-command.ts'
 
@@ -16,14 +13,7 @@ export class McpCommand extends BaseCommand {
     '<%= config.bin %> <%= command.id %> --help # Show available options',
   ]
 
-  static override flags = {
-    version: Flags.boolean({
-      char: 'v',
-      description: 'Show MCP server version and exit',
-    }),
-  }
-
-  async execute(): Promise<void> {
+  async execute(_args: Record<string, unknown>, _flags: Record<string, unknown>): Promise<void> {
     try {
       // Create MCP server using the SDK from CLI for process consistency
       const server = await createMcpServer(this.sdk)
@@ -33,14 +23,10 @@ export class McpCommand extends BaseCommand {
       await server.connect(transport)
 
       // Log to stderr so it doesn't interfere with MCP protocol on stdout
-      const environmentService = new NodeEnvironmentDetectionService()
-      const environment = environmentService.detectEnvironment()
-      const environmentDisplayName = getEnvironmentDisplayName(environment)
-      console.error(
-        `MCP server started successfully in ${environmentDisplayName} environment (stdio)`
-      )
+      const environment = this.sdk.environment.getEnvironment()
+      console.error(`MCP server started successfully in ${environment} environment (stdio)`)
 
-      if (isDevelopmentLike(environment)) {
+      if (this.sdk.environment.isDevelopmentLike()) {
         console.error('[DEV] Server is ready to accept MCP connections')
         console.error('[DEV] Communication via stdin/stdout for mcp.json compatibility')
       }

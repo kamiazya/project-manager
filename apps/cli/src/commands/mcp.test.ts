@@ -53,7 +53,7 @@ describe('McpCommand', () => {
       // Mock process.on to avoid infinite loop
       const processOnSpy = vi.spyOn(process, 'on').mockImplementation(() => process)
 
-      await command.execute({ version: false })
+      await command.execute({}, {})
 
       expect(mockCreateMcpServer).toHaveBeenCalled()
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -67,7 +67,7 @@ describe('McpCommand', () => {
       const error = new Error('Failed to create server')
       mockCreateMcpServer.mockRejectedValue(error)
 
-      await expect(command.execute()).rejects.toThrow('Command error:')
+      await expect(command.execute({}, {})).rejects.toThrow('Command error:')
       expect(mockCreateMcpServer).toHaveBeenCalled()
     })
   })
@@ -79,8 +79,6 @@ describe('McpCommand', () => {
         '<%= config.bin %> <%= command.id %> # Start MCP server in stdio mode',
         '<%= config.bin %> <%= command.id %> --help # Show available options',
       ])
-      expect(McpCommand.flags.version).toBeDefined()
-      expect(McpCommand.flags.version.char).toBe('v')
     })
   })
 })
