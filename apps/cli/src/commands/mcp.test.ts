@@ -42,21 +42,6 @@ describe('McpCommand', () => {
     vi.restoreAllMocks()
   })
 
-  describe('version flag', () => {
-    it('should display version when --version flag is used', async () => {
-      // Mock the dynamic import for package.json
-      vi.doMock('@project-manager/mcp-server/package.json', () => ({
-        version: '1.0.0',
-      }))
-
-      const logSpy = vi.spyOn(command, 'log')
-
-      await command.execute({ version: true })
-
-      expect(logSpy).toHaveBeenCalledWith('1.0.0')
-    })
-  })
-
   describe('server startup', () => {
     it('should start MCP server successfully', async () => {
       const mockServer = {
@@ -82,7 +67,7 @@ describe('McpCommand', () => {
       const error = new Error('Failed to create server')
       mockCreateMcpServer.mockRejectedValue(error)
 
-      await expect(command.execute({ version: false })).rejects.toThrow('Command error:')
+      await expect(command.execute()).rejects.toThrow('Command error:')
       expect(mockCreateMcpServer).toHaveBeenCalled()
     })
   })

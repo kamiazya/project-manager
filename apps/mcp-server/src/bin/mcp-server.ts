@@ -9,6 +9,7 @@ import {
   shouldLogVerbose,
 } from '@project-manager/base'
 import { NodeEnvironmentDetectionService } from '@project-manager/infrastructure'
+import { createProjectManagerSDK } from '@project-manager/sdk'
 import packageJson from '../../package.json' with { type: 'json' }
 import { createMcpServer } from '../index.ts'
 
@@ -96,7 +97,6 @@ async function main() {
     console.error('Starting MCP server...')
 
     // Initialize SDK for MCP server
-    const { createProjectManagerSDK } = await import('@project-manager/sdk')
     const sdk = await createProjectManagerSDK({ environment: 'auto' })
 
     // Setup development environment using SDK services

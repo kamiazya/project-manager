@@ -1,11 +1,9 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { Flags } from '@oclif/core'
+import { getEnvironmentDisplayName, isDevelopmentLike } from '@project-manager/base'
+import { NodeEnvironmentDetectionService } from '@project-manager/infrastructure'
+import { createMcpServer } from '@project-manager/mcp-server'
 import { BaseCommand } from '../lib/base-command.ts'
-
-interface ExecuteFlags {
-  version?: boolean
-  json?: boolean
-}
 
 /**
  * Start MCP server for AI integration
@@ -25,20 +23,8 @@ export class McpCommand extends BaseCommand {
     }),
   }
 
-  async execute(flags: ExecuteFlags): Promise<void> {
-    if (flags.version) {
-      // Import package.json to get version
-      const { version } = await import('@project-manager/mcp-server/package.json', {
-        with: { type: 'json' },
-      })
-      this.log(version)
-      return
-    }
-
+  async execute(): Promise<void> {
     try {
-      // Dynamically import MCP server to avoid build dependencies
-      const { createMcpServer } = await import('@project-manager/mcp-server')
-
       // Create MCP server using the SDK from CLI for process consistency
       const server = await createMcpServer(this.sdk)
 
@@ -47,8 +33,6 @@ export class McpCommand extends BaseCommand {
       await server.connect(transport)
 
       // Log to stderr so it doesn't interfere with MCP protocol on stdout
-      const { getEnvironmentDisplayName, isDevelopmentLike } = await import('@project-manager/base')
-      const { NodeEnvironmentDetectionService } = await import('@project-manager/infrastructure')
       const environmentService = new NodeEnvironmentDetectionService()
       const environment = environmentService.detectEnvironment()
       const environmentDisplayName = getEnvironmentDisplayName(environment)
