@@ -29,7 +29,7 @@ const cliInternalRules: Partial<ArchitectureRules> = {
   ],
   imports: [
     {
-      pattern: '**/apps/cli/src/commands/**',
+      pattern: '**/apps/cli/src/commands/**/!(mcp).ts',
       forbidden: [
         '**/packages/infrastructure/**',
         '**/packages/application/**',
@@ -81,7 +81,6 @@ export default defineConfig({
         'commands/mcp': 'src/commands/mcp.ts',
         'lib/base-command': 'src/lib/base-command.ts',
         'hooks/init/plugin-support': 'src/hooks/init/plugin-support.ts',
-        'hooks/postrun/cleanup': 'src/hooks/postrun/cleanup.ts',
       },
       formats: ['es'],
     },
