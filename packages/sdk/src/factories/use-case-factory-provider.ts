@@ -52,17 +52,15 @@ export class UseCaseFactoryProvider {
 
     // Validate repositoryId is implemented (required for minification-safe caching)
     // Check for repositoryId property via multiple methods for robustness
-    const hasRepositoryId =
-      config.ticketRepository.repositoryId ||
-      'repositoryId' in config.ticketRepository ||
-      typeof config.ticketRepository.repositoryId === 'string' ||
-      config.ticketRepository.constructor.name === 'JsonTicketRepository'
+    const hasRepositoryId = 'repositoryId' in config.ticketRepository
 
-    if (!hasRepositoryId && !config.ticketRepository.repositoryId) {
+    if (!hasRepositoryId) {
       throw new Error('ticketRepository must implement repositoryId property for caching')
     }
 
-    const cacheKey = config.ticketRepository.repositoryId
+    // Type assertion to access repositoryId - we've validated it exists above
+    const cacheKey = (config.ticketRepository as TicketRepository & { repositoryId: string })
+      .repositoryId
 
     if (this.factoryCache.has(cacheKey)) {
       return this.factoryCache.get(cacheKey)!
