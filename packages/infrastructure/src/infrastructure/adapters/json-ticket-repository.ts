@@ -9,6 +9,57 @@ import type { TicketJSON } from '../types/persistence-types.ts'
 import * as TicketMapper from './mappers/ticket-mapper.ts'
 
 /**
+ * Simple async mutex for exclusive access to critical sections.
+ * Provides atomic lock acquisition and release to prevent race conditions.
+ */
+class AsyncMutex {
+  private locked = false
+  private readonly waiters: (() => void)[] = []
+
+  /**
+   * Acquires the mutex lock. If the mutex is already locked,
+   * the caller will wait until the lock is available.
+   */
+  async acquire(): Promise<void> {
+    return new Promise<void>(resolve => {
+      if (!this.locked) {
+        this.locked = true
+        resolve()
+      } else {
+        this.waiters.push(resolve)
+      }
+    })
+  }
+
+  /**
+   * Releases the mutex lock and notifies the next waiter if any.
+   */
+  release(): void {
+    if (this.waiters.length > 0) {
+      const nextWaiter = this.waiters.shift()
+      if (nextWaiter) {
+        nextWaiter()
+      }
+    } else {
+      this.locked = false
+    }
+  }
+
+  /**
+   * Executes a function with exclusive access, automatically
+   * acquiring and releasing the lock.
+   */
+  async withLock<T>(fn: () => Promise<T>): Promise<T> {
+    await this.acquire()
+    try {
+      return await fn()
+    } finally {
+      this.release()
+    }
+  }
+}
+
+/**
  * JSON file-based implementation of the ticket repository using DDD principles.
  * This adapter implements the TicketRepository interface using JSON files for persistence.
  *
@@ -21,8 +72,7 @@ import * as TicketMapper from './mappers/ticket-mapper.ts'
  */
 export class JsonTicketRepository implements TicketRepository {
   private readonly filePath: string
-  private isLocked = false
-  private readonly waiting: (() => void)[] = []
+  private readonly fileMutex = new AsyncMutex()
 
   constructor(filePath: string) {
     if (!filePath.trim()) {
@@ -134,34 +184,7 @@ export class JsonTicketRepository implements TicketRepository {
   }
 
   private async withFileLock<T>(operation: () => Promise<T>): Promise<T> {
-    await this.acquire()
-    try {
-      return await operation()
-    } finally {
-      this.release()
-    }
-  }
-
-  private acquire(): Promise<void> {
-    if (!this.isLocked) {
-      this.isLocked = true
-      return Promise.resolve()
-    }
-
-    return new Promise(resolve => {
-      this.waiting.push(resolve)
-    })
-  }
-
-  private release(): void {
-    if (this.waiting.length > 0) {
-      const next = this.waiting.shift()
-      if (next) {
-        next()
-      }
-    } else {
-      this.isLocked = false
-    }
+    return this.fileMutex.withLock(operation)
   }
 
   private async loadTicketsFromFile(): Promise<TicketJSON[]> {
