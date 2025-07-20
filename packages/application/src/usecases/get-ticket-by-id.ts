@@ -7,8 +7,8 @@ export namespace GetTicketById {
   /**
    * Request DTO for getting a ticket by ID
    */
-  export class Request {
-    constructor(public readonly id: string) {}
+  export interface Request {
+    readonly id: string
   }
 
   /**

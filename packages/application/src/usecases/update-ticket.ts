@@ -4,21 +4,15 @@ import { TicketNotFoundError, TicketValidationError } from '../common/errors/app
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
-export namespace UpdateTicketContent {
+export namespace UpdateTicket {
   /**
    * Request DTO for updating ticket content (title and description)
    */
-  export class Request {
-    constructor(
-      public readonly id: string,
-      public readonly updates: {
-        title?: string
-        description?: string
-      }
-    ) {}
-
-    hasUpdates(): boolean {
-      return this.updates.title !== undefined || this.updates.description !== undefined
+  export interface Request {
+    readonly id: string
+    readonly updates: {
+      title?: string
+      description?: string
     }
   }
 
@@ -37,11 +31,13 @@ export namespace UpdateTicketContent {
 
     async execute(request: Request): Promise<Response> {
       // Validate that at least one field is provided for update
-      if (!request.hasUpdates()) {
+      const hasUpdates =
+        request.updates.title !== undefined || request.updates.description !== undefined
+      if (!hasUpdates) {
         throw new TicketValidationError(
           'At least one field must be provided for update',
           'update',
-          'UpdateTicketContent'
+          'UpdateTicket'
         )
       }
 
@@ -50,7 +46,7 @@ export namespace UpdateTicketContent {
       const ticket = await this.ticketRepository.findById(ticketId)
 
       if (!ticket) {
-        throw new TicketNotFoundError(request.id, 'UpdateTicketContent')
+        throw new TicketNotFoundError(request.id, 'UpdateTicket')
       }
 
       // Apply content updates using domain methods (includes validation)

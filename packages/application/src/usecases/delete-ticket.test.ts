@@ -23,19 +23,19 @@ describe('DeleteTicket', () => {
 
   describe('Request DTO', () => {
     it('should create request with ticket ID', () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
 
       expect(request.id).toBe(validTicketId)
     })
 
     it('should create request with empty string ID', () => {
-      const request = new DeleteTicket.Request('')
+      const request = { id: '' } as DeleteTicket.Request
 
       expect(request.id).toBe('')
     })
 
     it('should create request with null ID', () => {
-      const request = new DeleteTicket.Request(null as any)
+      const request = { id: null as any } as DeleteTicket.Request
 
       expect(request.id).toBe(null)
     })
@@ -59,7 +59,7 @@ describe('DeleteTicket', () => {
 
   describe('UseCase - Happy Path', () => {
     it('should delete ticket with valid ID', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
 
       const response = await deleteTicketUseCase.execute(request)
 
@@ -71,7 +71,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should call repository delete with correct TicketId', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
 
       await deleteTicketUseCase.execute(request)
 
@@ -81,7 +81,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should return success response regardless of repository result', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
 
       const response = await deleteTicketUseCase.execute(request)
 
@@ -93,7 +93,7 @@ describe('DeleteTicket', () => {
   describe('Input Validation Edge Cases', () => {
     describe('ID Format Validation', () => {
       it('should generate new ID for empty ID', async () => {
-        const request = new DeleteTicket.Request('')
+        const request = { id: '' } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -107,7 +107,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should generate new ID for null ID', async () => {
-        const request = new DeleteTicket.Request(null as any)
+        const request = { id: null as any } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -121,7 +121,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should generate new ID for undefined ID', async () => {
-        const request = new DeleteTicket.Request(undefined as any)
+        const request = { id: undefined as any } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -135,7 +135,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with wrong length (too short)', async () => {
-        const request = new DeleteTicket.Request('1234567') // 7 characters
+        const request = { id: '1234567' } as DeleteTicket.Request // 7 characters
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -144,7 +144,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with wrong length (too long)', async () => {
-        const request = new DeleteTicket.Request('123456789') // 9 characters
+        const request = { id: '123456789' } as DeleteTicket.Request // 9 characters
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -153,7 +153,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with uppercase letters', async () => {
-        const request = new DeleteTicket.Request('1234567A') // Uppercase A
+        const request = { id: '1234567A' } as DeleteTicket.Request // Uppercase A
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -162,7 +162,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with special characters', async () => {
-        const request = new DeleteTicket.Request('1234567!') // Special character
+        const request = { id: '1234567!' } as DeleteTicket.Request // Special character
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -171,7 +171,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with spaces', async () => {
-        const request = new DeleteTicket.Request('1234567 ') // Space
+        const request = { id: '1234567 ' } as DeleteTicket.Request // Space
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -180,7 +180,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with non-hex characters', async () => {
-        const request = new DeleteTicket.Request('123456gh') // 'g' and 'h' are not hex
+        const request = { id: '123456gh' } as DeleteTicket.Request // 'g' and 'h' are not hex
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -189,7 +189,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should handle valid hex ID with numbers only', async () => {
-        const request = new DeleteTicket.Request('12345678')
+        const request = { id: '12345678' } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -198,7 +198,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should handle valid hex ID with letters only', async () => {
-        const request = new DeleteTicket.Request('abcdefab')
+        const request = { id: 'abcdefab' } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -207,7 +207,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should handle valid hex ID with mix of numbers and letters', async () => {
-        const request = new DeleteTicket.Request('12ab34cd')
+        const request = { id: '12ab34cd' } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -216,7 +216,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should handle boundary case with all zeros', async () => {
-        const request = new DeleteTicket.Request('00000000')
+        const request = { id: '00000000' } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -225,7 +225,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should handle boundary case with all f', async () => {
-        const request = new DeleteTicket.Request('ffffffff')
+        const request = { id: 'ffffffff' } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -236,7 +236,7 @@ describe('DeleteTicket', () => {
 
     describe('Edge Case IDs', () => {
       it('should handle ID with only numeric characters', async () => {
-        const request = new DeleteTicket.Request('01234567')
+        const request = { id: '01234567' } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -245,7 +245,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should handle ID with only letter characters', async () => {
-        const request = new DeleteTicket.Request('abcdefab')
+        const request = { id: 'abcdefab' } as DeleteTicket.Request
 
         const response = await deleteTicketUseCase.execute(request)
 
@@ -254,7 +254,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should handle ID with mixed case (should fail)', async () => {
-        const request = new DeleteTicket.Request('AbCdEfAb')
+        const request = { id: 'AbCdEfAb' } as DeleteTicket.Request
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -266,7 +266,7 @@ describe('DeleteTicket', () => {
 
   describe('Repository Error Handling', () => {
     it('should propagate repository delete errors', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
       const deleteError = new Error('Database connection failed')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(deleteError)
 
@@ -276,7 +276,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should propagate repository not found errors', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
       const notFoundError = new Error('Ticket not found')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(notFoundError)
 
@@ -284,7 +284,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should propagate repository permission errors', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
       const permissionError = new Error('Permission denied')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(permissionError)
 
@@ -292,7 +292,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should propagate repository storage errors', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
       const storageError = new Error('Disk full')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(storageError)
 
@@ -300,7 +300,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should propagate repository timeout errors', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
       const timeoutError = new Error('Operation timeout')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(timeoutError)
 
@@ -308,7 +308,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should propagate repository concurrency errors', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
       const concurrencyError = new Error('Concurrent modification')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(concurrencyError)
 
@@ -318,7 +318,7 @@ describe('DeleteTicket', () => {
 
   describe('Business Logic Edge Cases', () => {
     it('should handle deletion of non-existent ticket (depends on repository)', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
       // Repository might not throw error for non-existent tickets
       vi.mocked(mockTicketRepository.delete).mockResolvedValue(undefined)
 
@@ -329,7 +329,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should handle deletion in different repository states', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
 
       // Test multiple scenarios
       const scenarios = [undefined, null, true, false, {}, []]
@@ -347,9 +347,9 @@ describe('DeleteTicket', () => {
 
   describe('Concurrency and Performance', () => {
     it('should handle concurrent deletions of different tickets', async () => {
-      const request1 = new DeleteTicket.Request('12345678')
-      const request2 = new DeleteTicket.Request('abcdefab')
-      const request3 = new DeleteTicket.Request('deadbeef')
+      const request1 = { id: '12345678' } as DeleteTicket.Request
+      const request2 = { id: 'abcdefab' } as DeleteTicket.Request
+      const request3 = { id: 'deadbeef' } as DeleteTicket.Request
 
       const promises = [
         deleteTicketUseCase.execute(request1),
@@ -373,7 +373,7 @@ describe('DeleteTicket', () => {
       const ticketIds = ['12345678', 'abcdefab', 'deadbeef', '11111111', '22222222']
 
       for (const ticketId of ticketIds) {
-        const request = new DeleteTicket.Request(ticketId)
+        const request = { id: ticketId } as DeleteTicket.Request
         const response = await deleteTicketUseCase.execute(request)
 
         expect(response.success).toBe(true)
@@ -395,8 +395,8 @@ describe('DeleteTicket', () => {
         return undefined
       })
 
-      const successRequest = new DeleteTicket.Request(successId)
-      const failureRequest = new DeleteTicket.Request(failureId)
+      const successRequest = { id: successId } as DeleteTicket.Request
+      const failureRequest = { id: failureId } as DeleteTicket.Request
 
       // Success case
       const successResponse = await deleteTicketUseCase.execute(successRequest)
@@ -409,7 +409,7 @@ describe('DeleteTicket', () => {
 
   describe('Integration with Domain Objects', () => {
     it('should create TicketId correctly from string', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
       const ticketIdSpy = vi.spyOn(TicketId, 'create')
 
       await deleteTicketUseCase.execute(request)
@@ -419,7 +419,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should pass created TicketId to repository', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
 
       await deleteTicketUseCase.execute(request)
 
@@ -431,7 +431,7 @@ describe('DeleteTicket', () => {
 
   describe('Response Structure', () => {
     it('should return response with correct structure', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
 
       const response = await deleteTicketUseCase.execute(request)
 
@@ -443,7 +443,7 @@ describe('DeleteTicket', () => {
 
     it('should return response with original ID', async () => {
       const testId = 'abcd1234'
-      const request = new DeleteTicket.Request(testId)
+      const request = { id: testId } as DeleteTicket.Request
 
       const response = await deleteTicketUseCase.execute(request)
 
@@ -452,7 +452,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should return response instance of DeleteTicket.Response', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
 
       const response = await deleteTicketUseCase.execute(request)
 
@@ -462,7 +462,7 @@ describe('DeleteTicket', () => {
 
   describe('Error Recovery', () => {
     it('should handle repository errors gracefully', async () => {
-      const request = new DeleteTicket.Request(validTicketId)
+      const request = { id: validTicketId } as DeleteTicket.Request
       const repositoryError = new Error('Temporary database error')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(repositoryError)
 
@@ -473,7 +473,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should handle validation errors before repository call', async () => {
-      const request = new DeleteTicket.Request('invalidid') // Invalid format
+      const request = { id: 'invalidid' } as DeleteTicket.Request // Invalid format
 
       await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
         'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -484,8 +484,8 @@ describe('DeleteTicket', () => {
     })
 
     it('should maintain consistency across multiple failed operations', async () => {
-      const validRequest = new DeleteTicket.Request(validTicketId)
-      const invalidRequest = new DeleteTicket.Request('invalidid') // Invalid format
+      const validRequest = { id: validTicketId } as DeleteTicket.Request
+      const invalidRequest = { id: 'invalidid' } as DeleteTicket.Request // Invalid format
 
       // First operation should succeed
       const response1 = await deleteTicketUseCase.execute(validRequest)

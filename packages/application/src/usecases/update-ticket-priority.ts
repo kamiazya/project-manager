@@ -8,16 +8,9 @@ export namespace UpdateTicketPriority {
   /**
    * Request DTO for updating ticket priority
    */
-  export class Request {
-    public readonly validatedPriority: TicketPriorityKey
-
-    constructor(
-      public readonly id: string,
-      public readonly newPriority: string
-    ) {
-      // Validate priority immediately upon construction
-      this.validatedPriority = createTicketPriority(newPriority)
-    }
+  export interface Request {
+    readonly id: string
+    readonly newPriority: string
   }
 
   /**
@@ -39,8 +32,9 @@ export namespace UpdateTicketPriority {
         throw new TicketNotFoundError(request.id, 'UpdateTicketPriority')
       }
 
-      // Use the validated priority from the Request DTO
-      ticket.changePriority(request.validatedPriority)
+      // Validate priority in execute method
+      const validatedPriority = createTicketPriority(request.newPriority)
+      ticket.changePriority(validatedPriority)
 
       await this.ticketRepository.save(ticket)
       return createTicketResponse(ticket)

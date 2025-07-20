@@ -1,4 +1,4 @@
-import { Ticket, TicketValidationError } from '@project-manager/domain'
+import { type CreateTicketData, Ticket, TicketValidationError } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { CreateTicket } from './create-ticket.ts'
@@ -21,13 +21,13 @@ describe('CreateTicket', () => {
 
   describe('Request DTO', () => {
     it('should create request with all fields', () => {
-      const request = new CreateTicket.Request(
-        'Fix login bug',
-        'high',
-        'bug',
-        'pending',
-        'Users cannot login with email'
-      )
+      const request: CreateTicket.Request = {
+        title: 'Fix login bug',
+        priority: 'high',
+        type: 'bug',
+        status: 'pending',
+        description: 'Users cannot login with email',
+      }
 
       expect(request.title).toBe('Fix login bug')
       expect(request.description).toBe('Users cannot login with email')
@@ -36,34 +36,32 @@ describe('CreateTicket', () => {
       expect(request.status).toBe('pending')
     })
 
-    it('should convert to CreateTicketData', () => {
-      const request = new CreateTicket.Request(
-        'Fix login bug',
-        'medium',
-        'task',
-        'pending',
-        'Users cannot login with email'
-      )
+    it('should create request with plain object syntax', () => {
+      const request: CreateTicket.Request = {
+        title: 'Fix login bug',
+        priority: 'medium',
+        type: 'task',
+        status: 'pending',
+        description: 'Users cannot login with email',
+      }
 
-      const createData = request.toCreateTicketData()
-
-      expect(createData.title).toBe('Fix login bug')
-      expect(createData.description).toBe('Users cannot login with email')
-      expect(createData.priority).toBe('medium')
-      expect(createData.type).toBe('task')
-      expect(createData.status).toBe('pending')
+      expect(request.title).toBe('Fix login bug')
+      expect(request.description).toBe('Users cannot login with email')
+      expect(request.priority).toBe('medium')
+      expect(request.type).toBe('task')
+      expect(request.status).toBe('pending')
     })
   })
 
   describe('UseCase - Happy Path', () => {
     it('should create ticket with valid data', async () => {
-      const request = new CreateTicket.Request(
-        'Fix login bug',
-        'high',
-        'bug',
-        'pending',
-        'Users cannot login with email'
-      )
+      const request: CreateTicket.Request = {
+        title: 'Fix login bug',
+        priority: 'high',
+        type: 'bug',
+        status: 'pending',
+        description: 'Users cannot login with email',
+      }
 
       const response = await createTicketUseCase.execute(request)
 
@@ -79,20 +77,20 @@ describe('CreateTicket', () => {
     })
 
     it('should generate unique IDs for multiple tickets', async () => {
-      const request1 = new CreateTicket.Request(
-        'Ticket 1',
-        'medium',
-        'task',
-        'pending',
-        'Description 1'
-      )
-      const request2 = new CreateTicket.Request(
-        'Ticket 2',
-        'medium',
-        'task',
-        'pending',
-        'Description 2'
-      )
+      const request1: CreateTicket.Request = {
+        title: 'Ticket 1',
+        priority: 'medium',
+        type: 'task',
+        status: 'pending',
+        description: 'Description 1',
+      }
+      const request2: CreateTicket.Request = {
+        title: 'Ticket 2',
+        priority: 'medium',
+        type: 'task',
+        status: 'pending',
+        description: 'Description 2',
+      }
 
       const response1 = await createTicketUseCase.execute(request1)
       const response2 = await createTicketUseCase.execute(request2)
@@ -103,13 +101,13 @@ describe('CreateTicket', () => {
     })
 
     it('should set creation and update timestamps', async () => {
-      const request = new CreateTicket.Request(
-        'Test',
-        'medium',
-        'task',
-        'pending',
-        'Test description'
-      )
+      const request: CreateTicket.Request = {
+        title: 'Test',
+        priority: 'medium',
+        type: 'task',
+        status: 'pending',
+        description: 'Test description',
+      }
 
       const response = await createTicketUseCase.execute(request)
 
@@ -121,7 +119,13 @@ describe('CreateTicket', () => {
 
   describe('Input Validation', () => {
     it('should throw error for empty title', async () => {
-      const request = new CreateTicket.Request('', 'medium', 'task', 'pending', 'Valid description')
+      const request: CreateTicket.Request = {
+        title: '',
+        priority: 'medium',
+        type: 'task',
+        status: 'pending',
+        description: 'Valid description',
+      }
 
       await expect(createTicketUseCase.execute(request)).rejects.toThrow(TicketValidationError)
       expect(mockTicketRepository.save).not.toHaveBeenCalled()
@@ -130,13 +134,13 @@ describe('CreateTicket', () => {
     it('should handle newlines and tabs in description', async () => {
       const descriptionWithFormatting = `Line 1
 Line 2	Tabbed content`
-      const request = new CreateTicket.Request(
-        'Valid title',
-        'medium',
-        'task',
-        'pending',
-        descriptionWithFormatting
-      )
+      const request: CreateTicket.Request = {
+        title: 'Valid title',
+        priority: 'medium',
+        type: 'task',
+        status: 'pending',
+        description: descriptionWithFormatting,
+      }
 
       const response = await createTicketUseCase.execute(request)
 
@@ -149,13 +153,13 @@ Line 2	Tabbed content`
     it('should handle repository save errors', async () => {
       mockTicketRepository.save = vi.fn().mockRejectedValue(new Error('Database error'))
 
-      const request = new CreateTicket.Request(
-        'Test ticket',
-        'medium',
-        'task',
-        'pending',
-        'Test description'
-      )
+      const request: CreateTicket.Request = {
+        title: 'Test ticket',
+        priority: 'medium',
+        type: 'task',
+        status: 'pending',
+        description: 'Test description',
+      }
 
       await expect(createTicketUseCase.execute(request)).rejects.toThrow('Database error')
     })

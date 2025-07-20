@@ -31,7 +31,10 @@ describe('UpdateTicketContentUseCase', () => {
 
   describe('execute', () => {
     it('should throw TicketValidationError when no updates are provided', async () => {
-      const request = new UpdateTicketContent.Request('test-id', {})
+      const request: UpdateTicketContent.Request = {
+        id: 'test-id',
+        updates: {},
+      }
 
       await expect(useCase.execute(request)).rejects.toThrow(TicketValidationError)
       await expect(useCase.execute(request)).rejects.toThrow(
@@ -42,7 +45,10 @@ describe('UpdateTicketContentUseCase', () => {
     it('should throw TicketNotFoundError when ticket does not exist', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(null)
 
-      const request = new UpdateTicketContent.Request('abc12345', { title: 'New Title' })
+      const request: UpdateTicketContent.Request = {
+        id: 'abc12345',
+        updates: { title: 'New Title' },
+      }
 
       await expect(useCase.execute(request)).rejects.toThrow(TicketNotFoundError)
       await expect(useCase.execute(request)).rejects.toThrow("Ticket with ID 'abc12345' not found")
@@ -51,7 +57,10 @@ describe('UpdateTicketContentUseCase', () => {
     it('should update title only when title is provided', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketContent.Request(testTicket.id.value, { title: 'New Title' })
+      const request: UpdateTicketContent.Request = {
+        id: testTicket.id.value,
+        updates: { title: 'New Title' },
+      }
       const result = await useCase.execute(request)
 
       expect(testTicket.title.value).toBe('New Title')
@@ -65,9 +74,12 @@ describe('UpdateTicketContentUseCase', () => {
     it('should update description only when description is provided', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketContent.Request(testTicket.id.value, {
-        description: 'New Description',
-      })
+      const request: UpdateTicketContent.Request = {
+        id: testTicket.id.value,
+        updates: {
+          description: 'New Description',
+        },
+      }
       const result = await useCase.execute(request)
 
       expect(testTicket.title.value).toBe('Original Title')
@@ -81,10 +93,13 @@ describe('UpdateTicketContentUseCase', () => {
     it('should update both title and description when both are provided', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketContent.Request(testTicket.id.value, {
-        title: 'New Title',
-        description: 'New Description',
-      })
+      const request: UpdateTicketContent.Request = {
+        id: testTicket.id.value,
+        updates: {
+          title: 'New Title',
+          description: 'New Description',
+        },
+      }
       const result = await useCase.execute(request)
 
       expect(testTicket.title.value).toBe('New Title')
@@ -99,10 +114,13 @@ describe('UpdateTicketContentUseCase', () => {
     it('should perform only one fetch and one save operation', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
-      const request = new UpdateTicketContent.Request(testTicket.id.value, {
-        title: 'New Title',
-        description: 'New Description',
-      })
+      const request: UpdateTicketContent.Request = {
+        id: testTicket.id.value,
+        updates: {
+          title: 'New Title',
+          description: 'New Description',
+        },
+      }
       await useCase.execute(request)
 
       expect(mockRepository.findById).toHaveBeenCalledTimes(1)
@@ -115,10 +133,13 @@ describe('UpdateTicketContentUseCase', () => {
       const titleSpy = vi.spyOn(testTicket, 'updateTitle')
       const descriptionSpy = vi.spyOn(testTicket, 'updateDescription')
 
-      const request = new UpdateTicketContent.Request(testTicket.id.value, {
-        title: 'New Title',
-        description: 'New Description',
-      })
+      const request: UpdateTicketContent.Request = {
+        id: testTicket.id.value,
+        updates: {
+          title: 'New Title',
+          description: 'New Description',
+        },
+      }
       await useCase.execute(request)
 
       expect(titleSpy).toHaveBeenCalledWith('New Title')
@@ -131,9 +152,12 @@ describe('UpdateTicketContentUseCase', () => {
       const titleSpy = vi.spyOn(testTicket, 'updateTitle')
       const descriptionSpy = vi.spyOn(testTicket, 'updateDescription')
 
-      const request = new UpdateTicketContent.Request(testTicket.id.value, {
-        title: 'New Title',
-      })
+      const request: UpdateTicketContent.Request = {
+        id: testTicket.id.value,
+        updates: {
+          title: 'New Title',
+        },
+      }
       await useCase.execute(request)
 
       expect(titleSpy).toHaveBeenCalledWith('New Title')
@@ -142,19 +166,31 @@ describe('UpdateTicketContentUseCase', () => {
   })
 
   describe('UpdateTicketContentRequest', () => {
-    it('should return false for hasUpdates when no fields are provided', () => {
-      const request = new UpdateTicketContent.Request('test-id', {})
-      expect(request.hasUpdates()).toBe(false)
+    it('should validate that no updates are provided via request structure', () => {
+      const request: UpdateTicketContent.Request = {
+        id: 'test-id',
+        updates: {},
+      }
+      // No updates provided - use case will validate this
+      expect(Object.keys(request.updates)).toHaveLength(0)
     })
 
-    it('should return true for hasUpdates when title is provided', () => {
-      const request = new UpdateTicketContent.Request('test-id', { title: 'New Title' })
-      expect(request.hasUpdates()).toBe(true)
+    it('should allow title updates via request structure', () => {
+      const request: UpdateTicketContent.Request = {
+        id: 'test-id',
+        updates: { title: 'New Title' },
+      }
+      expect(request.updates.title).toBe('New Title')
+      expect(request.updates.description).toBeUndefined()
     })
 
-    it('should return true for hasUpdates when description is provided', () => {
-      const request = new UpdateTicketContent.Request('test-id', { description: 'New Description' })
-      expect(request.hasUpdates()).toBe(true)
+    it('should allow description updates via request structure', () => {
+      const request: UpdateTicketContent.Request = {
+        id: 'test-id',
+        updates: { description: 'New Description' },
+      }
+      expect(request.updates.description).toBe('New Description')
+      expect(request.updates.title).toBeUndefined()
     })
   })
 })

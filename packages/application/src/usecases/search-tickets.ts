@@ -20,8 +20,8 @@ export namespace SearchTickets {
   /**
    * Request DTO for searching tickets
    */
-  export class Request {
-    constructor(public readonly criteria: SearchCriteria) {}
+  export interface Request {
+    readonly criteria: SearchCriteria
   }
 
   /**

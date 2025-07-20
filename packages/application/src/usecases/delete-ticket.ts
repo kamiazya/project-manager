@@ -3,8 +3,8 @@ import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 export namespace DeleteTicket {
-  export class Request {
-    constructor(public readonly id: string) {}
+  export interface Request {
+    readonly id: string
   }
 
   export class Response {

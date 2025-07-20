@@ -8,17 +8,11 @@ export namespace UpdateTicketContent {
   /**
    * Request DTO for updating ticket content (title and description)
    */
-  export class Request {
-    constructor(
-      public readonly id: string,
-      public readonly updates: {
-        title?: string
-        description?: string
-      }
-    ) {}
-
-    hasUpdates(): boolean {
-      return this.updates.title !== undefined || this.updates.description !== undefined
+  export interface Request {
+    readonly id: string
+    readonly updates: {
+      title?: string
+      description?: string
     }
   }
 
@@ -37,7 +31,9 @@ export namespace UpdateTicketContent {
 
     async execute(request: Request): Promise<Response> {
       // Validate that at least one field is provided for update
-      if (!request.hasUpdates()) {
+      const hasUpdates =
+        request.updates.title !== undefined || request.updates.description !== undefined
+      if (!hasUpdates) {
         throw new TicketValidationError(
           'At least one field must be provided for update',
           'update',

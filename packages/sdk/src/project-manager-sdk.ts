@@ -79,12 +79,13 @@ export class ProjectManagerSDK {
      */
     create: async (request: CreateTicketRequest): Promise<TicketResponse> => {
       const useCase = this.useCaseFactory.createCreateTicketUseCase()
-      const createRequest = new CreateTicket.Request(
-        request.title,
-        request.priority,
-        request.type,
-        request.status
-      )
+      const createRequest: CreateTicket.Request = {
+        title: request.title,
+        priority: request.priority,
+        type: request.type,
+        status: request.status,
+        description: request.description,
+      }
 
       const response = await useCase.execute(createRequest)
       return this.mapTicketResponseToSDKResponse(response)
@@ -95,7 +96,7 @@ export class ProjectManagerSDK {
      */
     getById: async (id: string): Promise<TicketResponse | null> => {
       const useCase = this.useCaseFactory.createGetTicketByIdUseCase()
-      const request = new GetTicketById.Request(id)
+      const request: GetTicketById.Request = { id }
 
       const response = await useCase.execute(request)
       return response ? this.mapTicketResponseToSDKResponse(response) : null
@@ -106,7 +107,7 @@ export class ProjectManagerSDK {
      */
     getAll: async (): Promise<TicketResponse[]> => {
       const useCase = this.useCaseFactory.createGetAllTicketsUseCase()
-      const request = new GetAllTickets.Request({})
+      const request: GetAllTickets.Request = { filters: {} }
 
       const response = await useCase.execute(request)
       return response.tickets.map(ticket => this.mapTicketResponseToSDKResponse(ticket))
@@ -117,10 +118,13 @@ export class ProjectManagerSDK {
      */
     updateContent: async (request: UpdateTicketContentRequest): Promise<TicketResponse> => {
       const useCase = this.useCaseFactory.createUpdateTicketContentUseCase()
-      const updateRequest = new UpdateTicketContent.Request(request.id, {
-        title: request.title,
-        description: request.description,
-      })
+      const updateRequest: UpdateTicketContent.Request = {
+        id: request.id,
+        updates: {
+          title: request.title,
+          description: request.description,
+        },
+      }
 
       const response = await useCase.execute(updateRequest)
       return this.mapTicketResponseToSDKResponse(response)
@@ -131,7 +135,7 @@ export class ProjectManagerSDK {
      */
     updateStatus: async (id: string, status: string): Promise<TicketResponse> => {
       const useCase = this.useCaseFactory.createUpdateTicketStatusUseCase()
-      const request = new UpdateTicketStatus.Request(id, status)
+      const request: UpdateTicketStatus.Request = { id, newStatus: status }
 
       const response = await useCase.execute(request)
       return this.mapTicketResponseToSDKResponse(response)
@@ -142,7 +146,7 @@ export class ProjectManagerSDK {
      */
     delete: async (id: string): Promise<void> => {
       const useCase = this.useCaseFactory.createDeleteTicketUseCase()
-      const request = new DeleteTicket.Request(id)
+      const request: DeleteTicket.Request = { id }
 
       await useCase.execute(request)
     },
@@ -152,13 +156,15 @@ export class ProjectManagerSDK {
      */
     search: async (request: SearchTicketsRequest): Promise<TicketResponse[]> => {
       const useCase = this.useCaseFactory.createSearchTicketsUseCase()
-      const searchRequest = new SearchTickets.Request({
-        search: request.query,
-        status: request.status,
-        priority: request.priority,
-        type: request.type,
-        searchIn: request.searchIn,
-      })
+      const searchRequest: SearchTickets.Request = {
+        criteria: {
+          search: request.query,
+          status: request.status,
+          priority: request.priority,
+          type: request.type,
+          searchIn: request.searchIn,
+        },
+      }
 
       const response = await useCase.execute(searchRequest)
       return response.tickets.map(ticket => this.mapTicketResponseToSDKResponse(ticket))

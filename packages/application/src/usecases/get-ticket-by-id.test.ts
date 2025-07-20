@@ -23,7 +23,7 @@ describe('GetTicketByIdUseCase', () => {
     it('should return ticket when found', async () => {
       // Arrange
       const ticketId = '12345678' // 8 hex characters
-      const request = new GetTicketById.Request(ticketId)
+      const request = { id: ticketId } as GetTicketById.Request
       const mockTicket = Ticket.create({
         title: 'Test Ticket',
         description: 'Test Description',
@@ -47,7 +47,7 @@ describe('GetTicketByIdUseCase', () => {
     it('should return null when ticket not found', async () => {
       // Arrange
       const ticketId = '87654321' // 8 hex characters
-      const request = new GetTicketById.Request(ticketId)
+      const request = { id: ticketId } as GetTicketById.Request
 
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 
@@ -62,7 +62,7 @@ describe('GetTicketByIdUseCase', () => {
     it('should call repository with correct TicketId', async () => {
       // Arrange
       const ticketId = '12345678' // 8 hex characters
-      const request = new GetTicketById.Request(ticketId)
+      const request = { id: ticketId } as GetTicketById.Request
 
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 

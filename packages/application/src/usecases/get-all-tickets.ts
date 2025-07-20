@@ -17,8 +17,8 @@ export namespace GetAllTickets {
   /**
    * Request DTO for getting all tickets with optional filtering
    */
-  export class Request {
-    constructor(public readonly filters: Filters = {}) {}
+  export interface Request {
+    readonly filters?: Filters
   }
 
   /**
@@ -39,7 +39,7 @@ export namespace GetAllTickets {
     constructor(private readonly ticketRepository: TicketRepository) {}
 
     async execute(request: Request): Promise<Response> {
-      const { filters } = request
+      const filters = request.filters || {}
 
       // Check if any filters are provided
       const hasFilters = filters.status || filters.priority || filters.type || filters.limit

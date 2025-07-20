@@ -8,11 +8,9 @@ export namespace UpdateTicketTitle {
   /**
    * Request DTO for updating ticket title
    */
-  export class Request {
-    constructor(
-      public readonly id: string,
-      public readonly newTitle: string
-    ) {}
+  export interface Request {
+    readonly id: string
+    readonly newTitle: string
   }
 
   /**

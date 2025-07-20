@@ -8,16 +8,9 @@ export namespace UpdateTicketStatus {
   /**
    * Request DTO for updating ticket status
    */
-  export class Request {
-    public readonly validatedStatus: TicketStatusKey
-
-    constructor(
-      public readonly id: string,
-      public readonly newStatus: string
-    ) {
-      // Validate status immediately upon construction
-      this.validatedStatus = createTicketStatus(newStatus)
-    }
+  export interface Request {
+    readonly id: string
+    readonly newStatus: string
   }
 
   /**
@@ -39,8 +32,9 @@ export namespace UpdateTicketStatus {
         throw new TicketNotFoundError(request.id, 'UpdateTicketStatus')
       }
 
-      // Use the validated status from the Request DTO
-      ticket.changeStatus(request.validatedStatus)
+      // Validate and create status
+      const validatedStatus = createTicketStatus(request.newStatus)
+      ticket.changeStatus(validatedStatus)
 
       await this.ticketRepository.save(ticket)
       return createTicketResponse(ticket)

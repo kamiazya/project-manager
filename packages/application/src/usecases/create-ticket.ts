@@ -7,27 +7,12 @@ export namespace CreateTicket {
   /**
    * Request DTO for creating a new ticket
    */
-  export class Request {
-    constructor(
-      public readonly title: string,
-      public readonly priority: string,
-      public readonly type: string,
-      public readonly status: string,
-      public readonly description?: string
-    ) {}
-
-    /**
-     * Convert request to domain create data
-     */
-    toCreateTicketData(): CreateTicketData {
-      return {
-        title: this.title.trim(), // Normalize title
-        description: this.description?.trim(),
-        priority: this.priority,
-        type: this.type,
-        status: this.status || 'pending', // Default status for new tickets
-      }
-    }
+  export interface Request {
+    readonly title: string
+    readonly priority: string
+    readonly type: string
+    readonly status: string
+    readonly description?: string
   }
 
   /**
@@ -43,8 +28,17 @@ export namespace CreateTicket {
     constructor(private readonly ticketRepository: TicketRepository) {}
 
     async execute(request: Request): Promise<Response> {
+      // Convert request to domain create data
+      const createData: CreateTicketData = {
+        title: request.title.trim(),
+        description: request.description?.trim(),
+        priority: request.priority,
+        type: request.type,
+        status: request.status || 'pending',
+      }
+
       // Use domain entity factory method
-      const ticket = Ticket.create(request.toCreateTicketData())
+      const ticket = Ticket.create(createData)
 
       // Persist through repository
       await this.ticketRepository.save(ticket)
