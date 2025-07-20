@@ -31,7 +31,8 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "dist",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "customConditions": ["development"]
   },
   "include": ["packages/*/src/**/*.ts", "apps/*/src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

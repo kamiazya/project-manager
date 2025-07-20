@@ -49,11 +49,10 @@ describe('BaseCommand', () => {
       tickets: {
         create: vi.fn(),
         getById: vi.fn(),
-        getAll: vi.fn(),
-        update: vi.fn(),
+        updateContent: vi.fn(),
+        updateStatus: vi.fn(),
         delete: vi.fn(),
         search: vi.fn(),
-        getStats: vi.fn(),
       },
     } as unknown as ProjectManagerSDK
 
@@ -79,7 +78,7 @@ describe('BaseCommand', () => {
 
     expect(createProjectManagerSDK).toHaveBeenCalledTimes(1)
     expect(createProjectManagerSDK).toHaveBeenCalledWith({
-      environment: 'production',
+      environment: 'auto',
     })
   })
 
@@ -100,12 +99,22 @@ describe('BaseCommand', () => {
   })
 
   it('should provide access to SDK methods', async () => {
-    const mockTickets = [{ id: '1', title: 'Test ticket' }]
-    mockSDK.tickets.getAll = vi.fn().mockResolvedValue(mockTickets)
+    const mockTickets = [
+      {
+        id: '1',
+        title: 'Test ticket',
+        status: 'pending',
+        priority: 'medium',
+        type: 'task',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ]
+    vi.mocked(mockSDK.tickets.search).mockResolvedValue(mockTickets)
 
     class TestCommand extends BaseCommand {
       async execute(): Promise<void> {
-        const tickets = await this.sdk.tickets.getAll()
+        const tickets = await this.sdk.tickets.search({})
         expect(tickets).toBe(mockTickets)
       }
     }
@@ -114,6 +123,6 @@ describe('BaseCommand', () => {
     await cmd.init()
     await cmd.run()
 
-    expect(mockSDK.tickets.getAll).toHaveBeenCalledTimes(1)
+    expect(mockSDK.tickets.search).toHaveBeenCalledTimes(1)
   })
 })
