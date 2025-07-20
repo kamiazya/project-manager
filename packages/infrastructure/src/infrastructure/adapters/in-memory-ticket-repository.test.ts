@@ -27,16 +27,17 @@ describe('InMemoryTicketRepository', () => {
     it('should update existing ticket', async () => {
       await repository.save(sampleTicket)
 
-      // Modify and save again
-      const modifiedTicket = Ticket.create({
+      // Create a modified version with the same ID using reconstitute
+      const modifiedTicket = Ticket.reconstitute({
+        id: sampleTicket.id.value,
         title: 'Modified Title',
         description: 'Modified Description',
         priority: 'low',
         type: 'bug',
         status: 'in_progress',
+        createdAt: sampleTicket.createdAt.toISOString(),
+        updatedAt: new Date().toISOString(),
       })
-      // Use same ID to simulate update
-      Object.defineProperty(modifiedTicket, 'id', { value: sampleTicket.id })
 
       await repository.save(modifiedTicket)
       expect(repository.size()).toBe(1) // Still only one ticket
