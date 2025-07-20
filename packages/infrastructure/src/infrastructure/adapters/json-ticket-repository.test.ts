@@ -82,7 +82,7 @@ describe('JsonTicketRepository', () => {
       expect(updatedTicket!.title.value).toBe('Updated title')
 
       // Verify only one ticket exists
-      const allTickets = await repository.findAll()
+      const allTickets = await repository.queryTickets()
       expect(allTickets).toHaveLength(1)
     })
 
@@ -109,7 +109,7 @@ describe('JsonTicketRepository', () => {
       await repository.save(ticket1)
       await repository.save(ticket2)
 
-      const allTickets = await repository.findAll()
+      const allTickets = await repository.queryTickets()
       expect(allTickets).toHaveLength(2)
     })
   })
@@ -139,13 +139,13 @@ describe('JsonTicketRepository', () => {
     })
   })
 
-  describe('findAll', () => {
+  describe('queryTickets', () => {
     it('should return empty array when no tickets exist', async () => {
-      const tickets = await repository.findAll()
+      const tickets = await repository.queryTickets()
       expect(tickets).toEqual([])
     })
 
-    it('should return all tickets', async () => {
+    it('should return all tickets when no criteria provided', async () => {
       const ticket1 = Ticket.create({
         title: 'Ticket 1',
         description: 'Description 1',
@@ -165,7 +165,7 @@ describe('JsonTicketRepository', () => {
       await repository.save(ticket1)
       await repository.save(ticket2)
 
-      const tickets = await repository.findAll()
+      const tickets = await repository.queryTickets()
       expect(tickets).toHaveLength(2)
       expect(tickets.map(t => t.title.value)).toContain('Ticket 1')
       expect(tickets.map(t => t.title.value)).toContain('Ticket 2')
@@ -196,15 +196,21 @@ describe('JsonTicketRepository', () => {
       expect(foundTicket).toBeNull()
     })
 
-    it('should throw when deleting non-existent ticket', async () => {
+    it('should throw TicketNotFoundError when deleting non-existent ticket', async () => {
+      const { TicketNotFoundError } = await import('@project-manager/application')
       const nonExistentId = '00000000000000000000'
+
       await expect(repository.delete({ value: nonExistentId } as any)).rejects.toThrow(
-        'Ticket not found'
+        TicketNotFoundError
+      )
+
+      await expect(repository.delete({ value: nonExistentId } as any)).rejects.toThrow(
+        `Ticket with ID '${nonExistentId}' not found`
       )
     })
   })
 
-  describe('findAllWithFilters', () => {
+  describe('queryTickets', () => {
     beforeEach(async () => {
       const ticket1 = Ticket.create({
         title: 'High priority bug',
@@ -245,7 +251,7 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should filter by status', async () => {
-      const tickets = await repository.findAllWithFilters({ status: 'pending' })
+      const tickets = await repository.queryTickets({ status: 'pending' })
       expect(tickets).toHaveLength(2)
       tickets.forEach(ticket => {
         expect(ticket.status).toBe('pending')
@@ -253,7 +259,7 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should filter by priority', async () => {
-      const tickets = await repository.findAllWithFilters({ priority: 'high' })
+      const tickets = await repository.queryTickets({ priority: 'high' })
       expect(tickets).toHaveLength(2)
       tickets.forEach(ticket => {
         expect(ticket.priority).toBe('high')
@@ -261,7 +267,7 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should filter by type', async () => {
-      const tickets = await repository.findAllWithFilters({ type: 'feature' })
+      const tickets = await repository.queryTickets({ type: 'feature' })
       expect(tickets).toHaveLength(2)
       tickets.forEach(ticket => {
         expect(ticket.type).toBe('feature')
@@ -269,7 +275,7 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should filter by multiple criteria', async () => {
-      const tickets = await repository.findAllWithFilters({
+      const tickets = await repository.queryTickets({
         priority: 'high',
         status: 'pending',
       })
@@ -281,20 +287,20 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should return all tickets when no filters provided', async () => {
-      const tickets = await repository.findAllWithFilters({})
+      const tickets = await repository.queryTickets({})
       expect(tickets).toHaveLength(4)
     })
 
     it('should paginate results', async () => {
-      const firstPage = await repository.findAllWithFilters({ limit: 2 })
+      const firstPage = await repository.queryTickets({ limit: 2 })
       expect(firstPage).toHaveLength(2)
 
-      const allTickets = await repository.findAllWithFilters({})
+      const allTickets = await repository.queryTickets({})
       expect(allTickets.length).toBeGreaterThan(2)
     })
   })
 
-  describe('searchTickets', () => {
+  describe('queryTickets', () => {
     beforeEach(async () => {
       const ticket1 = Ticket.create({
         title: 'Fix login bug',
@@ -326,30 +332,30 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should search in titles', async () => {
-      const results = await repository.searchTickets({ search: 'login' })
+      const results = await repository.queryTickets({ search: 'login' })
       expect(results).toHaveLength(1)
       expect(results[0]!.title.value).toContain('login')
     })
 
     it('should search in descriptions', async () => {
-      const results = await repository.searchTickets({ search: 'email' })
+      const results = await repository.queryTickets({ search: 'email' })
       expect(results).toHaveLength(1)
-      expect(results[0]!.description.value).toContain('email')
+      expect(results[0]!.description?.value).toContain('email')
     })
 
     it('should search case-insensitively', async () => {
-      const results = await repository.searchTickets({ search: 'LOGIN' })
+      const results = await repository.queryTickets({ search: 'LOGIN' })
       expect(results).toHaveLength(1)
       expect(results[0]!.title.value).toContain('login')
     })
 
     it('should return empty array for no matches', async () => {
-      const results = await repository.searchTickets({ search: 'nonexistent' })
+      const results = await repository.queryTickets({ search: 'nonexistent' })
       expect(results).toEqual([])
     })
 
     it('should handle partial matches', async () => {
-      const results = await repository.searchTickets({ search: 'doc' })
+      const results = await repository.queryTickets({ search: 'doc' })
       expect(results).toHaveLength(1) // 'documentation' in title OR 'docs' in description
       expect(results[0]!.title.value).toContain('documentation')
     })
@@ -360,14 +366,14 @@ describe('JsonTicketRepository', () => {
       const errorMessage = 'Permission denied'
       mockFileSystem.readFile = vi.fn().mockRejectedValue(new Error(errorMessage))
 
-      const tickets = await repository.findAll()
+      const tickets = await repository.queryTickets()
       expect(tickets).toEqual([])
     })
 
     it('should handle corrupted JSON data', async () => {
       mockFileSystem.readFile = vi.fn().mockResolvedValue('{ invalid json }')
 
-      const tickets = await repository.findAll()
+      const tickets = await repository.queryTickets()
       expect(tickets).toEqual([])
     })
   })

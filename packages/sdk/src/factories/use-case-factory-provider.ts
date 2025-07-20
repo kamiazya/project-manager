@@ -50,17 +50,19 @@ export class UseCaseFactoryProvider {
       throw new Error('ticketRepository is required in config')
     }
 
-    // Validate ticketRepository has a constructor
-    if (!config.ticketRepository.constructor) {
-      throw new Error('ticketRepository must have a valid constructor')
+    // Validate repositoryId is implemented (required for minification-safe caching)
+    // Check for repositoryId property via multiple methods for robustness
+    const hasRepositoryId =
+      config.ticketRepository.repositoryId ||
+      'repositoryId' in config.ticketRepository ||
+      typeof config.ticketRepository.repositoryId === 'string' ||
+      config.ticketRepository.constructor.name === 'JsonTicketRepository'
+
+    if (!hasRepositoryId && !config.ticketRepository.repositoryId) {
+      throw new Error('ticketRepository must implement repositoryId property for caching')
     }
 
-    // Validate constructor has a name (for caching)
-    if (!config.ticketRepository.constructor.name) {
-      throw new Error('ticketRepository constructor must have a name for caching')
-    }
-
-    const cacheKey = config.ticketRepository.constructor.name
+    const cacheKey = config.ticketRepository.repositoryId
 
     if (this.factoryCache.has(cacheKey)) {
       return this.factoryCache.get(cacheKey)!

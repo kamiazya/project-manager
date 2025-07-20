@@ -20,21 +20,3 @@ export class StorageError extends Error {
     }
   }
 }
-
-/**
- * Error thrown when a ticket is not found during persistence operations
- */
-export class TicketNotFoundError extends Error {
-  public readonly ticketId: string
-
-  constructor(message: string, ticketId?: string) {
-    super(message)
-    this.name = 'TicketNotFoundError'
-    this.ticketId = ticketId || 'unknown'
-
-    // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor)
-    }
-  }
-}

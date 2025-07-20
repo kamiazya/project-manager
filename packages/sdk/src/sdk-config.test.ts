@@ -29,18 +29,15 @@ describe('SDK Configuration Management', () => {
       expect(sdk).toBeDefined()
     })
 
-    it('should create SDK with custom data directory', async () => {
-      const customDir = '/tmp/test-data'
+    it('should create SDK with custom environment configuration', async () => {
       const sdk = await createProjectManagerSDK({
-        dataDirectory: customDir,
         environment: 'test',
       })
       expect(sdk).toBeDefined()
     })
 
-    it('should create SDK with debug logging enabled', async () => {
+    it('should create SDK for development environment', async () => {
       const sdk = await createProjectManagerSDK({
-        enableDebugLogging: true,
         environment: 'development',
       })
       expect(sdk).toBeDefined()
@@ -79,11 +76,10 @@ describe('SDK Configuration Management', () => {
 
     it('should create SDK with custom repository', async () => {
       const mockRepository = {
+        repositoryId: 'MockRepository',
         save: async () => {},
         findById: async () => null,
-        findAll: async () => [],
-        findAllWithFilters: async () => [],
-        searchTickets: async () => [],
+        queryTickets: async () => [],
         delete: async () => {},
       }
 

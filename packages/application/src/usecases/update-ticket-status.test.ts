@@ -23,9 +23,7 @@ describe('UpdateTicketStatus', () => {
     mockTicketRepository = {
       save: vi.fn(),
       findById: vi.fn(),
-      findAll: vi.fn(),
-      findAllWithFilters: vi.fn(),
-      searchTickets: vi.fn(),
+      queryTickets: vi.fn(),
       delete: vi.fn(),
     }
 
@@ -34,7 +32,7 @@ describe('UpdateTicketStatus', () => {
 
   describe('Request DTO', () => {
     it('should create request with ticket ID and new status', () => {
-      const request = { id: validTicketId, newStatus: 'in_progress' } as UpdateTicketStatus.Request
+      const request: UpdateTicketStatus.Request = { id: validTicketId, newStatus: 'in_progress' }
 
       expect(request.id).toBe(validTicketId)
       expect(request.newStatus).toBe('in_progress')
@@ -47,7 +45,7 @@ describe('UpdateTicketStatus', () => {
     })
 
     it('should update ticket status from pending to in_progress', async () => {
-      const request = { id: validTicketId, newStatus: 'in_progress' } as UpdateTicketStatus.Request
+      const request: UpdateTicketStatus.Request = { id: validTicketId, newStatus: 'in_progress' }
 
       const response = await updateTicketStatusUseCase.execute(request)
 
@@ -61,7 +59,7 @@ describe('UpdateTicketStatus', () => {
     it('should throw TicketNotFoundError when ticket does not exist', async () => {
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 
-      const request = { id: validTicketId, newStatus: 'in_progress' } as UpdateTicketStatus.Request
+      const request: UpdateTicketStatus.Request = { id: validTicketId, newStatus: 'in_progress' }
 
       await expect(updateTicketStatusUseCase.execute(request)).rejects.toThrow(TicketNotFoundError)
       expect(mockTicketRepository.save).not.toHaveBeenCalled()

@@ -13,9 +13,7 @@ describe('UpdateTicketContentUseCase', () => {
     mockRepository = {
       findById: vi.fn(),
       save: vi.fn(),
-      findAll: vi.fn(),
-      findAllWithFilters: vi.fn(),
-      searchTickets: vi.fn(),
+      queryTickets: vi.fn(),
       delete: vi.fn(),
     }
     useCase = new UpdateTicketContent.UseCase(mockRepository)

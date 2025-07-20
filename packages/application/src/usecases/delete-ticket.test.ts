@@ -1,5 +1,6 @@
 import { TicketId } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { TicketNotFoundError } from '../common/errors/application-errors.js'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { DeleteTicket } from './delete-ticket.ts'
 
@@ -13,9 +14,7 @@ describe('DeleteTicket', () => {
     mockTicketRepository = {
       save: vi.fn(),
       findById: vi.fn(),
-      findAll: vi.fn(),
-      findAllWithFilters: vi.fn(),
-      searchTickets: vi.fn(),
+      queryTickets: vi.fn(),
       delete: vi.fn().mockResolvedValue(undefined),
     }
     deleteTicketUseCase = new DeleteTicket.UseCase(mockTicketRepository)
@@ -23,55 +22,37 @@ describe('DeleteTicket', () => {
 
   describe('Request DTO', () => {
     it('should create request with ticket ID', () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
 
       expect(request.id).toBe(validTicketId)
     })
 
     it('should create request with empty string ID', () => {
-      const request = { id: '' } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: '' }
 
       expect(request.id).toBe('')
     })
 
     it('should create request with null ID', () => {
-      const request = { id: null as any } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: null as any }
 
       expect(request.id).toBe(null)
     })
   })
 
-  describe('Response DTO', () => {
-    it('should create response with success true', () => {
-      const response = DeleteTicket.Response.success(validTicketId)
-
-      expect(response.id).toBe(validTicketId)
-      expect(response.success).toBe(true)
-    })
-
-    it('should create response with direct constructor', () => {
-      const response = new DeleteTicket.Response(validTicketId, false)
-
-      expect(response.id).toBe(validTicketId)
-      expect(response.success).toBe(false)
-    })
-  })
-
   describe('UseCase - Happy Path', () => {
     it('should delete ticket with valid ID', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
 
-      const response = await deleteTicketUseCase.execute(request)
+      await deleteTicketUseCase.execute(request)
 
-      expect(response.id).toBe(validTicketId)
-      expect(response.success).toBe(true)
       expect(mockTicketRepository.delete).toHaveBeenCalledWith(
         expect.objectContaining({ value: validTicketId })
       )
     })
 
     it('should call repository delete with correct TicketId', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
 
       await deleteTicketUseCase.execute(request)
 
@@ -80,25 +61,21 @@ describe('DeleteTicket', () => {
       expect(ticketId.value).toBe(validTicketId)
     })
 
-    it('should return success response regardless of repository result', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+    it('should complete without error when deletion succeeds', async () => {
+      const request: DeleteTicket.Request = { id: validTicketId }
 
-      const response = await deleteTicketUseCase.execute(request)
-
-      expect(response.success).toBe(true)
-      expect(response.id).toBe(validTicketId)
+      await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
+      expect(mockTicketRepository.delete).toHaveBeenCalled()
     })
   })
 
   describe('Input Validation Edge Cases', () => {
     describe('ID Format Validation', () => {
       it('should generate new ID for empty ID', async () => {
-        const request = { id: '' } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: '' }
 
-        const response = await deleteTicketUseCase.execute(request)
+        await deleteTicketUseCase.execute(request)
 
-        expect(response.success).toBe(true)
-        expect(response.id).toBe('')
         expect(mockTicketRepository.delete).toHaveBeenCalled()
 
         // Check that a valid TicketId was generated and passed to repository
@@ -107,12 +84,10 @@ describe('DeleteTicket', () => {
       })
 
       it('should generate new ID for null ID', async () => {
-        const request = { id: null as any } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: null as any }
 
-        const response = await deleteTicketUseCase.execute(request)
+        await deleteTicketUseCase.execute(request)
 
-        expect(response.success).toBe(true)
-        expect(response.id).toBe(null)
         expect(mockTicketRepository.delete).toHaveBeenCalled()
 
         // Check that a valid TicketId was generated and passed to repository
@@ -121,12 +96,10 @@ describe('DeleteTicket', () => {
       })
 
       it('should generate new ID for undefined ID', async () => {
-        const request = { id: undefined as any } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: undefined as any }
 
-        const response = await deleteTicketUseCase.execute(request)
+        await deleteTicketUseCase.execute(request)
 
-        expect(response.success).toBe(true)
-        expect(response.id).toBe(undefined)
         expect(mockTicketRepository.delete).toHaveBeenCalled()
 
         // Check that a valid TicketId was generated and passed to repository
@@ -135,7 +108,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with wrong length (too short)', async () => {
-        const request = { id: '1234567' } as DeleteTicket.Request // 7 characters
+        const request: DeleteTicket.Request = { id: '1234567' } // 7 characters
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -144,7 +117,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with wrong length (too long)', async () => {
-        const request = { id: '123456789' } as DeleteTicket.Request // 9 characters
+        const request: DeleteTicket.Request = { id: '123456789' } // 9 characters
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -153,7 +126,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with uppercase letters', async () => {
-        const request = { id: '1234567A' } as DeleteTicket.Request // Uppercase A
+        const request: DeleteTicket.Request = { id: '1234567A' } // Uppercase A
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -162,7 +135,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with special characters', async () => {
-        const request = { id: '1234567!' } as DeleteTicket.Request // Special character
+        const request: DeleteTicket.Request = { id: '1234567!' } // Special character
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -171,7 +144,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with spaces', async () => {
-        const request = { id: '1234567 ' } as DeleteTicket.Request // Space
+        const request: DeleteTicket.Request = { id: '1234567 ' } // Space
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -180,7 +153,7 @@ describe('DeleteTicket', () => {
       })
 
       it('should throw error for ID with non-hex characters', async () => {
-        const request = { id: '123456gh' } as DeleteTicket.Request // 'g' and 'h' are not hex
+        const request: DeleteTicket.Request = { id: '123456gh' } // 'g' and 'h' are not hex
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -189,72 +162,58 @@ describe('DeleteTicket', () => {
       })
 
       it('should handle valid hex ID with numbers only', async () => {
-        const request = { id: '12345678' } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: '12345678' }
 
-        const response = await deleteTicketUseCase.execute(request)
-
-        expect(response.success).toBe(true)
+        await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
       it('should handle valid hex ID with letters only', async () => {
-        const request = { id: 'abcdefab' } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: 'abcdefab' }
 
-        const response = await deleteTicketUseCase.execute(request)
-
-        expect(response.success).toBe(true)
+        await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
       it('should handle valid hex ID with mix of numbers and letters', async () => {
-        const request = { id: '12ab34cd' } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: '12ab34cd' }
 
-        const response = await deleteTicketUseCase.execute(request)
-
-        expect(response.success).toBe(true)
+        await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
       it('should handle boundary case with all zeros', async () => {
-        const request = { id: '00000000' } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: '00000000' }
 
-        const response = await deleteTicketUseCase.execute(request)
-
-        expect(response.success).toBe(true)
+        await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
       it('should handle boundary case with all f', async () => {
-        const request = { id: 'ffffffff' } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: 'ffffffff' }
 
-        const response = await deleteTicketUseCase.execute(request)
-
-        expect(response.success).toBe(true)
+        await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
     })
 
     describe('Edge Case IDs', () => {
       it('should handle ID with only numeric characters', async () => {
-        const request = { id: '01234567' } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: '01234567' }
 
-        const response = await deleteTicketUseCase.execute(request)
-
-        expect(response.success).toBe(true)
+        await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
       it('should handle ID with only letter characters', async () => {
-        const request = { id: 'abcdefab' } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: 'abcdefab' }
 
-        const response = await deleteTicketUseCase.execute(request)
-
-        expect(response.success).toBe(true)
+        await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
       it('should handle ID with mixed case (should fail)', async () => {
-        const request = { id: 'AbCdEfAb' } as DeleteTicket.Request
+        const request: DeleteTicket.Request = { id: 'AbCdEfAb' }
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
           'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -266,7 +225,7 @@ describe('DeleteTicket', () => {
 
   describe('Repository Error Handling', () => {
     it('should propagate repository delete errors', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
       const deleteError = new Error('Database connection failed')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(deleteError)
 
@@ -276,15 +235,18 @@ describe('DeleteTicket', () => {
     })
 
     it('should propagate repository not found errors', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
-      const notFoundError = new Error('Ticket not found')
+      const request: DeleteTicket.Request = { id: validTicketId }
+      const notFoundError = new TicketNotFoundError(validTicketId, 'TestRepository')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(notFoundError)
 
-      await expect(deleteTicketUseCase.execute(request)).rejects.toThrow('Ticket not found')
+      await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(TicketNotFoundError)
+      await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
+        `Ticket with ID '${validTicketId}' not found`
+      )
     })
 
     it('should propagate repository permission errors', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
       const permissionError = new Error('Permission denied')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(permissionError)
 
@@ -292,7 +254,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should propagate repository storage errors', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
       const storageError = new Error('Disk full')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(storageError)
 
@@ -300,7 +262,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should propagate repository timeout errors', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
       const timeoutError = new Error('Operation timeout')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(timeoutError)
 
@@ -308,28 +270,59 @@ describe('DeleteTicket', () => {
     })
 
     it('should propagate repository concurrency errors', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
       const concurrencyError = new Error('Concurrent modification')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(concurrencyError)
 
       await expect(deleteTicketUseCase.execute(request)).rejects.toThrow('Concurrent modification')
     })
+
+    it('should throw TicketNotFoundError when repository reports ticket not found', async () => {
+      const request: DeleteTicket.Request = { id: validTicketId }
+      const repositoryError = new TicketNotFoundError(validTicketId, 'JsonTicketRepository')
+      vi.mocked(mockTicketRepository.delete).mockRejectedValue(repositoryError)
+
+      await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(TicketNotFoundError)
+      await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
+        `Ticket with ID '${validTicketId}' not found`
+      )
+    })
+
+    it('should propagate TicketNotFoundError directly from repository', async () => {
+      const request: DeleteTicket.Request = { id: validTicketId }
+
+      // リポジトリから適切な TicketNotFoundError を投げる
+      const repositoryError = new TicketNotFoundError(validTicketId, 'JsonTicketRepository')
+      vi.mocked(mockTicketRepository.delete).mockRejectedValue(repositoryError)
+
+      await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(TicketNotFoundError)
+      // エラーメッセージとプロパティを検証
+      try {
+        await deleteTicketUseCase.execute(request)
+      } catch (error) {
+        expect(error).toBeInstanceOf(TicketNotFoundError)
+        expect((error as TicketNotFoundError).ticketId).toBe(validTicketId)
+        expect((error as TicketNotFoundError).useCaseName).toBe('JsonTicketRepository')
+      }
+    })
   })
 
   describe('Business Logic Edge Cases', () => {
-    it('should handle deletion of non-existent ticket (depends on repository)', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
-      // Repository might not throw error for non-existent tickets
-      vi.mocked(mockTicketRepository.delete).mockResolvedValue(undefined)
+    it('should throw TicketNotFoundError for non-existent ticket', async () => {
+      const request: DeleteTicket.Request = { id: validTicketId }
+      // リポジトリが適切な TicketNotFoundError を投げるようにモック
+      const notFoundError = new TicketNotFoundError(validTicketId, 'JsonTicketRepository')
+      vi.mocked(mockTicketRepository.delete).mockRejectedValue(notFoundError)
 
-      const response = await deleteTicketUseCase.execute(request)
-
-      expect(response.success).toBe(true)
+      await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(TicketNotFoundError)
+      await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
+        `Ticket with ID '${validTicketId}' not found`
+      )
       expect(mockTicketRepository.delete).toHaveBeenCalled()
     })
 
     it('should handle deletion in different repository states', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
 
       // Test multiple scenarios
       const scenarios = [undefined, null, true, false, {}, []]
@@ -337,19 +330,17 @@ describe('DeleteTicket', () => {
       for (const scenario of scenarios) {
         vi.mocked(mockTicketRepository.delete).mockResolvedValue(scenario as any)
 
-        const response = await deleteTicketUseCase.execute(request)
-
-        expect(response.success).toBe(true)
-        expect(response.id).toBe(validTicketId)
+        await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
+        expect(mockTicketRepository.delete).toHaveBeenCalled()
       }
     })
   })
 
   describe('Concurrency and Performance', () => {
     it('should handle concurrent deletions of different tickets', async () => {
-      const request1 = { id: '12345678' } as DeleteTicket.Request
-      const request2 = { id: 'abcdefab' } as DeleteTicket.Request
-      const request3 = { id: 'deadbeef' } as DeleteTicket.Request
+      const request1: DeleteTicket.Request = { id: '12345678' }
+      const request2: DeleteTicket.Request = { id: 'abcdefab' }
+      const request3: DeleteTicket.Request = { id: 'deadbeef' }
 
       const promises = [
         deleteTicketUseCase.execute(request1),
@@ -360,12 +351,10 @@ describe('DeleteTicket', () => {
       const responses = await Promise.all(promises)
 
       expect(responses).toHaveLength(3)
-      expect(responses[0]!.success).toBe(true)
-      expect(responses[1]!.success).toBe(true)
-      expect(responses[2]!.success).toBe(true)
-      expect(responses[0]!.id).toBe('12345678')
-      expect(responses[1]!.id).toBe('abcdefab')
-      expect(responses[2]!.id).toBe('deadbeef')
+      // All responses should be undefined (void)
+      expect(responses[0]).toBeUndefined()
+      expect(responses[1]).toBeUndefined()
+      expect(responses[2]).toBeUndefined()
       expect(mockTicketRepository.delete).toHaveBeenCalledTimes(3)
     })
 
@@ -373,11 +362,8 @@ describe('DeleteTicket', () => {
       const ticketIds = ['12345678', 'abcdefab', 'deadbeef', '11111111', '22222222']
 
       for (const ticketId of ticketIds) {
-        const request = { id: ticketId } as DeleteTicket.Request
-        const response = await deleteTicketUseCase.execute(request)
-
-        expect(response.success).toBe(true)
-        expect(response.id).toBe(ticketId)
+        const request: DeleteTicket.Request = { id: ticketId }
+        await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
       }
 
       expect(mockTicketRepository.delete).toHaveBeenCalledTimes(ticketIds.length)
@@ -395,12 +381,11 @@ describe('DeleteTicket', () => {
         return undefined
       })
 
-      const successRequest = { id: successId } as DeleteTicket.Request
-      const failureRequest = { id: failureId } as DeleteTicket.Request
+      const successRequest: DeleteTicket.Request = { id: successId }
+      const failureRequest: DeleteTicket.Request = { id: failureId }
 
       // Success case
-      const successResponse = await deleteTicketUseCase.execute(successRequest)
-      expect(successResponse.success).toBe(true)
+      await expect(deleteTicketUseCase.execute(successRequest)).resolves.toBeUndefined()
 
       // Failure case
       await expect(deleteTicketUseCase.execute(failureRequest)).rejects.toThrow('Delete failed')
@@ -409,7 +394,7 @@ describe('DeleteTicket', () => {
 
   describe('Integration with Domain Objects', () => {
     it('should create TicketId correctly from string', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
       const ticketIdSpy = vi.spyOn(TicketId, 'create')
 
       await deleteTicketUseCase.execute(request)
@@ -419,7 +404,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should pass created TicketId to repository', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
 
       await deleteTicketUseCase.execute(request)
 
@@ -429,40 +414,9 @@ describe('DeleteTicket', () => {
     })
   })
 
-  describe('Response Structure', () => {
-    it('should return response with correct structure', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
-
-      const response = await deleteTicketUseCase.execute(request)
-
-      expect(response).toHaveProperty('id')
-      expect(response).toHaveProperty('success')
-      expect(typeof response.id).toBe('string')
-      expect(typeof response.success).toBe('boolean')
-    })
-
-    it('should return response with original ID', async () => {
-      const testId = 'abcd1234'
-      const request = { id: testId } as DeleteTicket.Request
-
-      const response = await deleteTicketUseCase.execute(request)
-
-      expect(response.id).toBe(testId)
-      expect(response.success).toBe(true)
-    })
-
-    it('should return response instance of DeleteTicket.Response', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
-
-      const response = await deleteTicketUseCase.execute(request)
-
-      expect(response).toBeInstanceOf(DeleteTicket.Response)
-    })
-  })
-
   describe('Error Recovery', () => {
     it('should handle repository errors gracefully', async () => {
-      const request = { id: validTicketId } as DeleteTicket.Request
+      const request: DeleteTicket.Request = { id: validTicketId }
       const repositoryError = new Error('Temporary database error')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(repositoryError)
 
@@ -473,7 +427,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should handle validation errors before repository call', async () => {
-      const request = { id: 'invalidid' } as DeleteTicket.Request // Invalid format
+      const request: DeleteTicket.Request = { id: 'invalidid' } // Invalid format
 
       await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
         'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
@@ -484,19 +438,17 @@ describe('DeleteTicket', () => {
     })
 
     it('should maintain consistency across multiple failed operations', async () => {
-      const validRequest = { id: validTicketId } as DeleteTicket.Request
-      const invalidRequest = { id: 'invalidid' } as DeleteTicket.Request // Invalid format
+      const validRequest: DeleteTicket.Request = { id: validTicketId }
+      const invalidRequest: DeleteTicket.Request = { id: 'invalidid' } // Invalid format
 
       // First operation should succeed
-      const response1 = await deleteTicketUseCase.execute(validRequest)
-      expect(response1.success).toBe(true)
+      await expect(deleteTicketUseCase.execute(validRequest)).resolves.toBeUndefined()
 
       // Second operation should fail
       await expect(deleteTicketUseCase.execute(invalidRequest)).rejects.toThrow()
 
       // Third operation should succeed again
-      const response3 = await deleteTicketUseCase.execute(validRequest)
-      expect(response3.success).toBe(true)
+      await expect(deleteTicketUseCase.execute(validRequest)).resolves.toBeUndefined()
 
       expect(mockTicketRepository.delete).toHaveBeenCalledTimes(2)
     })

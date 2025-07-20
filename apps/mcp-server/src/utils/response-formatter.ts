@@ -29,7 +29,7 @@ export function formatSuccessResponse(data: any): McpResponse {
     content: [
       {
         type: 'text' as const,
-        text: JSON.stringify({ ...data, success: true }, null, 2),
+        text: JSON.stringify({ ...data, success: true }),
       },
     ],
   }
@@ -39,16 +39,21 @@ export function formatSuccessResponse(data: any): McpResponse {
  * Format an error response for MCP tools
  */
 export function formatErrorResponse(error: any, isError = true): McpResponse {
-  const errorDetails =
-    error instanceof Error
-      ? { message: error.message, name: error.name, stack: error.stack }
-      : error
+  let errorDetails: any
+
+  if (error instanceof Error) {
+    errorDetails = { message: error.message, name: error.name, stack: error.stack }
+  } else if (typeof error === 'string') {
+    errorDetails = { message: error }
+  } else {
+    errorDetails = error
+  }
 
   return {
     content: [
       {
         type: 'text' as const,
-        text: JSON.stringify({ success: false, ...errorDetails }, null, 2),
+        text: JSON.stringify({ ...errorDetails, success: false }, null, 2),
       },
     ],
     isError,

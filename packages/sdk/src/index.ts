@@ -7,7 +7,7 @@
 
 import { ProjectManagerSDK } from './project-manager-sdk.ts'
 import type { SDKConfig } from './sdk-container.ts'
-import { SDKContainer } from './sdk-container.ts'
+import { createSDKContainer } from './sdk-container.ts'
 
 export type {
   CreateTicketRequest,
@@ -17,12 +17,18 @@ export type {
 } from './project-manager-sdk.ts'
 export { ProjectManagerSDK } from './project-manager-sdk.ts'
 export type { SDKConfig } from './sdk-container.ts'
-export { SDKContainer } from './sdk-container.ts'
+export {
+  createSDKContainer,
+  getResolvedSDKConfig,
+  getSDKStoragePath,
+  resetSDKContainer,
+  SDKContainer,
+} from './sdk-container.ts'
 
 /**
  * Convenience factory function for creating SDK instance
  */
 export async function createProjectManagerSDK(config: SDKConfig = {}) {
-  const useCaseFactory = await SDKContainer.create(config)
+  const useCaseFactory = await createSDKContainer(config)
   return ProjectManagerSDK.create(useCaseFactory)
 }

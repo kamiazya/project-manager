@@ -9,11 +9,8 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import {
   type TicketResponse as ApplicationLayerTicketResponse,
-  CreateTicket,
   DeleteTicket,
-  GetAllTickets,
   GetTicketById,
-  SearchTickets,
   type TicketRepository,
   UpdateTicketContent,
   UpdateTicketStatus,
@@ -26,10 +23,10 @@ import type { UseCaseFactory } from './factories/use-case-factory.ts'
  */
 export interface CreateTicketRequest {
   title: string
-  priority: string
-  type: string
-  status: string
+  type?: string
   description?: string
+  status?: string
+  priority?: string
 }
 
 export interface UpdateTicketContentRequest {
@@ -79,15 +76,14 @@ export class ProjectManagerSDK {
      */
     create: async (request: CreateTicketRequest): Promise<TicketResponse> => {
       const useCase = this.useCaseFactory.createCreateTicketUseCase()
-      const createRequest: CreateTicket.Request = {
+
+      const response = await useCase.execute({
         title: request.title,
         priority: request.priority,
         type: request.type,
         status: request.status,
         description: request.description,
-      }
-
-      const response = await useCase.execute(createRequest)
+      })
       return this.mapTicketResponseToSDKResponse(response)
     },
 
@@ -100,17 +96,6 @@ export class ProjectManagerSDK {
 
       const response = await useCase.execute(request)
       return response ? this.mapTicketResponseToSDKResponse(response) : null
-    },
-
-    /**
-     * Get all tickets
-     */
-    getAll: async (): Promise<TicketResponse[]> => {
-      const useCase = this.useCaseFactory.createGetAllTicketsUseCase()
-      const request: GetAllTickets.Request = { filters: {} }
-
-      const response = await useCase.execute(request)
-      return response.tickets.map(ticket => this.mapTicketResponseToSDKResponse(ticket))
     },
 
     /**
@@ -156,7 +141,8 @@ export class ProjectManagerSDK {
      */
     search: async (request: SearchTicketsRequest): Promise<TicketResponse[]> => {
       const useCase = this.useCaseFactory.createSearchTicketsUseCase()
-      const searchRequest: SearchTickets.Request = {
+
+      const response = await useCase.execute({
         criteria: {
           search: request.query,
           status: request.status,
@@ -164,9 +150,7 @@ export class ProjectManagerSDK {
           type: request.type,
           searchIn: request.searchIn,
         },
-      }
-
-      const response = await useCase.execute(searchRequest)
+      })
       return response.tickets.map(ticket => this.mapTicketResponseToSDKResponse(ticket))
     },
   }

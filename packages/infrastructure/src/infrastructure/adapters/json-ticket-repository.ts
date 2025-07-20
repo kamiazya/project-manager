@@ -1,13 +1,10 @@
 import { constants } from 'node:fs'
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import type {
-  TicketQueryFilters,
-  TicketRepository,
-  TicketSearchCriteria,
-} from '@project-manager/application'
+import type { TicketQueryCriteria, TicketRepository } from '@project-manager/application'
+import { TicketNotFoundError } from '@project-manager/application'
 import { Ticket, type TicketId } from '@project-manager/domain'
-import { StorageError, TicketNotFoundError } from '../errors/infrastructure-errors.ts'
+import { StorageError } from '../errors/infrastructure-errors.ts'
 import type { TicketJSON } from '../types/persistence-types.ts'
 import * as TicketMapper from './mappers/ticket-mapper.ts'
 
@@ -26,6 +23,11 @@ export class JsonTicketRepository implements TicketRepository {
   private readonly filePath: string
   private isLocked = false
   private readonly waiting: (() => void)[] = []
+
+  /**
+   * Repository identifier for caching - minification-safe and stable across instances
+   */
+  public readonly repositoryId = 'JsonTicketRepository'
 
   constructor(filePath: string) {
     if (!filePath.trim()) {
@@ -65,48 +67,7 @@ export class JsonTicketRepository implements TicketRepository {
     return TicketMapper.toDomain(ticketJson)
   }
 
-  async findAll(): Promise<Ticket[]> {
-    const tickets = await this.loadTicketsFromFile()
-
-    // Convert all persistence objects to domain objects
-    return TicketMapper.toDomainList(tickets)
-  }
-
-  async findAllWithFilters(filters: TicketQueryFilters): Promise<Ticket[]> {
-    const tickets = await this.loadTicketsFromFile()
-
-    // Apply filters at the persistence layer for better performance
-    let filteredTickets = tickets
-
-    // Filter by status
-    if (filters.status) {
-      filteredTickets = filteredTickets.filter(ticket => ticket.status === filters.status)
-    }
-
-    // Filter by priority
-    if (filters.priority) {
-      filteredTickets = filteredTickets.filter(ticket => ticket.priority === filters.priority)
-    }
-
-    // Filter by type
-    if (filters.type) {
-      filteredTickets = filteredTickets.filter(ticket => ticket.type === filters.type)
-    }
-
-    // Apply limit and offset
-    if (filters.offset && filters.offset > 0) {
-      filteredTickets = filteredTickets.slice(filters.offset)
-    }
-
-    if (filters.limit && filters.limit > 0) {
-      filteredTickets = filteredTickets.slice(0, filters.limit)
-    }
-
-    // Convert filtered persistence objects to domain objects
-    return TicketMapper.toDomainList(filteredTickets)
-  }
-
-  async searchTickets(criteria: TicketSearchCriteria): Promise<Ticket[]> {
+  async queryTickets(criteria: TicketQueryCriteria = {}): Promise<Ticket[]> {
     const tickets = await this.loadTicketsFromFile()
 
     // Apply filters at the persistence layer for better performance
@@ -151,7 +112,7 @@ export class JsonTicketRepository implements TicketRepository {
       })
     }
 
-    // Apply limit and offset
+    // Apply pagination
     if (criteria.offset && criteria.offset > 0) {
       filteredTickets = filteredTickets.slice(criteria.offset)
     }
@@ -170,7 +131,7 @@ export class JsonTicketRepository implements TicketRepository {
       const filteredTickets = tickets.filter(t => t.id !== id.value)
 
       if (filteredTickets.length === tickets.length) {
-        throw new TicketNotFoundError(`Ticket not found: ${id.value}`, id.value)
+        throw new TicketNotFoundError(id.value, 'JsonTicketRepository')
       }
 
       await this.saveTicketsToFile(filteredTickets)

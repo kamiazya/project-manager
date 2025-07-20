@@ -8,7 +8,6 @@ import type { TicketRepository } from '@project-manager/application'
 import {
   CreateTicket,
   DeleteTicket,
-  GetAllTickets,
   GetTicketById,
   SearchTickets,
   UpdateTicketContent,
@@ -32,10 +31,6 @@ export class UseCaseFactory {
 
   createGetTicketByIdUseCase(): GetTicketById.UseCase {
     return new GetTicketById.UseCase(this.ticketRepository)
-  }
-
-  createGetAllTicketsUseCase(): GetAllTickets.UseCase {
-    return new GetAllTickets.UseCase(this.ticketRepository)
   }
 
   // Namespace pattern use cases

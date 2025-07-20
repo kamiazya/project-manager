@@ -3,7 +3,6 @@ import type { ProjectManagerSDK } from '@project-manager/sdk'
 import packageJson from '../package.json' with { type: 'json' }
 import { createTicketTool } from './tools/create-ticket.ts'
 import { getTicketByIdTool } from './tools/get-ticket-by-id.ts'
-import { listTicketsTool } from './tools/list-tickets.ts'
 import { searchTicketsTool } from './tools/search-tickets.ts'
 import { updateTicketStatusTool } from './tools/update-ticket-status.ts'
 import type { McpTool } from './types/mcp-tool.ts'
@@ -12,7 +11,6 @@ import type { McpTool } from './types/mcp-tool.ts'
 const tools: McpTool[] = [
   createTicketTool,
   getTicketByIdTool,
-  listTicketsTool,
   updateTicketStatusTool,
   searchTicketsTool,
 ]

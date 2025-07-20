@@ -14,6 +14,9 @@ export default defineConfig({
       exclude: ['node_modules/', 'dist/', '**/*.test.ts', '**/*.config.ts'],
     },
   },
+  resolve: {
+    conditions: ['development', 'import', 'module', 'browser', 'default'],
+  },
   plugins: [
     dts({
       entryRoot: 'src',

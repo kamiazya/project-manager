@@ -16,7 +16,7 @@ describe('Ticket Entity', () => {
       const ticket = Ticket.create(data)
 
       expect(ticket.title.value).toBe(data.title)
-      expect(ticket.description.value).toBe(data.description)
+      expect(ticket.description?.value).toBe(data.description)
       expect(ticket.status).toBe('pending')
       expect(ticket.priority).toBe('high')
       expect(ticket.type).toBe('bug')
@@ -99,7 +99,7 @@ describe('Ticket Entity', () => {
 
       expect(ticket.id.value).toBe(data.id)
       expect(ticket.title.value).toBe(data.title)
-      expect(ticket.description.value).toBe(data.description)
+      expect(ticket.description?.value).toBe(data.description)
       expect(ticket.status).toBe('in_progress')
       expect(ticket.priority).toBe('low')
       expect(ticket.type).toBe('feature')

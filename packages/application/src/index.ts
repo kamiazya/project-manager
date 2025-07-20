@@ -26,7 +26,6 @@ export * from './services/storage-config.ts'
 // Use cases
 export * from './usecases/create-ticket.ts'
 export * from './usecases/delete-ticket.ts'
-export * from './usecases/get-all-tickets.ts'
 export * from './usecases/get-ticket-by-id.ts'
 export * from './usecases/search-tickets.ts'
 export * from './usecases/update-ticket-content.ts'

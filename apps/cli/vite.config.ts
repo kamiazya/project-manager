@@ -10,7 +10,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
   },
   resolve: {
-    conditions: ['@project-manager/source', 'import', 'module', 'browser', 'default'],
+    conditions: ['development', 'import', 'module', 'browser', 'default'],
   },
   plugins: [
     cleanArchitecture({

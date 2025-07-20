@@ -5,7 +5,6 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "customConditions": ["@project-manager/source"],
     "skipLibCheck": true
   },
   "include": ["src/**/*"],

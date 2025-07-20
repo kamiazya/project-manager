@@ -1,4 +1,4 @@
-import { type CreateTicketData, Ticket, TicketValidationError } from '@project-manager/domain'
+import { Ticket, TicketValidationError } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { CreateTicket } from './create-ticket.ts'
@@ -11,9 +11,7 @@ describe('CreateTicket', () => {
     mockTicketRepository = {
       save: vi.fn(),
       findById: vi.fn(),
-      findAll: vi.fn(),
-      findAllWithFilters: vi.fn(),
-      searchTickets: vi.fn(),
+      queryTickets: vi.fn(),
       delete: vi.fn(),
     }
     createTicketUseCase = new CreateTicket.UseCase(mockTicketRepository)

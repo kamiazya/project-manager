@@ -7,28 +7,15 @@ export namespace DeleteTicket {
     readonly id: string
   }
 
-  export class Response {
-    constructor(
-      public readonly id: string,
-      public readonly success: boolean
-    ) {}
-
-    static success(id: string): Response {
-      return new Response(id, true)
-    }
-  }
-
   /**
    * Use case for deleting a ticket.
    */
-  export class UseCase implements IUseCase<Request, Response> {
+  export class UseCase implements IUseCase<Request, void> {
     constructor(private readonly ticketRepository: TicketRepository) {}
 
-    async execute(request: Request): Promise<Response> {
+    async execute(request: Request): Promise<void> {
       const ticketId = TicketId.create(request.id)
       await this.ticketRepository.delete(ticketId)
-
-      return Response.success(request.id)
     }
   }
 }

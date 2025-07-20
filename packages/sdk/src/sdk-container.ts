@@ -30,91 +30,100 @@ export interface SDKConfig {
   customRepository?: TicketRepository
 }
 
+// Global state for singleton pattern
+let factoryInstance: UseCaseFactory | null = null
+
 /**
- * Creates and configures Use Case Factory for SDK
- * Simplified DI using only UseCaseFactory, removing inversify dependency
+ * Create configured Use Case Factory
  */
-export class SDKContainer {
-  private static instance: UseCaseFactory | null = null
-
-  /**
-   * Create configured Use Case Factory
-   */
-  static async create(config: SDKConfig = {}): Promise<UseCaseFactory> {
-    // Skip singleton for test environment to ensure test isolation
-    if (SDKContainer.instance && config.environment !== 'test') {
-      return SDKContainer.instance
-    }
-
-    // Import required modules
-    const applicationModule = await import('@project-manager/application')
-    const infrastructureModule = await import('@project-manager/infrastructure')
-
-    // Configure storage path with priority order:
-    // 1. dataDirectory (custom override)
-    // 2. storagePath (direct path)
-    // 3. XDG-compliant default with app type consideration
-    const storagePath = SDKContainer.resolveStoragePath(config, applicationModule)
-
-    // Configure repository
-    const repository =
-      config.customRepository || new infrastructureModule.JsonTicketRepository(storagePath)
-
-    // Configure Use Case Factory
-    const { UseCaseFactoryProvider } = await import('./factories/use-case-factory-provider.ts')
-    const provider = UseCaseFactoryProvider.getInstance()
-    const factory = provider.createUseCaseFactory({ ticketRepository: repository })
-
-    // Don't cache instance in test environment to ensure test isolation
-    if (config.environment !== 'test') {
-      SDKContainer.instance = factory
-    }
-    return factory
+export async function createSDKContainer(config: SDKConfig = {}): Promise<UseCaseFactory> {
+  // Skip singleton for test environment to ensure test isolation
+  if (factoryInstance && config.environment !== 'test') {
+    return factoryInstance
   }
 
-  /**
-   * Reset factory instance (for testing)
-   */
-  static async reset(): Promise<void> {
-    SDKContainer.instance = null
+  // Import required modules
+  const infrastructureModule = await import('@project-manager/infrastructure')
 
-    // Also reset the underlying UseCaseFactoryProvider for test isolation
-    const { UseCaseFactoryProvider } = await import('./factories/use-case-factory-provider.ts')
-    UseCaseFactoryProvider.resetInstance()
+  // Configure storage path with priority order:
+  // 1. storagePath (direct path)
+  // 2. XDG-compliant default
+  const storagePath = resolveStoragePath(config)
+
+  // Configure repository
+  const repository =
+    config.customRepository || new infrastructureModule.JsonTicketRepository(storagePath)
+
+  // Configure Use Case Factory
+  const { UseCaseFactoryProvider } = await import('./factories/use-case-factory-provider.ts')
+  const provider = UseCaseFactoryProvider.getInstance()
+  const factory = provider.createUseCaseFactory({ ticketRepository: repository })
+
+  // Don't cache instance in test environment to ensure test isolation
+  if (config.environment !== 'test') {
+    factoryInstance = factory
+  }
+  return factory
+}
+
+/**
+ * Reset factory instance (for testing)
+ */
+export async function resetSDKContainer(): Promise<void> {
+  factoryInstance = null
+
+  // Also reset the underlying UseCaseFactoryProvider for test isolation
+  const { UseCaseFactoryProvider } = await import('./factories/use-case-factory-provider.ts')
+  UseCaseFactoryProvider.resetInstance()
+}
+
+/**
+ * Resolve storage path with priority order
+ */
+function resolveStoragePath(config: SDKConfig): string {
+  // Priority 1: Direct storage path
+  if (config.storagePath) {
+    return config.storagePath
   }
 
-  /**
-   * Resolve storage path with priority order
-   */
-  private static resolveStoragePath(config: SDKConfig, applicationModule: any): string {
-    // Priority 1: Direct storage path
-    if (config.storagePath) {
-      return config.storagePath
-    }
+  // Priority 2: XDG-compliant default using Node.js built-ins directly
+  // Import Node.js modules
+  const os = require('node:os')
+  const path = require('node:path')
 
-    // Priority 2: XDG-compliant default
-    return applicationModule.StorageConfigService.resolveStoragePath()
-  }
+  const homeDir = os.homedir()
+  const configHome = process.env.XDG_CONFIG_HOME || path.join(homeDir, '.config')
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const dirName = isDevelopment ? 'project-manager-dev' : 'project-manager'
 
-  /**
-   * Get resolved configuration for debugging
-   */
-  static getResolvedConfig(config: SDKConfig): {
-    storagePath: string
-    environment: string
-  } {
-    return {
-      storagePath: config.storagePath || 'XDG-compliant default',
-      environment: config.environment || 'production',
-    }
-  }
+  return path.join(configHome, dirName, 'tickets.json')
+}
 
-  /**
-   * Get storage path for given configuration
-   */
-  static async getStoragePath(config: SDKConfig = {}): Promise<string> {
-    // This is a helper method that can be called without creating the full container
-    const applicationModule = await import('@project-manager/application')
-    return SDKContainer.resolveStoragePath(config, applicationModule)
+/**
+ * Get resolved configuration for debugging
+ */
+export function getResolvedSDKConfig(config: SDKConfig): {
+  storagePath: string
+  environment: string
+} {
+  return {
+    storagePath: config.storagePath || 'XDG-compliant default',
+    environment: config.environment || 'production',
   }
+}
+
+/**
+ * Get storage path for given configuration
+ */
+export async function getSDKStoragePath(config: SDKConfig = {}): Promise<string> {
+  // This is a helper method that can be called without creating the full container
+  return resolveStoragePath(config)
+}
+
+// Backward compatibility exports
+export const SDKContainer = {
+  create: createSDKContainer,
+  reset: resetSDKContainer,
+  getResolvedConfig: getResolvedSDKConfig,
+  getStoragePath: getSDKStoragePath,
 }

@@ -1,4 +1,4 @@
-import { type CreateTicketData, Ticket } from '@project-manager/domain'
+import { Ticket } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
@@ -9,9 +9,9 @@ export namespace CreateTicket {
    */
   export interface Request {
     readonly title: string
-    readonly priority: string
-    readonly type: string
-    readonly status: string
+    readonly priority?: string
+    readonly type?: string
+    readonly status?: string
     readonly description?: string
   }
 
@@ -28,17 +28,14 @@ export namespace CreateTicket {
     constructor(private readonly ticketRepository: TicketRepository) {}
 
     async execute(request: Request): Promise<Response> {
-      // Convert request to domain create data
-      const createData: CreateTicketData = {
+      // Use domain entity factory method
+      const ticket = Ticket.create({
         title: request.title.trim(),
         description: request.description?.trim(),
-        priority: request.priority,
-        type: request.type,
+        priority: request.priority || 'medium',
+        type: request.type ?? 'task',
         status: request.status || 'pending',
-      }
-
-      // Use domain entity factory method
-      const ticket = Ticket.create(createData)
+      })
 
       // Persist through repository
       await this.ticketRepository.save(ticket)

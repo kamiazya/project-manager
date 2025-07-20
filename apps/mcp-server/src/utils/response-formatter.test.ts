@@ -7,65 +7,80 @@ describe('response-formatter', () => {
       const data = { id: '123', name: 'Test' }
       const response = formatSuccessResponse(data)
 
-      expect(response).toEqual({
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({ success: true, id: '123', name: 'Test' }, null, 2),
-          },
-        ],
-      })
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"id":"123","name":"Test","success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
     })
 
     it('should handle empty object data', () => {
       const data = {}
       const response = formatSuccessResponse(data)
 
-      expect(response).toEqual({
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({ success: true }, null, 2),
-          },
-        ],
-      })
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
     })
 
     it('should handle null data', () => {
       const data = null
       const response = formatSuccessResponse(data)
 
-      expect(response).toEqual({
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({ success: true }, null, 2),
-          },
-        ],
-      })
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
     })
 
     it('should handle undefined data', () => {
       const data = undefined
       const response = formatSuccessResponse(data)
 
-      expect(response).toEqual({
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({ success: true }, null, 2),
-          },
-        ],
-      })
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
     })
 
     it('should handle array data', () => {
       const data = [{ id: 1 }, { id: 2 }]
       const response = formatSuccessResponse(data)
 
-      expect(response.content[0]!.text).toContain('"success": true')
-      expect(response.content[0]!.text).toContain('"0"')
-      expect(response.content[0]!.text).toContain('"1"')
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"0":{"id":1},"1":{"id":2},"success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
     })
 
     it('should handle nested object data', () => {
@@ -110,29 +125,49 @@ describe('response-formatter', () => {
       const data = 42
       const response = formatSuccessResponse(data)
 
-      expect(response.content[0]!.text).toContain('"success": true')
-      // Number spreads as empty object, so only success property remains
-      const parsedText = JSON.parse(response.content[0]!.text)
-      expect(parsedText.success).toBe(true)
-      expect(Object.keys(parsedText)).toEqual(['success'])
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
     })
 
     it('should handle boolean data', () => {
       const data = true
       const response = formatSuccessResponse(data)
 
-      expect(response.content[0]!.text).toContain('"success": true')
-      expect(response.content[0]!.text).toContain('true')
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
     })
 
     it('should format with proper JSON indentation', () => {
       const data = { nested: { value: 'test' } }
       const response = formatSuccessResponse(data)
 
-      // Should contain proper indentation (2 spaces)
-      expect(response.content[0]!.text).toContain('  "success": true')
-      expect(response.content[0]!.text).toContain('  "nested": {')
-      expect(response.content[0]!.text).toContain('    "value": "test"')
+      // Note: formatSuccessResponse uses compact JSON format (no pretty printing)
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"nested":{"value":"test"},"success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
     })
 
     it('should not include isError flag in success response', () => {
@@ -178,8 +213,11 @@ describe('response-formatter', () => {
       }
       const response = formatSuccessResponse(largeData)
 
-      expect(response.content[0]!.text).toContain('"success": true')
-      expect(response.content[0]!.text).toContain('"items"')
+      const parsedText = JSON.parse(response.content[0]!.text)
+      expect(parsedText.success).toBe(true)
+      expect(parsedText.items).toHaveLength(1000)
+      expect(parsedText.items[0]).toEqual({ id: 0, name: 'Item 0' })
+      expect(parsedText.items[999]).toEqual({ id: 999, name: 'Item 999' })
       expect(response.content[0]!.text.length).toBeGreaterThan(10000)
     })
   })
@@ -194,7 +232,7 @@ describe('response-formatter', () => {
           {
             type: 'text',
             text: JSON.stringify(
-              { success: false, message: 'Something went wrong', code: 'ERR001' },
+              { message: 'Something went wrong', code: 'ERR001', success: false },
               null,
               2
             ),
@@ -212,7 +250,7 @@ describe('response-formatter', () => {
         content: [
           {
             type: 'text',
-            text: JSON.stringify({ success: false, message: 'Warning message' }, null, 2),
+            text: JSON.stringify({ message: 'Warning message', success: false }, null, 2),
           },
         ],
         isError: false,
@@ -234,10 +272,17 @@ describe('response-formatter', () => {
       const error = 'Simple error string'
       const response = formatErrorResponse(error)
 
-      expect(response.content[0]!.text).toContain('"success": false')
-      // String gets spread as indexed character properties
-      expect(response.content[0]!.text).toContain('"0": "S"')
-      expect(response.content[0]!.text).toContain('"1": "i"')
+      expect(response.content).toMatchInlineSnapshot(`
+        [
+          {
+            "text": "{
+          "message": "Simple error string",
+          "success": false
+        }",
+            "type": "text",
+          },
+        ]
+      `)
       expect(response.isError).toBe(true)
     })
 
@@ -245,16 +290,38 @@ describe('response-formatter', () => {
       const error = null
       const response = formatErrorResponse(error)
 
-      expect(response.content[0]!.text).toContain('"success": false')
-      expect(response.isError).toBe(true)
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{
+          "success": false
+        }",
+              "type": "text",
+            },
+          ],
+          "isError": true,
+        }
+      `)
     })
 
     it('should handle undefined error', () => {
       const error = undefined
       const response = formatErrorResponse(error)
 
-      expect(response.content[0]!.text).toContain('"success": false')
-      expect(response.isError).toBe(true)
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{
+          "success": false
+        }",
+              "type": "text",
+            },
+          ],
+          "isError": true,
+        }
+      `)
     })
 
     it('should handle error with existing success property', () => {
@@ -262,8 +329,8 @@ describe('response-formatter', () => {
       const response = formatErrorResponse(error)
 
       const parsedText = JSON.parse(response.content[0]!.text)
-      // Error success property overrides the initial false value due to spread order
-      expect(parsedText.success).toBe(true)
+      // Formatter's success: false always takes precedence
+      expect(parsedText.success).toBe(false)
       expect(parsedText.message).toBe('Override test')
     })
 
@@ -294,10 +361,23 @@ describe('response-formatter', () => {
       }
       const response = formatErrorResponse(error)
 
-      // Should contain proper indentation (2 spaces)
-      expect(response.content[0]!.text).toContain('  "success": false')
-      expect(response.content[0]!.text).toContain('  "error": {')
-      expect(response.content[0]!.text).toContain('    "message": "Nested error"')
+      expect(response).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{
+          "error": {
+            "message": "Nested error",
+            "stack": "Error stack trace"
+          },
+          "success": false
+        }",
+              "type": "text",
+            },
+          ],
+          "isError": true,
+        }
+      `)
     })
 
     it('should handle error with stack trace', () => {
@@ -377,8 +457,10 @@ describe('response-formatter', () => {
       }
 
       const response = formatSuccessResponse(deepNested)
-      expect(response.content[0]!.text).toContain('"success": true')
-      expect(response.content[0]!.text).toContain('"level": 0')
+      const parsedText = JSON.parse(response.content[0]!.text)
+      expect(parsedText.success).toBe(true)
+      expect(parsedText.level).toBe(0)
+      expect(parsedText.next.level).toBe(1)
     })
 
     it('should handle objects with many properties', () => {
@@ -388,17 +470,36 @@ describe('response-formatter', () => {
       }
 
       const response = formatSuccessResponse(manyProps)
-      expect(response.content[0]!.text).toContain('"success": true')
-      expect(response.content[0]!.text).toContain('"prop0": "value0"')
-      expect(response.content[0]!.text).toContain('"prop999": "value999"')
+      const parsedText = JSON.parse(response.content[0]!.text)
+      expect(parsedText.success).toBe(true)
+      expect(parsedText.prop0).toBe('value0')
+      expect(parsedText.prop999).toBe('value999')
     })
 
     it('should handle empty arrays and objects consistently', () => {
       const emptyArray = formatSuccessResponse([])
       const emptyObject = formatSuccessResponse({})
 
-      expect(emptyArray.content[0]!.text).toContain('"success": true')
-      expect(emptyObject.content[0]!.text).toContain('"success": true')
+      expect(emptyArray).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
+      expect(emptyObject).toMatchInlineSnapshot(`
+        {
+          "content": [
+            {
+              "text": "{"success":true}",
+              "type": "text",
+            },
+          ],
+        }
+      `)
     })
 
     it('should handle response formatting performance efficiently', () => {
@@ -410,7 +511,9 @@ describe('response-formatter', () => {
       const response = formatSuccessResponse(largeData)
       const duration = Date.now() - start
 
-      expect(response.content[0]!.text).toContain('"success": true')
+      const parsedText = JSON.parse(response.content[0]!.text)
+      expect(parsedText.success).toBe(true)
+      expect(parsedText.items).toHaveLength(100)
       expect(duration).toBeLessThan(100) // Should complete in under 100ms
     })
   })

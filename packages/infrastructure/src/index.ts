@@ -7,7 +7,7 @@
  */
 
 // Re-export application interfaces that infrastructure implements
-export type { TicketRepository } from '@project-manager/application'
+export type { StorageConfigService, TicketRepository } from '@project-manager/application'
 // Re-export domain types that infrastructure needs
 export type {
   Ticket,
@@ -19,4 +19,5 @@ export type {
 // Infrastructure implementations
 export * from './infrastructure/adapters/json-ticket-repository.ts'
 export * from './infrastructure/errors/infrastructure-errors.ts'
+export * from './infrastructure/services/xdg-storage-config-service.ts'
 export * from './infrastructure/types/persistence-types.ts'

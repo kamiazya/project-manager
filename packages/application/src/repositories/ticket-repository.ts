@@ -1,20 +1,10 @@
 import type { Ticket, TicketId } from '@project-manager/domain'
 
 /**
- * Filters for querying tickets at repository level
+ * Unified criteria for querying and searching tickets
+ * Supports both basic filtering and text-based search
  */
-export interface TicketQueryFilters {
-  status?: string
-  priority?: string
-  type?: string
-  limit?: number
-  offset?: number
-}
-
-/**
- * Search criteria for text-based ticket search
- */
-export interface TicketSearchCriteria {
+export interface TicketQueryCriteria {
   status?: string
   priority?: string
   type?: string
@@ -29,11 +19,15 @@ export interface TicketSearchCriteria {
  * Uses domain objects (value objects) instead of primitives
  */
 export interface TicketRepository {
+  /**
+   * Static identifier for repository type - minification-safe and stable across instances
+   * This should be implemented as a readonly property by concrete implementations
+   */
+  readonly repositoryId: string
+
   save(ticket: Ticket): Promise<void>
   findById(id: TicketId): Promise<Ticket | null>
-  findAll(): Promise<Ticket[]>
-  findAllWithFilters(filters: TicketQueryFilters): Promise<Ticket[]>
-  searchTickets(criteria: TicketSearchCriteria): Promise<Ticket[]>
+  queryTickets(criteria: TicketQueryCriteria): Promise<Ticket[]>
   delete(id: TicketId): Promise<void>
 }
 
