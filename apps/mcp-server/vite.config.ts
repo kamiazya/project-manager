@@ -41,17 +41,7 @@ export default defineConfig({
         // External all our internal packages
         if (id.startsWith('@project-manager/')) return true
         // External all third-party packages
-        return [
-          '@modelcontextprotocol/sdk',
-          'zod',
-          'async_hooks',
-          'buffer',
-          'string_decoder',
-          'raw-body',
-          'content-type',
-          'safer-buffer',
-          'iconv-lite',
-        ].includes(id)
+        return ['@modelcontextprotocol/sdk', 'zod'].includes(id)
       },
       output: {
         banner: chunk => {
