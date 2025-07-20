@@ -3,6 +3,8 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { projectManagerArchitectureRules } from '../../etc/vite/architecture.config.ts'
+import { cleanArchitecture } from '../../etc/vite/plugins/architecture-fitness.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -16,6 +18,7 @@ export default defineConfig({
     conditions: ['development', 'import', 'module', 'browser', 'default'],
   },
   plugins: [
+    cleanArchitecture(projectManagerArchitectureRules),
     dts({
       rollupTypes: true,
       insertTypesEntry: true,

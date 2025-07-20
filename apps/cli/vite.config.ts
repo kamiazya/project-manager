@@ -1,7 +1,55 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
-import { cleanArchitecture } from '../../etc/vite/plugins/architecture-fitness.ts'
+import { projectManagerArchitectureRules } from '../../etc/vite/architecture.config.ts'
+import {
+  type ArchitectureRules,
+  cleanArchitecture,
+} from '../../etc/vite/plugins/architecture-fitness.ts'
+
+// CLI アプリケーション内部のアーキテクチャルール
+const cliInternalRules: Partial<ArchitectureRules> = {
+  layers: [
+    {
+      name: 'cli-presentation',
+      patterns: [
+        '**/apps/cli/src/commands/**',
+        '**/apps/cli/src/hooks/**',
+        '**/apps/cli/src/bin/**',
+      ],
+      allowedDependencies: ['cli-application', 'sdk'],
+      description: 'CLI commands, hooks, and entry points',
+    },
+    {
+      name: 'cli-application',
+      patterns: ['**/apps/cli/src/lib/**', '**/apps/cli/src/utils/**'],
+      allowedDependencies: ['sdk'],
+      description: 'CLI application logic and utilities',
+    },
+  ],
+  imports: [
+    {
+      pattern: '**/apps/cli/src/commands/**',
+      forbidden: [
+        '**/packages/infrastructure/**',
+        '**/packages/application/**',
+        '**/packages/domain/**',
+        '**/packages/base/**',
+      ],
+      message: 'CLI commands should only import from SDK layer',
+    },
+    {
+      pattern: '**/apps/cli/src/lib/**',
+      forbidden: [
+        '**/packages/infrastructure/**',
+        '**/packages/application/**',
+        '**/packages/domain/**',
+        '**/packages/base/**',
+      ],
+      message: 'CLI utilities should only import from SDK layer',
+    },
+  ],
+}
 
 export default defineConfig({
   test: {
@@ -13,40 +61,7 @@ export default defineConfig({
     conditions: ['development', 'import', 'module', 'browser', 'default'],
   },
   plugins: [
-    cleanArchitecture({
-      layers: [
-        {
-          name: 'presentation',
-          patterns: ['**/commands/**', '**/hooks/**', '**/bin/**'],
-          allowedDependencies: ['application', 'domain', 'shared'],
-          description: 'CLI commands, hooks, and entry points',
-        },
-        {
-          name: 'application',
-          patterns: ['**/lib/**', '**/utils/**'],
-          allowedDependencies: ['domain', 'shared'],
-          description: 'CLI application logic and utilities',
-        },
-        {
-          name: 'shared',
-          patterns: ['**/shared/**'],
-          allowedDependencies: [],
-          description: 'Common utilities and patterns',
-        },
-      ],
-      imports: [
-        {
-          pattern: '**/commands/**',
-          forbidden: ['**/infrastructure/**'],
-          message: 'CLI commands should not directly import infrastructure implementations',
-        },
-        {
-          pattern: '**/lib/**',
-          forbidden: ['**/infrastructure/**'],
-          message: 'CLI utilities should not directly import infrastructure implementations',
-        },
-      ],
-    }),
+    cleanArchitecture(projectManagerArchitectureRules, cliInternalRules),
     dts({
       entryRoot: 'src',
       outDir: 'dist',

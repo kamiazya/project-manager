@@ -86,6 +86,22 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
     )
   }
 
+  const detectLayerFromPackageName = (packageName: string): LayerDefinition | null => {
+    // Map @project-manager/* package names to layers
+    const packageLayerMap: Record<string, string> = {
+      '@project-manager/base': 'base',
+      '@project-manager/domain': 'domain',
+      '@project-manager/application': 'application',
+      '@project-manager/infrastructure': 'infrastructure',
+      '@project-manager/sdk': 'sdk',
+    }
+
+    const layerName = packageLayerMap[packageName]
+    if (!layerName) return null
+
+    return layers.find(layer => layer.name === layerName) || null
+  }
+
   const isAllowedDependency = (fromLayer: LayerDefinition, toLayer: LayerDefinition): boolean => {
     return fromLayer.allowedDependencies.includes(toLayer.name)
   }
@@ -128,27 +144,37 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
     async resolveId(source: string, importer?: string) {
       if (!importer) return null
 
-      // Skip node_modules and virtual modules
-      if (source.startsWith('virtual:') || source.includes('node_modules')) {
+      // Skip node_modules and virtual modules, but allow @project-manager/* packages
+      if (
+        source.startsWith('virtual:') ||
+        (source.includes('node_modules') && !source.startsWith('@project-manager/'))
+      ) {
         return null
       }
 
       try {
-        // Resolve the absolute path of the imported module
-        const resolvedPath = resolve(dirname(importer), source)
+        const importerLayer = detectLayer(importer)
 
         // Check layer violations
-        if (checks.layerViolations) {
-          const importerLayer = detectLayer(importer)
-          const importedLayer = detectLayer(resolvedPath)
+        if (checks.layerViolations && importerLayer) {
+          let importedLayer: LayerDefinition | null = null
 
-          if (importerLayer && importedLayer && importerLayer !== importedLayer) {
+          // Handle @project-manager/* package imports
+          if (source.startsWith('@project-manager/')) {
+            importedLayer = detectLayerFromPackageName(source)
+          } else {
+            // Handle relative path imports
+            const resolvedPath = resolve(dirname(importer), source)
+            importedLayer = detectLayer(resolvedPath)
+          }
+
+          if (importedLayer && importerLayer !== importedLayer) {
             if (!isAllowedDependency(importerLayer, importedLayer)) {
               createViolationError(
                 'Layer Boundary',
                 `${importerLayer.name} layer cannot import from ${importedLayer.name} layer`,
                 importer,
-                resolvedPath
+                source
               )
             }
           }
@@ -159,12 +185,17 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
           for (const rule of importRules) {
             if (matchesPattern(importer, rule.pattern)) {
               for (const forbidden of rule.forbidden) {
-                if (matchesPattern(resolvedPath, forbidden)) {
+                // Check both package imports and resolved paths
+                const targetToCheck = source.startsWith('@project-manager/')
+                  ? source
+                  : resolve(dirname(importer), source)
+
+                if (matchesPattern(targetToCheck, forbidden)) {
                   createViolationError(
                     'Import Restriction',
                     rule.message || `Import from ${forbidden} is forbidden`,
                     importer,
-                    resolvedPath
+                    source
                   )
                 }
               }
@@ -184,6 +215,31 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
 
     // Hook into code transformation
     async transform(code: string, id: string) {
+      // Check for @project-manager/* imports in the code
+      if (checks.layerViolations) {
+        const importerLayer = detectLayer(id)
+        if (importerLayer) {
+          const packageImportRegex = /import\s+.*?from\s+['"](@project-manager\/[^'"]+)['"]/g
+          let match: RegExpExecArray | null = null
+
+          // biome-ignore lint/suspicious/noAssignInExpressions: Common pattern for regex matching
+          while ((match = packageImportRegex.exec(code)) !== null) {
+            const packageName = match[1]
+            const importedLayer = detectLayerFromPackageName(packageName)
+
+            if (importedLayer && importerLayer !== importedLayer) {
+              if (!isAllowedDependency(importerLayer, importedLayer)) {
+                createViolationError(
+                  'Layer Boundary',
+                  `${importerLayer.name} layer cannot import from ${importedLayer.name} layer`,
+                  id,
+                  packageName
+                )
+              }
+            }
+          }
+        }
+      }
       // Check export violations for specific files
       if (checks.exportViolations) {
         for (const rule of exportRules) {
@@ -312,19 +368,70 @@ export const cleanArchitectureRules: ArchitectureRules = {
 }
 
 /**
- * Convenience function for Clean Architecture setup
+ * Merge multiple architecture rule sets
  */
-export function cleanArchitecture(customRules?: Partial<ArchitectureRules>): Plugin {
-  const rules = customRules
-    ? {
-        ...cleanArchitectureRules,
-        ...customRules,
-        layers: customRules.layers || cleanArchitectureRules.layers,
-        exports: customRules.exports || cleanArchitectureRules.exports,
-        imports: customRules.imports || cleanArchitectureRules.imports,
-        checks: { ...cleanArchitectureRules.checks, ...customRules.checks },
+export function mergeArchitectureRules(
+  ...ruleSets: (ArchitectureRules | Partial<ArchitectureRules>)[]
+): ArchitectureRules {
+  const merged: ArchitectureRules = {
+    layers: [],
+    exports: [],
+    imports: [],
+    checks: {
+      layerViolations: true,
+      exportViolations: true,
+      importViolations: true,
+      circularDependencies: false,
+    },
+  }
+
+  const layerMap = new Map<string, LayerDefinition>()
+
+  for (const rules of ruleSets) {
+    // Merge layers by name to avoid duplicates and conflicts
+    if (rules.layers) {
+      for (const layer of rules.layers) {
+        const existing = layerMap.get(layer.name)
+        if (existing) {
+          // Merge allowedDependencies for existing layers
+          const combinedDependencies = [
+            ...new Set([...existing.allowedDependencies, ...layer.allowedDependencies]),
+          ]
+          layerMap.set(layer.name, {
+            ...existing,
+            ...layer,
+            allowedDependencies: combinedDependencies,
+          })
+        } else {
+          layerMap.set(layer.name, layer)
+        }
       }
-    : cleanArchitectureRules
+    }
+    if (rules.exports) {
+      merged.exports!.push(...rules.exports)
+    }
+    if (rules.imports) {
+      merged.imports!.push(...rules.imports)
+    }
+    if (rules.checks) {
+      merged.checks = { ...merged.checks, ...rules.checks }
+    }
+  }
+
+  merged.layers = Array.from(layerMap.values())
+  return merged
+}
+
+/**
+ * Convenience function for Clean Architecture setup with multiple rule sets
+ */
+export function cleanArchitecture(
+  ...ruleSets: (ArchitectureRules | Partial<ArchitectureRules>)[]
+): Plugin {
+  const rules =
+    ruleSets.length > 0
+      ? mergeArchitectureRules(cleanArchitectureRules, ...ruleSets)
+      : cleanArchitectureRules
 
   return architectureFitnessPlugin(rules)
 }

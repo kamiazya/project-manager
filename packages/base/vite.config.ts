@@ -1,6 +1,8 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { projectManagerArchitectureRules } from '../../etc/vite/architecture.config.ts'
+import { cleanArchitecture } from '../../etc/vite/plugins/architecture-fitness.ts'
 
 export default defineConfig({
   test: {
@@ -18,6 +20,7 @@ export default defineConfig({
     conditions: ['development', 'import', 'module', 'browser', 'default'],
   },
   plugins: [
+    cleanArchitecture(projectManagerArchitectureRules),
     dts({
       entryRoot: 'src',
       outDir: 'dist',

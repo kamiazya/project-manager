@@ -68,12 +68,13 @@ export const projectManagerArchitectureRules: ArchitectureRules = {
         '**/packages/application/**',
         '**/packages/sdk/**',
         '**/apps/**',
+        'node:*',
       ],
       message: 'Domain layer must remain pure and only depend on base layer',
     },
     {
       pattern: '**/packages/application/**',
-      forbidden: ['**/packages/infrastructure/**', '**/packages/sdk/**', '**/apps/**'],
+      forbidden: ['**/packages/infrastructure/**', '**/packages/sdk/**', '**/apps/**', 'node:*'],
       message: 'Application layer should not depend on infrastructure or outer layers',
     },
     {
@@ -84,8 +85,14 @@ export const projectManagerArchitectureRules: ArchitectureRules = {
         '**/packages/infrastructure/**',
         '**/packages/sdk/**',
         '**/apps/**',
+        'node:*',
       ],
       message: 'Base layer must not depend on any other project layers',
+    },
+    {
+      pattern: '**/packages/sdk/**',
+      forbidden: ['**/apps/**', 'node:*'],
+      message: 'SDK layer should not depend on Node.js APIs (inversify for DI is allowed)',
     },
     {
       pattern: '**/apps/**',

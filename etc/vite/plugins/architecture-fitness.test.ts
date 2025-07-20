@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import type { Plugin } from 'vite'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { type ArchitectureRules, architectureFitnessPlugin } from './architecture-fitness'
 
 // A simplified version of the plugin's resolveId for testing
