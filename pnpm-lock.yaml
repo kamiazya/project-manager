@@ -47,12 +47,30 @@ importers:
       '@biomejs/biome':
         specifier: ^2.1.1
         version: 2.1.1
+      '@modelcontextprotocol/sdk':
+        specifier: 'catalog:'
+        version: 1.15.1
+      '@project-manager/application':
+        specifier: workspace:*
+        version: link:packages/application
+      '@project-manager/base':
+        specifier: workspace:*
+        version: link:packages/base
       '@project-manager/cli':
         specifier: workspace:*
         version: link:apps/cli
+      '@project-manager/domain':
+        specifier: workspace:*
+        version: link:packages/domain
+      '@project-manager/infrastructure':
+        specifier: workspace:*
+        version: link:packages/infrastructure
       '@project-manager/mcp-server':
         specifier: workspace:*
         version: link:apps/mcp-server
+      '@project-manager/sdk':
+        specifier: workspace:*
+        version: link:packages/sdk
       '@types/node':
         specifier: 'catalog:'
         version: 24.0.12
@@ -86,6 +104,9 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.0.12)(tsx@4.20.3)(yaml@2.8.0)
+      zod:
+        specifier: ^3.25.56
+        version: 3.25.76
 
   apps/cli:
     dependencies:
@@ -159,18 +180,6 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 'catalog:'
         version: 1.15.1
-      '@project-manager/application':
-        specifier: workspace:*
-        version: link:../../packages/application
-      '@project-manager/base':
-        specifier: workspace:*
-        version: link:../../packages/base
-      '@project-manager/domain':
-        specifier: workspace:*
-        version: link:../../packages/domain
-      '@project-manager/infrastructure':
-        specifier: workspace:*
-        version: link:../../packages/infrastructure
       '@project-manager/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk

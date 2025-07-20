@@ -14,7 +14,8 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "prepare": "husky",
-    "pm": "pm"
+    "pm": "pm",
+    "pm-mcp-server": "tsx scripts/mcp-launcher.ts"
   },
   "keywords": [
     "cli",
@@ -26,8 +27,14 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.1.1",
+    "@modelcontextprotocol/sdk": "catalog:",
+    "@project-manager/application": "workspace:*",
+    "@project-manager/base": "workspace:*",
     "@project-manager/cli": "workspace:*",
+    "@project-manager/domain": "workspace:*",
+    "@project-manager/infrastructure": "workspace:*",
     "@project-manager/mcp-server": "workspace:*",
+    "@project-manager/sdk": "workspace:*",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "husky": "^9.1.7",
@@ -38,7 +45,8 @@
     "typescript-mcp": "^0.0.14",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "zod": "^3.25.56"
   },
   "packageManager": "pnpm@10.13.1",
   "lint-staged": {

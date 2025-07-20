@@ -1,12 +1,15 @@
 #!/usr/bin/env tsx
 
 /**
- * Development wrapper for the MCP server with hot reload functionality.
- * This script automatically sets NODE_ENV=development and provides hot reload
- * when files in the src/ directory change.
+ * MCP Server Development Launcher for project-manager
  *
- * In production, this file is not included (see package.json publishConfig).
- * The production binary uses mcp-server.ts directly.
+ * This launcher provides a development-focused entry point for the MCP server that:
+ * - Enables hot reload using tsx for development productivity
+ * - Transparently forwards all command line arguments
+ * - Watches for file changes and automatically restarts the server
+ *
+ * This approach separates development concerns from the core MCP server,
+ * maintaining clean architecture and single responsibility principle.
  */
 
 import { type ChildProcess, spawn } from 'node:child_process'
@@ -26,73 +29,79 @@ const colors = {
 const HOT_RELOAD_PREFIX = `${colors.cyan}[Hot Reload]${colors.reset}`
 
 // --- Environment Setup ---
-// Set development environment as default if not specified
-if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = 'development'
-}
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const monorepoRoot = path.resolve(__dirname, '..')
+const mcpServerEntry = path.join(__dirname, 'mcp-server.ts')
+const scriptsConfigPath = path.join(__dirname, 'tsconfig.json')
 
-// Check if hot reload should be enabled
-const enableHotReload = process.env.NODE_ENV === 'development'
+// Watch directories for file changes (packages and mcp-server source)
+const watchDirectories = [
+  path.join(monorepoRoot, 'packages'),
+  path.join(monorepoRoot, 'apps/mcp-server/src'),
+]
+
+// Set development environment
+process.env.NODE_ENV = 'development'
+
+// Forward all command line arguments to the MCP server
+const forwardedArgs = process.argv.slice(2)
 
 // --- Main Logic ---
-if (!enableHotReload) {
-  // Production mode: Just run the server directly without hot reload
-  import('./mcp-server.ts')
-} else {
-  // Development mode: Run with hot reload
-  runWithHotReload().catch(error => {
-    console.error(
-      `${HOT_RELOAD_PREFIX} ${colors.red}Failed to start hot reload:${colors.reset}`,
-      error
-    )
-    process.exit(1)
-  })
-}
+runWithHotReload().catch(error => {
+  console.error(
+    `${HOT_RELOAD_PREFIX} ${colors.red}Failed to start hot reload:${colors.reset}`,
+    error
+  )
+  process.exit(1)
+})
 
 // --- Hot Reload Implementation ---
 async function runWithHotReload() {
-  const __filename = fileURLToPath(import.meta.url)
-  const __dirname = path.dirname(__filename)
-
-  const packageRoot = path.resolve(__dirname, '../..')
-  const serverEntry = path.join(packageRoot, 'src/bin/mcp-server.ts')
-  const tsconfigPath = path.join(packageRoot, 'tsconfig.json')
-  const srcDir = path.join(packageRoot, 'src')
-
   let child: ChildProcess | null = null
   let isRestarting = false
   let restartTimeout: NodeJS.Timeout | null = null
   let watchController: AbortController | null = null
 
-  // Track known files for change detection
-  const knownFiles = new Set<string>()
+  // Track known files for change detection across all watch directories
+  const knownFiles = new Map<string, Set<string>>()
 
   const log = (message: string) => console.error(`${HOT_RELOAD_PREFIX} ${message}`)
 
-  // Initialize known files list
+  // Check if file should be ignored (test files)
+  function shouldIgnoreFile(filePath: string): boolean {
+    return filePath.includes('.test.') || filePath.includes('.spec.')
+  }
+
+  // Initialize known files list for all watch directories
   async function initializeKnownFiles() {
-    try {
-      const files = await readdir(srcDir, { recursive: true })
-      for (const file of files) {
-        if (typeof file === 'string') {
-          knownFiles.add(file)
+    for (const watchDir of watchDirectories) {
+      try {
+        const files = await readdir(watchDir, { recursive: true })
+        const fileSet = new Set<string>()
+        for (const file of files) {
+          if (typeof file === 'string' && !shouldIgnoreFile(file)) {
+            fileSet.add(file)
+          }
         }
+        knownFiles.set(watchDir, fileSet)
+      } catch (error) {
+        log(
+          `${colors.yellow}Warning: Could not read initial file list for ${watchDir}:${colors.reset} ${error}`
+        )
       }
-    } catch (error) {
-      log(`${colors.yellow}Warning: Could not read initial file list:${colors.reset} ${error}`)
     }
   }
 
   function startServer() {
-    log(`${colors.green}Starting MCP server...${colors.reset}`)
+    log(`${colors.green}Starting MCP server with hot reload...${colors.reset}`)
     try {
-      child = spawn('tsx', ['--tsconfig', tsconfigPath, serverEntry], {
+      child = spawn('tsx', ['--tsconfig', scriptsConfigPath, mcpServerEntry, ...forwardedArgs], {
         stdio: 'inherit',
         env: { ...process.env, NODE_ENV: 'development' },
       })
 
       child.on('close', (code: number | null) => {
-        // Handle the case where code can be null (when terminated by signal)
         const exitMessage =
           code !== null
             ? `Server process exited with code ${code}`
@@ -102,10 +111,9 @@ async function runWithHotReload() {
         child = null
         if (!isRestarting) {
           if (code === 0) {
-            log('Server exited gracefully. Shutting down wrapper.')
+            log('Server exited gracefully. Shutting down launcher.')
             process.exit(0)
           } else {
-            // code is either non-zero or null (signal termination)
             const reason = code !== null ? `crashed (code ${code})` : 'was terminated by signal'
             log(`${colors.red}Server ${reason}. Restarting in 1 second...${colors.reset}`)
             setTimeout(startServer, 1000)
@@ -158,27 +166,33 @@ async function runWithHotReload() {
     restartTimeout = setTimeout(restartServer, 300) // 300ms debounce delay
   }
 
-  async function handleFileEvent(eventType: string, filename: string | null) {
+  async function handleFileEvent(watchDir: string, eventType: string, filename: string | null) {
     if (!filename) return
 
-    const fullPath = path.join(srcDir, filename)
-    const relativePath = path.relative(packageRoot, fullPath)
+    // Ignore test files
+    if (shouldIgnoreFile(filename)) return
+
+    const fullPath = path.join(watchDir, filename)
+    const relativePath = path.relative(monorepoRoot, fullPath)
+    const fileSet = knownFiles.get(watchDir)
+
+    if (!fileSet) return
 
     if (eventType === 'rename') {
       // Check if file exists to determine if it was added or removed
       try {
         await access(fullPath, constants.F_OK)
         // File exists - it was added
-        if (!knownFiles.has(filename)) {
+        if (!fileSet.has(filename)) {
           log(`File added: ${relativePath}`)
-          knownFiles.add(filename)
+          fileSet.add(filename)
           debouncedRestart()
         }
       } catch {
         // File doesn't exist - it was removed
-        if (knownFiles.has(filename)) {
+        if (fileSet.has(filename)) {
           log(`File removed: ${relativePath}`)
-          knownFiles.delete(filename)
+          fileSet.delete(filename)
           debouncedRestart()
         }
       }
@@ -191,17 +205,32 @@ async function runWithHotReload() {
   async function startWatching() {
     try {
       watchController = new AbortController()
-      const watcher = watch(srcDir, {
-        recursive: true,
-        signal: watchController.signal,
+
+      log(`Watching for changes in:`)
+      for (const watchDir of watchDirectories) {
+        log(`  ${colors.cyan}${watchDir}${colors.reset}`)
+      }
+      log(`Ignoring test files (*.test.ts, *.spec.ts)`)
+
+      // Start watching all directories concurrently
+      const watchers = watchDirectories.map(async watchDir => {
+        try {
+          const watcher = watch(watchDir, {
+            recursive: true,
+            signal: watchController!.signal,
+          })
+
+          for await (const event of watcher) {
+            await handleFileEvent(watchDir, event.eventType, event.filename)
+          }
+        } catch (error: any) {
+          if (error.name !== 'AbortError') {
+            log(`${colors.red}File watching error for ${watchDir}:${colors.reset} ${error}`)
+          }
+        }
       })
 
-      log(`Watching for changes in ${colors.cyan}${srcDir}${colors.reset}`)
-      log(`To disable, set ${colors.yellow}NODE_ENV=production${colors.reset}`)
-
-      for await (const event of watcher) {
-        await handleFileEvent(event.eventType, event.filename)
-      }
+      await Promise.all(watchers)
     } catch (error: any) {
       if (error.name === 'AbortError') {
         log('File watching stopped.')

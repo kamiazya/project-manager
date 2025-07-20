@@ -15,34 +15,26 @@
   "files": [
     "dist"
   ],
-  "bin": {
-    "pm-mcp-server": "src/bin/mcp-server-dev.ts"
-  },
   "scripts": {
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "dev": "tsx --tsconfig tsconfig.json src/bin/mcp-server-dev.ts"
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "catalog:",
-    "zod": "^3.25.56",
-    "@project-manager/infrastructure": "workspace:*",
-    "@project-manager/application": "workspace:*",
-    "@project-manager/domain": "workspace:*",
-    "@project-manager/base": "workspace:*",
-    "@project-manager/sdk": "workspace:*"
+    "@project-manager/sdk": "workspace:*",
+    "zod": "^3.25.56"
   },
   "publishConfig": {
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
-    "bin": {
-      "pm-mcp-server": "dist/bin/mcp-server.js"
-    },
-    "executableFiles": [
-      "dist/bin/mcp-server.js"
-    ]
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -2,16 +2,8 @@ import { randomUUID } from 'node:crypto'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
-import {
-  type EnvironmentMode,
-  getEnvironmentDisplayName,
-  isDevelopmentLike,
-  shouldLogVerbose,
-} from '@project-manager/base'
-import { NodeEnvironmentDetectionService } from '@project-manager/infrastructure'
 import { createProjectManagerSDK } from '@project-manager/sdk'
-import packageJson from '../../package.json' with { type: 'json' }
-import { createMcpServer } from '../index.ts'
+import { createMcpServer } from '../apps/mcp-server/src/index.ts'
 
 /**
  * Helper function to parse request body as JSON
@@ -54,10 +46,6 @@ function sendParseErrorResponse(res: ServerResponse, error: unknown): void {
 }
 
 async function main() {
-  // Detect environment early - outside try block so it's available in catch
-  const environmentService = new NodeEnvironmentDetectionService()
-  const environment: EnvironmentMode = environmentService.detectEnvironment()
-
   try {
     // Handle command line arguments
     const args = process.argv.slice(2)
@@ -77,44 +65,10 @@ async function main() {
       port = parsedPort
     }
 
-    if (args.includes('--help') || args.includes('-h')) {
-      console.log('project-manager MCP Server')
-      console.log('Usage: pm-mcp-server [options]')
-      console.log('Options:')
-      console.log('  --help, -h        Show help')
-      console.log('  --version, -v     Show version')
-      console.log('  --http            Start as HTTP server (default: stdio)')
-      console.log('  --port <number>   HTTP port (default: 3000)')
-      console.log('  --stateless       Use stateless mode (default: stateful)')
-      process.exit(0)
-    }
-
-    if (args.includes('--version') || args.includes('-v')) {
-      console.log(packageJson.version)
-      process.exit(0)
-    }
-
     console.error('Starting MCP server...')
 
     // Initialize SDK for MCP server
     const sdk = await createProjectManagerSDK({ environment: 'auto' })
-
-    // Setup development environment using SDK services
-    if (isDevelopmentLike(environment)) {
-      if (sdk.development.isAvailable()) {
-        const processService = sdk.development.getProcessService()
-        await processService.registerProcess(process.pid)
-
-        if (shouldLogVerbose(environment)) {
-          const environmentDisplayName = getEnvironmentDisplayName(environment)
-          console.error(`[DEV] MCP Server started in ${environmentDisplayName} environment`)
-          console.error(`[DEV] Process ID: ${process.pid}`)
-          console.error(`[DEV] Node version: ${process.version}`)
-          console.error(`[DEV] Working directory: ${process.cwd()}`)
-          console.error(`[DEV] Hot reload enabled - make changes to see them applied automatically`)
-        }
-      }
-    }
 
     const server = await createMcpServer(sdk)
 
@@ -124,20 +78,6 @@ async function main() {
 
       // Create HTTP server
       const httpServer = createServer(async (req, res) => {
-        // Enable CORS for development
-        if (isDevelopmentLike(environment)) {
-          res.setHeader('Access-Control-Allow-Origin', '*')
-          res.setHeader('Access-Control-Allow-Methods', 'POST, GET, DELETE, OPTIONS')
-          res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Mcp-Session-Id')
-          res.setHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id')
-
-          if (req.method === 'OPTIONS') {
-            res.writeHead(200)
-            res.end()
-            return
-          }
-        }
-
         try {
           if (req.method === 'POST') {
             // Handle main MCP communication
@@ -269,19 +209,8 @@ async function main() {
 
       // Start HTTP server
       httpServer.listen(port, '127.0.0.1', () => {
-        const environmentDisplayName = getEnvironmentDisplayName(environment)
         const statefulMode = isStateless ? 'stateless' : 'stateful'
-        console.error(
-          `MCP HTTP server started on http://127.0.0.1:${port} in ${environmentDisplayName} environment (${statefulMode})`
-        )
-
-        if (isDevelopmentLike(environment)) {
-          console.error('[DEV] Server is ready to accept HTTP connections')
-          console.error('[DEV] To restart the server, save any file in the src/ directory')
-          console.error(
-            `[DEV] Test endpoint: curl -X POST http://127.0.0.1:${port} -H "Content-Type: application/json"`
-          )
-        }
+        console.error(`MCP HTTP server started on http://127.0.0.1:${port} (${statefulMode})`)
       })
 
       // Graceful shutdown
@@ -296,21 +225,10 @@ async function main() {
       const transport = new StdioServerTransport()
       await server.connect(transport)
 
-      const environmentDisplayName = getEnvironmentDisplayName(environment)
-      console.error(
-        `MCP server started successfully in ${environmentDisplayName} environment (stdio)`
-      )
-
-      if (isDevelopmentLike(environment)) {
-        console.error('[DEV] Server is ready to accept connections')
-        console.error('[DEV] To restart the server, save any file in the src/ directory')
-      }
+      console.error('MCP server started successfully (stdio)')
     }
   } catch (error) {
     console.error('Failed to start MCP server:', error)
-    if (isDevelopmentLike(environment)) {
-      console.error('[DEV] Check the error above and save a file to restart')
-    }
     process.exit(1)
   }
 }
