@@ -4,7 +4,7 @@
     "outDir": "dist",
     "emitDeclarationOnly": true,
     "allowImportingTsExtensions": true,
-    "customConditions": ["@project-manager/source"]
+    "customConditions": ["development"]
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "**/*.test.ts", "**/*.spec.ts"]

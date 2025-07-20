@@ -1,12 +1,12 @@
 import type { Hook } from '@oclif/core'
+import { isDevelopmentLike } from '@project-manager/base'
+import { NodeEnvironmentDetectionService } from '@project-manager/infrastructure'
 
 /**
  * Cleanup resources and perform housekeeping after command execution
  */
 const hook: Hook<'postrun'> = async function (opts) {
   // Log command execution for debugging in development
-  const { isDevelopmentLike } = await import('@project-manager/base')
-  const { NodeEnvironmentDetectionService } = await import('@project-manager/infrastructure')
   const environmentService = new NodeEnvironmentDetectionService()
   const environment = environmentService.detectEnvironment()
   if (isDevelopmentLike(environment)) {

@@ -157,14 +157,12 @@ export class JsonTicketRepository implements TicketRepository {
       })
     }
 
-    // Apply pagination
-    if (criteria.offset && criteria.offset > 0) {
-      filteredTickets = filteredTickets.slice(criteria.offset)
-    }
+    // Apply pagination: offset first, then limit
+    const startIndex = criteria.offset && criteria.offset > 0 ? criteria.offset : 0
+    const endIndex =
+      criteria.limit && criteria.limit > 0 ? startIndex + criteria.limit : filteredTickets.length
 
-    if (criteria.limit && criteria.limit > 0) {
-      filteredTickets = filteredTickets.slice(0, criteria.limit)
-    }
+    filteredTickets = filteredTickets.slice(startIndex, endIndex)
 
     // Convert filtered persistence objects to domain objects
     return TicketMapper.toDomainList(filteredTickets)

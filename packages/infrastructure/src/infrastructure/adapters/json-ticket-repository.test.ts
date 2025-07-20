@@ -298,6 +298,61 @@ describe('JsonTicketRepository', () => {
       const allTickets = await repository.queryTickets({})
       expect(allTickets.length).toBeGreaterThan(2)
     })
+
+    it('should handle offset and limit correctly', async () => {
+      // Create additional tickets to test pagination properly
+      const additionalTickets = [
+        Ticket.create({
+          title: 'Ticket 3',
+          description: 'Third ticket',
+          priority: 'low',
+          type: 'task',
+          status: 'completed',
+        }),
+        Ticket.create({
+          title: 'Ticket 4',
+          description: 'Fourth ticket',
+          priority: 'high',
+          type: 'feature',
+          status: 'pending',
+        }),
+        Ticket.create({
+          title: 'Ticket 5',
+          description: 'Fifth ticket',
+          priority: 'medium',
+          type: 'bug',
+          status: 'in_progress',
+        }),
+      ]
+
+      for (const ticket of additionalTickets) {
+        await repository.save(ticket)
+      }
+
+      // Now we should have 7 tickets total (4 from beforeEach + 3 additional)
+      const allTickets = await repository.queryTickets({})
+      expect(allTickets).toHaveLength(7)
+
+      // Test offset without limit
+      const offsetOnly = await repository.queryTickets({ offset: 2 })
+      expect(offsetOnly).toHaveLength(5) // 7 - 2 = 5
+
+      // Test limit without offset
+      const limitOnly = await repository.queryTickets({ limit: 3 })
+      expect(limitOnly).toHaveLength(3)
+
+      // Test both offset and limit - this should get items at index 2,3,4 (3 items starting from index 2)
+      const offsetAndLimit = await repository.queryTickets({ offset: 2, limit: 3 })
+      expect(offsetAndLimit).toHaveLength(3)
+
+      // Test edge case - offset near end with limit
+      const offsetNearEnd = await repository.queryTickets({ offset: 5, limit: 5 })
+      expect(offsetNearEnd).toHaveLength(2) // Only 2 items left after offset 5
+
+      // Test offset beyond array length
+      const offsetBeyond = await repository.queryTickets({ offset: 10 })
+      expect(offsetBeyond).toHaveLength(0)
+    })
   })
 
   describe('queryTickets', () => {

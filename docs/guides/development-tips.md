@@ -24,7 +24,7 @@ pnpm's `publishConfig` allows you to have different configurations for developme
   },
   "exports": {
     ".": {
-      "@project-manager/source": "./src/index.ts",
+      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
@@ -69,7 +69,7 @@ Export conditions allow different module resolution based on environment or cons
 {
   "exports": {
     ".": {
-      "@project-manager/source": "./src/index.ts",
+      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
@@ -82,7 +82,7 @@ Export conditions allow different module resolution based on environment or cons
 ```json
 {
   "compilerOptions": {
-    "customConditions": ["@project-manager/source"]
+    "customConditions": ["development"]
   }
 }
 ```
@@ -96,7 +96,7 @@ Export conditions allow different module resolution based on environment or cons
 #### Practical Benefits
 
 ```typescript
-// In packages with customConditions: ["@project-manager/source"]
+// In packages with customConditions: ["development"]
 import { Ticket } from '@project-manager/core'
 // ↑ Resolves to: @project-manager/core/src/index.ts
 
@@ -145,7 +145,7 @@ import { Ticket } from '@project-manager/core'
   "types": "src/index.ts",
   "exports": {
     ".": {
-      "@project-manager/source": "./src/index.ts",
+      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
@@ -207,7 +207,7 @@ This project uses these patterns extensively:
 
 - **Development**: `pm` command executes `src/bin/pm-dev.ts` via tsx
 - **Production**: `pm` command executes `dist/bin/pm.js` as compiled JavaScript
-- **Custom Conditions**: Uses `@project-manager/source` for direct TypeScript imports
+- **Custom Conditions**: Uses `development` for direct TypeScript imports
 
 #### MCP Server Package (`packages/mcp-server/`)
 
@@ -242,7 +242,7 @@ pnpm pack                        # Create production package
 tar -tf package.tgz              # Verify only dist/ files included
 
 # Test custom conditions
-grep -r "@project-manager/source" packages/*/tsconfig.json
+grep -r "development" packages/*/tsconfig.json
 # Should show customConditions in consuming packages
 
 # Verify workspace dependencies
@@ -396,7 +396,7 @@ pnpm run typecheck
 # Fix by updating tsconfig.json customConditions
 {
   "compilerOptions": {
-    "customConditions": ["@project-manager/source"]
+    "customConditions": ["development"]
   }
 }
 ```
@@ -437,7 +437,7 @@ tar -tf package.tgz | head -20
 # Check TypeScript configuration
 cat tsconfig.json | grep customConditions
 
-# Should include: "customConditions": ["@project-manager/source"]
+# Should include: "customConditions": ["development"]
 
 # Verify package exports
 node -e "console.log(require.resolve('@project-manager/core'))"
