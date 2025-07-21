@@ -9,20 +9,12 @@ import { TicketId } from './ticket-id.ts'
 
 describe('TicketId', () => {
   describe('create', () => {
-    it('should create a new TicketId with generated value when no id provided', () => {
-      const ticketId = TicketId.create()
-
-      expect(ticketId).toBeDefined()
-      expect(ticketId.value).toBeDefined()
-      expect(ticketId.value.length).toBeGreaterThanOrEqual(VALIDATION.TICKET_ID_MIN_LENGTH)
-      expect(ticketId.value.length).toBeLessThanOrEqual(VALIDATION.TICKET_ID_MAX_LENGTH)
-    })
-
     it('should create a TicketId with provided valid id', () => {
       const validId = 'a1b2c3d4' // 8 hex characters
       const ticketId = TicketId.create(validId)
 
       expect(ticketId.value).toBe(validId)
+      expect(ticketId.value.length).toBe(8)
     })
 
     it('should throw error when id has invalid format', () => {
@@ -72,13 +64,15 @@ describe('TicketId', () => {
     })
 
     it('should return false when comparing with null', () => {
-      const ticketId = TicketId.create()
+      const validId = 'a1b2c3d4' // 8 hex characters
+      const ticketId = TicketId.create(validId)
 
       expect(ticketId.equals(null as any)).toBe(false)
     })
 
     it('should return false when comparing with undefined', () => {
-      const ticketId = TicketId.create()
+      const validId = 'a1b2c3d4' // 8 hex characters
+      const ticketId = TicketId.create(validId)
 
       expect(ticketId.equals(undefined as any)).toBe(false)
     })

@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto'
 import { ValidationError } from '@project-manager/base'
 import { ValueObject } from '../../shared/patterns/base-value-object.ts'
 
@@ -9,15 +8,6 @@ interface TicketIdProps {
 const INVALID_ID_FORMAT = 'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
 
 /**
- * Generate a unique ID for tickets
- * Creates a 8-character hex string using cryptographically strong randomness.
- */
-function generateId(): string {
-  // Use crypto for robust, collision-resistant IDs
-  return randomBytes(4).toString('hex')
-}
-
-/**
  * Validate ID format (8 hex characters)
  */
 function isValidId(id: string): boolean {
@@ -26,7 +16,10 @@ function isValidId(id: string): boolean {
 
 /**
  * Value object representing a Ticket ID
- * Ensures the ID follows the expected format and length constraints
+ *
+ * This is a pure value object that only handles validation and encapsulation.
+ * ID generation is delegated to the infrastructure layer via IdGenerator service
+ * to maintain Clean Architecture principles and avoid external dependencies.
  */
 export class TicketId extends ValueObject<TicketIdProps> {
   get value(): string {
@@ -38,29 +31,34 @@ export class TicketId extends ValueObject<TicketIdProps> {
   }
 
   /**
-   * Create a new TicketId
-   * @param id - Optional ID value. If not provided, generates a new one
+   * Create a TicketId from an existing ID value
+   * @param id - ID value that must meet validation rules
    * @throws {ValidationError} If the provided ID doesn't meet validation rules
    */
-  public static create(id?: string): TicketId {
-    const value = id || generateId()
-
+  public static create(id: string): TicketId {
     // Check if the ID matches the expected format (8 hex characters)
-    if (!isValidId(value)) {
-      throw new ValidationError(INVALID_ID_FORMAT, 'ticketId', value)
+    if (!isValidId(id)) {
+      throw new ValidationError(INVALID_ID_FORMAT, 'ticketId', id)
     }
 
-    return new TicketId({ value })
+    return new TicketId({ value: id })
   }
 
   /**
    * Reconstitute a TicketId from persistence
    * Assumes the ID is already valid (used when loading from storage)
+   *
+   * @param value - Previously validated ID value
+   * @returns TicketId instance
    */
   public static fromValue(value: string): TicketId {
     return new TicketId({ value })
   }
 
+  /**
+   * Get the string representation of the ID
+   * @returns The ID value as a string
+   */
   public toString(): string {
     return this.value
   }

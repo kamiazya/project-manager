@@ -51,12 +51,16 @@ export class Ticket {
 
   /**
    * Factory method for creating a new ticket
+   *
+   * @param id - Pre-generated ticket ID (to maintain Clean Architecture)
+   * @param data - Ticket creation data
+   * @returns New Ticket instance
    */
-  public static create(data: CreateTicketData): Ticket {
+  public static create(id: TicketId, data: CreateTicketData): Ticket {
     const now = new Date()
 
     return new Ticket({
-      id: TicketId.create(),
+      id,
       title: TicketTitle.create(data.title),
       description: data.description ? TicketDescription.create(data.description) : undefined,
       status: createTicketStatus(data.status),
