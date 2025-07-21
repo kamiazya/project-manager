@@ -24,7 +24,7 @@ Transform your development process with organized, AI-friendly project managemen
 
 ### Installation
 
-> NOTE: It's not published to npm yet, so you need to install it from the repository.
+> NOTE: For development installation, clone the repository and build from source.
 
 ```bash
 npm install -g @project-manager/cli
@@ -52,13 +52,13 @@ pm list
 # Show work in progress
 pm list --status in_progress
 
-# Start working on a ticket
-pm update ticket-123 --status in_progress
+# Search tickets
+pm search "authentication" --status pending
 
-# Complete a ticket
-pm update ticket-123 --status completed
+# View ticket details
+pm show ticket-123
 
-# Get project statistics
+# Get project statistics (planned feature)
 pm stats
 ```
 
@@ -75,9 +75,10 @@ pm create "Fix mobile responsiveness" -p high -t bug
 pm create "Research GraphQL libraries"
 pm create "Update documentation" -p low
 
-# Update ticket status and details
-pm update ticket-456 --status in_progress
-pm update ticket-456 --priority high --description "Updated requirements"
+# Update ticket properties
+pm update content ticket-456 -t "Updated title" -d "Updated description"
+pm update status ticket-789 in_progress
+pm update priority ticket-123 high
 
 # View ticket details
 pm show ticket-456
@@ -85,6 +86,29 @@ pm show ticket-456
 # Delete tickets (with confirmation)
 pm delete ticket-789
 pm delete ticket-789 --force  # Skip confirmation
+```
+
+### Updating Tickets
+
+```bash
+# Update ticket content (title and description)
+pm update content ticket-123 --title "New title"
+pm update content ticket-123 --description "New description"
+pm update content ticket-123 -t "New title" -d "New description"
+
+# Update ticket status
+pm update status ticket-123 pending
+pm update status ticket-123 in_progress
+pm update status ticket-123 completed
+pm update status ticket-123 archived
+
+# Update ticket priority  
+pm update priority ticket-123 high
+pm update priority ticket-123 medium
+pm update priority ticket-123 low
+
+# Legacy update command (deprecated - will be removed in future version)
+# pm update ticket-123 -t "Title" -d "Description"
 ```
 
 ### Project Overview & Filtering
@@ -245,8 +269,8 @@ pm new "Task"  # Same as: pm create "Task"
 # Create multiple tickets from a file
 pm create --from-file tickets.txt
 
-# Update multiple tickets
-pm update ticket-123,ticket-456 --status completed
+# Update multiple tickets (example for future feature)
+# pm update status ticket-123,ticket-456 completed
 
 # Export project data
 pm list --output json > backup.json

@@ -15,12 +15,18 @@ Model Context Protocol server for AI-assisted development workflows with project
 
 ### Ticket Management
 
+#### Core Operations
+
 - `create_ticket`: Create a new ticket with title, description, priority, and type
 - `get_ticket_by_id`: Get a specific ticket by its ID
-- `list_tickets`: List all tickets with optional status filtering
-- `update_ticket_status`: Update the status of a ticket
+- `delete_ticket`: Delete a ticket by its ID
 - `search_tickets`: Search tickets by title or description
-- `get_ticket_stats`: Get project statistics and progress tracking
+
+#### Update Operations (1 Use Case = 1 Tool)
+
+- `update_ticket_status`: Update the status of a ticket (pending, in_progress, completed, archived)
+- `update_ticket_priority`: Update the priority level of a ticket (high, medium, low)
+- `update_ticket_content`: Update the title and/or description of a ticket
 
 ### Project Management
 
@@ -35,14 +41,23 @@ Model Context Protocol server for AI-assisted development workflows with project
 Start the MCP server in development mode with hot reload:
 
 ```bash
-# From project root (development mode)
-NODE_ENV=development pm --mcp
+# From project root (development mode with intelligent hot reload)
+pnpm pm-mcp-server
+
+# Explicit development mode
+NODE_ENV=development pnpm pm-mcp-server
 
 # Or directly in this package
 pnpm run dev
 ```
 
-**Note**: When `NODE_ENV=development` is set, the server uses a separate storage directory (`~/.config/project-manager-dev/`) to avoid interfering with production data.
+**Note**: When `NODE_ENV=development` is set, the server automatically enables hot reload with:
+
+- **Intelligent Environment Detection**: Automatically enables hot reload in development
+- **Debounced Restarts**: 300ms delay prevents excessive restarts from multiple file changes
+- **Colorful Logs**: Easy-to-read output with color-coded messages
+- **Graceful Shutdown**: 2-second timeout before force-killing processes
+- **Error Recovery**: Automatic restart on crashes with detailed error messages
 
 ### Development Commands
 

@@ -14,6 +14,7 @@ import {
   GetTicketById,
   SearchTickets,
   UpdateTicketContent,
+  UpdateTicketPriority,
   UpdateTicketStatus,
 } from '@project-manager/application'
 import { type EnvironmentMode, isDevelopmentLike } from '@project-manager/base'
@@ -151,6 +152,19 @@ export class ProjectManagerSDK {
         TYPES.UpdateTicketStatusUseCase
       )
       const request = { id, newStatus: status }
+
+      const response = await useCase.execute(request)
+      return this.mapTicketResponseToSDKResponse(response)
+    },
+
+    /**
+     * Update ticket priority
+     */
+    updatePriority: async (id: string, priority: string): Promise<TicketResponse> => {
+      const useCase = this.container.get<UpdateTicketPriority.UseCase>(
+        TYPES.UpdateTicketPriorityUseCase
+      )
+      const request = { id, newPriority: priority }
 
       const response = await useCase.execute(request)
       return this.mapTicketResponseToSDKResponse(response)

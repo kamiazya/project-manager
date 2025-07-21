@@ -53,14 +53,12 @@
     "topicSeparator": " ",
     "hooks": {
       "init": [
-        "./src/hooks/init/config-validation.ts",
         "./src/hooks/init/plugin-support.ts"
-      ],
-      "postrun": "./src/hooks/postrun/cleanup.ts"
+      ]
     },
     "topics": {
-      "quick": {
-        "description": "Quick operations for common tasks"
+      "update": {
+        "description": "Update ticket properties"
       }
     }
   },
