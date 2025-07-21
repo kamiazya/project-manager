@@ -29,7 +29,6 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        'bin/mcp-server': resolve(__dirname, 'src/bin/mcp-server.ts'),
       },
       name: '@project-manager/mcp-server',
       formats: ['es'],

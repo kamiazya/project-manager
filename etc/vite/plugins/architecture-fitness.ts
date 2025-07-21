@@ -11,12 +11,17 @@ export interface ArchitectureRules {
   exports?: ExportRule[]
   /** Import restrictions */
   imports?: ImportRule[]
+  /** Raw error object usage restrictions */
+  errors?: ErrorRule[]
   /** Enable/disable specific checks */
   checks?: {
     layerViolations?: boolean
     exportViolations?: boolean
     importViolations?: boolean
+    errorViolations?: boolean
     circularDependencies?: boolean
+    /** Skip error violations in test files */
+    skipErrorViolationsInTests?: boolean
   }
 }
 
@@ -49,6 +54,17 @@ export interface ImportRule {
   message?: string
 }
 
+export interface ErrorRule {
+  /** File pattern that this rule applies to */
+  pattern: string
+  /** Error patterns that are forbidden (e.g., 'new Error(') */
+  forbidden: string[]
+  /** File patterns that are exempt from this rule */
+  exceptions?: string[]
+  /** Optional custom error message */
+  message?: string
+}
+
 /**
  * Vite plugin for enforcing Clean Architecture fitness rules
  */
@@ -57,13 +73,32 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
     layers,
     exports: exportRules = [],
     imports: importRules = [],
+    errors: errorRules = [],
     checks = {
       layerViolations: true,
       exportViolations: true,
       importViolations: true,
+      errorViolations: true,
       circularDependencies: false,
+      skipErrorViolationsInTests: true,
     },
   } = rules
+
+  // Track if we're in Vitest environment
+  let isVitestMode = false
+
+  // Helper function to detect test files
+  const isTestFile = (filePath: string): boolean => {
+    const normalizedPath = filePath.replace(/\\/g, '/')
+    return (
+      /\.(test|spec)\.(ts|tsx|js|jsx)$/.test(normalizedPath) ||
+      normalizedPath.includes('/__tests__/') ||
+      normalizedPath.includes('/test/') ||
+      normalizedPath.includes('/tests/') ||
+      normalizedPath.includes('.test/') ||
+      normalizedPath.includes('.spec/')
+    )
+  }
 
   // Helper functions
   const convertGlobToRegex = (pattern: string): RegExp => {
@@ -139,6 +174,18 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
   return {
     name: 'vite-plugin-architecture-fitness',
     enforce: 'pre', // Run before other plugins
+
+    // Detect Vitest environment early
+    config(_viteConfig, { mode }) {
+      // Detect if we're running in Vitest environment
+      isVitestMode = process.env.VITEST === 'true' || mode === 'test'
+    },
+
+    // Vitest-specific hook (available when vitest/config is imported)
+    configureVitest() {
+      // We're definitely in Vitest environment
+      isVitestMode = true
+    },
 
     // Hook into module resolution
     async resolveId(source: string, importer?: string) {
@@ -267,6 +314,48 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
         }
       }
 
+      // Check error violations for raw Error object usage
+      if (checks.errorViolations) {
+        for (const rule of errorRules) {
+          if (matchesPattern(id, rule.pattern)) {
+            // Skip error violations in test files if configured, or if in Vitest environment and skipErrorViolationsInTests is enabled
+            if (
+              (checks.skipErrorViolationsInTests && isTestFile(id)) ||
+              (isVitestMode && checks.skipErrorViolationsInTests)
+            ) {
+              continue
+            }
+
+            // Check if this file matches any exception patterns
+            const isException =
+              rule.exceptions?.some(exception => matchesPattern(id, exception)) || false
+
+            if (!isException) {
+              for (const forbidden of rule.forbidden) {
+                // Create regex to detect the forbidden error pattern
+                const errorRegex = new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')
+                let match: RegExpExecArray | null = null
+
+                // biome-ignore lint/suspicious/noAssignInExpressions: Common pattern for regex matching
+                while ((match = errorRegex.exec(code)) !== null) {
+                  // Get line number for better error reporting
+                  const linesBefore = code.substring(0, match.index).split('\n')
+                  const lineNumber = linesBefore.length
+                  const lineContent = linesBefore[lineNumber - 1].trim()
+
+                  createViolationError(
+                    'Raw Error Usage',
+                    rule.message ||
+                      `Raw Error objects are forbidden. Use domain-specific error classes instead.\n  Line ${lineNumber}: ${lineContent}\n  💡 Consider using ValidationError, ApplicationError, or other custom error classes`,
+                    id
+                  )
+                }
+              }
+            }
+          }
+        }
+      }
+
       return null // Don't transform the code, just analyze it
     },
 
@@ -363,7 +452,9 @@ export const cleanArchitectureRules: ArchitectureRules = {
     layerViolations: true,
     exportViolations: true,
     importViolations: true,
+    errorViolations: true,
     circularDependencies: false,
+    skipErrorViolationsInTests: true,
   },
 }
 
@@ -377,11 +468,14 @@ export function mergeArchitectureRules(
     layers: [],
     exports: [],
     imports: [],
+    errors: [],
     checks: {
       layerViolations: true,
       exportViolations: true,
       importViolations: true,
+      errorViolations: true,
       circularDependencies: false,
+      skipErrorViolationsInTests: true,
     },
   }
 
@@ -412,6 +506,9 @@ export function mergeArchitectureRules(
     }
     if (rules.imports) {
       merged.imports!.push(...rules.imports)
+    }
+    if (rules.errors) {
+      merged.errors!.push(...rules.errors)
     }
     if (rules.checks) {
       merged.checks = { ...merged.checks, ...rules.checks }

@@ -81,6 +81,7 @@ const mockRules: ArchitectureRules = {
     layerViolations: true,
     importViolations: true,
     exportViolations: true,
+    errorViolations: true,
   },
 }
 
@@ -95,6 +96,91 @@ const baseFile = resolve(baseDir, 'packages/base/src/utils.ts')
 const baseIndexFile = resolve(baseDir, 'packages/base/index.ts')
 
 describe('architectureFitnessPlugin', () => {
+  describe('Error Violations', () => {
+    const errorTestRules: ArchitectureRules = {
+      layers: [],
+      errors: [
+        {
+          pattern: '**/src/**/*.ts',
+          forbidden: ['new Error('],
+          exceptions: ['**/*.test.ts', '**/*.spec.ts'],
+          // No custom message to let default message with line number be used
+        },
+      ],
+      checks: {
+        errorViolations: true,
+        layerViolations: false,
+        exportViolations: false,
+        importViolations: false,
+        circularDependencies: false,
+      },
+    }
+
+    it('should detect raw Error usage in production code', async () => {
+      const plugin = architectureFitnessPlugin(errorTestRules)
+      const code = `
+        function validateInput(value: string) {
+          if (!value) {
+            throw new Error('Value is required')
+          }
+          return value
+        }
+      `
+
+      await expect(testTransform(plugin, code, '/project/src/utils/validator.ts')).rejects.toThrow(
+        /Raw Error Usage/
+      )
+    })
+
+    it('should allow raw Error usage in test files', async () => {
+      const plugin = architectureFitnessPlugin(errorTestRules)
+      const code = `
+        describe('test', () => {
+          it('should throw error', () => {
+            expect(() => {
+              throw new Error('Test error')
+            }).toThrow()
+          })
+        })
+      `
+
+      await expect(
+        testTransform(plugin, code, '/project/src/utils/validator.test.ts')
+      ).resolves.not.toThrow()
+    })
+
+    it('should provide helpful error message with line number', async () => {
+      const plugin = architectureFitnessPlugin(errorTestRules)
+      const code = `const valid = true
+function process() {
+  throw new Error('Something went wrong')
+}`
+
+      await expect(testTransform(plugin, code, '/project/src/utils/service.ts')).rejects.toThrow(
+        /Raw Error Usage/
+      )
+
+      await expect(testTransform(plugin, code, '/project/src/utils/service.ts')).rejects.toThrow(
+        /Line 3/
+      )
+    })
+
+    it('should not trigger on custom error classes', async () => {
+      const plugin = architectureFitnessPlugin(errorTestRules)
+      const code = `
+        import { ValidationError } from './errors'
+
+        function validate(value: string) {
+          if (!value) {
+            throw new ValidationError('Value is required')
+          }
+        }
+      `
+
+      await expect(testTransform(plugin, code, '/project/src/validator.ts')).resolves.not.toThrow()
+    })
+  })
+
   describe('Layer Violations', () => {
     const plugin = architectureFitnessPlugin(mockRules)
 
@@ -211,6 +297,7 @@ describe('architectureFitnessPlugin', () => {
           layerViolations: false,
           importViolations: false,
           exportViolations: false,
+          errorViolations: false,
         },
       }
       const plugin = architectureFitnessPlugin(disabledRules)

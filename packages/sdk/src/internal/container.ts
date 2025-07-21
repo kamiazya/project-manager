@@ -84,7 +84,7 @@ export function createContainer(config: SDKConfig): Container {
     .inSingletonScope()
 
   // Development Process Service - conditional binding for development-like environments
-  const envService = new NodeEnvironmentDetectionService()
+  const envService = container.get<EnvironmentDetectionService>(TYPES.EnvironmentDetectionService)
   const environment = envService.resolveEnvironment(config.environment)
   if (isDevelopmentLike(environment)) {
     container

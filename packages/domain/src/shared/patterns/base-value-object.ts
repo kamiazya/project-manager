@@ -6,6 +6,8 @@
  *
  * @example
  * ```typescript
+ * import { ValidationError } from '@project-manager/base'
+ *
  * class Email extends ValueObject<{ value: string }> {
  *   private constructor(props: { value: string }) {
  *     super(props)
@@ -14,7 +16,7 @@
  *   static create(value: string): Email {
  *     // Validation logic here
  *     if (!value.includes('@')) {
- *       throw new Error('Invalid email format')
+ *       throw new ValidationError('Invalid email format', 'email', value)
  *     }
  *     return new Email({ value })
  *   }

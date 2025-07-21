@@ -8,6 +8,5 @@ export interface McpTool {
   title: string
   description: string
   inputSchema: any
-  handler: (input: any) => Promise<any>
   handleWithSDK: (input: any, sdk: ProjectManagerSDK) => Promise<any>
 }

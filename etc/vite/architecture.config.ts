@@ -105,10 +105,39 @@ export const projectManagerArchitectureRules: ArchitectureRules = {
       message: 'Applications should only depend on SDK layer',
     },
   ],
+  errors: [
+    {
+      pattern: '**/packages/*/src/**/*.ts',
+      forbidden: ['new Error('],
+      exceptions: [
+        '**/*.{test,spec}.ts',
+        '**/test/**',
+        '**/tests/**',
+        '**/fixtures/**',
+        '**/mocks/**',
+      ],
+      message:
+        'Raw Error objects are forbidden in production code. Use domain-specific error classes like ValidationError, ApplicationError, InfrastructureError, etc.',
+    },
+    {
+      pattern: '**/apps/*/src/**/*.ts',
+      forbidden: ['new Error('],
+      exceptions: [
+        '**/*.{test,spec}.ts',
+        '**/test/**',
+        '**/tests/**',
+        '**/fixtures/**',
+        '**/mocks/**',
+      ],
+      message:
+        'Raw Error objects are forbidden in production code. Use domain-specific error classes from the SDK layer.',
+    },
+  ],
   checks: {
     layerViolations: true,
     exportViolations: true,
     importViolations: true,
+    errorViolations: true,
     circularDependencies: false, // Enable later when needed
   },
 }
@@ -132,10 +161,12 @@ export const domainPackageRules: ArchitectureRules = {
       message: 'Domain layer must be pure - only depend on base layer',
     },
   ],
+  errors: projectManagerArchitectureRules.errors,
   checks: {
     layerViolations: true,
     exportViolations: true,
     importViolations: true,
+    errorViolations: true,
     circularDependencies: false,
   },
 }
@@ -149,6 +180,7 @@ export const developmentRules: ArchitectureRules = {
     layerViolations: true,
     exportViolations: false, // Allow temporary violations during development
     importViolations: true,
+    errorViolations: true, // Keep error violations enabled even in development
     circularDependencies: false,
   },
 }

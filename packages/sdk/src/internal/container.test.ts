@@ -9,6 +9,7 @@ import {
   JsonTicketRepository,
   NodeEnvironmentDetectionService,
   XdgDevelopmentProcessService,
+  XdgStorageConfigService,
 } from '@project-manager/infrastructure'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createContainer } from './container.ts'
@@ -16,17 +17,33 @@ import { TYPES } from './types.ts'
 
 // Mock infrastructure implementations
 vi.mock('@project-manager/infrastructure', () => ({
-  InMemoryTicketRepository: vi.fn(),
-  JsonTicketRepository: vi.fn(),
-  NodeEnvironmentDetectionService: vi.fn(() => ({
-    resolveEnvironment: vi.fn(env => env || 'production'),
-  })),
-  XdgStorageConfigService: vi.fn(() => ({
-    getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
-    getDefaultStorageDir: vi.fn(() => '/default/storage'),
-    resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
-  })),
-  XdgDevelopmentProcessService: vi.fn(),
+  InMemoryTicketRepository: vi.fn().mockImplementation(function MockInMemoryTicketRepository() {
+    return { constructor: { name: 'InMemoryTicketRepository' } }
+  }),
+  JsonTicketRepository: vi.fn().mockImplementation(function MockJsonTicketRepository() {
+    return { constructor: { name: 'JsonTicketRepository' } }
+  }),
+  NodeEnvironmentDetectionService: vi
+    .fn()
+    .mockImplementation(function MockNodeEnvironmentDetectionService() {
+      return {
+        constructor: { name: 'NodeEnvironmentDetectionService' },
+        resolveEnvironment: vi.fn(env => env || 'production'),
+      }
+    }),
+  XdgStorageConfigService: vi.fn().mockImplementation(function MockXdgStorageConfigService() {
+    return {
+      constructor: { name: 'XdgStorageConfigService' },
+      getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
+      getDefaultStorageDir: vi.fn(() => '/default/storage'),
+      resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
+    }
+  }),
+  XdgDevelopmentProcessService: vi
+    .fn()
+    .mockImplementation(function MockXdgDevelopmentProcessService() {
+      return { constructor: { name: 'XdgDevelopmentProcessService' } }
+    }),
 }))
 
 // Mock application layer use cases
@@ -109,7 +126,7 @@ describe('createContainer', () => {
     it('should bind InMemoryTicketRepository for testing environment', () => {
       const container = createContainer({ environment: 'testing' })
 
-      const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+      container.get<TicketRepository>(TYPES.TicketRepository)
 
       expect(InMemoryTicketRepository).toHaveBeenCalled()
     })
@@ -117,7 +134,7 @@ describe('createContainer', () => {
     it('should bind InMemoryTicketRepository for in-memory environment', () => {
       const container = createContainer({ environment: 'in-memory' })
 
-      const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+      container.get<TicketRepository>(TYPES.TicketRepository)
 
       expect(InMemoryTicketRepository).toHaveBeenCalled()
     })
@@ -125,7 +142,7 @@ describe('createContainer', () => {
     it('should bind JsonTicketRepository for production environment', () => {
       const container = createContainer({ environment: 'production' })
 
-      const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+      container.get<TicketRepository>(TYPES.TicketRepository)
 
       expect(JsonTicketRepository).toHaveBeenCalledWith('/resolved/path/tickets.json')
     })
@@ -133,7 +150,7 @@ describe('createContainer', () => {
     it('should bind JsonTicketRepository for development environment', () => {
       const container = createContainer({ environment: 'development' })
 
-      const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+      container.get<TicketRepository>(TYPES.TicketRepository)
 
       expect(JsonTicketRepository).toHaveBeenCalledWith('/resolved/path/tickets.json')
     })
@@ -141,7 +158,7 @@ describe('createContainer', () => {
     it('should bind JsonTicketRepository for isolated environment', () => {
       const container = createContainer({ environment: 'isolated' })
 
-      const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+      container.get<TicketRepository>(TYPES.TicketRepository)
 
       expect(JsonTicketRepository).toHaveBeenCalledWith('/resolved/path/tickets.json')
     })
@@ -161,7 +178,7 @@ describe('createContainer', () => {
       const container = createContainer({ environment: 'development' })
 
       expect(container.isBound(TYPES.DevelopmentProcessService)).toBe(true)
-      const service = container.get<DevelopmentProcessService>(TYPES.DevelopmentProcessService)
+      container.get<DevelopmentProcessService>(TYPES.DevelopmentProcessService)
 
       expect(XdgDevelopmentProcessService).toHaveBeenCalledWith('development')
     })
@@ -170,7 +187,7 @@ describe('createContainer', () => {
       const container = createContainer({ environment: 'testing' })
 
       expect(container.isBound(TYPES.DevelopmentProcessService)).toBe(true)
-      const service = container.get<DevelopmentProcessService>(TYPES.DevelopmentProcessService)
+      container.get<DevelopmentProcessService>(TYPES.DevelopmentProcessService)
 
       expect(XdgDevelopmentProcessService).toHaveBeenCalledWith('testing')
     })
@@ -179,7 +196,7 @@ describe('createContainer', () => {
       const container = createContainer({ environment: 'isolated' })
 
       expect(container.isBound(TYPES.DevelopmentProcessService)).toBe(true)
-      const service = container.get<DevelopmentProcessService>(TYPES.DevelopmentProcessService)
+      container.get<DevelopmentProcessService>(TYPES.DevelopmentProcessService)
 
       expect(XdgDevelopmentProcessService).toHaveBeenCalledWith('isolated')
     })
@@ -222,7 +239,7 @@ describe('createContainer', () => {
 
     it('should create use cases with repository dependency', () => {
       // Get repository first to establish it
-      const repo = container.get(TYPES.TicketRepository)
+      container.get(TYPES.TicketRepository)
 
       // Get use cases
       const createUseCase = container.get(TYPES.CreateTicketUseCase)
@@ -266,14 +283,15 @@ describe('createContainer', () => {
       vi.mocked(NodeEnvironmentDetectionService).mockImplementation(
         () =>
           ({
-            resolveEnvironment: vi.fn(env => 'production'),
+            constructor: { name: 'NodeEnvironmentDetectionService' },
+            resolveEnvironment: vi.fn(() => 'production'),
           }) as any
       )
 
       const container = createContainer({ environment: 'auto' })
 
       // Should resolve to default (production)
-      const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+      container.get<TicketRepository>(TYPES.TicketRepository)
 
       expect(JsonTicketRepository).toHaveBeenCalled()
     })
@@ -282,7 +300,7 @@ describe('createContainer', () => {
       const container = createContainer({})
 
       // Should resolve to default (production)
-      const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+      container.get<TicketRepository>(TYPES.TicketRepository)
 
       expect(JsonTicketRepository).toHaveBeenCalled()
     })
@@ -291,9 +309,39 @@ describe('createContainer', () => {
       const environments = ['production', 'development', 'testing', 'in-memory', 'isolated']
 
       for (const env of environments) {
-        vi.clearAllMocks()
+        // Reset all mocks before each environment test
+        vi.resetAllMocks()
+
+        // Re-apply mock implementations since vi.resetAllMocks clears them
+        vi.mocked(InMemoryTicketRepository).mockImplementation(
+          function MockInMemoryTicketRepository() {
+            return { constructor: { name: 'InMemoryTicketRepository' } } as any
+          }
+        )
+        vi.mocked(JsonTicketRepository).mockImplementation(function MockJsonTicketRepository() {
+          return { constructor: { name: 'JsonTicketRepository' } } as any
+        })
+        vi.mocked(NodeEnvironmentDetectionService).mockImplementation(
+          function MockNodeEnvironmentDetectionService() {
+            return {
+              constructor: { name: 'NodeEnvironmentDetectionService' },
+              resolveEnvironment: vi.fn(envArg => envArg || 'production'),
+            } as any
+          }
+        )
+        vi.mocked(XdgStorageConfigService).mockImplementation(
+          function MockXdgStorageConfigService() {
+            return {
+              constructor: { name: 'XdgStorageConfigService' },
+              getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
+              getDefaultStorageDir: vi.fn(() => '/default/storage'),
+              resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
+            } as any
+          }
+        )
+
         const container = createContainer({ environment: env as any })
-        const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+        container.get<TicketRepository>(TYPES.TicketRepository)
 
         if (env === 'testing' || env === 'in-memory') {
           expect(InMemoryTicketRepository).toHaveBeenCalled()
@@ -344,10 +392,39 @@ describe('createContainer', () => {
     })
 
     it('should create working container for testing', () => {
+      // Reset mocks for clean test
+      vi.resetAllMocks()
+
+      // Re-apply mock implementations
+      vi.mocked(InMemoryTicketRepository).mockImplementation(
+        function MockInMemoryTicketRepository() {
+          return { constructor: { name: 'InMemoryTicketRepository' } } as any
+        }
+      )
+      vi.mocked(JsonTicketRepository).mockImplementation(function MockJsonTicketRepository() {
+        return { constructor: { name: 'JsonTicketRepository' } } as any
+      })
+      vi.mocked(NodeEnvironmentDetectionService).mockImplementation(
+        function MockNodeEnvironmentDetectionService() {
+          return {
+            constructor: { name: 'NodeEnvironmentDetectionService' },
+            resolveEnvironment: vi.fn(envArg => envArg || 'production'),
+          } as any
+        }
+      )
+      vi.mocked(XdgStorageConfigService).mockImplementation(function MockXdgStorageConfigService() {
+        return {
+          constructor: { name: 'XdgStorageConfigService' },
+          getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
+          getDefaultStorageDir: vi.fn(() => '/default/storage'),
+          resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
+        } as any
+      })
+
       const container = createContainer({ environment: 'testing' })
 
       // Verify in-memory repository is used
-      const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+      container.get<TicketRepository>(TYPES.TicketRepository)
       expect(InMemoryTicketRepository).toHaveBeenCalled()
 
       // Verify development service is available
@@ -355,13 +432,16 @@ describe('createContainer', () => {
     })
 
     it('should create working container for development', () => {
+      // Clear mocks first to ensure clean test
+      vi.clearAllMocks()
+
       const container = createContainer({ environment: 'development' })
 
       // Verify file-based repository is used
-      const repo = container.get<TicketRepository>(TYPES.TicketRepository)
+      container.get<TicketRepository>(TYPES.TicketRepository)
       expect(JsonTicketRepository).toHaveBeenCalled()
 
-      // Verify development service is available
+      // DevelopmentProcessService should be bound for development environment
       expect(container.isBound(TYPES.DevelopmentProcessService)).toBe(true)
     })
   })

@@ -18,7 +18,7 @@ export abstract class BaseTool<TInput extends z.ZodSchema> implements McpTool {
    * MCP tool handler that receives SDK from external source
    * This ensures process-wide SDK consistency
    */
-  handleWithSDK = async (input: z.infer<TInput>, sdk: ProjectManagerSDK) => {
+  async handleWithSDK(input: z.infer<TInput>, sdk: ProjectManagerSDK) {
     try {
       const result = await this.execute(input, sdk)
       return formatSuccessResponse(result)
