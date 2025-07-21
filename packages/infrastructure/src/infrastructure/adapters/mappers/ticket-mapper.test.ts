@@ -1,3 +1,4 @@
+import { PersistenceError } from '@project-manager/application'
 import {
   createTicketPriority,
   createTicketStatus,
@@ -7,9 +8,15 @@ import {
   TicketId,
   TicketTitle,
 } from '@project-manager/domain'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TicketJSON } from '../../types/persistence-types.ts'
-import { toDomain, toDomainList, toPersistence, toPersistenceList } from './ticket-mapper.ts'
+import {
+  InfrastructureError,
+  toDomain,
+  toDomainList,
+  toPersistence,
+  toPersistenceList,
+} from './ticket-mapper.ts'
 
 describe('TicketMapper', () => {
   let sampleTicket: Ticket
@@ -17,12 +24,13 @@ describe('TicketMapper', () => {
 
   beforeEach(() => {
     // Create a sample domain ticket for testing
-    sampleTicket = Ticket.create({
+    const ticketId = TicketId.create('a1b2c3d4')
+    sampleTicket = Ticket.create(ticketId, {
       title: 'Test Ticket',
       description: 'Test Description',
-      status: createTicketStatus('pending'),
-      priority: createTicketPriority('high'),
-      type: createTicketType('feature'),
+      status: 'pending',
+      priority: 'high',
+      type: 'feature',
     })
 
     // Create a sample JSON representation
@@ -58,11 +66,12 @@ describe('TicketMapper', () => {
 
     it('should handle ticket without description', () => {
       // Arrange
-      const ticketWithoutDescription = Ticket.create({
+      const ticketId = TicketId.create('1234abcd')
+      const ticketWithoutDescription = Ticket.create(ticketId, {
         title: 'No Description Ticket',
-        status: createTicketStatus('pending'),
-        priority: createTicketPriority('medium'),
-        type: createTicketType('task'),
+        status: 'pending',
+        priority: 'medium',
+        type: 'task',
       })
 
       // Act
@@ -141,30 +150,87 @@ describe('TicketMapper', () => {
       expect(result.updatedAt.toISOString()).toBe(sampleTicketJSON.updatedAt)
     })
 
-    describe('error cases', () => {
-      it('should handle invalid date formats gracefully', () => {
-        // Arrange
-        const invalidJSON: TicketJSON = {
-          ...sampleTicketJSON,
-          createdAt: 'invalid-date',
-          updatedAt: 'invalid-date',
-        }
-
-        // Act & Assert
-        // Note: This tests the current behavior - the Ticket.reconstitute method should handle this
-        expect(() => toDomain(invalidJSON)).not.toThrow()
+    describe('error handling', () => {
+      it('should throw PersistenceError for null/undefined data', () => {
+        expect(() => toDomain(null as any)).toThrow(PersistenceError)
+        expect(() => toDomain(undefined as any)).toThrow(PersistenceError)
+        expect(() => toDomain('not-an-object' as any)).toThrow(PersistenceError)
       })
 
-      it('should handle missing required fields', () => {
-        // Arrange
-        const incompleteJSON = {
+      it('should throw PersistenceError for missing required fields', () => {
+        const invalidData = {
           ...sampleTicketJSON,
-          title: undefined as any,
+          id: undefined,
         }
 
-        // Act & Assert
-        // This should throw or handle gracefully depending on Ticket.reconstitute implementation
-        expect(() => toDomain(incompleteJSON)).toThrow()
+        expect(() => toDomain(invalidData as any)).toThrow(PersistenceError)
+        expect(() => toDomain(invalidData as any)).toThrow('Missing or invalid required field: id')
+      })
+
+      it('should throw PersistenceError for invalid field types', () => {
+        const invalidData = {
+          ...sampleTicketJSON,
+          title: 123, // Should be string
+        }
+
+        expect(() => toDomain(invalidData as any)).toThrow(PersistenceError)
+        expect(() => toDomain(invalidData as any)).toThrow(
+          'Missing or invalid required field: title'
+        )
+      })
+
+      it('should throw PersistenceError for invalid description type', () => {
+        const invalidData = {
+          ...sampleTicketJSON,
+          description: 123, // Should be string or undefined
+        }
+
+        expect(() => toDomain(invalidData as any)).toThrow(PersistenceError)
+        expect(() => toDomain(invalidData as any)).toThrow(
+          'Description field must be a string when present'
+        )
+      })
+
+      it('should throw PersistenceError for invalid date formats', () => {
+        const invalidData = {
+          ...sampleTicketJSON,
+          createdAt: 'not-a-date',
+        }
+
+        expect(() => toDomain(invalidData as any)).toThrow(PersistenceError)
+        expect(() => toDomain(invalidData as any)).toThrow(
+          'Invalid date format in field: createdAt'
+        )
+      })
+
+      it('should wrap domain validation errors in InfrastructureError', () => {
+        const invalidData = {
+          ...sampleTicketJSON,
+          status: 'INVALID_STATUS', // Will fail domain validation
+        }
+
+        expect(() => toDomain(invalidData as any)).toThrow(InfrastructureError)
+        expect(() => toDomain(invalidData as any)).toThrow(
+          'Failed to reconstitute ticket from persistence data'
+        )
+      })
+
+      it('should include contextual information in infrastructure errors', () => {
+        const invalidData = {
+          ...sampleTicketJSON,
+          priority: 'INVALID_PRIORITY',
+        }
+
+        try {
+          toDomain(invalidData as any)
+          expect.fail('Expected error to be thrown')
+        } catch (error) {
+          expect(error).toBeInstanceOf(InfrastructureError)
+          const infraError = error as InfrastructureError
+          expect(infraError.context?.ticketId).toBe(sampleTicketJSON.id)
+          expect(infraError.context?.operation).toBe('toDomain')
+          expect(infraError.context?.persistenceData).toBeDefined()
+        }
       })
     })
   })
@@ -198,25 +264,126 @@ describe('TicketMapper', () => {
       expect(result).toEqual([])
     })
 
-    it('should propagate conversion errors', () => {
-      // Arrange
-      const invalidJSON = { ...sampleTicketJSON, title: undefined as any }
-      const jsonList = [sampleTicketJSON, invalidJSON]
+    describe('error handling', () => {
+      let consoleWarnSpy: any
 
-      // Act & Assert
-      expect(() => toDomainList(jsonList)).toThrow()
+      beforeEach(() => {
+        consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      })
+
+      afterEach(() => {
+        consoleWarnSpy.mockRestore()
+      })
+
+      it('should handle partial failures gracefully by skipping invalid tickets', () => {
+        // Arrange
+        const validTicket = sampleTicketJSON
+        const invalidTicket = { ...sampleTicketJSON, id: undefined } as any
+        const anotherValidTicket = {
+          ...sampleTicketJSON,
+          id: 'valid-id-2',
+          title: 'Valid Ticket 2',
+        }
+
+        const jsonList = [validTicket, invalidTicket, anotherValidTicket]
+
+        // Act
+        const result = toDomainList(jsonList)
+
+        // Assert
+        expect(result).toHaveLength(2) // Should skip the invalid one
+        expect(result[0].title.value).toBe('Test Ticket')
+        expect(result[1].title.value).toBe('Valid Ticket 2')
+
+        // Should log warning for invalid ticket
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining('Skipping invalid ticket during bulk reconstitution'),
+          expect.objectContaining({ ticketId: 'unknown' })
+        )
+      })
+
+      it('should throw InfrastructureError when all tickets are invalid', () => {
+        // Arrange
+        const invalidTicket1 = { ...sampleTicketJSON, id: undefined } as any
+        const invalidTicket2 = { ...sampleTicketJSON, title: undefined } as any
+        const jsonList = [invalidTicket1, invalidTicket2]
+
+        // Act & Assert
+        expect(() => toDomainList(jsonList)).toThrow(InfrastructureError)
+        expect(() => toDomainList(jsonList)).toThrow(
+          'All 2 tickets failed validation during reconstitution'
+        )
+      })
+
+      it('should log summary when there are partial failures', () => {
+        // Arrange
+        const validTicket = sampleTicketJSON
+        const invalidTicket = { ...sampleTicketJSON, status: 'INVALID_STATUS' } as any
+        const jsonList = [validTicket, invalidTicket]
+
+        // Act
+        const result = toDomainList(jsonList)
+
+        // Assert
+        expect(result).toHaveLength(1) // One valid ticket
+
+        // Should log both individual failure and summary
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining('Skipping invalid ticket during bulk reconstitution'),
+          expect.any(Object)
+        )
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Partial failure during bulk ticket reconstitution: 1/2 tickets failed'
+          ),
+          expect.objectContaining({
+            successCount: 1,
+            errorCount: 1,
+            totalCount: 2,
+          })
+        )
+      })
+
+      it('should handle empty list without errors', () => {
+        // Act
+        const result = toDomainList([])
+
+        // Assert
+        expect(result).toEqual([])
+        expect(consoleWarnSpy).not.toHaveBeenCalled()
+      })
+
+      it('should preserve ticket IDs in error context when available', () => {
+        // Arrange
+        const invalidTicket = {
+          ...sampleTicketJSON,
+          id: 'error-ticket-id',
+          title: undefined,
+        } as any
+        const jsonList = [invalidTicket]
+
+        // Act & Assert
+        expect(() => toDomainList(jsonList)).toThrow(InfrastructureError)
+
+        // Should log with correct ticket ID
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining('Skipping invalid ticket during bulk reconstitution'),
+          expect.objectContaining({ ticketId: 'error-ticket-id' })
+        )
+      })
     })
   })
 
   describe('toPersistenceList', () => {
     it('should convert array of domain objects to array of JSON', () => {
       // Arrange
-      const secondTicket = Ticket.create({
+      const secondTicketId = TicketId.create('b2c3d4e5')
+      const secondTicket = Ticket.create(secondTicketId, {
         title: 'Second Ticket',
         description: 'Second Description',
-        status: createTicketStatus('in_progress'),
-        priority: createTicketPriority('low'),
-        type: createTicketType('bug'),
+        status: 'in_progress',
+        priority: 'low',
+        type: 'bug',
       })
       const ticketList = [sampleTicket, secondTicket]
 
@@ -259,11 +426,12 @@ describe('TicketMapper', () => {
 
     it('should handle round-trip for tickets without description', () => {
       // Arrange
-      const ticketWithoutDescription = Ticket.create({
+      const ticketId = TicketId.create('12345678')
+      const ticketWithoutDescription = Ticket.create(ticketId, {
         title: 'No Description',
-        status: createTicketStatus('completed'),
-        priority: createTicketPriority('high'),
-        type: createTicketType('task'),
+        status: 'completed',
+        priority: 'high',
+        type: 'task',
       })
 
       // Act
@@ -281,13 +449,14 @@ describe('TicketMapper', () => {
       // Arrange
       const longTitle = 'A'.repeat(200) // Maximum title length
       const longDescription = 'B'.repeat(2000) // Long description
+      const ticketId = TicketId.create('abcdabcd')
 
-      const ticketWithLongContent = Ticket.create({
+      const ticketWithLongContent = Ticket.create(ticketId, {
         title: longTitle,
         description: longDescription,
-        status: createTicketStatus('pending'),
-        priority: createTicketPriority('medium'),
-        type: createTicketType('feature'),
+        status: 'pending',
+        priority: 'medium',
+        type: 'feature',
       })
 
       // Act
@@ -304,15 +473,19 @@ describe('TicketMapper', () => {
       const priorityValues = ['high', 'medium', 'low']
       const typeValues = ['feature', 'bug', 'task']
 
-      statusValues.forEach(status => {
-        priorityValues.forEach(priority => {
-          typeValues.forEach(type => {
-            // Arrange
-            const ticket = Ticket.create({
+      statusValues.forEach((status, si) => {
+        priorityValues.forEach((priority, pi) => {
+          typeValues.forEach((type, ti) => {
+            // Arrange - Generate valid 8-char hex ID (pad with zeros)
+            const hexId = `${si.toString(16)}${pi.toString(16)}${ti.toString(16)}abcd0`
+              .padStart(8, '0')
+              .slice(0, 8)
+            const ticketId = TicketId.create(hexId)
+            const ticket = Ticket.create(ticketId, {
               title: `Ticket ${status}-${priority}-${type}`,
-              status: createTicketStatus(status),
-              priority: createTicketPriority(priority),
-              type: createTicketType(type),
+              status: status,
+              priority: priority,
+              type: type,
             })
 
             // Act
