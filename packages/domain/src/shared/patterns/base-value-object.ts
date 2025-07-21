@@ -34,8 +34,8 @@ export abstract class ValueObject<T extends object> {
 
   /**
    * Check equality between two value objects
-   * Value objects are equal if all their properties are deeply equal
-   * Uses simple deep equality comparison
+   * Value objects are equal if all their properties are equal
+   * Uses simple property comparison suitable for value objects
    */
   public equals(vo?: ValueObject<T>): boolean {
     if (vo === null || vo === undefined) {
@@ -44,7 +44,14 @@ export abstract class ValueObject<T extends object> {
     if (vo.props === undefined) {
       return false
     }
-    return this.deepEquals(this.props, vo.props)
+
+    // For simple value objects, compare JSON representations when possible
+    try {
+      return JSON.stringify(this.props) === JSON.stringify(vo.props)
+    } catch {
+      // Fallback to simple shallow comparison for objects that can't be serialized
+      return this.shallowEquals(this.props, vo.props)
+    }
   }
 
   /**
@@ -56,15 +63,12 @@ export abstract class ValueObject<T extends object> {
   }
 
   /**
-   * Simple deep equality check without external dependencies
+   * Simple shallow equality check for objects that can't be JSON serialized
    */
-  private deepEquals(a: any, b: any): boolean {
+  private shallowEquals(a: any, b: any): boolean {
     if (a === b) return true
-
     if (a == null || b == null) return false
-    if (typeof a !== typeof b) return false
-
-    if (typeof a !== 'object') return false
+    if (typeof a !== 'object' || typeof b !== 'object') return false
 
     const keysA = Object.keys(a)
     const keysB = Object.keys(b)
@@ -72,8 +76,7 @@ export abstract class ValueObject<T extends object> {
     if (keysA.length !== keysB.length) return false
 
     for (const key of keysA) {
-      if (!keysB.includes(key)) return false
-      if (!this.deepEquals(a[key], b[key])) return false
+      if (a[key] !== b[key]) return false
     }
 
     return true

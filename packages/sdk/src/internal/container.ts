@@ -16,7 +16,6 @@ import {
   UpdateTicketContent,
   UpdateTicketPriority,
   UpdateTicketStatus,
-  UpdateTicketTitle,
 } from '@project-manager/application'
 import { isDevelopmentLike, isMemoryEnvironment } from '@project-manager/base'
 import {
@@ -120,11 +119,6 @@ export function createContainer(config: SDKConfig): Container {
   container.bind(TYPES.UpdateTicketPriorityUseCase).toDynamicValue(() => {
     const repo = container.get<TicketRepository>(TYPES.TicketRepository)
     return new UpdateTicketPriority.UseCase(repo)
-  })
-
-  container.bind(TYPES.UpdateTicketTitleUseCase).toDynamicValue(() => {
-    const repo = container.get<TicketRepository>(TYPES.TicketRepository)
-    return new UpdateTicketTitle.UseCase(repo)
   })
 
   container.bind(TYPES.DeleteTicketUseCase).toDynamicValue(() => {

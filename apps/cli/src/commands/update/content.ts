@@ -52,34 +52,25 @@ export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
       this.error('At least one of --title or --description must be provided')
     }
 
-    try {
-      // Execute the update operation using SDK
-      const updatedTicket = await this.sdk.tickets.updateContent({
-        id: args.ticketId,
-        title: flags.title,
-        description: flags.description,
-      })
+    // Execute the update operation using SDK
+    const updatedTicket = await this.sdk.tickets.updateContent({
+      id: args.ticketId,
+      title: flags.title,
+      description: flags.description,
+    })
 
-      // Handle JSON output
-      if (flags.json) {
-        return updatedTicket
-      }
-
-      // Display success message
-      const updates: string[] = []
-      if (flags.title) updates.push('title')
-      if (flags.description) updates.push('description')
-
-      this.log(`Ticket ${args.ticketId} ${updates.join(' and ')} updated successfully.`)
-
-      return undefined
-    } catch (error: any) {
-      // Handle specific error cases
-      if (error.message?.includes('not found')) {
-        this.error(`Ticket ${args.ticketId} not found`)
-      }
-      // Re-throw other errors
-      throw error
+    // Handle JSON output
+    if (flags.json) {
+      return updatedTicket
     }
+
+    // Display success message
+    const updates: string[] = []
+    if (flags.title) updates.push('title')
+    if (flags.description) updates.push('description')
+
+    this.log(`Ticket ${args.ticketId} ${updates.join(' and ')} updated successfully.`)
+
+    return undefined
   }
 }

@@ -333,13 +333,11 @@ describe('ValueObject', () => {
       const value2 = DateValue.create(date2)
       const value3 = DateValue.create(date3)
 
-      // Note: Date objects are compared using deep equality which compares all properties
-      // Date objects with same timestamp have same internal structure so they're equal
+      // Date objects with same timestamp should be equal via JSON serialization
       expect(value1.equals(value2)).toBe(true) // Same timestamp values
-      expect(value1.equals(value3)).toBe(true) // All dates are equal in deep comparison due to structure
+      expect(value1.equals(value3)).toBe(false) // Different dates should not be equal
 
-      // This demonstrates a limitation of the generic deep equality for Date objects
-      // For proper date value objects, convert to primitive values like ISO strings
+      // For proper date value objects, consider converting to primitive values like ISO strings
     })
   })
 
@@ -414,7 +412,7 @@ describe('ValueObject', () => {
     })
 
     it('should handle empty objects', () => {
-      class EmptyValue extends ValueObject<{}> {
+      class EmptyValue extends ValueObject<Record<string, never>> {
         constructor() {
           super({})
         }

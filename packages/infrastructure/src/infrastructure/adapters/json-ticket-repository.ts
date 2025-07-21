@@ -2,9 +2,8 @@ import { constants } from 'node:fs'
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import type { TicketQueryCriteria, TicketRepository } from '@project-manager/application'
-import { TicketNotFoundError } from '@project-manager/application'
+import { PersistenceError, TicketNotFoundError } from '@project-manager/application'
 import { Ticket, type TicketId } from '@project-manager/domain'
-import { StorageError } from '../errors/infrastructure-errors.ts'
 import type { TicketJSON } from '../types/persistence-types.ts'
 import * as TicketMapper from './mappers/ticket-mapper.ts'
 
@@ -212,8 +211,11 @@ export class JsonTicketRepository implements TicketRepository {
         console.error('Corrupted tickets file, returning empty array')
         return []
       }
-      throw new StorageError(
-        `Failed to read file: ${this.filePath}`,
+      throw new PersistenceError(
+        'read',
+        `Failed to read tickets file: ${this.filePath}`,
+        'Ticket',
+        { filePath: this.filePath },
         error instanceof Error ? error : undefined
       )
     }
@@ -234,8 +236,11 @@ export class JsonTicketRepository implements TicketRepository {
       const content = JSON.stringify(tickets, null, 2)
       await writeFile(this.filePath, content, 'utf-8')
     } catch (error) {
-      throw new StorageError(
-        `Failed to write file: ${this.filePath}`,
+      throw new PersistenceError(
+        'write',
+        `Failed to write tickets file: ${this.filePath}`,
+        'Ticket',
+        { filePath: this.filePath },
         error instanceof Error ? error : undefined
       )
     }

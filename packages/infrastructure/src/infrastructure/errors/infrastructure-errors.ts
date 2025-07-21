@@ -1,22 +1,11 @@
 /**
  * Infrastructure layer error types
- * These errors are specific to infrastructure concerns like persistence and external integrations
+ * @deprecated Infrastructure errors have been moved to the application layer
+ * to comply with Clean Architecture principles. Use errors from
+ * @project-manager/application instead.
  */
 
-/**
- * Error thrown when storage operations fail
- */
-export class StorageError extends Error {
-  public readonly originalError: Error | undefined
-
-  constructor(message: string, originalError?: Error) {
-    super(message)
-    this.name = 'StorageError'
-    this.originalError = originalError
-
-    // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor)
-    }
-  }
-}
+// This file is kept for compatibility but is deprecated.
+// All infrastructure errors have been moved to the application layer:
+// - StorageError → PersistenceError (in @project-manager/application)
+// - Future infrastructure errors will also be defined in the application layer

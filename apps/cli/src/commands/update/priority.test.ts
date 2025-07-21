@@ -188,32 +188,50 @@ describe('UpdatePriorityCommand', () => {
         // Arrange
         const args = { ticketId: 'nonexistent-ticket', priority: 'high' }
         const flags = {}
-        const notFoundError = new Error('Ticket not found')
+        // Create a mock TicketNotFoundError using proper prototype chain
+        class MockTicketNotFoundError extends Error {
+          constructor(ticketId: string) {
+            super(`Ticket with ID '${ticketId}' not found`)
+            this.name = 'TicketNotFoundError'
+          }
+        }
+        const notFoundError = new MockTicketNotFoundError('nonexistent-ticket')
         vi.mocked(mockSDK.tickets.updatePriority).mockRejectedValue(notFoundError)
         vi.mocked(command.error).mockImplementation(() => {
           throw new Error('Command error')
         })
 
         // Act & Assert
-        await expect(command.execute(args, flags)).rejects.toThrow('Command error')
-        expect(command.error).toHaveBeenCalledWith('Ticket nonexistent-ticket not found')
+        await expect(command.execute(args, flags)).rejects.toThrow(
+          "Ticket with ID 'nonexistent-ticket' not found"
+        )
+        expect(command.error).not.toHaveBeenCalled()
       })
 
       it('should handle invalid priority errors', async () => {
         // Arrange
         const args = { ticketId: 'ticket-123', priority: 'invalid_priority' }
         const flags = {}
-        const invalidPriorityError = new Error('Invalid priority')
+        // Create a mock TicketValidationError using proper prototype chain
+        class MockTicketValidationError extends Error {
+          constructor(message: string) {
+            super(message)
+            this.name = 'TicketValidationError'
+          }
+        }
+        const invalidPriorityError = new MockTicketValidationError(
+          'Invalid priority: invalid_priority. Valid values are: high, medium, low'
+        )
         vi.mocked(mockSDK.tickets.updatePriority).mockRejectedValue(invalidPriorityError)
         vi.mocked(command.error).mockImplementation(() => {
           throw new Error('Command error')
         })
 
         // Act & Assert
-        await expect(command.execute(args, flags)).rejects.toThrow('Command error')
-        expect(command.error).toHaveBeenCalledWith(
+        await expect(command.execute(args, flags)).rejects.toThrow(
           'Invalid priority: invalid_priority. Valid values are: high, medium, low'
         )
+        expect(command.error).not.toHaveBeenCalled()
       })
 
       it('should re-throw other SDK errors', async () => {

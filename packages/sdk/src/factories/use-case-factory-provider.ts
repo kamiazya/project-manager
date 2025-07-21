@@ -6,7 +6,6 @@ import type {
   UpdateTicketContent,
   UpdateTicketPriority,
   UpdateTicketStatus,
-  UpdateTicketTitle,
 } from '@project-manager/application'
 import type { Container } from 'inversify'
 import { TYPES } from '../internal/types.ts'
@@ -59,13 +58,6 @@ export class UseCaseFactoryProvider {
    */
   getUpdateTicketPriorityUseCase(): UpdateTicketPriority.UseCase {
     return this.getCachedUseCase<UpdateTicketPriority.UseCase>(TYPES.UpdateTicketPriorityUseCase)
-  }
-
-  /**
-   * Get UpdateTicketTitle use case
-   */
-  getUpdateTicketTitleUseCase(): UpdateTicketTitle.UseCase {
-    return this.getCachedUseCase<UpdateTicketTitle.UseCase>(TYPES.UpdateTicketTitleUseCase)
   }
 
   /**

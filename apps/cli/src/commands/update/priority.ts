@@ -41,29 +41,17 @@ export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags
       this.error('Priority is required')
     }
 
-    try {
-      // Execute the update operation using SDK
-      const updatedTicket = await this.sdk.tickets.updatePriority(args.ticketId, args.priority)
+    // Execute the update operation using SDK
+    const updatedTicket = await this.sdk.tickets.updatePriority(args.ticketId, args.priority)
 
-      // Handle JSON output
-      if (flags.json) {
-        return updatedTicket
-      }
-
-      // Display success message
-      this.log(`Ticket ${args.ticketId} priority updated to: ${args.priority}`)
-
-      return undefined
-    } catch (error: any) {
-      // Handle specific error cases
-      if (error.message?.includes('not found')) {
-        this.error(`Ticket ${args.ticketId} not found`)
-      }
-      if (error.message?.includes('Invalid priority')) {
-        this.error(`Invalid priority: ${args.priority}. Valid values are: high, medium, low`)
-      }
-      // Re-throw other errors
-      throw error
+    // Handle JSON output
+    if (flags.json) {
+      return updatedTicket
     }
+
+    // Display success message
+    this.log(`Ticket ${args.ticketId} priority updated to: ${args.priority}`)
+
+    return undefined
   }
 }

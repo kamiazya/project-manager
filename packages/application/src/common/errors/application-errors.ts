@@ -89,22 +89,50 @@ export class UseCaseExecutionError extends ApplicationError {
 }
 
 /**
- * Application layer error for repository operation failures.
- * Used when repository operations fail due to persistence or infrastructure issues.
+ * Application layer error for infrastructure operation failures.
+ * Base class for all infrastructure-related errors (persistence, logging, external services).
+ * This provides extensibility for future infrastructure concerns while maintaining
+ * Clean Architecture principles by keeping infrastructure error abstractions in the application layer.
  */
-export class RepositoryError extends ApplicationError {
-  public readonly repositoryName: string
+export abstract class InfrastructureError extends ApplicationError {
+  public readonly infrastructureType: string
   public readonly operation: string
 
   constructor(
-    repositoryName: string,
+    infrastructureType: string,
     operation: string,
     message: string,
     context?: Record<string, unknown>,
     cause?: Error
   ) {
-    super(`Repository '${repositoryName}' failed during '${operation}': ${message}`, context, cause)
-    this.repositoryName = repositoryName
+    super(
+      `Infrastructure '${infrastructureType}' failed during '${operation}': ${message}`,
+      context,
+      cause
+    )
+    this.infrastructureType = infrastructureType
     this.operation = operation
+  }
+}
+
+/**
+ * Application layer error for persistence operation failures.
+ * Consolidates repository and storage concerns under a unified persistence abstraction.
+ * Replaces both RepositoryError and StorageError for better cohesion.
+ */
+export class PersistenceError extends InfrastructureError {
+  public readonly entityType?: string
+  public readonly persistenceOperation: string
+
+  constructor(
+    operation: string,
+    message: string,
+    entityType?: string,
+    context?: Record<string, unknown>,
+    cause?: Error
+  ) {
+    super('Persistence', operation, message, context, cause)
+    this.entityType = entityType
+    this.persistenceOperation = operation
   }
 }

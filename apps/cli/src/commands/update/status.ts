@@ -41,31 +41,17 @@ export class UpdateStatusCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, 
       this.error('Status is required')
     }
 
-    try {
-      // Execute the update operation using SDK
-      const updatedTicket = await this.sdk.tickets.updateStatus(args.ticketId, args.status)
+    // Execute the update operation using SDK
+    const updatedTicket = await this.sdk.tickets.updateStatus(args.ticketId, args.status)
 
-      // Handle JSON output
-      if (flags.json) {
-        return updatedTicket
-      }
-
-      // Display success message
-      this.log(`Ticket ${args.ticketId} status updated to: ${args.status}`)
-
-      return undefined
-    } catch (error: any) {
-      // Handle specific error cases
-      if (error.message?.includes('not found')) {
-        this.error(`Ticket ${args.ticketId} not found`)
-      }
-      if (error.message?.includes('Invalid status')) {
-        this.error(
-          `Invalid status: ${args.status}. Valid values are: pending, in_progress, completed, archived`
-        )
-      }
-      // Re-throw other errors
-      throw error
+    // Handle JSON output
+    if (flags.json) {
+      return updatedTicket
     }
+
+    // Display success message
+    this.log(`Ticket ${args.ticketId} status updated to: ${args.status}`)
+
+    return undefined
   }
 }

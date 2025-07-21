@@ -1,26 +1,16 @@
 import type {
-  CreateTicket,
-  DeleteTicket,
   DevelopmentProcessService,
   EnvironmentDetectionService,
-  GetTicketById,
-  SearchTickets,
   StorageConfigService,
   TicketRepository,
-  UpdateTicketContent,
-  UpdateTicketPriority,
-  UpdateTicketStatus,
-  UpdateTicketTitle,
 } from '@project-manager/application'
 import {
   InMemoryTicketRepository,
   JsonTicketRepository,
   NodeEnvironmentDetectionService,
   XdgDevelopmentProcessService,
-  XdgStorageConfigService,
 } from '@project-manager/infrastructure'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { SDKConfig } from '../project-manager-sdk.ts'
 import { createContainer } from './container.ts'
 import { TYPES } from './types.ts'
 
@@ -54,9 +44,6 @@ vi.mock('@project-manager/application', () => ({
     UseCase: vi.fn(),
   },
   UpdateTicketPriority: {
-    UseCase: vi.fn(),
-  },
-  UpdateTicketTitle: {
     UseCase: vi.fn(),
   },
   DeleteTicket: {
@@ -224,7 +211,6 @@ describe('createContainer', () => {
         TYPES.UpdateTicketStatusUseCase,
         TYPES.UpdateTicketContentUseCase,
         TYPES.UpdateTicketPriorityUseCase,
-        TYPES.UpdateTicketTitleUseCase,
         TYPES.DeleteTicketUseCase,
         TYPES.SearchTicketsUseCase,
       ]
@@ -244,7 +230,6 @@ describe('createContainer', () => {
       const updateStatusUseCase = container.get(TYPES.UpdateTicketStatusUseCase)
       const updateContentUseCase = container.get(TYPES.UpdateTicketContentUseCase)
       const updatePriorityUseCase = container.get(TYPES.UpdateTicketPriorityUseCase)
-      const updateTitleUseCase = container.get(TYPES.UpdateTicketTitleUseCase)
       const deleteUseCase = container.get(TYPES.DeleteTicketUseCase)
       const searchUseCase = container.get(TYPES.SearchTicketsUseCase)
 
@@ -254,7 +239,6 @@ describe('createContainer', () => {
       expect(updateStatusUseCase).toBeDefined()
       expect(updateContentUseCase).toBeDefined()
       expect(updatePriorityUseCase).toBeDefined()
-      expect(updateTitleUseCase).toBeDefined()
       expect(deleteUseCase).toBeDefined()
       expect(searchUseCase).toBeDefined()
     })

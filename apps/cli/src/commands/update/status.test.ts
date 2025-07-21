@@ -201,32 +201,50 @@ describe('UpdateStatusCommand', () => {
         // Arrange
         const args = { ticketId: 'nonexistent-ticket', status: 'pending' }
         const flags = {}
-        const notFoundError = new Error('Ticket not found')
+        // Create a mock TicketNotFoundError using proper prototype chain
+        class MockTicketNotFoundError extends Error {
+          constructor(ticketId: string) {
+            super(`Ticket with ID '${ticketId}' not found`)
+            this.name = 'TicketNotFoundError'
+          }
+        }
+        const notFoundError = new MockTicketNotFoundError('nonexistent-ticket')
         vi.mocked(mockSDK.tickets.updateStatus).mockRejectedValue(notFoundError)
         vi.mocked(command.error).mockImplementation(() => {
           throw new Error('Command error')
         })
 
         // Act & Assert
-        await expect(command.execute(args, flags)).rejects.toThrow('Command error')
-        expect(command.error).toHaveBeenCalledWith('Ticket nonexistent-ticket not found')
+        await expect(command.execute(args, flags)).rejects.toThrow(
+          "Ticket with ID 'nonexistent-ticket' not found"
+        )
+        expect(command.error).not.toHaveBeenCalled()
       })
 
       it('should handle invalid status errors', async () => {
         // Arrange
         const args = { ticketId: 'ticket-123', status: 'invalid_status' }
         const flags = {}
-        const invalidStatusError = new Error('Invalid status')
+        // Create a mock TicketValidationError using proper prototype chain
+        class MockTicketValidationError extends Error {
+          constructor(message: string) {
+            super(message)
+            this.name = 'TicketValidationError'
+          }
+        }
+        const invalidStatusError = new MockTicketValidationError(
+          'Invalid status: invalid_status. Valid values are: pending, in_progress, completed, archived'
+        )
         vi.mocked(mockSDK.tickets.updateStatus).mockRejectedValue(invalidStatusError)
         vi.mocked(command.error).mockImplementation(() => {
           throw new Error('Command error')
         })
 
         // Act & Assert
-        await expect(command.execute(args, flags)).rejects.toThrow('Command error')
-        expect(command.error).toHaveBeenCalledWith(
+        await expect(command.execute(args, flags)).rejects.toThrow(
           'Invalid status: invalid_status. Valid values are: pending, in_progress, completed, archived'
         )
+        expect(command.error).not.toHaveBeenCalled()
       })
 
       it('should re-throw other SDK errors', async () => {

@@ -289,15 +289,24 @@ describe('UpdateContentCommand', () => {
         // Arrange
         const args = { ticketId: 'nonexistent-ticket' }
         const flags = { title: 'New Title' }
-        const notFoundError = new Error('Ticket not found')
+        // Create a mock TicketNotFoundError using proper prototype chain
+        class MockTicketNotFoundError extends Error {
+          constructor(ticketId: string) {
+            super(`Ticket with ID '${ticketId}' not found`)
+            this.name = 'TicketNotFoundError'
+          }
+        }
+        const notFoundError = new MockTicketNotFoundError('nonexistent-ticket')
         vi.mocked(mockSDK.tickets.updateContent).mockRejectedValue(notFoundError)
         vi.mocked(command.error).mockImplementation(() => {
           throw new Error('Command error')
         })
 
         // Act & Assert
-        await expect(command.execute(args, flags)).rejects.toThrow('Command error')
-        expect(command.error).toHaveBeenCalledWith('Ticket nonexistent-ticket not found')
+        await expect(command.execute(args, flags)).rejects.toThrow(
+          "Ticket with ID 'nonexistent-ticket' not found"
+        )
+        expect(command.error).not.toHaveBeenCalled()
       })
 
       it('should re-throw other SDK errors', async () => {

@@ -18,7 +18,6 @@ export const TYPES = {
   UpdateTicketStatusUseCase: Symbol('UpdateTicketStatusUseCase'),
   UpdateTicketContentUseCase: Symbol('UpdateTicketContentUseCase'),
   UpdateTicketPriorityUseCase: Symbol('UpdateTicketPriorityUseCase'),
-  UpdateTicketTitleUseCase: Symbol('UpdateTicketTitleUseCase'),
   DeleteTicketUseCase: Symbol('DeleteTicketUseCase'),
   SearchTicketsUseCase: Symbol('SearchTicketsUseCase'),
 } as const

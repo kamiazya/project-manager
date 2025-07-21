@@ -13,7 +13,8 @@ export * from './common/base-usecase.ts'
 // Application layer errors (override domain errors)
 export {
   ApplicationError,
-  RepositoryError,
+  InfrastructureError,
+  PersistenceError,
   TicketNotFoundError,
   TicketValidationError,
   UseCaseExecutionError,
@@ -33,4 +34,3 @@ export * from './usecases/search-tickets.ts'
 export * from './usecases/update-ticket-content.ts'
 export * from './usecases/update-ticket-priority.ts'
 export * from './usecases/update-ticket-status.ts'
-export * from './usecases/update-ticket-title.ts'

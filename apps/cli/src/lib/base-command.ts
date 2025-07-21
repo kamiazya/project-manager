@@ -1,5 +1,14 @@
 import { Command } from '@oclif/core'
-import { createProjectManagerSDK, ProjectManagerSDK } from '@project-manager/sdk'
+import {
+  ApplicationError,
+  createProjectManagerSDK,
+  InfrastructureError,
+  PersistenceError,
+  ProjectManagerSDK,
+  TicketNotFoundError,
+  TicketValidationError,
+  UseCaseExecutionError,
+} from '@project-manager/sdk'
 
 /**
  * Base command class that provides common functionality for all commands.
@@ -139,21 +148,26 @@ export abstract class BaseCommand<
   protected abstract execute(args: TArgs, flags: TFlags): Promise<TResult | undefined>
 
   /**
-   * Error handler that provides user-friendly error messages.
-   * Uses generic error handling approach to avoid coupling to specific error types.
+   * Type-safe error handler that provides user-friendly error messages.
+   * Uses instanceof checks for robust error type detection with hierarchical error structure.
    * Override this method to customize error handling.
    */
   async catch(error: Error): Promise<any> {
-    // Handle domain-specific errors by error message patterns
-    if (error.message.includes('Ticket not found')) {
+    // Handle specific application errors using type-safe instanceof checks
+    if (error instanceof TicketNotFoundError) {
       this.error(`Ticket not found: ${error.message}`, { exit: 1 })
-    } else if (
-      error.message.includes('Validation error') ||
-      error.name === 'TicketValidationError'
-    ) {
+    } else if (error instanceof TicketValidationError) {
       this.error(`Validation error: ${error.message}`, { exit: 1 })
-    } else if (error.message.includes('Storage error') || error.name === 'StorageError') {
-      this.error(`Storage error: ${error.message}`, { exit: 1 })
+    } else if (error instanceof PersistenceError) {
+      this.error(`Persistence error: ${error.message}`, { exit: 1 })
+    } else if (error instanceof InfrastructureError) {
+      // Handles all infrastructure errors (including future LoggingError, ExternalServiceError, etc.)
+      this.error(`Infrastructure error: ${error.message}`, { exit: 1 })
+    } else if (error instanceof UseCaseExecutionError) {
+      this.error(`Use case error: ${error.message}`, { exit: 1 })
+    } else if (error instanceof ApplicationError) {
+      // Generic application error handler for any other application errors
+      this.error(`Application error: ${error.message}`, { exit: 1 })
     }
 
     // Let oclif handle unexpected errors

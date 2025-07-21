@@ -1,13 +1,3 @@
-import type {
-  CreateTicket,
-  DeleteTicket,
-  GetTicketById,
-  SearchTickets,
-  UpdateTicketContent,
-  UpdateTicketPriority,
-  UpdateTicketStatus,
-  UpdateTicketTitle,
-} from '@project-manager/application'
 import { Container } from 'inversify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TYPES } from '../internal/types.ts'
@@ -19,7 +9,6 @@ const mockGetTicketByIdUseCase = { execute: vi.fn() }
 const mockUpdateTicketStatusUseCase = { execute: vi.fn() }
 const mockUpdateTicketContentUseCase = { execute: vi.fn() }
 const mockUpdateTicketPriorityUseCase = { execute: vi.fn() }
-const mockUpdateTicketTitleUseCase = { execute: vi.fn() }
 const mockDeleteTicketUseCase = { execute: vi.fn() }
 const mockSearchTicketsUseCase = { execute: vi.fn() }
 
@@ -47,14 +36,12 @@ describe('UseCaseFactoryProvider', () => {
           return mockUpdateTicketContentUseCase
         case TYPES.UpdateTicketPriorityUseCase:
           return mockUpdateTicketPriorityUseCase
-        case TYPES.UpdateTicketTitleUseCase:
-          return mockUpdateTicketTitleUseCase
         case TYPES.DeleteTicketUseCase:
           return mockDeleteTicketUseCase
         case TYPES.SearchTicketsUseCase:
           return mockSearchTicketsUseCase
         default:
-          throw new Error(`Unknown type: ${type}`)
+          throw new Error(`Unknown type: ${String(type)}`)
       }
     })
 
@@ -154,23 +141,6 @@ describe('UseCaseFactoryProvider', () => {
     it('should cache the use case for subsequent calls', () => {
       const result1 = provider.getUpdateTicketPriorityUseCase()
       const result2 = provider.getUpdateTicketPriorityUseCase()
-
-      expect(result1).toBe(result2)
-      expect(mockContainer.get).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('getUpdateTicketTitleUseCase', () => {
-    it('should return UpdateTicketTitle use case from container', () => {
-      const result = provider.getUpdateTicketTitleUseCase()
-
-      expect(result).toBe(mockUpdateTicketTitleUseCase)
-      expect(mockContainer.get).toHaveBeenCalledWith(TYPES.UpdateTicketTitleUseCase)
-    })
-
-    it('should cache the use case for subsequent calls', () => {
-      const result1 = provider.getUpdateTicketTitleUseCase()
-      const result2 = provider.getUpdateTicketTitleUseCase()
 
       expect(result1).toBe(result2)
       expect(mockContainer.get).toHaveBeenCalledTimes(1)
@@ -283,7 +253,6 @@ describe('UseCaseFactoryProvider', () => {
       const updateStatusUseCase = provider.getUpdateTicketStatusUseCase()
       const updateContentUseCase = provider.getUpdateTicketContentUseCase()
       const updatePriorityUseCase = provider.getUpdateTicketPriorityUseCase()
-      const updateTitleUseCase = provider.getUpdateTicketTitleUseCase()
       const deleteUseCase = provider.getDeleteTicketUseCase()
       const searchUseCase = provider.getSearchTicketsUseCase()
 
@@ -293,7 +262,6 @@ describe('UseCaseFactoryProvider', () => {
       expect(updateStatusUseCase).toHaveProperty('execute')
       expect(updateContentUseCase).toHaveProperty('execute')
       expect(updatePriorityUseCase).toHaveProperty('execute')
-      expect(updateTitleUseCase).toHaveProperty('execute')
       expect(deleteUseCase).toHaveProperty('execute')
       expect(searchUseCase).toHaveProperty('execute')
     })
