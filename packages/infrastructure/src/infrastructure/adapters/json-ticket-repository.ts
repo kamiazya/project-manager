@@ -3,6 +3,7 @@ import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import type { TicketQueryCriteria, TicketRepository } from '@project-manager/application'
 import { PersistenceError, TicketNotFoundError } from '@project-manager/application'
+import { ConfigurationError } from '@project-manager/base'
 import { Ticket, type TicketId } from '@project-manager/domain'
 import type { TicketJSON } from '../types/persistence-types.ts'
 import * as TicketMapper from './mappers/ticket-mapper.ts'
@@ -75,7 +76,7 @@ export class JsonTicketRepository implements TicketRepository {
 
   constructor(filePath: string) {
     if (!filePath.trim()) {
-      throw new Error('filePath is required for JsonTicketRepository')
+      throw new ConfigurationError('filePath', 'file path is required for JsonTicketRepository')
     }
     this.filePath = filePath.trim()
   }

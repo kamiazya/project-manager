@@ -2,6 +2,7 @@
  * Domain types for Ticket management
  */
 import type { Brand } from '@project-manager/base'
+import { ValidationError } from '@project-manager/base'
 
 /**
  * Possible states of a ticket in its lifecycle
@@ -28,8 +29,10 @@ const TICKET_KEY_PATTERN = /^[a-z_]+$/
  */
 export function createTicketStatus(value: string): TicketStatusKey {
   if (!value || !TICKET_KEY_PATTERN.test(value)) {
-    throw new Error(
-      `Invalid ticket status: ${value}. Must contain only lowercase letters and underscores.`
+    throw new ValidationError(
+      `Invalid ticket status: ${value}. Must contain only lowercase letters and underscores.`,
+      'ticketStatus',
+      value
     )
   }
   return value as TicketStatusKey
@@ -40,8 +43,10 @@ export function createTicketStatus(value: string): TicketStatusKey {
  */
 export function createTicketType(value: string): TicketTypeKey {
   if (!value || !TICKET_KEY_PATTERN.test(value)) {
-    throw new Error(
-      `Invalid ticket type: ${value}. Must contain only lowercase letters and underscores.`
+    throw new ValidationError(
+      `Invalid ticket type: ${value}. Must contain only lowercase letters and underscores.`,
+      'ticketType',
+      value
     )
   }
   return value as TicketTypeKey
@@ -52,8 +57,10 @@ export function createTicketType(value: string): TicketTypeKey {
  */
 export function createTicketPriority(value: string): TicketPriorityKey {
   if (!value || !TICKET_KEY_PATTERN.test(value)) {
-    throw new Error(
-      `Invalid ticket priority: ${value}. Must contain only lowercase letters and underscores.`
+    throw new ValidationError(
+      `Invalid ticket priority: ${value}. Must contain only lowercase letters and underscores.`,
+      'ticketPriority',
+      value
     )
   }
   return value as TicketPriorityKey

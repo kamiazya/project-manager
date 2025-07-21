@@ -9,6 +9,14 @@
  * - Common Infrastructure: Technical infrastructure shared across layers
  */
 
+// Error types (Common Infrastructure)
+export {
+  BaseError,
+  ConfigurationError,
+  EnvironmentConfigurationError,
+  ValidationError,
+} from './common/errors/base-errors.ts'
+
 // Configuration defaults (Common Infrastructure)
 
 // Configuration schemas (Shared Kernel)

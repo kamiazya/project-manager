@@ -18,6 +18,12 @@ export {
 } from '@project-manager/application'
 // Re-export base types and utilities that are commonly used
 export type { EnvironmentMode } from '@project-manager/base'
+export {
+  SdkConfigurationError,
+  SdkContainerError,
+  SdkError,
+  SdkServiceUnavailableError,
+} from './common/errors/sdk-errors.ts'
 export type {
   CreateTicketRequest,
   SDKConfig,

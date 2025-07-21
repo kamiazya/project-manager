@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto'
+import { ValidationError } from '@project-manager/base'
 import { ValueObject } from '../../shared/patterns/base-value-object.ts'
 
 interface TicketIdProps {
@@ -39,14 +40,14 @@ export class TicketId extends ValueObject<TicketIdProps> {
   /**
    * Create a new TicketId
    * @param id - Optional ID value. If not provided, generates a new one
-   * @throws {Error} If the provided ID doesn't meet validation rules
+   * @throws {ValidationError} If the provided ID doesn't meet validation rules
    */
   public static create(id?: string): TicketId {
     const value = id || generateId()
 
     // Check if the ID matches the expected format (8 hex characters)
     if (!isValidId(value)) {
-      throw new Error(INVALID_ID_FORMAT)
+      throw new ValidationError(INVALID_ID_FORMAT, 'ticketId', value)
     }
 
     return new TicketId({ value })

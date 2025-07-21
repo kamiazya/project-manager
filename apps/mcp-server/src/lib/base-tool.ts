@@ -15,14 +15,6 @@ export abstract class BaseTool<TInput extends z.ZodSchema> implements McpTool {
   abstract readonly inputSchema: any
 
   /**
-   * Legacy handler for backward compatibility (not recommended)
-   * @deprecated Use handleWithSDK instead
-   */
-  handler = async (_input: z.infer<TInput>) => {
-    throw new Error('BaseTool: handler called without SDK. Use handleWithSDK instead.')
-  }
-
-  /**
    * MCP tool handler that receives SDK from external source
    * This ensures process-wide SDK consistency
    */

@@ -8,6 +8,7 @@ import type {
   UpdateTicketStatus,
 } from '@project-manager/application'
 import type { Container } from 'inversify'
+import { SdkContainerError } from '../common/errors/sdk-errors.ts'
 import { TYPES } from '../internal/types.ts'
 
 /**
@@ -20,7 +21,7 @@ export class UseCaseFactoryProvider {
 
   constructor(container: Container) {
     if (!container) {
-      throw new Error('Container is required')
+      throw new SdkContainerError('Container is required')
     }
     this.container = container
   }

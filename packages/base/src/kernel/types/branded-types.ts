@@ -5,6 +5,8 @@
  * by creating unique types that are distinct from their underlying types.
  */
 
+import { ValidationError } from '../../common/errors/base-errors.ts'
+
 /**
  * Base branded type utility
  */
@@ -49,7 +51,7 @@ export function isSemanticVersion(value: string): value is SemanticVersion {
  */
 export function createSemanticVersion(value: string): SemanticVersion {
   if (!isSemanticVersion(value)) {
-    throw new Error(`Invalid semantic version: ${value}`)
+    throw new ValidationError(`Invalid semantic version: ${value}`, 'semanticVersion', value)
   }
   return value
 }
@@ -67,7 +69,7 @@ export function isFilePath(value: string): value is FilePath {
  */
 export function createFilePath(value: string): FilePath {
   if (!isFilePath(value)) {
-    throw new Error(`Invalid file path: ${value}`)
+    throw new ValidationError(`Invalid file path: ${value}`, 'filePath', value)
   }
   return value as FilePath
 }
@@ -77,7 +79,7 @@ export function createFilePath(value: string): FilePath {
  */
 export function createTimestamp(value: number = Date.now()): Timestamp {
   if (typeof value !== 'number' || value < 0 || Number.isNaN(value)) {
-    throw new Error(`Invalid timestamp: ${value}`)
+    throw new ValidationError(`Invalid timestamp: ${value}`, 'timestamp', value)
   }
   return value as Timestamp
 }
@@ -87,7 +89,7 @@ export function createTimestamp(value: number = Date.now()): Timestamp {
  */
 export function createConfigurationId(value: string): ConfigurationId {
   if (typeof value !== 'string' || value.length === 0) {
-    throw new Error(`Invalid configuration ID: ${value}`)
+    throw new ValidationError(`Invalid configuration ID: ${value}`, 'configurationId', value)
   }
   return value as ConfigurationId
 }
@@ -97,7 +99,7 @@ export function createConfigurationId(value: string): ConfigurationId {
  */
 export function createEnvironmentName(value: string): EnvironmentName {
   if (typeof value !== 'string' || value.length === 0) {
-    throw new Error(`Invalid environment name: ${value}`)
+    throw new ValidationError(`Invalid environment name: ${value}`, 'environmentName', value)
   }
   return value as EnvironmentName
 }

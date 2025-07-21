@@ -1,4 +1,5 @@
 import type { ProjectManagerSDK } from '@project-manager/sdk'
+import { TicketNotFoundError } from '@project-manager/sdk'
 import { z } from 'zod'
 import { BaseTool } from '../lib/base-tool.ts'
 
@@ -16,7 +17,7 @@ class GetTicketByIdTool extends BaseTool<typeof getTicketByIdSchema> {
     const ticket = await sdk.tickets.getById(input.id)
 
     if (!ticket) {
-      throw new Error('Ticket not found')
+      throw new TicketNotFoundError(input.id, 'GetTicketByIdTool')
     }
 
     return {

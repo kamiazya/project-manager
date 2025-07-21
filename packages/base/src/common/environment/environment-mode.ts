@@ -5,6 +5,8 @@
  * not limited to SDK usage but covering all applications (CLI, MCP Server, etc.)
  */
 
+import { EnvironmentConfigurationError } from '../errors/base-errors.ts'
+
 export type EnvironmentMode = 'production' | 'development' | 'testing' | 'in-memory' | 'isolated'
 
 export interface EnvironmentProfile {
@@ -82,11 +84,11 @@ export function getStorageDir(mode: EnvironmentMode): string {
   const profile = getEnvironmentProfile(mode)
 
   if (profile.storageType !== 'file') {
-    throw new Error(`Environment '${mode}' does not use file storage`)
+    throw new EnvironmentConfigurationError(mode, 'does not use file storage')
   }
 
   if (!profile.storageDir) {
-    throw new Error(`Environment '${mode}' does not have a storage directory configured`)
+    throw new EnvironmentConfigurationError(mode, 'does not have a storage directory configured')
   }
 
   return profile.storageDir

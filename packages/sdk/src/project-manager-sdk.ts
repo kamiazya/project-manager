@@ -19,6 +19,7 @@ import {
 } from '@project-manager/application'
 import { type EnvironmentMode, isDevelopmentLike } from '@project-manager/base'
 import type { Container } from 'inversify'
+import { SdkServiceUnavailableError } from './common/errors/sdk-errors.ts'
 import { createContainer } from './internal/container.ts'
 import { TYPES } from './internal/types.ts'
 
@@ -240,9 +241,11 @@ export class ProjectManagerSDK {
       )
       const environment = envService.resolveEnvironment(this.config.environment)
       if (!isDevelopmentLike(environment)) {
-        throw new Error(
-          `Development process service is not available in '${environment}' environment. Available in: development, testing, isolated environments.`
-        )
+        throw new SdkServiceUnavailableError('Development process service', environment, [
+          'development',
+          'testing',
+          'isolated',
+        ])
       }
 
       return this.container.get<DevelopmentProcessService>(TYPES.DevelopmentProcessService)
