@@ -1,10 +1,12 @@
 import { Ticket, TicketValidationError } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import type { IdGenerator } from '../services/id-generator.interface.ts'
 import { CreateTicket } from './create-ticket.ts'
 
 describe('CreateTicket', () => {
   let mockTicketRepository: TicketRepository
+  let mockIdGenerator: IdGenerator
   let createTicketUseCase: CreateTicket.UseCase
 
   beforeEach(() => {
@@ -14,7 +16,11 @@ describe('CreateTicket', () => {
       queryTickets: vi.fn(),
       delete: vi.fn(),
     }
-    createTicketUseCase = new CreateTicket.UseCase(mockTicketRepository)
+    mockIdGenerator = {
+      generateTicketId: vi.fn().mockResolvedValue('a1b2c3d4'),
+      generateTicketIdSync: vi.fn().mockReturnValue('a1b2c3d4'),
+    }
+    createTicketUseCase = new CreateTicket.UseCase(mockTicketRepository, mockIdGenerator)
   })
 
   describe('Request DTO', () => {

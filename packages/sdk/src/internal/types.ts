@@ -11,6 +11,7 @@ export const TYPES = {
   StorageConfigService: Symbol('StorageConfigService'),
   DevelopmentProcessService: Symbol('DevelopmentProcessService'),
   EnvironmentDetectionService: Symbol('EnvironmentDetectionService'),
+  IdGenerator: Symbol('IdGenerator'),
 
   // Use Cases
   CreateTicketUseCase: Symbol('CreateTicketUseCase'),

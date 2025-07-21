@@ -25,6 +25,7 @@ export * from './repositories/ticket-repository.ts'
 // Services
 export * from './services/development-process.ts'
 export * from './services/environment-detection.ts'
+export * from './services/id-generator.interface.ts'
 export * from './services/storage-config.ts'
 // Use cases
 export * from './usecases/create-ticket.ts'

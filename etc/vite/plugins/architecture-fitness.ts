@@ -302,6 +302,36 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
           }
         }
       }
+
+      // Check import violations in code (including node:* imports)
+      if (checks.importViolations) {
+        const importerLayer = detectLayer(id)
+        if (importerLayer) {
+          for (const rule of importRules) {
+            if (matchesPattern(id, rule.pattern)) {
+              // Generic import regex to catch all import statements
+              const allImportRegex = /import\s+.*?from\s+['"]([^'"]+)['"]/g
+              let match: RegExpExecArray | null = null
+
+              // biome-ignore lint/suspicious/noAssignInExpressions: Common pattern for regex matching
+              while ((match = allImportRegex.exec(code)) !== null) {
+                const importedModule = match[1]
+
+                for (const forbidden of rule.forbidden) {
+                  if (matchesPattern(importedModule, forbidden)) {
+                    createViolationError(
+                      'Import Restriction',
+                      rule.message || `Import from ${forbidden} is forbidden`,
+                      id,
+                      importedModule
+                    )
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       // Check export violations for specific files
       if (checks.exportViolations) {
         for (const rule of exportRules) {

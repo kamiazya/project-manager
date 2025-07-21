@@ -1,7 +1,8 @@
-import { Ticket } from '@project-manager/domain'
+import { Ticket, TicketId } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import type { IdGenerator } from '../services/id-generator.interface.ts'
 
 export namespace CreateTicket {
   /**
@@ -25,11 +26,18 @@ export namespace CreateTicket {
    * Follows the Single Responsibility Principle with focused responsibility.
    */
   export class UseCase implements IUseCase<Request, Response> {
-    constructor(private readonly ticketRepository: TicketRepository) {}
+    constructor(
+      private readonly ticketRepository: TicketRepository,
+      private readonly idGenerator: IdGenerator
+    ) {}
 
     async execute(request: Request): Promise<Response> {
-      // Use domain entity factory method
-      const ticket = Ticket.create({
+      // Generate ID using infrastructure service
+      const idValue = await this.idGenerator.generateTicketId()
+      const ticketId = TicketId.create(idValue)
+
+      // Use domain entity factory method with pre-generated ID
+      const ticket = Ticket.create(ticketId, {
         title: request.title.trim(),
         description: request.description?.trim(),
         priority: request.priority || 'medium',

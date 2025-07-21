@@ -10,6 +10,7 @@ import {
   type DevelopmentProcessService,
   type EnvironmentDetectionService,
   GetTicketById,
+  type IdGenerator,
   SearchTickets,
   type StorageConfigService,
   type TicketRepository,
@@ -19,6 +20,7 @@ import {
 } from '@project-manager/application'
 import { isDevelopmentLike, isMemoryEnvironment } from '@project-manager/base'
 import {
+  CryptoIdGenerator,
   InMemoryTicketRepository,
   JsonTicketRepository,
   NodeEnvironmentDetectionService,
@@ -62,6 +64,12 @@ export function createContainer(config: SDKConfig): Container {
     })
     .inSingletonScope()
 
+  // ID Generator Service - binds cryptographic implementation
+  container
+    .bind<IdGenerator>(TYPES.IdGenerator)
+    .toDynamicValue(() => new CryptoIdGenerator())
+    .inSingletonScope()
+
   // Repository binding - environment-based selection
   container
     .bind<TicketRepository>(TYPES.TicketRepository)
@@ -98,7 +106,8 @@ export function createContainer(config: SDKConfig): Container {
   // Use case bindings
   container.bind(TYPES.CreateTicketUseCase).toDynamicValue(() => {
     const repo = container.get<TicketRepository>(TYPES.TicketRepository)
-    return new CreateTicket.UseCase(repo)
+    const idGenerator = container.get<IdGenerator>(TYPES.IdGenerator)
+    return new CreateTicket.UseCase(repo, idGenerator)
   })
 
   container.bind(TYPES.GetTicketByIdUseCase).toDynamicValue(() => {
