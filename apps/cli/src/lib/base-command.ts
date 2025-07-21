@@ -42,6 +42,10 @@ export abstract class BaseCommand<
   // Public SDK property allows easy access to all project management functionality
   public sdk!: ProjectManagerSDK
 
+  // Static cache for SDK instances - following oclif Cache pattern
+  private static cachedSDK: ProjectManagerSDK | null = null
+  private static lastConfigHash: string | null = null
+
   /**
    * Enable JSON flag support for all commands by default.
    * Commands can override this if they don't want JSON output.
@@ -50,17 +54,25 @@ export abstract class BaseCommand<
 
   /**
    * oclif lifecycle method called before command execution.
-   * Initializes the ProjectManagerSDK.
+   * Initializes the ProjectManagerSDK with caching support.
    */
   async init(): Promise<void> {
     await super.init()
 
     try {
-      // Get environment (development/production)
-      // Initialize SDK for CLI usage with auto mode detection
-      this.sdk = await createProjectManagerSDK({
-        environment: 'auto', // SDK will auto-detect based on environment
-      })
+      const config = { environment: 'auto' as const }
+      const configHash = this.generateConfigHash(config)
+
+      // Use cached SDK if configuration hasn't changed
+      if (BaseCommand.cachedSDK && BaseCommand.lastConfigHash === configHash) {
+        this.sdk = BaseCommand.cachedSDK
+        return
+      }
+
+      // Create new SDK and cache it
+      this.sdk = await createProjectManagerSDK(config)
+      BaseCommand.cachedSDK = this.sdk
+      BaseCommand.lastConfigHash = configHash
     } catch (error) {
       if (error instanceof Error) {
         this.error(`Failed to initialize SDK: ${error.message}`)
@@ -68,6 +80,29 @@ export abstract class BaseCommand<
         this.error('Failed to initialize SDK due to an unknown error')
       }
     }
+  }
+
+  /**
+   * Generates a hash for SDK configuration to enable cache invalidation.
+   * @param config SDK configuration object
+   * @returns Configuration hash string
+   */
+  private generateConfigHash(config: { environment: 'auto' }): string {
+    // Include environment variables that might affect SDK behavior
+    const hashData = {
+      environment: config.environment,
+      nodeEnv: process.env.NODE_ENV,
+      // Add other environment variables that affect SDK configuration
+    }
+    return JSON.stringify(hashData)
+  }
+
+  /**
+   * Clear the SDK cache. Useful for testing or when configuration changes.
+   */
+  static clearSDKCache(): void {
+    BaseCommand.cachedSDK = null
+    BaseCommand.lastConfigHash = null
   }
 
   /**
