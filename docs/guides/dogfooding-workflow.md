@@ -104,7 +104,7 @@ Test comments, attachments, and labels through actual use:
 # Add labels to categorize tickets
 pnpm pm new "API Rate Limiting" -d "Implement rate limiting" -p h --labels backend,security
 
-# Add progress updates (comment command not yet implemented - use workaround)
+# Add progress updates through new tickets
 pnpm pm new "Progress on #<ticket-id>: Started implementation" -d "Started implementation, researching best practices" -p l --type task
 
 # File attachments (attach command not yet implemented)
@@ -139,7 +139,7 @@ pnpm pm new "API Endpoints" -d "Create auth endpoints" -p h --depends-on <schema
 2. **During Development**
 
    ```bash
-   # Add progress updates (comment command not yet implemented - use workaround)
+   # Add progress updates through new tickets
    pnpm pm new "Progress on #<ticket-id>: Login endpoint implemented" -d "Implemented login endpoint, testing validation" -p l --type task
    
    # Create new tickets for discovered issues

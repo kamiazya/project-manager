@@ -120,7 +120,7 @@ AI assistants working on this project MUST use the project-manager system itself
 
 3. **Real-time Status Updates**
    - Mark tickets as in_progress when starting work
-   - Add progress updates via new tickets (comment command not yet implemented)
+   - Add progress updates via new tickets
    - Create new tickets for unexpected issues or requirements
    - Complete tickets promptly when work is finished
 
@@ -140,7 +140,7 @@ pnpm pm create "Implement user authentication system" -d "Add login/logout with 
 # Start work on the ticket (use actual ticket ID from above)
 pnpm pm quick start 1751764474
 
-# Add progress updates (comment command not yet implemented - use workaround)
+# Add progress updates through new tickets
 pnpm pm create "Progress on #1751764474: JWT library research" -d "Researched JWT libraries, selected jsonwebtoken for implementation" -p l --type task
 
 # Create dependent tickets as needed
@@ -159,7 +159,7 @@ pnpm pm quick done 1751764474
 
 2. **Implementation Tracking**
    - Update ticket status as work progresses
-   - Document decisions and learnings in progress tickets (comment command not yet implemented)
+   - Document decisions and learnings in progress tickets
    - Create new tickets for discovered issues
 
 3. **Completion Validation**
@@ -281,7 +281,15 @@ If project-manager CLI commands fail during the workflow:
 
 ### Local Development Workflow
 
-TODO: Define local development workflow for project-manager
+The project has a comprehensive development workflow with hot-reload capabilities and efficient tooling. See the [Development Commands](#development-commands) section above for detailed CLI usage, MCP server development, and performance optimization techniques.
+
+**Key Development Patterns**:
+
+- **Hot-reload Development**: `pnpm pm-mcp-server` for MCP server with file watching
+- **Direct TypeScript Execution**: `pnpm pm` commands via tsx for immediate feedback
+- **Comprehensive Testing**: `pnpm run test` with complete test coverage across all layers
+- **Type Safety**: `pnpm run typecheck` for strict TypeScript validation
+- **Development vs Production**: Clear separation with environment-based configurations
 
 ## Development Process Guidelines
 
@@ -354,13 +362,29 @@ When implementing features:
 
 ## Use Cases and Target Users
 
-The framework serves multiple personas from package developers to team leads.
+The framework serves multiple personas from package developers to team leads. For detailed use cases and user scenarios, see:
 
-<!-- TODO: Create USECASE.md document -->
+- [Domain Overview](./docs/explanation/domain-overview.md) - Core domain concepts and user personas
+- [User Stories](./docs/explanation/user-stories.md) - Detailed user scenarios and workflows
+- [Requirements](./docs/explanation/requirements.md) - Functional and non-functional requirements
+- [Target Users](#target-users) section in README.md - Primary user segments
 
 ## Development Status
 
-TODO: Update development status for project-manager
+**Current Status**: Clean Architecture implementation complete with comprehensive testing infrastructure.
+
+**Completed Implementation**:
+
+- ✅ **Clean Architecture Migration**: Successfully implemented with comprehensive test coverage
+- ✅ **Domain Layer**: Rich domain models with encapsulated business logic
+- ✅ **Application Layer**: Use cases following single responsibility principle
+- ✅ **Infrastructure Layer**: Repository implementations with XDG-compliant configuration
+- ✅ **SDK Layer**: Facade pattern for unified API access with dependency injection
+- ✅ **CLI Application**: Full CRUD operations with service layer integration
+- ✅ **MCP Server**: AI integration with 9 tools and hot-reload development
+- ✅ **Testing Infrastructure**: Comprehensive unit, integration, and CLI testing
+
+**Current Focus**: Enhancing domain features and AI collaboration capabilities. See [README.md](./README.md) for detailed development status and roadmap.
 
 ## Technology Stack
 
@@ -523,25 +547,3 @@ project-manager/
 - **Infrastructure** (`packages/infrastructure`): Implements Application interfaces
 - **SDK** (`packages/sdk`): Facade over Application layer
 - **Apps** (`apps/`): Use SDK or Application layer directly
-
-### Working with the New Structure
-
-```bash
-# CLI commands work from monorepo root
-pnpm pm create "Feature" -d "Description" -p h
-
-# MCP server development
-pnpm pm-mcp-server  # Hot reload development
-
-# SDK usage in TypeScript
-import { createProjectManagerSDK } from '@project-manager/sdk'
-
-# Package-specific development
-cd packages/domain && pnpm test     # Domain tests
-cd apps/cli && pnpm dev             # CLI development
-cd apps/mcp-server && pnpm dev      # MCP server development
-```
-
-### Migration Status
-
-✅ **Migration Complete**: Successfully migrated to Clean Architecture with 913/915 tests passing

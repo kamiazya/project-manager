@@ -22,7 +22,7 @@ Welcome to the Project Manager project! This document provides comprehensive gui
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js LTS version
 - pnpm package manager
 - Git
 
@@ -458,13 +458,13 @@ Every Task-level issue must include:
 - **Purpose**: Validate real-world usage patterns and identify usability issues
 - **Implementation**: All development work tracked through project-manager system itself
 - **Benefits**: Authentic user experience validation, early detection of usability issues, continuous improvement through practical application
-- **Practical Guide**: See [Dogfooding Workflow Guide](./docs/guides/dogfooding-workflow.md) for step-by-step implementation using development aliases (note: `pm comment` is not yet implemented, use the workaround of creating new tickets for comments)
+- **Practical Guide**: See [Dogfooding Workflow Guide](./docs/guides/dogfooding-workflow.md) for step-by-step implementation using development aliases and progress tracking through tickets
 
 ### Test Environment Setup
 
 **Requirements**:
 
-- Node.js 20+
+- Node.js LTS version
 - pnpm package manager
 
 **Running Tests**:

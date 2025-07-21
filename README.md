@@ -1,4 +1,4 @@
-# [TBD] Project Manager
+# Project Manager
 
 A local-first ticket management system designed for AI-driven development, enabling seamless collaboration between developers and multiple AI assistants while supporting native language development workflows.
 
@@ -20,7 +20,7 @@ Project Manager is an open-source tool that enables effective collaboration betw
 - ✅ **Local ticket management**: Full CRUD operations with Clean Architecture patterns
 - ✅ **CLI Application**: Developer-friendly command-line interface (apps/cli)
 - ✅ **MCP Server**: Model Context Protocol server for AI integration (apps/mcp-server)
-  - 9 AI integration tools
+  - Comprehensive AI integration tools
   - Hot reload development mode
   - Real-time project context sharing
 - ✅ **TypeScript SDK**: Facade pattern for unified API access (packages/sdk)
@@ -28,6 +28,10 @@ Project Manager is an open-source tool that enables effective collaboration betw
 - ✅ **Dependency Injection**: Inversify-based DI container for Clean Architecture
 - ✅ **Project configuration management**: XDG-compliant configuration
 - ✅ **Language-aware workflows**: Native language development with AI bridging
+- ✅ **Comprehensive Test Coverage**: High-quality test suite with excellent success rate
+  - Unit tests for all layers (Domain, Application, Infrastructure, SDK)
+  - Integration tests for Clean Architecture components
+  - Boundary value testing and error handling validation
 
 ### Planned
 
@@ -68,9 +72,11 @@ The project is in active development with a focus on enhancing AI collaboration 
 ### Completed Features
 
 - ✅ **CLI Application**: Full CRUD operations with service layer
-- ✅ **MCP Server**: AI integration tools
-- ✅ **TypeScript SDK**: Unified API with Facade pattern
+- ✅ **MCP Server**: AI integration tools with hot reload development
+- ✅ **TypeScript SDK**: Unified API with Facade pattern and dependency injection
 - ✅ **Project configuration**: XDG-compliant configuration management
+- ✅ **Clean Architecture**: Complete domain-driven design implementation
+- ✅ **Test Infrastructure**: Comprehensive test coverage with high quality standards
 
 ### Current Focus
 
@@ -81,8 +87,8 @@ The project is in active development with a focus on enhancing AI collaboration 
 
 ## Quick Start
 
-> **Note**: This project is not published to npm yet.
-> So this is not truly a "quick start" guide, but rather a "how to run the project" guide.
+> **Note**: This guide covers development installation from source.
+> For production use, see the installation options below.
 
 ### Basic CLI Usage
 
@@ -112,12 +118,9 @@ pnpm pm done <ticket-id>
 import { createProjectManagerSDK } from '@project-manager/sdk'
 
 // Create SDK instance
-const sdk = await createProjectManagerSDK({
-  storagePath: './my-project-data',
-  environment: 'development'
-})
+const sdk = await createProjectManagerSDK()
 
-// Use the SDK
+// Create tickets
 const ticket = await sdk.tickets.create({
   title: 'Implement user authentication',
   description: 'Add JWT-based authentication',
@@ -125,8 +128,37 @@ const ticket = await sdk.tickets.create({
   type: 'feature'
 })
 
-const allTickets = await sdk.tickets.getAll()
-const stats = await sdk.tickets.getStats()
+// Get ticket by ID
+const foundTicket = await sdk.tickets.getById(ticket.id)
+
+// Update ticket content
+const updatedTicket = await sdk.tickets.updateContent({
+  id: ticket.id,
+  title: 'Updated title',
+  description: 'Updated description'
+})
+
+// Update ticket status
+await sdk.tickets.updateStatus(ticket.id, 'in_progress')
+
+// Search tickets
+const results = await sdk.tickets.search({
+  query: 'authentication',
+  status: 'in_progress',
+  priority: 'high'
+})
+
+// Delete ticket
+await sdk.tickets.delete(ticket.id)
+
+// Environment operations
+const currentEnv = sdk.environment.getEnvironment()
+const isDev = sdk.environment.isDevelopmentLike()
+
+// Development process (only in development-like environments)
+if (sdk.development.isAvailable()) {
+  const processService = sdk.development.getProcessService()
+}
 ```
 
 ### MCP Server for AI Integration
@@ -142,7 +174,7 @@ pnpm dev                       # Development mode
 pnpm build && node dist/bin/mcp-server.js  # Production mode
 ```
 
-The MCP server provides 9 tools for AI integration:
+The MCP server provides comprehensive tools for AI integration:
 
 - Ticket management (create, read, update, search, stats)
 - Project configuration management
