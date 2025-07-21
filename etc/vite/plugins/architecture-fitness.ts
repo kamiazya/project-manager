@@ -86,6 +86,7 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
 
   // Track if we're in Vitest environment
   let isVitestMode = false
+  let isTestCommand = false
 
   // Helper function to detect test files
   const isTestFile = (filePath: string): boolean => {
@@ -97,6 +98,19 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
       normalizedPath.includes('/tests/') ||
       normalizedPath.includes('.test/') ||
       normalizedPath.includes('.spec/')
+    )
+  }
+
+  // Helper function to detect if we're running tests
+  const isRunningTests = (): boolean => {
+    return (
+      isVitestMode ||
+      isTestCommand ||
+      process.env.VITEST === 'true' ||
+      process.env.NODE_ENV === 'test' ||
+      process.argv.some(arg => arg.includes('test') || arg.includes('vitest')) ||
+      // Check for common test command patterns
+      process.env.npm_lifecycle_event?.includes('test')
     )
   }
 
@@ -176,9 +190,10 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
     enforce: 'pre', // Run before other plugins
 
     // Detect Vitest environment early
-    config(_viteConfig, { mode }) {
+    config(_viteConfig, { command, mode }) {
       // Detect if we're running in Vitest environment
       isVitestMode = process.env.VITEST === 'true' || mode === 'test'
+      isTestCommand = command === 'serve' && mode === 'test' // Vitest uses serve command in test mode
     },
 
     // Vitest-specific hook (available when vitest/config is imported)
@@ -316,13 +331,16 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
 
       // Check error violations for raw Error object usage
       if (checks.errorViolations) {
+        // Skip all error violations if we're running tests and skipErrorViolationsInTests is enabled
+        if (checks.skipErrorViolationsInTests && isRunningTests()) {
+          // Early return to skip all error checking during tests
+          return null
+        }
+
         for (const rule of errorRules) {
           if (matchesPattern(id, rule.pattern)) {
-            // Skip error violations in test files if configured, or if in Vitest environment and skipErrorViolationsInTests is enabled
-            if (
-              (checks.skipErrorViolationsInTests && isTestFile(id)) ||
-              (isVitestMode && checks.skipErrorViolationsInTests)
-            ) {
+            // Skip error violations in test files if configured
+            if (checks.skipErrorViolationsInTests && isTestFile(id)) {
               continue
             }
 

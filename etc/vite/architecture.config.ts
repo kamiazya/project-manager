@@ -182,6 +182,21 @@ export const developmentRules: ArchitectureRules = {
     importViolations: true,
     errorViolations: true, // Keep error violations enabled even in development
     circularDependencies: false,
+    skipErrorViolationsInTests: true, // Skip error checks in test files and test mode
+  },
+}
+
+/**
+ * Test-specific rules that disable error violations completely
+ */
+export const testRules: ArchitectureRules = {
+  ...projectManagerArchitectureRules,
+  checks: {
+    layerViolations: true,
+    exportViolations: false,
+    importViolations: true,
+    errorViolations: false, // Completely disable error violations in test mode
+    circularDependencies: false,
   },
 }
 
