@@ -168,19 +168,21 @@ Protection pattern preventing external system changes from affecting internal do
 
 ## Data and Storage Terms
 
-### XDG Base Directory
+### Cross-Platform Directory Standards
 
-Industry standard for configuration file locations on Unix-like systems.
+Platform-specific directory conventions for configuration and data storage.
 
-**Purpose**: Standards compliance, predictable file locations
-**Directories**: ~/.config, ~/.cache, ~/.local/share
+**Purpose**: Standards compliance, predictable file locations across all platforms
+**Windows**: %APPDATA%, %LOCALAPPDATA%
+**macOS**: ~/Library/Application Support, ~/Library/Logs
+**Linux**: ~/.config, ~/.cache, ~/.local/share (XDG spec)
 **Context**: All contexts (technical implementation)
 
 ### Context-Aware Storage
 
 Storage approach supporting both global and project-specific configurations.
 
-**Global Context**: User home directory (~/.config/project-manager)
+**Global Context**: Platform-specific user directory (cross-platform compliant)
 **Project Context**: Project directory (.pm/)
 **Detection**: Presence of .pm/config.json
 

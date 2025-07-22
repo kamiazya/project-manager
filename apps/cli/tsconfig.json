@@ -3,8 +3,12 @@
   "compilerOptions": {
     "outDir": "dist",
     "allowImportingTsExtensions": true,
-    "customConditions": ["development"]
+    "customConditions": ["development"],
+    "baseUrl": "../..",
+    "paths": {
+      "@project-manager/*": ["packages/*/src"]
+    }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../../packages/*/src/**/*"],
   "exclude": ["dist", "**/*.test.ts", "**/*.spec.ts"]
 }

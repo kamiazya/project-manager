@@ -19,10 +19,11 @@ The system implements Clean Architecture with local-first approach and external 
 
 - **Clean Architecture**: Domain-driven design with strict layer separation (Domain → Application → Infrastructure)
 - **SDK Layer**: Facade pattern providing unified API access (`packages/sdk`)
-- **Local Ticket Management**: Full CRUD operations using Clean Architecture patterns
+- **Local Ticket Management**: Complete ticket management operations using Clean Architecture patterns
 - **CLI Application**: Command-line interface in `apps/cli` with service layer integration
 - **MCP Server**: Model Context Protocol server in `apps/mcp-server` for AI integration
 - **Layered Packages**: Domain (`packages/domain`), Application (`packages/application`), Infrastructure (`packages/infrastructure`)
+- **Cross-Platform Storage**: Platform-appropriate data directories (Windows: AppData, macOS: Library, Linux: XDG spec)
 - **External Sync**: External tool-based synchronization with GitHub Issues, Jira, and other project management tools
 
 ### Target Users
@@ -291,6 +292,16 @@ The project has a comprehensive development workflow with hot-reload capabilitie
 - **Type Safety**: `pnpm run typecheck` for strict TypeScript validation
 - **Development vs Production**: Clear separation with environment-based configurations
 
+**Logging in Development Environment**:
+
+- **Multi-Transport Logging**: Development environment outputs logs to both console (with pino-pretty formatting) and file
+- **Log File Location**: `~/.local/share/project-manager-dev/logs/app.log` (XDG Base Directory compliant)
+- **Audit Log Location**: `~/.local/share/project-manager-dev/logs/audit.log`
+- **Automatic Directory Creation**: Log directories are created automatically when needed
+- **Environment Detection**: Set `NODE_ENV=development` for development logging behavior
+- **Log Viewing**: Use `NODE_ENV=development pnpm pm logs` to view logs from files
+- **Audit Viewing**: Use `NODE_ENV=development pnpm pm audit` to view audit logs
+
 ## Development Process Guidelines
 
 This project follows an integrated AI-driven development approach. See the [Contributing Guide](./CONTRIBUTING.md) for comprehensive development process details.
@@ -380,7 +391,7 @@ The framework serves multiple personas from package developers to team leads. Fo
 - ✅ **Application Layer**: Use cases following single responsibility principle
 - ✅ **Infrastructure Layer**: Repository implementations with XDG-compliant configuration
 - ✅ **SDK Layer**: Facade pattern for unified API access with dependency injection
-- ✅ **CLI Application**: Full CRUD operations with service layer integration
+- ✅ **CLI Application**: Complete ticket management operations with service layer integration
 - ✅ **MCP Server**: AI integration with 9 tools and hot-reload development
 - ✅ **Testing Infrastructure**: Comprehensive unit, integration, and CLI testing
 

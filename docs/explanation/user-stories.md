@@ -28,6 +28,14 @@
 - Needs context from previous sessions
 - Must understand project state and priorities
 
+### 5. Bug Reporter/System Administrator
+
+- Encounters system issues during usage
+- Needs to gather diagnostic information quickly
+- Reports bugs to development team with context
+- Monitors system health and performance
+- Investigates security incidents and compliance issues
+
 ## User Workflow Diagrams
 
 ### Developer Workflow
@@ -62,13 +70,13 @@ graph TB
     Session2 -->|Reads| PrevWork[Previous work context]
     Session2 -->|Updates| NewContext[Updated context]
     NewContext --> Session3[AI Session 3]
-    
+
     subgraph "Preserved Information"
         Tickets[Active tickets]
         Plans[Implementation plans]
         Progress[Progress status]
     end
-    
+
     Context --> Tickets
     Context --> Plans
     Context --> Progress
@@ -86,14 +94,64 @@ graph LR
     Export --> GitHub[GitHub Issues]
     Export --> Jira[Jira]
     Export --> Linear[Linear]
-    
+
     GitHub -->|Import| Import[Import changes]
     Jira -->|Import| Import
     Linear -->|Import| Import
     Import -->|Conflict resolution| Local
-    
+
     style Local fill:#4caf50
     style Sync fill:#ff9800
+```
+
+### Bug Reporting and Diagnosis Flow
+
+```mermaid
+---
+title: Bug Reporting with Log Context
+---
+graph TB
+    Error[User encounters error] --> Capture[System captures error context]
+    Capture --> Logs[User runs 'pm logs --level error']
+    Logs --> Analysis[System correlates error with audit trail]
+    Analysis --> Report[User creates bug ticket with logs]
+    Report --> Investigation[Developer investigates with context]
+    Investigation --> Fix[Issue resolved with log evidence]
+
+    Capture --> Auto[Automatic context enrichment]
+    Auto --> Stack[Stack traces]
+    Auto --> Metadata[Operation metadata]
+    Auto --> Performance[Performance metrics]
+
+    style Error fill:#f44336
+    style Capture fill:#ff9800
+    style Investigation fill:#4caf50
+```
+
+### AI Operation Transparency Flow
+
+```mermaid
+---
+title: AI Operation Audit Trail
+---
+sequenceDiagram
+    participant Human as Human Developer
+    participant AI as AI Assistant
+    participant System as Project Manager
+    participant Audit as Audit Logger
+    participant Admin as Administrator
+
+    Human->>AI: Delegates complex task
+    AI->>System: Performs multiple operations
+    System->>Audit: Logs each operation with co-authorship
+    Audit->>Audit: Records AI agent + Human co-author
+
+    Admin->>System: Requests audit review
+    System->>Audit: Queries operations by AI agent
+    Audit-->>Admin: Complete operation history
+    Admin->>Admin: Reviews AI behavior transparency
+
+    Note over AI,Audit: All AI operations<br/>transparently attributed<br/>to human co-author
 ```
 
 ## Functional Use Cases
@@ -212,6 +270,141 @@ graph LR
 - Maintain issue relationships
 - Preserve decision history
 
+### UC-8: Bug Report with Log Context
+
+**Actor**: Bug Reporter (Developer/User)
+**Precondition**: User encounters an error or unexpected behavior
+**Postcondition**: Bug report created with relevant diagnostic information
+
+#### Main Flow
+
+1. User encounters system error or unexpected behavior
+2. System automatically captures error context in logs
+3. User runs log command to gather recent error logs
+4. System displays relevant error entries with context:
+   - Error messages and stack traces
+   - Operation sequence leading to error
+   - System state and metadata
+   - Performance metrics during error period
+5. User creates bug ticket with:
+   - Description of unexpected behavior
+   - Steps to reproduce
+   - Attached log excerpt with error context
+6. System correlates error logs with audit trail for complete picture
+
+#### Alternative Flows
+
+- 2a. Error occurs without logging context
+  - User manually describes issue
+  - System searches logs based on timestamp and description
+  - Provides best-effort log correlation
+
+### UC-9: Performance Investigation
+
+**Actor**: System Administrator/Tech Lead
+**Precondition**: System performance degradation reported
+**Postcondition**: Performance bottleneck identified and documented
+
+#### Main Flow
+
+1. User reports slow system response
+2. Administrator runs `pm logs --level info --operation "ticket.create"` to analyze specific operations
+3. System displays operation timing and metadata:
+   - Use case execution duration
+   - Database operation times
+   - File I/O statistics
+   - Memory usage patterns
+4. Administrator identifies operations exceeding normal thresholds
+5. Creates performance investigation ticket with:
+   - Specific slow operations identified
+   - Performance metrics and trends
+   - Log evidence of bottlenecks
+6. Schedules optimization work based on findings
+
+### UC-10: Security Audit Trail
+
+**Actor**: Security Auditor/Compliance Officer
+**Precondition**: Security audit or compliance review required
+**Postcondition**: Complete operation history provided for review
+
+#### Main Flow
+
+1. Auditor initiates security review
+2. Runs audit command to gather operation history
+3. System generates comprehensive audit report showing:
+   - All system operations by specific user
+   - Timestamps and operation types
+   - Data changes (before/after states)
+   - Source of operations (CLI, API, AI-assisted)
+   - Co-authorship information for AI operations
+4. Auditor reviews for:
+   - Unauthorized access patterns
+   - Data modification compliance
+   - Segregation of duties
+   - AI operation transparency
+5. Generates compliance report with audit evidence
+
+### UC-11: AI Operation Transparency
+
+**Actor**: AI-Driven Developer/Compliance Officer
+**Precondition**: AI assistant performs operations on user's behalf
+**Postcondition**: All AI actions are transparently logged and attributable
+
+#### Main Flow
+
+1. Developer delegates task to AI assistant
+2. AI assistant performs multiple operations:
+   - Creates tickets
+   - Updates status
+   - Modifies content
+3. System logs each AI operation with:
+   - AI agent identification
+   - Human co-author attribution
+   - Operation context and reasoning
+   - Input prompts and responses
+4. Developer can review AI actions via:
+   - Run log command and filter by AI operations
+   - Run audit command for comprehensive history
+5. Full transparency maintained for:
+   - Regulatory compliance
+   - Trust verification
+   - Debugging AI behavior
+   - Training data for AI improvement
+
+#### Alternative Flows
+
+- 3a. AI operation fails
+  - Error logged with full context
+  - Human co-author notified
+  - Rollback capability maintained
+
+### UC-12: Development Environment Debugging
+
+**Actor**: AI-Driven Developer
+**Precondition**: Developer encounters unexpected behavior during development
+**Postcondition**: Issue resolved with comprehensive debugging information
+
+#### Main Flow
+
+1. Developer experiences unexpected CLI behavior
+2. Checks real-time console output with structured logging (pino-pretty format)
+3. Reviews persistent logs via log command with `NODE_ENV=developmen` environment
+4. System provides comprehensive debugging context:
+   - Use case execution flow
+   - Parameter values and transformations
+   - Database queries and responses
+   - File system operations
+   - Error propagation path
+5. Developer identifies root cause from log analysis
+6. Creates fix and verifies through log output
+
+#### Alternative Flows
+
+- 4a. Log information insufficient
+  - Developer temporarily increases log level to trace
+  - Re-executes failing operation
+  - Captures detailed execution trace
+
 ## Acceptance Criteria
 
 ### For Developers
@@ -242,12 +435,32 @@ graph LR
 - Clear task boundaries
 - Validation capabilities
 
+### For Bug Reporters and System Administrators
+
+- Can generate diagnostic logs in < 30 seconds
+- Error context automatically captured and correlated
+- Log viewing and filtering works intuitively
+- Performance bottlenecks identifiable from logs
+- No sensitive information exposed in logs
+
+### For Security Auditors and Compliance Officers
+
+- Complete audit trail for all operations
+- AI operations transparently attributable to humans
+- Tamper-proof logging system
+- Configurable data retention periods
+- GDPR/compliance-ready data handling
+
 ## Success Metrics
 
 - **Efficiency**: 50% reduction in context switching time
 - **Quality**: 80% first-pass implementation success
 - **Adoption**: Used in 90% of AI-assisted tasks
 - **Reliability**: 99.9% data integrity maintained
+- **Debugging Effectiveness**: 70% reduction in time to identify bugs with log context
+- **Audit Compliance**: 100% operation traceability for compliance requirements
+- **Performance Monitoring**: < 5% system overhead from logging operations
+- **Security Transparency**: Zero sensitive data exposure in logs
 
 ---
 

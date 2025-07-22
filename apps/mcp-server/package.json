@@ -24,7 +24,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "catalog:",
     "@project-manager/sdk": "workspace:*",
-    "zod": "^3.25.56"
+    "zod": "^3.25.76"
   },
   "publishConfig": {
     "main": "dist/index.js",

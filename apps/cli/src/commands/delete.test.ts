@@ -32,7 +32,10 @@ describe('DeleteCommand', () => {
   let mockTicket: any
 
   beforeEach(() => {
-    command = new DeleteCommand([], {})
+    const mockConfig = {
+      runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
+    } as any
+    command = new DeleteCommand([], mockConfig)
     mockTicket = {
       id: 'ticket-123',
       title: 'Test Ticket to Delete',

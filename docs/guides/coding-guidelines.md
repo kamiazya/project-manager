@@ -924,24 +924,6 @@ Do NOT use redundant suffixes when the directory context already provides the in
 // responses/create-ticket.ts
 ```
 
-**Directory Context Provides Sufficient Information:**
-
-- `usecases/` directory → files are use cases
-- `requests/` directory → files are request DTOs
-- `responses/` directory → files are response DTOs
-- `entities/` directory → files are domain entities
-- `services/` directory → files are services
-
-**Class Names Remain Descriptive:**
-
-```typescript
-// File: usecases/create-ticket.ts
-export class CreateTicketUseCase { /* ... */ }
-
-// File: requests/create-ticket.ts
-export class CreateTicketRequest { /* ... */ }
-```
-
 **Benefits:**
 
 - **Reduced Token Usage**: Shorter file names and import paths

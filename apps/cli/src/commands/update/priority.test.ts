@@ -24,7 +24,10 @@ describe('UpdatePriorityCommand', () => {
   let mockUpdatedTicket: any
 
   beforeEach(() => {
-    command = new UpdatePriorityCommand([], {})
+    const mockConfig = {
+      runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
+    } as any
+    command = new UpdatePriorityCommand([], mockConfig)
     mockUpdatedTicket = {
       id: 'ticket-123',
       title: 'Test Ticket',

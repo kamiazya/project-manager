@@ -212,10 +212,17 @@ Follow the displayed instructions for your shell (bash, zsh, fish, PowerShell).
 
 ### Storage Location
 
-Data is stored locally following XDG Base Directory specification:
+Data is stored locally following platform-specific directory conventions:
 
-- **Linux/macOS**: `~/.config/project-manager/`
-- **Windows**: `%APPDATA%\project-manager\`
+- **Windows**: `%APPDATA%\project-manager[-dev|-test]\`
+- **macOS**: `~/Library/Application Support/project-manager[-dev|-test]/`
+- **Linux**: `~/.config/project-manager[-dev|-test]/`
+
+Environment-specific directories:
+
+- **Production**: `project-manager`
+- **Development**: `project-manager-dev`
+- **Test**: `project-manager-test`
 
 ### Environment Variables
 

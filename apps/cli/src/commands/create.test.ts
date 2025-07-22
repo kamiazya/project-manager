@@ -23,7 +23,10 @@ describe('CreateCommand', () => {
   let mockTicket: any
 
   beforeEach(() => {
-    command = new CreateCommand([], {})
+    const mockConfig = {
+      runHook: vi.fn().mockResolvedValue({ successes: [], failures: [] }),
+    } as any
+    command = new CreateCommand([], mockConfig)
     mockTicket = {
       id: 'ticket-123',
       title: 'Test Ticket',

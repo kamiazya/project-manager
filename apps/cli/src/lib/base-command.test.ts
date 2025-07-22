@@ -169,7 +169,7 @@ describe('BaseCommand', () => {
         async execute(): Promise<void> {}
 
         // Override to simulate environment change
-        private generateConfigHash(config: { environment: 'auto' }): string {
+        public generateConfigHashOverride(config: { environment: 'auto' }): string {
           const hashData = {
             environment: config.environment,
             nodeEnv: this.customNodeEnv || process.env.NODE_ENV,
@@ -226,7 +226,7 @@ describe('BaseCommand', () => {
       }
       command = new TestCommand([], {} as any)
       // Mock oclif's error method
-      command.error = vi.fn()
+      command.error = vi.fn() as any
     })
 
     it('should use type-safe instanceof checks rather than string matching', async () => {

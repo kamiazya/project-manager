@@ -26,7 +26,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@biomejs/biome": "^2.1.1",
+    "@biomejs/biome": "^2.1.2",
     "@modelcontextprotocol/sdk": "catalog:",
     "@project-manager/application": "workspace:*",
     "@project-manager/base": "workspace:*",
@@ -46,7 +46,7 @@
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
     "vitest": "catalog:",
-    "zod": "^3.25.56"
+    "zod": "^3.25.76"
   },
   "packageManager": "pnpm@10.13.1",
   "lint-staged": {

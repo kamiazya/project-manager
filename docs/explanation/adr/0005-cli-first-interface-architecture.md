@@ -186,7 +186,7 @@ pm config set sync.repository owner/repo
 1. **Standards Compliance** - All interfaces must follow industry standards as defined in ADR-0003
 2. **CLI Implementation** - Follow CLI standards (GNU, POSIX, clig.dev guidelines)
 3. **API Design** - Mirror CLI command structure for consistency (if RESTful API is implemented)
-4. **Configuration Management** - Use XDG Base Directory specification
+4. **Configuration Management** - Use cross-platform directory conventions
 5. **Error Handling** - Consistent across all interfaces
 6. **Help System** - Comprehensive and discoverable
 7. **Long-Running Operations** - Implement appropriate patterns for each interface type:
@@ -194,7 +194,7 @@ pm config set sync.repository owner/repo
    - GUI: Use non-blocking async patterns with visual feedback (if implemented)
    - API: Provide async endpoints with status polling capabilities (if implemented)
 8. **Data Management** - Support for both global and project-specific contexts:
-   - **Global Context**: Default global configuration and data store in user's home directory (XDG Base Directory specification)
+   - **Global Context**: Default global configuration and data store in platform-appropriate user directory
    - **Project Context**: When run within a directory containing project markers (e.g., `.pm/config`), use project-specific configuration and data
    - **Consistency**: All interfaces (CLI, TUI, SDK, etc.) must respect this context-switching behavior
    - **Configuration Precedence**: Project-specific settings override global settings when available

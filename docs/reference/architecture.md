@@ -66,7 +66,7 @@ graph TB
 
         subgraph "Services"
             STORAGE[File Storage<br/>Local Data]
-            CONFIG[Configuration<br/>XDG Compliant]
+            CONFIG[Configuration<br/>Cross-Platform]
             LOG[Logging<br/>Audit Trail]
             SYNC[Sync Services<br/>External Integration]
         end
@@ -224,11 +224,17 @@ packages/
 │   ├── config/          # Configuration implementations
 │   └── types/           # Infrastructure-specific types
 ├── sdk/                 # SDK Layer - Facade pattern
-│   └── src/             # Unified API for external consumers
 ├── base/                # Foundation Layer - Shared infrastructure
-│   ├── configuration/   # Configuration framework
-│   ├── types/           # Common types and utilities
-│   └── patterns/        # Base patterns and abstractions
+│   ├── kernel/          # Shared Kernel (domain knowledge sharing)
+│   │   ├── configuration/ # Business configuration concepts & schema
+│   │   ├── events/      # Domain event foundation
+│   │   └── types/       # Shared domain types
+│   └── common/          # Common Infrastructure (technical foundation)
+│       ├── patterns/    # BaseEntity, BaseValueObject etc.
+│       ├── errors/      # Common error foundation
+│       ├── configuration/ # Configuration technical foundation
+│       ├── utils/       # General utilities
+│       └── logging/     # Logging foundation
 and shared/              # Shared utilities
 apps/
 ├── cli/                 # CLI Application
@@ -263,10 +269,43 @@ apps/
 
 **Configuration Service**
 
-- XDG Base Directory compliance
-- Environment variable resolution
-- Cascading configuration (global → project → local)
-- Settings validation and defaults
+The configuration service uses the `CrossPlatformStorageConfigService` implementation based on the `env-paths` library, providing true cross-platform directory support:
+
+- **Cross-platform directory conventions**: Automatically selects appropriate directories per platform
+  - Windows: `%APPDATA%` (config), `%LOCALAPPDATA%` (cache/logs)
+  - macOS: `~/Library/Application Support` (config), `~/Library/Caches` (cache), `~/Library/Logs` (logs)
+  - Linux: `~/.config` (config), `~/.cache` (cache), `~/.local/state` (logs)
+- **Environment-specific naming**: Automatic app name generation based on `NODE_ENV`
+  - Production: `project-manager`
+  - Development: `project-manager-dev`
+  - Test: `project-manager-test`
+- **Environment variable resolution**: Support for overriding default paths
+- **Cascading configuration**: (global → project → local)
+- **Settings validation and defaults**: Built-in validation with sensible defaults
+
+**Logging Service**
+
+- Unified logging interface across all layers
+- Structured logging with metadata (NDJSON format)
+- Multi-process safe operations (CLI and MCP concurrent access)
+- Configurable log levels and destinations
+- Performance-optimized with Pino integration
+- Environment-aware transport configuration:
+  - **Development**: Multi-transport output (console with pino-pretty + file)
+  - **Production**: File-based logging with rotation
+  - **Test**: Memory-based logging
+- Cross-platform log storage using env-paths:
+  - **Windows**: `%LOCALAPPDATA%\project-manager[-dev|-test]\logs\`
+  - **macOS**: `~/Library/Logs/project-manager[-dev|-test]/logs/`
+  - **Linux**: `~/.local/state/project-manager[-dev|-test]/logs/`
+
+**Audit Service**
+
+- Comprehensive system operation tracking across all operation types
+- AI and human operation attribution with co-authorship tracking
+- Tamper-proof append-only audit trail
+- Operation context preservation (trace IDs, session data)
+- Compliance and troubleshooting support
 
 **Sync Service**
 
@@ -462,12 +501,18 @@ All entities support the complete set of cross-cutting features, but are typical
 
 ### File System Structure
 
-Following XDG Base Directory specification:
+Following cross-platform directory conventions using env-paths library:
 
 ```
-# Home directory structure
-~/.config/project-manager/     # XDG Base Directory compliance
+# Cross-Platform Directory Structure
+
+# Configuration Directory (env-paths config)
+# Windows: %APPDATA%\project-manager[-dev|-test]
+# macOS:   ~/Library/Application Support/project-manager[-dev|-test]
+# Linux:   ~/.config/project-manager[-dev|-test]
+<config-dir>/
 ├── config.json              # Global configuration
+├── logging.json             # Logging configuration
 ├── projects/                # Project data
 │   ├── {project-id}/       # Individual project
 │   │   ├── project.json   # Project metadata
@@ -482,11 +527,23 @@ Following XDG Base Directory specification:
     ├── mappings/           # Entity mappings
     └── cache/              # External data cache
 
-~/.cache/project-manager/      # XDG Base Directory compliance
+# Cache Directory (env-paths cache)
+# Windows: %LOCALAPPDATA%\project-manager[-dev|-test]
+# macOS:   ~/Library/Caches/project-manager[-dev|-test]
+# Linux:   ~/.cache/project-manager[-dev|-test]
+<cache-dir>/
 └── [cache files]
 
-~/.local/share/project-manager/ # XDG Base Directory compliance
-└── [user data]
+# Log Directory (env-paths log)
+# Windows: %LOCALAPPDATA%\project-manager[-dev|-test]\logs
+# macOS:   ~/Library/Logs/project-manager[-dev|-test]/logs
+# Linux:   ~/.local/state/project-manager[-dev|-test]/logs
+<log-dir>/
+├── app.log                  # Main application log
+├── audit.log               # Audit trail log
+├── cli.log                 # CLI-specific operations
+├── mcp.log                 # MCP server operations
+└── archived/               # Rotated log archives
 ```
 
 ### Data Format Specifications
@@ -530,7 +587,8 @@ interface Ticket {
 **Data Storage Philosophy**
 
 - **Local-First**: All data stored locally for offline operation and data sovereignty
-- **Standards Compliance**: Following XDG Base Directory specification for cross-platform compatibility
+- **Cross-Platform Compatibility**: Using env-paths library for platform-appropriate directories
+- **Environment Separation**: Distinct directories for production, development, and test environments
 - **Version Control Friendly**: JSON and Markdown formats work well with Git
 - **Privacy by Design**: Clear separation of local-only and shareable data
 - **Version Control**: Snapshot-based storage initially, with future migration to diff-based storage
@@ -558,8 +616,8 @@ Following the CLI-first architecture principle:
 
 **API Endpoints**
 
-- CRUD operations for tickets and epics
-- Search and filtering capabilities
+- Complete ticket and epic management operations
+- Advanced search and filtering capabilities
 - Status reporting and analytics
 - Template management
 
@@ -662,13 +720,14 @@ Following the CLI-first architecture principle:
 
 **CLI Framework (CLI-First Implementation)**
 
-- **Commander.js**: Command structure following POSIX and GNU conventions
+- '**clif**': Command-line interface framework following POSIX and GNU conventions
 - **tsx**: Direct TypeScript execution for development efficiency
 - **Chalk**: Terminal styling and structured output
 
 **Configuration Management (Standards Adoption)**
 
-- **XDG Base Directory**: Specification for file locations
+- **env-paths Library**: Cross-platform directory resolution for consistent file locations
+- **Platform-Specific Conventions**: Windows (AppData), macOS (Library), Linux (XDG spec)
 - **JSON**: Format for structured configuration
 - **Environment Variables**: Support following dotenv standards
 
@@ -690,6 +749,23 @@ Following the CLI-first architecture principle:
 - **CommonMark**: For Markdown documentation
 - **File-based Templates**: For code generation
 
+**Logging and Audit Infrastructure**
+
+- **Pino Logging Framework**: High-performance structured logging with NDJSON output
+- **Concurrent Process Support**: Safe multi-process operations via sonic-boom
+- **Cross-Platform Storage**: Environment-specific log directories using env-paths
+  - Development: `<platform-log-dir>/project-manager-dev/logs/`
+  - Production: `<platform-log-dir>/project-manager/logs/`
+  - Test: `<platform-log-dir>/project-manager-test/logs/`
+- **Configurable Transports**:
+  - Development: Multi-transport (console with pino-pretty + file output)
+  - Production: File-based with rotation
+  - Test: Memory-based for test isolation
+- **Log Rotation**: External rotation via logrotate for production environments
+- **Audit Trail**: Append-only operation tracking with tamper-proof design
+- **Trace Context**: Request/session correlation across system boundaries
+- **Automatic Directory Creation**: Log directories created on-demand with proper error handling
+
 **AI Integration**
 
 - **Model Context Protocol (MCP)**: Server implementation (mandatory standard)
@@ -702,8 +778,12 @@ Following the CLI-first architecture principle:
 **Key Technology Decisions**
 
 - **Local-First Storage**: JSON files provide simplicity and version control compatibility
+- **env-paths for Configuration**: Cross-platform directory resolution following platform conventions
+- **Environment-Specific Naming**: Simple, clear naming scheme for different deployment environments
 - **Model Context Protocol**: Industry standard for AI integration
 - **Conventional Commits**: Enables automated versioning and changelog generation
+- **Pino for Logging**: High-performance structured logging with minimal overhead
+- **Foundation Layer Logging**: Cross-cutting concern placement for universal access
 
 ## Implementation Guidelines
 
@@ -796,7 +876,7 @@ The system has successfully completed its migration to Clean Architecture:
 
 - ✅ **Infrastructure Layer**: Repository implementations and external adapters
   - JsonTicketRepository with file-based persistence
-  - XDG-compliant configuration management
+  - Cross-platform configuration management using env-paths
   - Proper dependency inversion implementation
 
 - ✅ **SDK Layer**: Facade pattern for unified API access

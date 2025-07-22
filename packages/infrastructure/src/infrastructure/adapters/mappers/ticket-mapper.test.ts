@@ -252,8 +252,8 @@ describe('TicketMapper', () => {
       expect(result).toHaveLength(2)
       expect(result[0]).toBeInstanceOf(Ticket)
       expect(result[1]).toBeInstanceOf(Ticket)
-      expect(result[0].title.value).toBe('Test Ticket')
-      expect(result[1].title.value).toBe('Second Ticket')
+      expect(result[0]?.title.value).toBe('Test Ticket')
+      expect(result[1]?.title.value).toBe('Second Ticket')
     })
 
     it('should handle empty array', () => {
@@ -292,8 +292,8 @@ describe('TicketMapper', () => {
 
         // Assert
         expect(result).toHaveLength(2) // Should skip the invalid one
-        expect(result[0].title.value).toBe('Test Ticket')
-        expect(result[1].title.value).toBe('Valid Ticket 2')
+        expect(result[0]?.title.value).toBe('Test Ticket')
+        expect(result[1]?.title.value).toBe('Valid Ticket 2')
 
         // Should log warning for invalid ticket
         expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -392,10 +392,10 @@ describe('TicketMapper', () => {
 
       // Assert
       expect(result).toHaveLength(2)
-      expect(result[0].title).toBe('Test Ticket')
-      expect(result[1].title).toBe('Second Ticket')
-      expect(result[0].status).toBe(createTicketStatus('pending'))
-      expect(result[1].status).toBe(createTicketStatus('in_progress'))
+      expect(result[0]!.title).toBe('Test Ticket')
+      expect(result[1]!.title).toBe('Second Ticket')
+      expect(result[0]!.status).toBe(createTicketStatus('pending'))
+      expect(result[1]!.status).toBe(createTicketStatus('in_progress'))
     })
 
     it('should handle empty array', () => {
@@ -414,9 +414,9 @@ describe('TicketMapper', () => {
       const reconstructedTicket = toDomain(persistenceFormat)
 
       // Assert
-      expect(reconstructedTicket.id.value).toBe(sampleTicket.id.value)
-      expect(reconstructedTicket.title.value).toBe(sampleTicket.title.value)
-      expect(reconstructedTicket.description?.value).toBe(sampleTicket.description?.value)
+      expect(reconstructedTicket?.id.value).toBe(sampleTicket.id.value)
+      expect(reconstructedTicket?.title.value).toBe(sampleTicket.title.value)
+      expect(reconstructedTicket?.description?.value).toBe(sampleTicket.description?.value)
       expect(reconstructedTicket.status).toBe(sampleTicket.status)
       expect(reconstructedTicket.priority).toBe(sampleTicket.priority)
       expect(reconstructedTicket.type).toBe(sampleTicket.type)
