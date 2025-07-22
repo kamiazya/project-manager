@@ -47,31 +47,75 @@ export interface LoggingContext {
 }
 
 /**
- * Service for managing logging context using AsyncLocalStorage.
+ * Service interface for managing logging context.
  * Provides automatic context propagation across asynchronous operations.
  */
-export class LoggingContextService {
-  private static asyncLocalStorage: AsyncContextStorage<LoggingContext> | null = null
+export interface LoggingContextService {
+  run<T>(context: LoggingContext, fn: () => Promise<T>): Promise<T>
+  runSync<T>(context: LoggingContext, fn: () => T): T
+  getContext(): LoggingContext | undefined
+  updateContext(updates: Partial<LoggingContext>): Promise<void>
+  createUpdatedContext(updates: Partial<LoggingContext>): LoggingContext
+  createChildContext(childContext: Partial<LoggingContext>): LoggingContext
+  hasContext(): boolean
+  getContextForLogging(includeMetadata?: boolean): Record<string, any>
+  runWithUpdatedContext<T>(updates: Partial<LoggingContext>, fn: () => Promise<T>): Promise<T>
+  runWithUpdatedContextSync<T>(updates: Partial<LoggingContext>, fn: () => T): T
+}
 
-  /**
-   * Initialize the service with an AsyncContextStorage implementation.
-   * This must be called during application startup.
-   */
-  static initialize(storage: AsyncContextStorage<LoggingContext>): void {
-    LoggingContextService.asyncLocalStorage = storage
+/**
+ * Singleton service for managing logging context using AsyncLocalStorage.
+ * Provides automatic context propagation across asynchronous operations.
+ */
+export class LoggingContextServiceImpl implements LoggingContextService {
+  private static instance: LoggingContextServiceImpl | null = null
+  private asyncLocalStorage: AsyncContextStorage<LoggingContext>
+
+  private constructor(storage: AsyncContextStorage<LoggingContext>) {
+    this.asyncLocalStorage = storage
   }
 
   /**
-   * Get the storage instance, throwing if not initialized.
+   * Get the singleton instance of LoggingContextService.
+   * Throws if not initialized.
    */
-  private static getStorage(): AsyncContextStorage<LoggingContext> {
-    if (!LoggingContextService.asyncLocalStorage) {
+  static getInstance(): LoggingContextServiceImpl {
+    if (!LoggingContextServiceImpl.instance) {
       throw new ConfigurationError(
         'initialization',
-        'LoggingContextService not initialized. Call initialize() with an AsyncContextStorage implementation.'
+        'LoggingContextService not initialized. Call initialize() with an AsyncContextStorage implementation first.'
       )
     }
-    return LoggingContextService.asyncLocalStorage
+    return LoggingContextServiceImpl.instance
+  }
+
+  /**
+   * Initialize the singleton service with an AsyncContextStorage implementation.
+   * This must be called during application startup.
+   */
+  static initialize(storage: AsyncContextStorage<LoggingContext>): LoggingContextServiceImpl {
+    if (LoggingContextServiceImpl.instance) {
+      throw new ConfigurationError(
+        'initialization',
+        'LoggingContextService already initialized. Use getInstance() to access the service.'
+      )
+    }
+    LoggingContextServiceImpl.instance = new LoggingContextServiceImpl(storage)
+    return LoggingContextServiceImpl.instance
+  }
+
+  /**
+   * Reset the singleton instance (mainly for testing).
+   */
+  static reset(): void {
+    LoggingContextServiceImpl.instance = null
+  }
+
+  /**
+   * Get the storage instance.
+   */
+  private getStorage(): AsyncContextStorage<LoggingContext> {
+    return this.asyncLocalStorage
   }
 
   /**
@@ -82,8 +126,8 @@ export class LoggingContextService {
    * @param fn - The function to execute with the context
    * @returns Promise resolving to the function result
    */
-  static run<T>(context: LoggingContext, fn: () => Promise<T>): Promise<T> {
-    return LoggingContextService.getStorage().run(context, fn)
+  run<T>(context: LoggingContext, fn: () => Promise<T>): Promise<T> {
+    return this.getStorage().run(context, fn)
   }
 
   /**
@@ -93,8 +137,8 @@ export class LoggingContextService {
    * @param fn - The synchronous function to execute with the context
    * @returns The function result
    */
-  static runSync<T>(context: LoggingContext, fn: () => T): T {
-    return LoggingContextService.getStorage().run(context, fn)
+  runSync<T>(context: LoggingContext, fn: () => T): T {
+    return this.getStorage().run(context, fn)
   }
 
   /**
@@ -102,8 +146,8 @@ export class LoggingContextService {
    *
    * @returns The current logging context, or undefined if not set
    */
-  static getContext(): LoggingContext | undefined {
-    return LoggingContextService.getStorage().getStore()
+  getContext(): LoggingContext | undefined {
+    return this.getStorage().getStore()
   }
 
   /**
@@ -116,7 +160,7 @@ export class LoggingContextService {
    * @param updates - Partial context updates to apply
    * @throws {ConfigurationError} Always throws - direct context updates not supported
    */
-  static async updateContext(updates: Partial<LoggingContext>): Promise<void> {
+  async updateContext(updates: Partial<LoggingContext>): Promise<void> {
     throw new ConfigurationError(
       'updateContext',
       'Direct context updates are not supported with AsyncLocalStorage. ' +
@@ -133,8 +177,8 @@ export class LoggingContextService {
    * @returns New context object with updates applied
    * @throws {ConfigurationError} If no current context is available
    */
-  static createUpdatedContext(updates: Partial<LoggingContext>): LoggingContext {
-    const current = LoggingContextService.getContext()
+  createUpdatedContext(updates: Partial<LoggingContext>): LoggingContext {
+    const current = this.getContext()
     if (!current) {
       throw new ConfigurationError('createUpdatedContext', 'No logging context available to update')
     }
@@ -155,8 +199,8 @@ export class LoggingContextService {
    * @param childContext - Additional context for the child operation
    * @returns New context with parent reference
    */
-  static createChildContext(childContext: Partial<LoggingContext>): LoggingContext {
-    const parent = LoggingContextService.getContext()
+  createChildContext(childContext: Partial<LoggingContext>): LoggingContext {
+    const parent = this.getContext()
     if (!parent) {
       throw new ConfigurationError('child-context', 'No parent logging context available')
     }
@@ -165,7 +209,7 @@ export class LoggingContextService {
       ...parent,
       ...childContext,
       parentContext: parent.traceId,
-      traceId: childContext.traceId || LoggingContextService.generateTraceId(),
+      traceId: childContext.traceId || LoggingContextServiceImpl.generateTraceId(),
       metadata: {
         ...parent.metadata,
         ...childContext.metadata,
@@ -178,8 +222,8 @@ export class LoggingContextService {
    *
    * @returns True if context is available, false otherwise
    */
-  static hasContext(): boolean {
-    return LoggingContextService.asyncLocalStorage?.getStore() !== undefined
+  hasContext(): boolean {
+    return this.asyncLocalStorage?.getStore() !== undefined
   }
 
   /**
@@ -189,8 +233,8 @@ export class LoggingContextService {
    * @param includeMetadata - Whether to include metadata in the output
    * @returns Formatted context object
    */
-  static getContextForLogging(includeMetadata = true): Record<string, any> {
-    const context = LoggingContextService.getContext()
+  getContextForLogging(includeMetadata = true): Record<string, any> {
+    const context = this.getContext()
     if (!context) {
       return {}
     }
@@ -201,7 +245,7 @@ export class LoggingContextService {
       operation: context.operation,
       actor: {
         type: context.actor.type,
-        id: LoggingContextService.sanitizeActorId(context.actor.id),
+        id: LoggingContextServiceImpl.sanitizeActorId(context.actor.id),
         name: context.actor.name,
       },
     }
@@ -219,11 +263,11 @@ export class LoggingContextService {
     }
 
     if (context.actor.coAuthor) {
-      logContext.actor.coAuthor = LoggingContextService.sanitizeActorId(context.actor.coAuthor)
+      logContext.actor.coAuthor = LoggingContextServiceImpl.sanitizeActorId(context.actor.coAuthor)
     }
 
     if (includeMetadata && context.metadata) {
-      logContext.metadata = LoggingContextService.sanitizeMetadata(context.metadata)
+      logContext.metadata = LoggingContextServiceImpl.sanitizeMetadata(context.metadata)
     }
 
     return logContext
@@ -375,12 +419,12 @@ export class LoggingContextService {
    * )
    * ```
    */
-  static async runWithUpdatedContext<T>(
+  async runWithUpdatedContext<T>(
     updates: Partial<LoggingContext>,
     fn: () => Promise<T>
   ): Promise<T> {
-    const updatedContext = LoggingContextService.createUpdatedContext(updates)
-    return LoggingContextService.run(updatedContext, fn)
+    const updatedContext = this.createUpdatedContext(updates)
+    return this.run(updatedContext, fn)
   }
 
   /**
@@ -390,9 +434,9 @@ export class LoggingContextService {
    * @param fn - Function to execute with updated context
    * @returns Result of the function execution
    */
-  static runWithUpdatedContextSync<T>(updates: Partial<LoggingContext>, fn: () => T): T {
-    const updatedContext = LoggingContextService.createUpdatedContext(updates)
-    return LoggingContextService.runSync(updatedContext, fn)
+  runWithUpdatedContextSync<T>(updates: Partial<LoggingContext>, fn: () => T): T {
+    const updatedContext = this.createUpdatedContext(updates)
+    return this.runSync(updatedContext, fn)
   }
 }
 
@@ -415,6 +459,11 @@ export function isLoggingContext(obj: any): obj is LoggingContext {
 }
 
 /**
+ * Convenience export using the interface name for external consumers
+ */
+export const LoggingContextService = LoggingContextServiceImpl
+
+/**
  * Default export for the service
  */
-export default LoggingContextService
+export default LoggingContextServiceImpl

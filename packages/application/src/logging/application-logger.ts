@@ -202,7 +202,7 @@ export class ApplicationLogger implements Logger {
    * @returns Merged metadata object
    */
   private mergeContextWithMetadata(additionalMetadata?: LogMetadata): LogMetadata | undefined {
-    const context = LoggingContextService.getContextForLogging()
+    const context = LoggingContextService.getInstance().getContextForLogging()
 
     if (!context && !additionalMetadata) {
       return undefined

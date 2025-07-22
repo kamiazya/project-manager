@@ -112,7 +112,7 @@ export class AuditInterceptor {
     executionEnd: number,
     beforeState?: any
   ): Promise<void> {
-    const context = LoggingContextService.getContext()
+    const context = LoggingContextService.getInstance().getContext()
     if (!context) {
       // If no context is available, we can't generate a proper audit record
       // This might happen in test scenarios or misconfigured environments
@@ -170,7 +170,7 @@ export class AuditInterceptor {
     executionEnd: number,
     beforeState?: any
   ): Promise<void> {
-    const context = LoggingContextService.getContext()
+    const context = LoggingContextService.getInstance().getContext()
     if (!context) {
       this.logger.warn('No logging context available for audit record generation', {
         operation: useCase.auditMetadata.operationId,
@@ -215,7 +215,7 @@ export class AuditInterceptor {
    * @param result - Complete execution result
    */
   async recordExecutionResult<TResponse>(result: UseCaseExecutionResult<TResponse>): Promise<void> {
-    const context = LoggingContextService.getContext()
+    const context = LoggingContextService.getInstance().getContext()
     if (!context) {
       this.logger.warn('No logging context available for audit record generation')
       return

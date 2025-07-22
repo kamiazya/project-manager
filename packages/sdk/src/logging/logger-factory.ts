@@ -410,12 +410,13 @@ export class LoggerFactory extends EventEmitter {
       }
 
       // Use factory functions for different environments
+      const baseLogger = this.createApplicationLoggerInstance()
       switch (this.config.environment) {
         case 'production':
-          return createComplianceAuditLogger(actualAuditPath, fileAuditConfig)
+          return createComplianceAuditLogger(actualAuditPath, baseLogger, fileAuditConfig)
 
         default:
-          return createDevelopmentAuditLogger(actualAuditPath, fileAuditConfig)
+          return createDevelopmentAuditLogger(actualAuditPath, baseLogger, fileAuditConfig)
       }
     } catch (error) {
       this.emit('error', { message: 'Failed to create audit logger', error })

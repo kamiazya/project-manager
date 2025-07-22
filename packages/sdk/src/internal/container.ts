@@ -102,7 +102,8 @@ export function createContainer(config: SDKConfig): Container {
         // Use StorageConfigService for path resolution (Clean Architecture compliant)
         const storageService = container.get<StorageConfigService>(TYPES.StorageConfigService)
         const storagePath = storageService.resolveStoragePath()
-        return new JsonTicketRepository(storagePath)
+        const logger = container.get<Logger>(TYPES.BaseLogger)
+        return new JsonTicketRepository(storagePath, logger)
       }
     })
     .inSingletonScope()
@@ -174,7 +175,9 @@ export function createContainer(config: SDKConfig): Container {
     .bind<AuditInterceptor>(TYPES.AuditInterceptor)
     .toDynamicValue(context => {
       const auditLogger = context.get<AuditLogger>(TYPES.AuditLogger)
-      return new AuditInterceptor(auditLogger)
+      const logger = context.get<Logger>(TYPES.BaseLogger)
+      const idGenerator = context.get<IdGenerator>(TYPES.IdGenerator)
+      return new AuditInterceptor(auditLogger, logger, idGenerator)
     })
     .inSingletonScope()
 
@@ -244,37 +247,39 @@ export function createContainer(config: SDKConfig): Container {
   // Log and Audit Readers
   container
     .bind<FileLogReader>(TYPES.LogReader)
-    .toDynamicValue(() => {
+    .toDynamicValue(context => {
       const storageService = container.get<StorageConfigService>(TYPES.StorageConfigService)
       // Get logs directory from storage config (logs are typically in ~/.local/share/project-manager/logs/)
       const logsDir = storageService.getLogsPath()
-      return new FileLogReader(logsDir)
+      const logger = context.get<Logger>(TYPES.BaseLogger)
+      return new FileLogReader(logsDir, logger)
     })
     .inSingletonScope()
 
   container
     .bind<FileAuditReader>(TYPES.AuditReader)
-    .toDynamicValue(() => {
+    .toDynamicValue(context => {
       const storageService = container.get<StorageConfigService>(TYPES.StorageConfigService)
       // Get logs directory from storage config (audit logs are in the same logs directory)
       const logsDir = storageService.getLogsPath()
-      return new FileAuditReader(logsDir)
+      const logger = context.get<Logger>(TYPES.BaseLogger)
+      return new FileAuditReader(logsDir, logger)
     })
     .inSingletonScope()
 
   // Log and Audit Use Cases
   container
     .bind(TYPES.GetLogsUseCase)
-    .toDynamicValue(() => {
-      const logReader = container.get<FileLogReader>(TYPES.LogReader)
+    .toDynamicValue(context => {
+      const logReader = context.get<FileLogReader>(TYPES.LogReader)
       return new GetLogs.UseCase(logReader as any)
     })
     .onActivation(createUseCaseActivationHandler(container))
 
   container
     .bind(TYPES.GetAuditLogsUseCase)
-    .toDynamicValue(() => {
-      const auditReader = container.get<FileAuditReader>(TYPES.AuditReader)
+    .toDynamicValue(context => {
+      const auditReader = context.get<FileAuditReader>(TYPES.AuditReader)
       return new GetAuditLogs.UseCase(auditReader as any)
     })
     .onActivation(createUseCaseActivationHandler(container))

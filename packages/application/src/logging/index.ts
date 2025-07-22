@@ -36,4 +36,5 @@ export {
   isLoggingContext,
   LoggingContextService,
   LoggingContextService as LoggingContextSvc,
+  LoggingContextServiceImpl,
 } from './context-service.ts'

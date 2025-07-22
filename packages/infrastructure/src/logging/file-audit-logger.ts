@@ -876,6 +876,7 @@ export function createFileAuditLogger(config: FileAuditLoggerConfig, logger: Log
  */
 export function createComplianceAuditLogger(
   auditPath: string,
+  logger: Logger,
   overrides?: Partial<FileAuditLoggerConfig>
 ): AuditLogger {
   const config: FileAuditLoggerConfig = {
@@ -903,7 +904,7 @@ export function createComplianceAuditLogger(
     ...overrides,
   }
 
-  return new FileAuditLoggerAdapter(config)
+  return new FileAuditLoggerAdapter(config, logger)
 }
 
 /**
@@ -911,6 +912,7 @@ export function createComplianceAuditLogger(
  */
 export function createDevelopmentAuditLogger(
   auditPath: string,
+  logger: Logger,
   overrides?: Partial<FileAuditLoggerConfig>
 ): AuditLogger {
   const config: FileAuditLoggerConfig = {
@@ -934,5 +936,5 @@ export function createDevelopmentAuditLogger(
     ...overrides,
   }
 
-  return new FileAuditLoggerAdapter(config)
+  return new FileAuditLoggerAdapter(config, logger)
 }

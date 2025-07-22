@@ -4,6 +4,7 @@ import type {
   StorageConfigService,
   TicketRepository,
 } from '@project-manager/application'
+import { LoggingContextServiceImpl } from '@project-manager/application'
 import {
   CrossPlatformStorageConfigService,
   InMemoryTicketRepository,
@@ -172,6 +173,11 @@ vi.mock('@project-manager/application', () => ({
     getCurrentContext: vi.fn(() => ({})),
     withContext: vi.fn((_context, fn) => fn()),
   },
+  LoggingContextServiceImpl: {
+    initialize: vi.fn(),
+    getInstance: vi.fn(),
+    reset: vi.fn(),
+  },
   ApplicationLogger: vi.fn().mockImplementation(function MockApplicationLogger() {
     return {
       constructor: { name: 'ApplicationLogger' },
@@ -192,6 +198,7 @@ vi.mock('@project-manager/application', () => ({
 describe('createContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    LoggingContextServiceImpl.reset()
   })
 
   describe('container creation', () => {
@@ -262,7 +269,10 @@ describe('createContainer', () => {
 
       container.get<TicketRepository>(TYPES.TicketRepository)
 
-      expect(JsonTicketRepository).toHaveBeenCalledWith('/resolved/path/tickets.json')
+      expect(JsonTicketRepository).toHaveBeenCalledWith(
+        '/resolved/path/tickets.json',
+        expect.any(Object)
+      )
     })
 
     it('should bind JsonTicketRepository for development environment', () => {
@@ -270,7 +280,10 @@ describe('createContainer', () => {
 
       container.get<TicketRepository>(TYPES.TicketRepository)
 
-      expect(JsonTicketRepository).toHaveBeenCalledWith('/resolved/path/tickets.json')
+      expect(JsonTicketRepository).toHaveBeenCalledWith(
+        '/resolved/path/tickets.json',
+        expect.any(Object)
+      )
     })
 
     it('should bind JsonTicketRepository for isolated environment', () => {
@@ -278,7 +291,10 @@ describe('createContainer', () => {
 
       container.get<TicketRepository>(TYPES.TicketRepository)
 
-      expect(JsonTicketRepository).toHaveBeenCalledWith('/resolved/path/tickets.json')
+      expect(JsonTicketRepository).toHaveBeenCalledWith(
+        '/resolved/path/tickets.json',
+        expect.any(Object)
+      )
     })
 
     it('should bind repository as singleton', () => {
