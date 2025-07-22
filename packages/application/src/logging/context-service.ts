@@ -108,18 +108,38 @@ export class LoggingContextService {
 
   /**
    * Update the current context with additional information.
-   * Creates a new context that inherits from the current one.
+   *
+   * NOTE: AsyncLocalStorage does not support direct context updates.
+   * To update context, you must create a new context scope using run().
+   * This method throws an error to prevent confusion.
    *
    * @param updates - Partial context updates to apply
-   * @returns Promise resolving when context is updated
+   * @throws {ConfigurationError} Always throws - direct context updates not supported
    */
   static async updateContext(updates: Partial<LoggingContext>): Promise<void> {
+    throw new ConfigurationError(
+      'updateContext',
+      'Direct context updates are not supported with AsyncLocalStorage. ' +
+        'Use LoggingContextService.run() to create a new context scope with updated values.'
+    )
+  }
+
+  /**
+   * Create an updated context object for use with run().
+   * This method creates a new context that inherits from the current one
+   * but does not apply it. Use the returned context with run().
+   *
+   * @param updates - Partial context updates to apply
+   * @returns New context object with updates applied
+   * @throws {ConfigurationError} If no current context is available
+   */
+  static createUpdatedContext(updates: Partial<LoggingContext>): LoggingContext {
     const current = LoggingContextService.getContext()
     if (!current) {
-      throw new ConfigurationError('update', 'No logging context available to update')
+      throw new ConfigurationError('createUpdatedContext', 'No logging context available to update')
     }
 
-    const updated: LoggingContext = {
+    return {
       ...current,
       ...updates,
       metadata: {
@@ -127,10 +147,6 @@ export class LoggingContextService {
         ...updates.metadata,
       },
     }
-
-    // Note: AsyncLocalStorage doesn't support updating the store directly
-    // This method is mainly for documentation - actual updates need to be handled
-    // by running new contexts with LoggingContextService.run()
   }
 
   /**
@@ -338,6 +354,45 @@ export class LoggingContextService {
     }
 
     return sanitized
+  }
+
+  /**
+   * Execute a function with updated context.
+   * This is the recommended way to "update" context by creating a new scope.
+   *
+   * @param updates - Partial context updates to apply
+   * @param fn - Function to execute with updated context
+   * @returns Result of the function execution
+   * @example
+   * ```typescript
+   * // Instead of updateContext (which throws), use runWithUpdatedContext
+   * await LoggingContextService.runWithUpdatedContext(
+   *   { operation: 'nested-operation' },
+   *   async () => {
+   *     // This code runs with updated context
+   *     await someOperation()
+   *   }
+   * )
+   * ```
+   */
+  static async runWithUpdatedContext<T>(
+    updates: Partial<LoggingContext>,
+    fn: () => Promise<T>
+  ): Promise<T> {
+    const updatedContext = LoggingContextService.createUpdatedContext(updates)
+    return LoggingContextService.run(updatedContext, fn)
+  }
+
+  /**
+   * Execute a function with updated context (synchronous version).
+   *
+   * @param updates - Partial context updates to apply
+   * @param fn - Function to execute with updated context
+   * @returns Result of the function execution
+   */
+  static runWithUpdatedContextSync<T>(updates: Partial<LoggingContext>, fn: () => T): T {
+    const updatedContext = LoggingContextService.createUpdatedContext(updates)
+    return LoggingContextService.runSync(updatedContext, fn)
   }
 }
 
