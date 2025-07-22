@@ -18,6 +18,7 @@ const STORAGE_CONFIG = {
 const ENV_VARS = {
   STORAGE_PATH: 'PM_STORAGE_PATH',
   XDG_CONFIG_HOME: 'XDG_CONFIG_HOME',
+  XDG_DATA_HOME: 'XDG_DATA_HOME',
 } as const
 
 /**
@@ -81,5 +82,34 @@ export class XdgStorageConfigService implements StorageConfigService {
     }
 
     return this.getDefaultStoragePath()
+  }
+
+  /**
+   * Get the logs directory path following XDG Base Directory specification
+   * @param mode Optional SDK mode to override auto-detection
+   */
+  getLogsPath(mode?: string): string {
+    const homeDir = homedir()
+    const dataHome = process.env[ENV_VARS.XDG_DATA_HOME] || join(homeDir, '.local', 'share')
+
+    // Use SDK mode system for directory naming
+    let dirName: string
+    if (mode) {
+      // If mode is provided, use it directly for directory naming
+      dirName =
+        mode === 'development'
+          ? `${STORAGE_CONFIG.CONFIG_DIR_NAME}-dev`
+          : mode === 'production'
+            ? STORAGE_CONFIG.CONFIG_DIR_NAME
+            : `${STORAGE_CONFIG.CONFIG_DIR_NAME}-${mode}`
+    } else {
+      // Fallback to environment variable for backward compatibility
+      const isDevelopment = process.env.NODE_ENV === 'development'
+      dirName = isDevelopment
+        ? `${STORAGE_CONFIG.CONFIG_DIR_NAME}-dev`
+        : STORAGE_CONFIG.CONFIG_DIR_NAME
+    }
+
+    return join(dataHome, dirName, 'logs')
   }
 }

@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Ticket } from '@project-manager/domain'
+import { Ticket, TicketId } from '@project-manager/domain'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { JsonTicketRepository } from './json-ticket-repository.ts'
 
@@ -47,7 +47,7 @@ describe('JsonTicketRepository', () => {
 
   describe('save', () => {
     it('should save a new ticket', async () => {
-      const ticket = Ticket.create({
+      const ticket = Ticket.create(TicketId.create('12345678'), {
         title: 'Test ticket',
         description: 'Test description',
         priority: 'high',
@@ -64,7 +64,7 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should update an existing ticket', async () => {
-      const ticket = Ticket.create({
+      const ticket = Ticket.create(TicketId.create('12345678'), {
         title: 'Original title',
         description: 'Original description',
         priority: 'high',
@@ -87,7 +87,7 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should handle multiple tickets', async () => {
-      const ticket1 = Ticket.create({
+      const ticket1 = Ticket.create(TicketId.create('11111111'), {
         title: 'Ticket 1',
         description: 'Description 1',
         priority: 'high',
@@ -98,7 +98,7 @@ describe('JsonTicketRepository', () => {
       // Add small delay to ensure different timestamps for ID generation
       await new Promise(resolve => setTimeout(resolve, 1))
 
-      const ticket2 = Ticket.create({
+      const ticket2 = Ticket.create(TicketId.create('22222222'), {
         title: 'Ticket 2',
         description: 'Description 2',
         priority: 'low',
@@ -116,7 +116,7 @@ describe('JsonTicketRepository', () => {
 
   describe('findById', () => {
     it('should find an existing ticket', async () => {
-      const ticket = Ticket.create({
+      const ticket = Ticket.create(TicketId.create('12345678'), {
         title: 'Findable ticket',
         description: 'Test description',
         priority: 'medium',
@@ -146,7 +146,7 @@ describe('JsonTicketRepository', () => {
     })
 
     it('should return all tickets when no criteria provided', async () => {
-      const ticket1 = Ticket.create({
+      const ticket1 = Ticket.create(TicketId.create('aaaaaaaa'), {
         title: 'Ticket 1',
         description: 'Description 1',
         priority: 'high',
@@ -154,7 +154,7 @@ describe('JsonTicketRepository', () => {
         status: 'pending',
       })
 
-      const ticket2 = Ticket.create({
+      const ticket2 = Ticket.create(TicketId.create('bbbbbbbb'), {
         title: 'Ticket 2',
         description: 'Description 2',
         priority: 'low',
@@ -174,7 +174,7 @@ describe('JsonTicketRepository', () => {
 
   describe('delete', () => {
     it('should delete an existing ticket', async () => {
-      const ticket = Ticket.create({
+      const ticket = Ticket.create(TicketId.create('12345678'), {
         title: 'To be deleted',
         description: 'Test description',
         priority: 'low',
@@ -212,7 +212,7 @@ describe('JsonTicketRepository', () => {
 
   describe('queryTickets', () => {
     beforeEach(async () => {
-      const ticket1 = Ticket.create({
+      const ticket1 = Ticket.create(TicketId.create('11111111'), {
         title: 'High priority bug',
         description: 'Critical issue',
         priority: 'high',
@@ -220,7 +220,7 @@ describe('JsonTicketRepository', () => {
         status: 'pending',
       })
 
-      const ticket2 = Ticket.create({
+      const ticket2 = Ticket.create(TicketId.create('22222222'), {
         title: 'Low priority feature',
         description: 'Nice to have',
         priority: 'low',
@@ -228,7 +228,7 @@ describe('JsonTicketRepository', () => {
         status: 'in_progress',
       })
 
-      const ticket3 = Ticket.create({
+      const ticket3 = Ticket.create(TicketId.create('33333333'), {
         title: 'Medium priority task',
         description: 'Regular work',
         priority: 'medium',
@@ -236,7 +236,7 @@ describe('JsonTicketRepository', () => {
         status: 'completed',
       })
 
-      const ticket4 = Ticket.create({
+      const ticket4 = Ticket.create(TicketId.create('44444444'), {
         title: 'High priority feature',
         description: 'Important feature',
         priority: 'high',
@@ -302,21 +302,21 @@ describe('JsonTicketRepository', () => {
     it('should handle offset and limit correctly', async () => {
       // Create additional tickets to test pagination properly
       const additionalTickets = [
-        Ticket.create({
+        Ticket.create(TicketId.create('eeeeeeee'), {
           title: 'Ticket 3',
           description: 'Third ticket',
           priority: 'low',
           type: 'task',
           status: 'completed',
         }),
-        Ticket.create({
+        Ticket.create(TicketId.create('ffffffff'), {
           title: 'Ticket 4',
           description: 'Fourth ticket',
           priority: 'high',
           type: 'feature',
           status: 'pending',
         }),
-        Ticket.create({
+        Ticket.create(TicketId.create('abcdefab'), {
           title: 'Ticket 5',
           description: 'Fifth ticket',
           priority: 'medium',
@@ -357,7 +357,7 @@ describe('JsonTicketRepository', () => {
 
   describe('queryTickets', () => {
     beforeEach(async () => {
-      const ticket1 = Ticket.create({
+      const ticket1 = Ticket.create(TicketId.create('aabbccdd'), {
         title: 'Fix login bug',
         description: 'Users cannot login with email',
         priority: 'high',
@@ -365,7 +365,7 @@ describe('JsonTicketRepository', () => {
         status: 'pending',
       })
 
-      const ticket2 = Ticket.create({
+      const ticket2 = Ticket.create(TicketId.create('ddeeffaa'), {
         title: 'Add new feature',
         description: 'Implement user profile page',
         priority: 'medium',
@@ -373,7 +373,7 @@ describe('JsonTicketRepository', () => {
         status: 'in_progress',
       })
 
-      const ticket3 = Ticket.create({
+      const ticket3 = Ticket.create(TicketId.create('99887766'), {
         title: 'Update documentation',
         description: 'Fix typos in API docs',
         priority: 'low',
@@ -446,7 +446,7 @@ describe('JsonTicketRepository', () => {
 
       try {
         // First, try to save a ticket to trigger the write error path which is more reliable to test
-        const ticket = Ticket.create({
+        const ticket = Ticket.create(TicketId.create('12345678'), {
           title: 'Test ticket',
           description: 'Test description',
           priority: 'high',
@@ -465,7 +465,7 @@ describe('JsonTicketRepository', () => {
     it('should throw PersistenceError for write failures', async () => {
       const { PersistenceError } = await import('@project-manager/application')
 
-      const ticket = Ticket.create({
+      const ticket = Ticket.create(TicketId.create('12345678'), {
         title: 'Test ticket',
         description: 'Test description',
         priority: 'high',

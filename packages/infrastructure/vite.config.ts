@@ -29,16 +29,39 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: [
-        '@project-manager/application',
-        '@project-manager/domain',
-        '@project-manager/base',
-        'node:fs/promises',
-        'node:fs',
-        'node:path',
-        'node:os',
-        'node:crypto',
-      ],
+      external: (id: string) => {
+        // Node.js built-in modules (comprehensive detection)
+        if (id.startsWith('node:')) return true
+
+        // Project manager packages (strict allowlist)
+        const allowedPackages = [
+          '@project-manager/application',
+          '@project-manager/domain',
+          '@project-manager/base',
+        ] as const
+
+        const allowedSubPaths = ['@project-manager/base/common/logging'] as const
+
+        // Check exact package matches
+        if (allowedPackages.includes(id as any)) {
+          return true
+        }
+
+        // Check allowed sub-paths
+        if (allowedSubPaths.includes(id as any)) {
+          return true
+        }
+
+        // Reject any other @project-manager packages to detect typos/invalid imports
+        if (id.startsWith('@project-manager/')) {
+          throw new Error(
+            `Invalid @project-manager package import: "${id}". Allowed packages: ${[...allowedPackages, ...allowedSubPaths].join(', ')}`
+          )
+        }
+
+        // External all third-party packages
+        return !id.startsWith('.') && !id.startsWith('/')
+      },
     },
     outDir: 'dist',
     sourcemap: true,

@@ -10,6 +10,11 @@
       "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./logging": {
+      "development": "./src/logging/index.ts",
+      "types": "./dist/logging/index.d.ts",
+      "import": "./dist/logging/index.js"
     }
   },
   "publishConfig": {
@@ -19,6 +24,10 @@
       ".": {
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js"
+      },
+      "./logging": {
+        "types": "./dist/logging/index.d.ts",
+        "import": "./dist/logging/index.js"
       }
     }
   },
@@ -29,14 +38,17 @@
   },
   "dependencies": {
     "@project-manager/application": "workspace:*",
+    "@project-manager/base": "workspace:*",
     "@project-manager/domain": "workspace:*",
-    "@project-manager/base": "workspace:*"
+    "env-paths": "^3.0.0",
+    "pino": "^8.21.0",
+    "sonic-boom": "^4.2.0"
   },
   "devDependencies": {
-    "typescript": "catalog:",
-    "vitest": "catalog:",
     "@types/node": "catalog:",
+    "typescript": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-dts": "catalog:"
+    "vite-plugin-dts": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -8,7 +8,8 @@ describe('InMemoryTicketRepository', () => {
 
   beforeEach(() => {
     repository = new InMemoryTicketRepository()
-    sampleTicket = Ticket.create({
+    const ticketId = TicketId.create('12345678')
+    sampleTicket = Ticket.create(ticketId, {
       title: 'Test Ticket',
       description: 'Test Description',
       priority: 'high',
@@ -58,7 +59,7 @@ describe('InMemoryTicketRepository', () => {
     })
 
     it('should return null for non-existent ticket', async () => {
-      const nonExistentId = TicketId.create()
+      const nonExistentId = TicketId.create('abcdabcd')
       const found = await repository.findById(nonExistentId)
       expect(found).toBeNull()
     })
@@ -75,7 +76,7 @@ describe('InMemoryTicketRepository', () => {
     })
 
     it('should not throw when deleting non-existent ticket', async () => {
-      const nonExistentId = TicketId.create()
+      const nonExistentId = TicketId.create('abcdabcd')
       await expect(repository.delete(nonExistentId)).resolves.not.toThrow()
     })
   })
@@ -84,21 +85,21 @@ describe('InMemoryTicketRepository', () => {
     beforeEach(async () => {
       // Create multiple test tickets
       const tickets = [
-        Ticket.create({
+        Ticket.create(TicketId.create('11111111'), {
           title: 'Bug Fix',
           description: 'Fix critical bug',
           priority: 'high',
           type: 'bug',
           status: 'pending',
         }),
-        Ticket.create({
+        Ticket.create(TicketId.create('22222222'), {
           title: 'Feature Request',
           description: 'Add new feature',
           priority: 'medium',
           type: 'feature',
           status: 'in_progress',
         }),
-        Ticket.create({
+        Ticket.create(TicketId.create('33333333'), {
           title: 'Documentation',
           description: 'Update docs',
           priority: 'low',
@@ -196,7 +197,7 @@ describe('InMemoryTicketRepository', () => {
       await repository.save(sampleTicket)
       expect(repository.size()).toBe(1)
 
-      const anotherTicket = Ticket.create({
+      const anotherTicket = Ticket.create(TicketId.create('87654321'), {
         title: 'Another Ticket',
         description: 'Another Description',
         priority: 'medium',

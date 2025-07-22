@@ -26,8 +26,13 @@ export * from './infrastructure/adapters/in-memory-ticket-repository.ts'
 // Infrastructure implementations
 export * from './infrastructure/adapters/json-ticket-repository.ts'
 export * from './infrastructure/errors/infrastructure-errors.ts'
+export * from './infrastructure/services/cross-platform-storage-config-service.ts'
 export * from './infrastructure/services/crypto-id-generator.ts'
 export * from './infrastructure/services/node-environment-detection-service.ts'
 export * from './infrastructure/services/xdg-development-process-service.ts'
 export * from './infrastructure/services/xdg-storage-config-service.ts'
 export * from './infrastructure/types/persistence-types.ts'
+export * from './logging/file-audit-reader.ts'
+export * from './logging/file-log-reader.ts'
+// Logging infrastructure
+export * from './logging/index.ts'
