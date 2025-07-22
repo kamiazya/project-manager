@@ -8,11 +8,7 @@
 
 import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
 import type { IdGenerator } from '../services/id-generator.interface.ts'
-import type {
-  AuditableUseCase,
-  AuditMetadata,
-  UseCaseExecutionResult,
-} from './auditable-usecase.ts'
+import type { AuditableUseCase, UseCaseExecutionResult } from './auditable-usecase.ts'
 import { LoggingContextService } from './context-service.ts'
 
 /**
@@ -121,8 +117,7 @@ export class AuditInterceptor {
       // If no context is available, we can't generate a proper audit record
       // This might happen in test scenarios or misconfigured environments
       this.logger.warn('No logging context available for audit record generation', {
-        useCase: useCase.constructor.name,
-        operation: useCase.getAuditMetadata().operation,
+        operation: useCase.auditMetadata.operationId,
       })
       return
     }
@@ -178,8 +173,7 @@ export class AuditInterceptor {
     const context = LoggingContextService.getContext()
     if (!context) {
       this.logger.warn('No logging context available for audit record generation', {
-        useCase: useCase.constructor.name,
-        operation: useCase.getAuditMetadata().operation,
+        operation: useCase.auditMetadata.operationId,
         error: error.message,
       })
       return
