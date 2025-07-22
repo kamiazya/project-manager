@@ -29,9 +29,11 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: 'src/index.ts',
+      entry: {
+        index: 'src/index.ts',
+        'common/logging/index': 'src/common/logging/index.ts',
+      },
       name: 'ProjectManagerBase',
-      fileName: 'index',
       formats: ['es'],
     },
     rollupOptions: {
