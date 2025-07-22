@@ -11,6 +11,8 @@ import {
   DeleteTicket,
   type DevelopmentProcessService,
   type EnvironmentDetectionService,
+  GetAuditLogs,
+  GetLogs,
   GetTicketById,
   SearchTickets,
   UpdateTicketContent,
@@ -62,6 +64,89 @@ export interface SearchTicketsRequest {
   priority?: string
   type?: string
   searchIn?: ('title' | 'description')[]
+}
+
+export interface GetLogsRequest {
+  level?: 'debug' | 'info' | 'warn' | 'error'
+  component?: string
+  operation?: string
+  traceId?: string
+  startTime?: string
+  endTime?: string
+  limit?: number
+  offset?: number
+}
+
+export interface GetAuditLogsRequest {
+  operation?: 'create' | 'read' | 'update' | 'delete' | 'search'
+  operationId?: string
+  resourceType?: string
+  entityId?: string
+  actorType?: 'human' | 'ai' | 'system'
+  actorId?: string
+  source?: 'cli' | 'mcp' | 'api' | 'test' | 'scheduler'
+  traceId?: string
+  startTime?: string
+  endTime?: string
+  success?: boolean
+  limit?: number
+  offset?: number
+}
+
+export interface LogEntry {
+  id: string
+  timestamp: string
+  level: string
+  message: string
+  component?: string
+  operation?: string
+  traceId?: string
+  metadata?: Record<string, any>
+}
+
+export interface AuditLogEntry {
+  id: string
+  timestamp: string
+  operation: string
+  operationId: string
+  resourceType: string
+  entityId?: string
+  actor: {
+    type: string
+    id: string
+    name: string
+    coAuthor?: string
+  }
+  source: string
+  traceId: string
+  before?: any
+  after?: any
+  changes?: Array<{
+    field: string
+    oldValue: any
+    newValue: any
+  }>
+  success: boolean
+  errorMessage?: string
+  duration?: number
+}
+
+export interface LogsResponse {
+  logs: LogEntry[]
+  totalCount: number
+  hasMore: boolean
+}
+
+export interface AuditLogsResponse {
+  auditLogs: AuditLogEntry[]
+  totalCount: number
+  hasMore: boolean
+  summary: {
+    successRate: number
+    operationCounts: Record<string, number>
+    actorTypeCounts: Record<string, number>
+    sourceCounts: Record<string, number>
+  }
 }
 
 export interface TicketResponse {
@@ -226,6 +311,63 @@ export class ProjectManagerSDK {
   }
 
   /**
+   * Log Management Operations
+   */
+  public readonly logs = {
+    /**
+     * Get system logs with optional filtering
+     */
+    getLogs: async (request: GetLogsRequest): Promise<LogsResponse> => {
+      const useCase = this.container.get<GetLogs.UseCase>(TYPES.GetLogsUseCase)
+
+      const useCaseRequest: GetLogs.Request = {
+        level: request.level,
+        component: request.component,
+        operation: request.operation,
+        traceId: request.traceId,
+        startTime: request.startTime,
+        endTime: request.endTime,
+        limit: request.limit,
+        offset: request.offset,
+      }
+
+      const response = await useCase.execute(useCaseRequest)
+      return this.mapLogsResponseToSDKResponse(response)
+    },
+  }
+
+  /**
+   * Audit Management Operations
+   */
+  public readonly audit = {
+    /**
+     * Get audit logs with optional filtering
+     */
+    getAuditLogs: async (request: GetAuditLogsRequest): Promise<AuditLogsResponse> => {
+      const useCase = this.container.get<GetAuditLogs.UseCase>(TYPES.GetAuditLogsUseCase)
+
+      const useCaseRequest: GetAuditLogs.Request = {
+        operation: request.operation,
+        operationId: request.operationId,
+        resourceType: request.resourceType,
+        entityId: request.entityId,
+        actorType: request.actorType,
+        actorId: request.actorId,
+        source: request.source,
+        traceId: request.traceId,
+        startTime: request.startTime,
+        endTime: request.endTime,
+        success: request.success,
+        limit: request.limit,
+        offset: request.offset,
+      }
+
+      const response = await useCase.execute(useCaseRequest)
+      return this.mapAuditLogsResponseToSDKResponse(response)
+    },
+  }
+
+  /**
    * Development Process Management Operations
    * Available only in development-like modes (development, testing, isolated)
    */
@@ -279,6 +421,61 @@ export class ProjectManagerSDK {
       type: ticketResponse.type,
       createdAt: ticketResponse.createdAt,
       updatedAt: ticketResponse.updatedAt,
+    }
+  }
+
+  /**
+   * Helper method to map GetLogs response from Application layer to SDK Response DTO
+   */
+  private mapLogsResponseToSDKResponse(response: GetLogs.Response): LogsResponse {
+    return {
+      logs: response.logs.map(log => ({
+        id: log.id,
+        timestamp:
+          typeof log.timestamp === 'string' ? log.timestamp : (log.timestamp as Date).toISOString(),
+        level: log.level,
+        message: log.message,
+        component: log.component,
+        operation: log.operation,
+        traceId: log.traceId,
+        metadata: log.metadata,
+      })),
+      totalCount: response.totalCount,
+      hasMore: response.hasMore,
+    }
+  }
+
+  /**
+   * Helper method to map GetAuditLogs response from Application layer to SDK Response DTO
+   */
+  private mapAuditLogsResponseToSDKResponse(response: GetAuditLogs.Response): AuditLogsResponse {
+    return {
+      auditLogs: response.auditLogs.map(log => ({
+        id: log.id,
+        timestamp:
+          typeof log.timestamp === 'string' ? log.timestamp : (log.timestamp as Date).toISOString(),
+        operation: log.operation,
+        operationId: log.operationId,
+        resourceType: log.resourceType,
+        entityId: log.entityId,
+        actor: {
+          type: log.actor.type,
+          id: log.actor.id,
+          name: log.actor.name,
+          coAuthor: log.actor.coAuthor,
+        },
+        source: log.source,
+        traceId: log.traceId,
+        before: log.before,
+        after: log.after,
+        changes: log.changes,
+        success: log.success,
+        errorMessage: log.errorMessage,
+        duration: log.duration,
+      })),
+      totalCount: response.totalCount,
+      hasMore: response.hasMore,
+      summary: response.summary,
     }
   }
 }

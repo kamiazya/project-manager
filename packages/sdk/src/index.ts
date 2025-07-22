@@ -7,10 +7,12 @@
 
 // Re-export application interfaces that are exposed through SDK
 export type { DevelopmentProcessService } from '@project-manager/application'
+// Re-export logging services for higher-layer integration
 // Re-export error types for type-safe error handling
 export {
   ApplicationError,
   InfrastructureError,
+  LoggingContextService,
   PersistenceError,
   TicketNotFoundError,
   TicketValidationError,
@@ -25,7 +27,13 @@ export {
   SdkServiceUnavailableError,
 } from './common/errors/sdk-errors.ts'
 export type {
+  AuditLogEntry,
+  AuditLogsResponse,
   CreateTicketRequest,
+  GetAuditLogsRequest,
+  GetLogsRequest,
+  LogEntry,
+  LogsResponse,
   SDKConfig,
   SearchTicketsRequest,
   TicketResponse,

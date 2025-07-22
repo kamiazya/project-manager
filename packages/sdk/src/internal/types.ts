@@ -13,6 +13,15 @@ export const TYPES = {
   EnvironmentDetectionService: Symbol('EnvironmentDetectionService'),
   IdGenerator: Symbol('IdGenerator'),
 
+  // Logging Services
+  AsyncContextStorage: Symbol('AsyncContextStorage'),
+  LoggerFactory: Symbol('LoggerFactory'),
+  BaseLogger: Symbol('BaseLogger'),
+  AuditLogger: Symbol('AuditLogger'),
+  ApplicationLogger: Symbol('ApplicationLogger'),
+  AuditInterceptor: Symbol('AuditInterceptor'),
+  LoggingContextService: Symbol('LoggingContextService'),
+
   // Use Cases
   CreateTicketUseCase: Symbol('CreateTicketUseCase'),
   GetTicketByIdUseCase: Symbol('GetTicketByIdUseCase'),
@@ -21,4 +30,10 @@ export const TYPES = {
   UpdateTicketPriorityUseCase: Symbol('UpdateTicketPriorityUseCase'),
   DeleteTicketUseCase: Symbol('DeleteTicketUseCase'),
   SearchTicketsUseCase: Symbol('SearchTicketsUseCase'),
+  GetLogsUseCase: Symbol('GetLogsUseCase'),
+  GetAuditLogsUseCase: Symbol('GetAuditLogsUseCase'),
+
+  // Readers for logs and audit
+  LogReader: Symbol('LogReader'),
+  AuditReader: Symbol('AuditReader'),
 } as const

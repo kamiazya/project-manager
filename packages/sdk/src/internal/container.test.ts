@@ -5,11 +5,11 @@ import type {
   TicketRepository,
 } from '@project-manager/application'
 import {
+  CrossPlatformStorageConfigService,
   InMemoryTicketRepository,
   JsonTicketRepository,
   NodeEnvironmentDetectionService,
   XdgDevelopmentProcessService,
-  XdgStorageConfigService,
 } from '@project-manager/infrastructure'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createContainer } from './container.ts'
@@ -17,6 +17,58 @@ import { TYPES } from './types.ts'
 
 // Mock infrastructure implementations
 vi.mock('@project-manager/infrastructure', () => ({
+  // Logging factory functions
+  createProductionLogger: vi.fn(() => ({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    child: vi.fn(),
+    flush: vi.fn(),
+  })),
+  createDevelopmentLogger: vi.fn(() => ({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    child: vi.fn(),
+    flush: vi.fn(),
+  })),
+  createTestLogger: vi.fn(() => ({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    child: vi.fn(),
+    flush: vi.fn(),
+  })),
+  createComplianceAuditLogger: vi.fn(() => ({
+    recordCreate: vi.fn(),
+    recordUpdate: vi.fn(),
+    recordDelete: vi.fn(),
+    queryEvents: vi.fn(() => []),
+    getStatistics: vi.fn(() => ({})),
+  })),
+  createDevelopmentAuditLogger: vi.fn(() => ({
+    recordCreate: vi.fn(),
+    recordUpdate: vi.fn(),
+    recordDelete: vi.fn(),
+    queryEvents: vi.fn(() => []),
+    getStatistics: vi.fn(() => ({})),
+  })),
+  NodeAsyncLocalStorage: vi.fn().mockImplementation(function MockNodeAsyncLocalStorage() {
+    return {
+      constructor: { name: 'NodeAsyncLocalStorage' },
+      run: vi.fn(),
+      getStore: vi.fn(),
+    }
+  }),
+  FileLogReader: vi.fn().mockImplementation(function MockFileLogReader() {
+    return { constructor: { name: 'FileLogReader' } }
+  }),
+  FileAuditReader: vi.fn().mockImplementation(function MockFileAuditReader() {
+    return { constructor: { name: 'FileAuditReader' } }
+  }),
   InMemoryTicketRepository: vi.fn().mockImplementation(function MockInMemoryTicketRepository() {
     return { constructor: { name: 'InMemoryTicketRepository' } }
   }),
@@ -31,44 +83,110 @@ vi.mock('@project-manager/infrastructure', () => ({
         resolveEnvironment: vi.fn(env => env || 'production'),
       }
     }),
-  XdgStorageConfigService: vi.fn().mockImplementation(function MockXdgStorageConfigService() {
-    return {
-      constructor: { name: 'XdgStorageConfigService' },
-      getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
-      getDefaultStorageDir: vi.fn(() => '/default/storage'),
-      resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
-    }
-  }),
+  CrossPlatformStorageConfigService: vi
+    .fn()
+    .mockImplementation(function MockCrossPlatformStorageConfigService() {
+      return {
+        constructor: { name: 'CrossPlatformStorageConfigService' },
+        getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
+        getDefaultStorageDir: vi.fn(() => '/default/storage'),
+        resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
+        getLogsPath: vi.fn(() => '/default/logs'),
+      }
+    }),
   XdgDevelopmentProcessService: vi
     .fn()
     .mockImplementation(function MockXdgDevelopmentProcessService() {
       return { constructor: { name: 'XdgDevelopmentProcessService' } }
     }),
+  CryptoIdGenerator: vi.fn().mockImplementation(function MockCryptoIdGenerator() {
+    return {
+      constructor: { name: 'CryptoIdGenerator' },
+      generateTicketId: vi.fn(() => Promise.resolve('a1b2c3d4')),
+    }
+  }),
 }))
 
 // Mock application layer use cases
 vi.mock('@project-manager/application', () => ({
   CreateTicket: {
-    UseCase: vi.fn(),
+    UseCase: vi.fn().mockImplementation(function MockCreateTicketUseCase() {
+      return {
+        constructor: { name: 'CreateTicketUseCase' },
+        execute: vi.fn(),
+      }
+    }),
   },
   GetTicketById: {
-    UseCase: vi.fn(),
+    UseCase: vi.fn().mockImplementation(function MockGetTicketByIdUseCase() {
+      return {
+        constructor: { name: 'GetTicketByIdUseCase' },
+        execute: vi.fn(),
+      }
+    }),
   },
   UpdateTicketStatus: {
-    UseCase: vi.fn(),
+    UseCase: vi.fn().mockImplementation(function MockUpdateTicketStatusUseCase() {
+      return {
+        constructor: { name: 'UpdateTicketStatusUseCase' },
+        execute: vi.fn(),
+      }
+    }),
   },
   UpdateTicketContent: {
-    UseCase: vi.fn(),
+    UseCase: vi.fn().mockImplementation(function MockUpdateTicketContentUseCase() {
+      return {
+        constructor: { name: 'UpdateTicketContentUseCase' },
+        execute: vi.fn(),
+      }
+    }),
   },
   UpdateTicketPriority: {
-    UseCase: vi.fn(),
+    UseCase: vi.fn().mockImplementation(function MockUpdateTicketPriorityUseCase() {
+      return {
+        constructor: { name: 'UpdateTicketPriorityUseCase' },
+        execute: vi.fn(),
+      }
+    }),
   },
   DeleteTicket: {
-    UseCase: vi.fn(),
+    UseCase: vi.fn().mockImplementation(function MockDeleteTicketUseCase() {
+      return {
+        constructor: { name: 'DeleteTicketUseCase' },
+        execute: vi.fn(),
+      }
+    }),
   },
   SearchTickets: {
-    UseCase: vi.fn(),
+    UseCase: vi.fn().mockImplementation(function MockSearchTicketsUseCase() {
+      return {
+        constructor: { name: 'SearchTicketsUseCase' },
+        execute: vi.fn(),
+      }
+    }),
   },
+  LoggingContextService: {
+    initialize: vi.fn(),
+    setContext: vi.fn(),
+    clearContext: vi.fn(),
+    getCurrentContext: vi.fn(() => ({})),
+    withContext: vi.fn((_context, fn) => fn()),
+  },
+  ApplicationLogger: vi.fn().mockImplementation(function MockApplicationLogger() {
+    return {
+      constructor: { name: 'ApplicationLogger' },
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    }
+  }),
+  AuditInterceptor: vi.fn().mockImplementation(function MockAuditInterceptor() {
+    return {
+      constructor: { name: 'AuditInterceptor' },
+      intercept: vi.fn(),
+    }
+  }),
 }))
 
 describe('createContainer', () => {
@@ -109,7 +227,7 @@ describe('createContainer', () => {
       const service2 = container.get<StorageConfigService>(TYPES.StorageConfigService)
 
       expect(service1).toBe(service2) // Same instance (singleton)
-      expect(service1.constructor.name).toBe('XdgStorageConfigService')
+      expect(service1.constructor.name).toBe('CrossPlatformStorageConfigService')
     })
 
     it('should configure StorageConfigService with environment context', () => {
@@ -329,10 +447,10 @@ describe('createContainer', () => {
             } as any
           }
         )
-        vi.mocked(XdgStorageConfigService).mockImplementation(
-          function MockXdgStorageConfigService() {
+        vi.mocked(CrossPlatformStorageConfigService).mockImplementation(
+          function MockCrossPlatformStorageConfigService() {
             return {
-              constructor: { name: 'XdgStorageConfigService' },
+              constructor: { name: 'CrossPlatformStorageConfigService' },
               getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
               getDefaultStorageDir: vi.fn(() => '/default/storage'),
               resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
@@ -412,14 +530,16 @@ describe('createContainer', () => {
           } as any
         }
       )
-      vi.mocked(XdgStorageConfigService).mockImplementation(function MockXdgStorageConfigService() {
-        return {
-          constructor: { name: 'XdgStorageConfigService' },
-          getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
-          getDefaultStorageDir: vi.fn(() => '/default/storage'),
-          resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
-        } as any
-      })
+      vi.mocked(CrossPlatformStorageConfigService).mockImplementation(
+        function MockCrossPlatformStorageConfigService() {
+          return {
+            constructor: { name: 'CrossPlatformStorageConfigService' },
+            getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
+            getDefaultStorageDir: vi.fn(() => '/default/storage'),
+            resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
+          } as any
+        }
+      )
 
       const container = createContainer({ environment: 'testing' })
 
