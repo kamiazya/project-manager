@@ -6,6 +6,10 @@
  * and application-specific logging functionality.
  */
 
+// Interfaces and Types - from proper Clean Architecture location
+export type { LoggingContext, LoggingContextService } from '../services/logging-context.service.ts'
+// Core Services
+export { isLoggingContext } from '../services/logging-context.service.ts'
 export {
   ApplicationLogger,
   ApplicationLogger as AppLogger,
@@ -28,13 +32,3 @@ export {
   BaseAuditableUseCase,
   isAuditableUseCase,
 } from './auditable-usecase.ts'
-// Interfaces and Types
-export type { LoggingContext } from './context-service.ts'
-// Core Services
-// Default exports for common usage
-export {
-  isLoggingContext,
-  LoggingContextService,
-  LoggingContextService as LoggingContextSvc,
-  LoggingContextServiceImpl,
-} from './context-service.ts'

@@ -36,3 +36,5 @@ export * from './logging/file-audit-reader.ts'
 export * from './logging/file-log-reader.ts'
 // Logging infrastructure
 export * from './logging/index.ts'
+// Services
+export * from './services/async-local-storage-context-service.ts'

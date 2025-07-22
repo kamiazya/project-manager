@@ -12,14 +12,17 @@ type Logger = Logging.Logger
 type LogContext = Logging.LogContext
 type ArchitectureLayer = Logging.ArchitectureLayer
 
-import { LoggingContextService } from './context-service.ts'
+import type { LoggingContextService } from '../services/logging-context.service.ts'
 
 /**
  * Application-layer logger that automatically includes context from AsyncLocalStorage.
  * This logger acts as a bridge between the application layer and the base logging system.
  */
 export class ApplicationLogger implements Logger {
-  constructor(private readonly baseLogger: Logger) {}
+  constructor(
+    private readonly baseLogger: Logger,
+    private readonly contextService?: LoggingContextService
+  ) {}
 
   /**
    * Log a debug message with automatic context integration.
@@ -202,7 +205,7 @@ export class ApplicationLogger implements Logger {
    * @returns Merged metadata object
    */
   private mergeContextWithMetadata(additionalMetadata?: LogMetadata): LogMetadata | undefined {
-    const context = LoggingContextService.getInstance().getContextForLogging()
+    const context = this.contextService?.getContextForLogging()
 
     if (!context && !additionalMetadata) {
       return undefined
@@ -245,10 +248,14 @@ export class ApplicationLogger implements Logger {
  * Factory function to create ApplicationLogger instances.
  *
  * @param baseLogger - The base logger implementation to wrap
+ * @param contextService - Optional logging context service for automatic context integration
  * @returns New ApplicationLogger instance
  */
-export function createApplicationLogger(baseLogger: Logger): ApplicationLogger {
-  return new ApplicationLogger(baseLogger)
+export function createApplicationLogger(
+  baseLogger: Logger,
+  contextService?: LoggingContextService
+): ApplicationLogger {
+  return new ApplicationLogger(baseLogger, contextService)
 }
 
 /**
@@ -260,10 +267,15 @@ export const ApplicationLoggerUtils = {
    *
    * @param baseLogger - Base logger instance
    * @param layer - Application layer name
+   * @param contextService - Optional logging context service
    * @returns Layer-specific logger
    */
-  forLayer(baseLogger: Logger, layer: ArchitectureLayer): ApplicationLogger {
-    const appLogger = createApplicationLogger(baseLogger)
+  forLayer(
+    baseLogger: Logger,
+    layer: ArchitectureLayer,
+    contextService?: LoggingContextService
+  ): ApplicationLogger {
+    const appLogger = createApplicationLogger(baseLogger, contextService)
     return appLogger.child({ layer })
   },
 
@@ -271,30 +283,33 @@ export const ApplicationLoggerUtils = {
    * Create a logger for domain operations.
    *
    * @param baseLogger - Base logger instance
+   * @param contextService - Optional logging context service
    * @returns Domain layer logger
    */
-  forDomain(baseLogger: Logger): ApplicationLogger {
-    return this.forLayer(baseLogger, 'domain')
+  forDomain(baseLogger: Logger, contextService?: LoggingContextService): ApplicationLogger {
+    return this.forLayer(baseLogger, 'domain', contextService)
   },
 
   /**
    * Create a logger for application services.
    *
    * @param baseLogger - Base logger instance
+   * @param contextService - Optional logging context service
    * @returns Application layer logger
    */
-  forApplication(baseLogger: Logger): ApplicationLogger {
-    return this.forLayer(baseLogger, 'application')
+  forApplication(baseLogger: Logger, contextService?: LoggingContextService): ApplicationLogger {
+    return this.forLayer(baseLogger, 'application', contextService)
   },
 
   /**
    * Create a logger for infrastructure operations.
    *
    * @param baseLogger - Base logger instance
+   * @param contextService - Optional logging context service
    * @returns Infrastructure layer logger
    */
-  forInfrastructure(baseLogger: Logger): ApplicationLogger {
-    return this.forLayer(baseLogger, 'infrastructure')
+  forInfrastructure(baseLogger: Logger, contextService?: LoggingContextService): ApplicationLogger {
+    return this.forLayer(baseLogger, 'infrastructure', contextService)
   },
 }
 

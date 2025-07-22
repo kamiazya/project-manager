@@ -8,8 +8,8 @@
 
 import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
 import type { IdGenerator } from '../services/id-generator.interface.ts'
+import type { LoggingContextService } from '../services/logging-context.service.ts'
 import type { AuditableUseCase, UseCaseExecutionResult } from './auditable-usecase.ts'
-import { LoggingContextService } from './context-service.ts'
 
 /**
  * Audit record data structure for UseCase execution.
@@ -91,6 +91,7 @@ export class AuditInterceptor {
     private readonly auditLogger: AuditLogger,
     private readonly logger: Logger,
     private readonly idGenerator: IdGenerator,
+    private readonly contextService?: LoggingContextService,
     private readonly entityType: string = 'usecase-execution'
   ) {}
 
@@ -112,7 +113,7 @@ export class AuditInterceptor {
     executionEnd: number,
     beforeState?: any
   ): Promise<void> {
-    const context = LoggingContextService.getInstance().getContext()
+    const context = this.contextService?.getContext()
     if (!context) {
       // If no context is available, we can't generate a proper audit record
       // This might happen in test scenarios or misconfigured environments
@@ -170,7 +171,7 @@ export class AuditInterceptor {
     executionEnd: number,
     beforeState?: any
   ): Promise<void> {
-    const context = LoggingContextService.getInstance().getContext()
+    const context = this.contextService?.getContext()
     if (!context) {
       this.logger.warn('No logging context available for audit record generation', {
         operation: useCase.auditMetadata.operationId,
@@ -215,7 +216,7 @@ export class AuditInterceptor {
    * @param result - Complete execution result
    */
   async recordExecutionResult<TResponse>(result: UseCaseExecutionResult<TResponse>): Promise<void> {
-    const context = LoggingContextService.getInstance().getContext()
+    const context = this.contextService?.getContext()
     if (!context) {
       this.logger.warn('No logging context available for audit record generation')
       return
@@ -420,6 +421,7 @@ export class AuditInterceptor {
  * @param auditLogger - Audit logger implementation
  * @param logger - Logger for warnings and errors
  * @param idGenerator - ID generator for unique record IDs
+ * @param contextService - Optional logging context service
  * @param entityType - Optional entity type for audit records (defaults to 'usecase-execution')
  * @returns New AuditInterceptor instance
  */
@@ -427,9 +429,10 @@ export function createAuditInterceptor(
   auditLogger: AuditLogger,
   logger: Logger,
   idGenerator: IdGenerator,
+  contextService?: LoggingContextService,
   entityType?: string
 ): AuditInterceptor {
-  return new AuditInterceptor(auditLogger, logger, idGenerator, entityType)
+  return new AuditInterceptor(auditLogger, logger, idGenerator, contextService, entityType)
 }
 
 /**

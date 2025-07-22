@@ -19,8 +19,7 @@ import {
   type IdGenerator,
   isAuditableUseCase,
   type LoggingContext,
-  // Logging services
-  LoggingContextService,
+  type LoggingContextService,
   type LogReader,
   SearchTickets,
   type StorageConfigService,
@@ -32,6 +31,7 @@ import {
 import { isDevelopmentLike, isMemoryEnvironment } from '@project-manager/base'
 import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
 import {
+  AsyncLocalStorageContextService,
   CrossPlatformStorageConfigService,
   CryptoIdGenerator,
   FileAuditReader,
@@ -166,7 +166,8 @@ export function createContainer(config: SDKConfig): Container {
     .bind<ApplicationLogger>(TYPES.ApplicationLogger)
     .toDynamicValue(context => {
       const baseLogger = context.get<Logger>(TYPES.BaseLogger)
-      return new ApplicationLogger(baseLogger)
+      const contextService = context.get<LoggingContextService>(TYPES.LoggingContextService)
+      return new ApplicationLogger(baseLogger, contextService)
     })
     .inTransientScope()
 
@@ -177,14 +178,21 @@ export function createContainer(config: SDKConfig): Container {
       const auditLogger = context.get<AuditLogger>(TYPES.AuditLogger)
       const logger = context.get<Logger>(TYPES.BaseLogger)
       const idGenerator = context.get<IdGenerator>(TYPES.IdGenerator)
-      return new AuditInterceptor(auditLogger, logger, idGenerator)
+      const contextService = context.get<LoggingContextService>(TYPES.LoggingContextService)
+      return new AuditInterceptor(auditLogger, logger, idGenerator, contextService)
     })
     .inSingletonScope()
 
-  // LoggingContextService (static service, no binding needed but available for reference)
+  // LoggingContextService - singleton service with dependency injection
   container
-    .bind<typeof LoggingContextService>(TYPES.LoggingContextService)
-    .toConstantValue(LoggingContextService)
+    .bind<LoggingContextService>(TYPES.LoggingContextService)
+    .toDynamicValue(context => {
+      const asyncContextStorage = context.get<AsyncContextStorage<LoggingContext>>(
+        TYPES.AsyncContextStorage
+      )
+      return AsyncLocalStorageContextService.initialize(asyncContextStorage)
+    })
+    .inSingletonScope()
 
   // Use case bindings with logging and audit integration
   container
@@ -283,12 +291,6 @@ export function createContainer(config: SDKConfig): Container {
       return new GetAuditLogs.UseCase(auditReader as any)
     })
     .onActivation(createUseCaseActivationHandler(container))
-
-  // Initialize LoggingContextService with container-bound AsyncContextStorage
-  const asyncContextStorage = container.get<AsyncContextStorage<LoggingContext>>(
-    TYPES.AsyncContextStorage
-  )
-  LoggingContextService.initialize(asyncContextStorage)
 
   return container
 }

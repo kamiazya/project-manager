@@ -4,7 +4,7 @@ import type {
   StorageConfigService,
   TicketRepository,
 } from '@project-manager/application'
-import { LoggingContextServiceImpl } from '@project-manager/application'
+// LoggingContextService is now managed through dependency injection
 import {
   CrossPlatformStorageConfigService,
   InMemoryTicketRepository,
@@ -106,6 +106,14 @@ vi.mock('@project-manager/infrastructure', () => ({
       generateTicketId: vi.fn(() => Promise.resolve('a1b2c3d4')),
     }
   }),
+  AsyncLocalStorageContextService: {
+    initialize: vi.fn().mockReturnValue({
+      constructor: { name: 'AsyncLocalStorageContextService' },
+      run: vi.fn(),
+      getContext: vi.fn(),
+      getContextForLogging: vi.fn(() => ({})),
+    }),
+  },
 }))
 
 // Mock application layer use cases
@@ -173,11 +181,6 @@ vi.mock('@project-manager/application', () => ({
     getCurrentContext: vi.fn(() => ({})),
     withContext: vi.fn((_context, fn) => fn()),
   },
-  LoggingContextServiceImpl: {
-    initialize: vi.fn(),
-    getInstance: vi.fn(),
-    reset: vi.fn(),
-  },
   ApplicationLogger: vi.fn().mockImplementation(function MockApplicationLogger() {
     return {
       constructor: { name: 'ApplicationLogger' },
@@ -198,7 +201,7 @@ vi.mock('@project-manager/application', () => ({
 describe('createContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    LoggingContextServiceImpl.reset()
+    // Note: LoggingContextService is now managed through the DI container
   })
 
   describe('container creation', () => {

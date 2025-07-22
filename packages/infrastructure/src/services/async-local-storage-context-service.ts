@@ -1,74 +1,23 @@
 /**
- * Logging Context Service
+ * AsyncLocalStorage-based Context Service Implementation
  *
- * Manages logging context using AsyncLocalStorage for automatic context propagation
- * throughout the application execution flow.
+ * Provides logging context management using Node.js AsyncLocalStorage.
+ * This implementation maintains context across asynchronous operations.
  */
 
-import { ConfigurationError } from '../common/errors/application-errors.ts'
-import type { AsyncContextStorage } from '../services/async-context-storage.interface.ts'
-
-/**
- * Logging context interface containing all contextual information
- * that should be automatically included in logs and audit records.
- */
-export interface LoggingContext {
-  /** Unique trace identifier for request tracking */
-  traceId: string
-
-  /** Session identifier */
-  sessionId?: string
-
-  /** Source of the operation (cli, mcp, api, etc.) */
-  source: 'cli' | 'mcp' | 'api' | 'scheduler' | 'test'
-
-  /** Current operation being performed */
-  operation?: string
-
-  /** Actor performing the operation */
-  actor: {
-    type: 'human' | 'ai' | 'system'
-    id: string
-    name: string
-    coAuthor?: string // For AI operations with human instruction
-  }
-
-  /** Additional context metadata */
-  metadata?: Record<string, any>
-
-  /** Environment context */
-  environment?: 'development' | 'production' | 'test'
-
-  /** Correlation ID for related operations */
-  correlationId?: string
-
-  /** Parent context for nested operations */
-  parentContext?: string
-}
-
-/**
- * Service interface for managing logging context.
- * Provides automatic context propagation across asynchronous operations.
- */
-export interface LoggingContextService {
-  run<T>(context: LoggingContext, fn: () => Promise<T>): Promise<T>
-  runSync<T>(context: LoggingContext, fn: () => T): T
-  getContext(): LoggingContext | undefined
-  updateContext(updates: Partial<LoggingContext>): Promise<void>
-  createUpdatedContext(updates: Partial<LoggingContext>): LoggingContext
-  createChildContext(childContext: Partial<LoggingContext>): LoggingContext
-  hasContext(): boolean
-  getContextForLogging(includeMetadata?: boolean): Record<string, any>
-  runWithUpdatedContext<T>(updates: Partial<LoggingContext>, fn: () => Promise<T>): Promise<T>
-  runWithUpdatedContextSync<T>(updates: Partial<LoggingContext>, fn: () => T): T
-}
+import type {
+  AsyncContextStorage,
+  LoggingContext,
+  LoggingContextService,
+} from '@project-manager/application'
+import { ConfigurationError } from '@project-manager/application'
 
 /**
  * Singleton service for managing logging context using AsyncLocalStorage.
  * Provides automatic context propagation across asynchronous operations.
  */
-export class LoggingContextServiceImpl implements LoggingContextService {
-  private static instance: LoggingContextServiceImpl | null = null
+export class AsyncLocalStorageContextService implements LoggingContextService {
+  private static instance: AsyncLocalStorageContextService | null = null
   private asyncLocalStorage: AsyncContextStorage<LoggingContext>
 
   private constructor(storage: AsyncContextStorage<LoggingContext>) {
@@ -79,36 +28,36 @@ export class LoggingContextServiceImpl implements LoggingContextService {
    * Get the singleton instance of LoggingContextService.
    * Throws if not initialized.
    */
-  static getInstance(): LoggingContextServiceImpl {
-    if (!LoggingContextServiceImpl.instance) {
+  static getInstance(): AsyncLocalStorageContextService {
+    if (!AsyncLocalStorageContextService.instance) {
       throw new ConfigurationError(
         'initialization',
-        'LoggingContextService not initialized. Call initialize() with an AsyncContextStorage implementation first.'
+        'AsyncLocalStorageContextService not initialized. Call initialize() with an AsyncContextStorage implementation first.'
       )
     }
-    return LoggingContextServiceImpl.instance
+    return AsyncLocalStorageContextService.instance
   }
 
   /**
    * Initialize the singleton service with an AsyncContextStorage implementation.
    * This must be called during application startup.
    */
-  static initialize(storage: AsyncContextStorage<LoggingContext>): LoggingContextServiceImpl {
-    if (LoggingContextServiceImpl.instance) {
+  static initialize(storage: AsyncContextStorage<LoggingContext>): AsyncLocalStorageContextService {
+    if (AsyncLocalStorageContextService.instance) {
       throw new ConfigurationError(
         'initialization',
-        'LoggingContextService already initialized. Use getInstance() to access the service.'
+        'AsyncLocalStorageContextService already initialized. Use getInstance() to access the service.'
       )
     }
-    LoggingContextServiceImpl.instance = new LoggingContextServiceImpl(storage)
-    return LoggingContextServiceImpl.instance
+    AsyncLocalStorageContextService.instance = new AsyncLocalStorageContextService(storage)
+    return AsyncLocalStorageContextService.instance
   }
 
   /**
    * Reset the singleton instance (mainly for testing).
    */
   static reset(): void {
-    LoggingContextServiceImpl.instance = null
+    AsyncLocalStorageContextService.instance = null
   }
 
   /**
@@ -209,7 +158,7 @@ export class LoggingContextServiceImpl implements LoggingContextService {
       ...parent,
       ...childContext,
       parentContext: parent.traceId,
-      traceId: childContext.traceId || LoggingContextServiceImpl.generateTraceId(),
+      traceId: childContext.traceId || AsyncLocalStorageContextService.generateTraceId(),
       metadata: {
         ...parent.metadata,
         ...childContext.metadata,
@@ -245,7 +194,7 @@ export class LoggingContextServiceImpl implements LoggingContextService {
       operation: context.operation,
       actor: {
         type: context.actor.type,
-        id: LoggingContextServiceImpl.sanitizeActorId(context.actor.id),
+        id: AsyncLocalStorageContextService.sanitizeActorId(context.actor.id),
         name: context.actor.name,
       },
     }
@@ -263,11 +212,13 @@ export class LoggingContextServiceImpl implements LoggingContextService {
     }
 
     if (context.actor.coAuthor) {
-      logContext.actor.coAuthor = LoggingContextServiceImpl.sanitizeActorId(context.actor.coAuthor)
+      logContext.actor.coAuthor = AsyncLocalStorageContextService.sanitizeActorId(
+        context.actor.coAuthor
+      )
     }
 
     if (includeMetadata && context.metadata) {
-      logContext.metadata = LoggingContextServiceImpl.sanitizeMetadata(context.metadata)
+      logContext.metadata = AsyncLocalStorageContextService.sanitizeMetadata(context.metadata)
     }
 
     return logContext
@@ -304,7 +255,7 @@ export class LoggingContextServiceImpl implements LoggingContextService {
    */
   static createCliContext(operation: string, actor: { id: string; name: string }): LoggingContext {
     return {
-      traceId: LoggingContextService.generateTraceId(),
+      traceId: AsyncLocalStorageContextService.generateTraceId(),
       source: 'cli',
       operation,
       actor: {
@@ -330,7 +281,7 @@ export class LoggingContextServiceImpl implements LoggingContextService {
     coAuthor?: string
   ): LoggingContext {
     return {
-      traceId: LoggingContextService.generateTraceId(),
+      traceId: AsyncLocalStorageContextService.generateTraceId(),
       source: 'mcp',
       operation,
       actor: {
@@ -352,7 +303,7 @@ export class LoggingContextServiceImpl implements LoggingContextService {
    */
   static createSystemContext(operation: string, systemId: string): LoggingContext {
     return {
-      traceId: LoggingContextService.generateTraceId(),
+      traceId: AsyncLocalStorageContextService.generateTraceId(),
       source: 'scheduler',
       operation,
       actor: {
@@ -410,7 +361,7 @@ export class LoggingContextServiceImpl implements LoggingContextService {
    * @example
    * ```typescript
    * // Instead of updateContext (which throws), use runWithUpdatedContext
-   * await LoggingContextService.runWithUpdatedContext(
+   * await loggingContextService.runWithUpdatedContext(
    *   { operation: 'nested-operation' },
    *   async () => {
    *     // This code runs with updated context
@@ -441,29 +392,6 @@ export class LoggingContextServiceImpl implements LoggingContextService {
 }
 
 /**
- * Type guard to check if an object is a valid LoggingContext.
- *
- * @param obj - Object to check
- * @returns True if object is a valid LoggingContext
+ * Default export for the implementation
  */
-export function isLoggingContext(obj: any): obj is LoggingContext {
-  return (
-    obj &&
-    typeof obj.traceId === 'string' &&
-    typeof obj.source === 'string' &&
-    obj.actor &&
-    typeof obj.actor.type === 'string' &&
-    typeof obj.actor.id === 'string' &&
-    typeof obj.actor.name === 'string'
-  )
-}
-
-/**
- * Convenience export using the interface name for external consumers
- */
-export const LoggingContextService = LoggingContextServiceImpl
-
-/**
- * Default export for the service
- */
-export default LoggingContextServiceImpl
+export default AsyncLocalStorageContextService
