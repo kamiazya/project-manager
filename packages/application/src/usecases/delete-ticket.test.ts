@@ -290,12 +290,12 @@ describe('DeleteTicket', () => {
     it('should propagate TicketNotFoundError directly from repository', async () => {
       const request: DeleteTicket.Request = { id: validTicketId }
 
-      // リポジトリから適切な TicketNotFoundError を投げる
+      // Repository should throw the appropriate TicketNotFoundError
       const repositoryError = new TicketNotFoundError(validTicketId, 'JsonTicketRepository')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(repositoryError)
 
       await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(TicketNotFoundError)
-      // エラーメッセージとプロパティを検証
+      // Verify error message and properties
       try {
         await deleteTicketUseCase.execute(request)
       } catch (error) {
@@ -309,7 +309,7 @@ describe('DeleteTicket', () => {
   describe('Business Logic Edge Cases', () => {
     it('should throw TicketNotFoundError for non-existent ticket', async () => {
       const request: DeleteTicket.Request = { id: validTicketId }
-      // リポジトリが適切な TicketNotFoundError を投げるようにモック
+      // Mock repository to throw appropriate TicketNotFoundError
       const notFoundError = new TicketNotFoundError(validTicketId, 'JsonTicketRepository')
       vi.mocked(mockTicketRepository.delete).mockRejectedValue(notFoundError)
 
