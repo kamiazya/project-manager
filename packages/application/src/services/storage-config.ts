@@ -23,4 +23,10 @@ export interface StorageConfigService {
    * Get storage path from custom path or default configuration
    */
   resolveStoragePath(customPath?: string): string
+
+  /**
+   * Get the logs directory path according to XDG Base Directory specification
+   * @param mode Optional SDK mode to override auto-detection
+   */
+  getLogsPath(mode?: string): string
 }

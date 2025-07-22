@@ -17,7 +17,18 @@ describe('DeleteTicket', () => {
       queryTickets: vi.fn(),
       delete: vi.fn().mockResolvedValue(undefined),
     }
+
+    const mockLogger = {
+      debug: vi.fn().mockResolvedValue(undefined),
+      info: vi.fn().mockResolvedValue(undefined),
+      warn: vi.fn().mockResolvedValue(undefined),
+      error: vi.fn().mockResolvedValue(undefined),
+      child: vi.fn().mockReturnThis(),
+      flush: vi.fn().mockResolvedValue(undefined),
+    }
+
     deleteTicketUseCase = new DeleteTicket.UseCase(mockTicketRepository)
+    deleteTicketUseCase.logger = mockLogger as any
   })
 
   describe('Request DTO', () => {
@@ -71,40 +82,28 @@ describe('DeleteTicket', () => {
 
   describe('Input Validation Edge Cases', () => {
     describe('ID Format Validation', () => {
-      it('should generate new ID for empty ID', async () => {
+      it('should throw error for empty ID', async () => {
         const request: DeleteTicket.Request = { id: '' }
 
-        await deleteTicketUseCase.execute(request)
-
-        expect(mockTicketRepository.delete).toHaveBeenCalled()
-
-        // Check that a valid TicketId was generated and passed to repository
-        const passedTicketId = vi.mocked(mockTicketRepository.delete).mock.calls[0]![0]
-        expect(passedTicketId.value).toMatch(/^[0-9a-f]{8}$/)
+        await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
+          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+        )
       })
 
-      it('should generate new ID for null ID', async () => {
+      it('should throw error for null ID', async () => {
         const request: DeleteTicket.Request = { id: null as any }
 
-        await deleteTicketUseCase.execute(request)
-
-        expect(mockTicketRepository.delete).toHaveBeenCalled()
-
-        // Check that a valid TicketId was generated and passed to repository
-        const passedTicketId = vi.mocked(mockTicketRepository.delete).mock.calls[0]![0]
-        expect(passedTicketId.value).toMatch(/^[0-9a-f]{8}$/)
+        await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
+          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+        )
       })
 
-      it('should generate new ID for undefined ID', async () => {
+      it('should throw error for undefined ID', async () => {
         const request: DeleteTicket.Request = { id: undefined as any }
 
-        await deleteTicketUseCase.execute(request)
-
-        expect(mockTicketRepository.delete).toHaveBeenCalled()
-
-        // Check that a valid TicketId was generated and passed to repository
-        const passedTicketId = vi.mocked(mockTicketRepository.delete).mock.calls[0]![0]
-        expect(passedTicketId.value).toMatch(/^[0-9a-f]{8}$/)
+        await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
+          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+        )
       })
 
       it('should throw error for ID with wrong length (too short)', async () => {

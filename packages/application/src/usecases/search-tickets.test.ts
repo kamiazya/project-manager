@@ -14,7 +14,18 @@ describe('SearchTicketsUseCase', () => {
       queryTickets: vi.fn(),
       delete: vi.fn(),
     }
+
+    const mockLogger = {
+      debug: vi.fn().mockResolvedValue(undefined),
+      info: vi.fn().mockResolvedValue(undefined),
+      warn: vi.fn().mockResolvedValue(undefined),
+      error: vi.fn().mockResolvedValue(undefined),
+      child: vi.fn().mockReturnThis(),
+      flush: vi.fn().mockResolvedValue(undefined),
+    }
+
     useCase = new SearchTickets.UseCase(mockTicketRepository)
+    useCase.logger = mockLogger as any
   })
 
   describe('Request DTO', () => {

@@ -136,3 +136,39 @@ export class PersistenceError extends InfrastructureError {
     this.persistenceOperation = operation
   }
 }
+
+/**
+ * Application layer error for configuration failures.
+ * Used when configuration is missing, invalid, or not properly initialized.
+ */
+export class ConfigurationError extends ApplicationError {
+  public readonly configurationKey?: string
+  public readonly operation: string
+
+  constructor(
+    operation: string,
+    message: string,
+    configurationKey?: string,
+    context?: Record<string, unknown>,
+    cause?: Error
+  ) {
+    super(`Configuration error during '${operation}': ${message}`, context, cause)
+    this.configurationKey = configurationKey
+    this.operation = operation
+  }
+}
+
+/**
+ * Application layer error for logging infrastructure failures.
+ * Used when logging setup, configuration, or operations fail.
+ */
+export class LoggingError extends InfrastructureError {
+  constructor(
+    operation: string,
+    message: string,
+    context?: Record<string, unknown>,
+    cause?: Error
+  ) {
+    super('Logging', operation, message, context, cause)
+  }
+}

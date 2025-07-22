@@ -20,7 +20,18 @@ describe('CreateTicket', () => {
       generateTicketId: vi.fn().mockResolvedValue('a1b2c3d4'),
       generateTicketIdSync: vi.fn().mockReturnValue('a1b2c3d4'),
     }
+
+    const mockLogger = {
+      debug: vi.fn().mockResolvedValue(undefined),
+      info: vi.fn().mockResolvedValue(undefined),
+      warn: vi.fn().mockResolvedValue(undefined),
+      error: vi.fn().mockResolvedValue(undefined),
+      child: vi.fn().mockReturnThis(),
+      flush: vi.fn().mockResolvedValue(undefined),
+    }
+
     createTicketUseCase = new CreateTicket.UseCase(mockTicketRepository, mockIdGenerator)
+    createTicketUseCase.logger = mockLogger as any
   })
 
   describe('Request DTO', () => {
@@ -81,6 +92,11 @@ describe('CreateTicket', () => {
     })
 
     it('should generate unique IDs for multiple tickets', async () => {
+      // Configure the mock to return different values for different calls
+      vi.mocked(mockIdGenerator.generateTicketId)
+        .mockResolvedValueOnce('a1b2c3d4')
+        .mockResolvedValueOnce('e5f6a7b8')
+
       const request1: CreateTicket.Request = {
         title: 'Ticket 1',
         priority: 'medium',

@@ -1,4 +1,4 @@
-import { Ticket } from '@project-manager/domain'
+import { Ticket, TicketId } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
@@ -16,14 +16,26 @@ describe('UpdateTicketContentUseCase', () => {
       queryTickets: vi.fn(),
       delete: vi.fn(),
     }
-    useCase = new UpdateTicketContent.UseCase(mockRepository)
 
-    testTicket = Ticket.create({
+    const mockLogger = {
+      debug: vi.fn().mockResolvedValue(undefined),
+      info: vi.fn().mockResolvedValue(undefined),
+      warn: vi.fn().mockResolvedValue(undefined),
+      error: vi.fn().mockResolvedValue(undefined),
+      child: vi.fn().mockReturnThis(),
+      flush: vi.fn().mockResolvedValue(undefined),
+    }
+
+    useCase = new UpdateTicketContent.UseCase(mockRepository)
+    useCase.logger = mockLogger as any
+
+    const testTicketId = TicketId.create('12345678')
+    testTicket = Ticket.create(testTicketId, {
       title: 'Original Title',
       description: 'Original Description',
       priority: 'medium',
-      status: 'pending',
       type: 'task',
+      status: 'pending',
     })
   })
 

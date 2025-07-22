@@ -1,4 +1,4 @@
-import { Ticket } from '@project-manager/domain'
+import { Ticket, TicketId } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TicketNotFoundError } from '../common/errors/application-errors.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
@@ -12,12 +12,13 @@ describe('UpdateTicketStatus', () => {
 
   beforeEach(() => {
     validTicketId = '12345678'
-    existingTicket = Ticket.create({
+    const testTicketId = TicketId.create('12345678')
+    existingTicket = Ticket.create(testTicketId, {
       title: 'Test Ticket',
       description: 'Test Description',
       priority: 'medium',
-      status: 'pending',
       type: 'task',
+      status: 'pending',
     })
 
     mockTicketRepository = {
@@ -27,7 +28,17 @@ describe('UpdateTicketStatus', () => {
       delete: vi.fn(),
     }
 
+    const mockLogger = {
+      debug: vi.fn().mockResolvedValue(undefined),
+      info: vi.fn().mockResolvedValue(undefined),
+      warn: vi.fn().mockResolvedValue(undefined),
+      error: vi.fn().mockResolvedValue(undefined),
+      child: vi.fn().mockReturnThis(),
+      flush: vi.fn().mockResolvedValue(undefined),
+    }
+
     updateTicketStatusUseCase = new UpdateTicketStatus.UseCase(mockTicketRepository)
+    updateTicketStatusUseCase.logger = mockLogger as any
   })
 
   describe('Request DTO', () => {

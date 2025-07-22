@@ -2,6 +2,7 @@ import { TicketId } from '@project-manager/domain'
 import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.js'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
+import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
 export namespace UpdateTicketContent {
@@ -26,10 +27,46 @@ export namespace UpdateTicketContent {
    * This provides a focused approach for content updates, with other aspects like
    * status, priority, and type handled by dedicated use cases.
    */
-  export class UseCase implements IUseCase<Request, Response> {
+  export class UseCase implements AuditableUseCase<Request, Response> {
+    public logger!: ApplicationLogger // Injected by framework
+
+    public readonly auditMetadata: AuditMetadata = {
+      operationId: 'ticket.updateContent',
+      operationType: 'update',
+      resourceType: 'Ticket',
+      description: 'Updates ticket title and/or description',
+      useCaseName: 'UpdateTicketContent',
+
+      extractBeforeState: async (request: Request) => {
+        const ticketId = TicketId.create(request.id)
+        const ticket = await this.ticketRepository.findById(ticketId)
+        if (!ticket) {
+          return null
+        }
+        return {
+          ticketId: ticket.id.value,
+          title: ticket.title.value,
+          description: ticket.description?.value,
+        }
+      },
+
+      extractAfterState: async (request: Request, response: Response) => {
+        return {
+          ticketId: response.id,
+          title: response.title,
+          description: response.description,
+          updatedFields: Object.keys(request.updates),
+        }
+      },
+    }
+
     constructor(private readonly ticketRepository: TicketRepository) {}
 
     async execute(request: Request): Promise<Response> {
+      await this.logger.info('Starting ticket content update', {
+        ticketId: request.id,
+        fieldsToUpdate: Object.keys(request.updates),
+      })
       // Validate that at least one field is provided for update
       const hasUpdates =
         request.updates.title !== undefined || request.updates.description !== undefined
@@ -43,11 +80,25 @@ export namespace UpdateTicketContent {
 
       // Single fetch operation
       const ticketId = TicketId.create(request.id)
+
+      await this.logger.debug('Fetching ticket from repository', {
+        ticketId: ticketId.value,
+      })
+
       const ticket = await this.ticketRepository.findById(ticketId)
 
       if (!ticket) {
+        await this.logger.warn('Ticket not found for update', {
+          ticketId: request.id,
+        })
         throw new TicketNotFoundError(request.id, 'UpdateTicketContent')
       }
+
+      await this.logger.debug('Applying content updates', {
+        ticketId: ticketId.value,
+        hasTitle: request.updates.title !== undefined,
+        hasDescription: request.updates.description !== undefined,
+      })
 
       // Apply content updates using domain methods (includes validation)
       if (request.updates.title !== undefined) {
@@ -61,7 +112,14 @@ export namespace UpdateTicketContent {
       // Single save operation
       await this.ticketRepository.save(ticket)
 
-      return createTicketResponse(ticket)
+      const response = createTicketResponse(ticket)
+
+      await this.logger.info('Ticket content updated successfully', {
+        ticketId: response.id,
+        updatedFields: Object.keys(request.updates),
+      })
+
+      return response
     }
   }
 }

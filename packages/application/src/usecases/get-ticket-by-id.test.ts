@@ -14,7 +14,18 @@ describe('GetTicketByIdUseCase', () => {
       queryTickets: vi.fn(),
       delete: vi.fn(),
     }
+
+    const mockLogger = {
+      debug: vi.fn().mockResolvedValue(undefined),
+      info: vi.fn().mockResolvedValue(undefined),
+      warn: vi.fn().mockResolvedValue(undefined),
+      error: vi.fn().mockResolvedValue(undefined),
+      child: vi.fn().mockReturnThis(),
+      flush: vi.fn().mockResolvedValue(undefined),
+    }
+
     useCase = new GetTicketById.UseCase(mockTicketRepository)
+    useCase.logger = mockLogger as any
   })
 
   describe('execute', () => {
@@ -22,7 +33,8 @@ describe('GetTicketByIdUseCase', () => {
       // Arrange
       const ticketId = '12345678' // 8 hex characters
       const request: GetTicketById.Request = { id: ticketId }
-      const mockTicket = Ticket.create({
+      const mockTicketId = TicketId.create('12345678')
+      const mockTicket = Ticket.create(mockTicketId, {
         title: 'Test Ticket',
         description: 'Test Description',
         priority: 'medium',
