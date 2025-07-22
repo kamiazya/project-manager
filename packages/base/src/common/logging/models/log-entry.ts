@@ -213,27 +213,27 @@ export class LogEntryModel implements LogEntry {
    */
   private validate(): void {
     if (!this.id) {
-      throw new ValidationError('id', undefined, 'Log entry ID is required')
+      throw new ValidationError('Log entry ID is required', 'id', undefined)
     }
 
     if (!this.timestamp) {
-      throw new ValidationError('timestamp', undefined, 'Log entry timestamp is required')
+      throw new ValidationError('Log entry timestamp is required', 'timestamp', undefined)
     }
 
     if (!this.level) {
-      throw new ValidationError('level', undefined, 'Log entry level is required')
+      throw new ValidationError('Log entry level is required', 'level', undefined)
     }
 
     if (!['debug', 'info', 'warn', 'error', 'fatal'].includes(this.level)) {
-      throw new ValidationError('level', this.level, `Invalid log level: ${this.level}`)
+      throw new ValidationError(`Invalid log level: ${this.level}`, 'level', this.level)
     }
 
     if (this.message === null || this.message === undefined) {
-      throw new ValidationError('message', undefined, 'Log entry message is required')
+      throw new ValidationError('Log entry message is required', 'message', undefined)
     }
 
     if (typeof this.message !== 'string') {
-      throw new ValidationError('message', this.message, 'Log entry message must be a string')
+      throw new ValidationError('Log entry message must be a string', 'message', this.message)
     }
   }
 
@@ -273,16 +273,16 @@ export class LogEntryModel implements LogEntry {
     if (includeLevel) {
       const levelStr = this.level.toUpperCase()
       if (colorize) {
-        formatted += this.colorizeLevel(levelStr) + ': '
+        formatted += `${this.colorizeLevel(levelStr)}: `
       } else {
-        formatted += levelStr + ': '
+        formatted += `${levelStr}: `
       }
     }
 
     // Add message
     let message = this.message
     if (maxMessageLength && message.length > maxMessageLength) {
-      message = message.substring(0, maxMessageLength - 3) + '...'
+      message = `${message.substring(0, maxMessageLength - 3)}...`
     }
     formatted += message
 
@@ -550,7 +550,7 @@ export const LogEntryUtils = {
         timestamp: new Date(parsed.timestamp),
       })
     } catch (error) {
-      throw new ValidationError('json', json, `Failed to parse log entry from JSON: ${error}`)
+      throw new ValidationError(`Failed to parse log entry from JSON: ${error}`, 'json', json)
     }
   },
 

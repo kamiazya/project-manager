@@ -46,6 +46,7 @@ export type {
 // Types
 export type { LogLevel } from './types/log-level.ts'
 export type {
+  ArchitectureLayer,
   LogContext,
   LogMetadata,
 } from './types/log-metadata.ts'

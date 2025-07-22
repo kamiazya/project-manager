@@ -1,4 +1,5 @@
 import { PersistenceError } from '@project-manager/application'
+import type { Logger } from '@project-manager/base/common/logging'
 import { Ticket } from '@project-manager/domain'
 import type { TicketJSON } from '../../types/persistence-types.ts'
 
@@ -111,10 +112,11 @@ export function toDomain(json: TicketJSON): Ticket {
  * Invalid tickets are logged but don't prevent processing of valid ones.
  *
  * @param jsonList - Array of raw persistence data
+ * @param logger - Optional logger for warnings and errors
  * @returns Array of valid domain Ticket objects (excluding invalid ones)
  * @throws {InfrastructureError} When all tickets fail validation or unexpected errors occur
  */
-export function toDomainList(jsonList: TicketJSON[]): Ticket[] {
+export function toDomainList(jsonList: TicketJSON[], logger?: Logger): Ticket[] {
   const validTickets: Ticket[] = []
   const errors: Array<{ ticketId: string; error: Error }> = []
 
@@ -131,10 +133,12 @@ export function toDomainList(jsonList: TicketJSON[]): Ticket[] {
       errors.push({ ticketId, error: errorInstance })
 
       // Log for monitoring/debugging
-      console.warn(`Skipping invalid ticket during bulk reconstitution: ${ticketId}`, {
-        error: errorInstance.message,
-        ticketId,
-      })
+      if (logger) {
+        logger.warn(`Skipping invalid ticket during bulk reconstitution: ${ticketId}`, {
+          error: errorInstance.message,
+          ticketId,
+        })
+      }
     }
   }
 
@@ -154,8 +158,8 @@ export function toDomainList(jsonList: TicketJSON[]): Ticket[] {
   }
 
   // Log summary if there were partial failures
-  if (errors.length > 0) {
-    console.warn(
+  if (errors.length > 0 && logger) {
+    logger.warn(
       `Partial failure during bulk ticket reconstitution: ${errors.length}/${jsonList.length} tickets failed`,
       {
         successCount: validTickets.length,

@@ -4,6 +4,7 @@ import { dirname } from 'node:path'
 import type { TicketQueryCriteria, TicketRepository } from '@project-manager/application'
 import { PersistenceError, TicketNotFoundError } from '@project-manager/application'
 import { ConfigurationError } from '@project-manager/base'
+import type { Logger } from '@project-manager/base/common/logging'
 import { Ticket, type TicketId } from '@project-manager/domain'
 import type { TicketJSON } from '../types/persistence-types.ts'
 import * as TicketMapper from './mappers/ticket-mapper.ts'
@@ -72,13 +73,15 @@ class AsyncMutex {
  */
 export class JsonTicketRepository implements TicketRepository {
   private readonly filePath: string
+  private readonly logger: Logger
   private readonly fileMutex = new AsyncMutex()
 
-  constructor(filePath: string) {
+  constructor(filePath: string, logger: Logger) {
     if (!filePath.trim()) {
       throw new ConfigurationError('filePath', 'file path is required for JsonTicketRepository')
     }
     this.filePath = filePath.trim()
+    this.logger = logger
   }
 
   async save(ticket: Ticket): Promise<void> {
@@ -165,7 +168,7 @@ export class JsonTicketRepository implements TicketRepository {
     filteredTickets = filteredTickets.slice(startIndex, endIndex)
 
     // Convert filtered persistence objects to domain objects
-    return TicketMapper.toDomainList(filteredTickets)
+    return TicketMapper.toDomainList(filteredTickets, this.logger)
   }
 
   async delete(id: TicketId): Promise<void> {
@@ -202,7 +205,9 @@ export class JsonTicketRepository implements TicketRepository {
 
       const data = JSON.parse(content)
       if (!Array.isArray(data)) {
-        console.warn('Invalid data format in tickets file, expected array')
+        this.logger.warn('Invalid data format in tickets file, expected array', {
+          filePath: this.filePath,
+        })
         return []
       }
 

@@ -269,9 +269,9 @@ export class AuditEventModel implements BaseAuditEvent {
     const errors = AuditEventUtils.validate(this.toObject() as AuditEvent)
     if (errors.length > 0) {
       throw new ValidationError(
+        `Audit event validation failed: ${errors.join(', ')}`,
         'audit-event',
-        'validation',
-        `Audit event validation failed: ${errors.join(', ')}`
+        'validation'
       )
     }
   }
@@ -431,14 +431,14 @@ export class CreateAuditEventModel extends AuditEventModel implements CreateAudi
 
     if (params.operation !== 'create') {
       throw new ValidationError(
+        'CreateAuditEventModel requires operation to be "create"',
         'operation',
-        params.operation,
-        'CreateAuditEventModel requires operation to be "create"'
+        params.operation
       )
     }
 
     if (!params.after) {
-      throw new ValidationError('after', undefined, 'CreateAuditEventModel requires after state')
+      throw new ValidationError('CreateAuditEventModel requires after state', 'after', undefined)
     }
 
     this.after = params.after
@@ -468,17 +468,17 @@ export class ReadAuditEventModel extends AuditEventModel implements ReadAuditEve
 
     if (params.operation !== 'read') {
       throw new ValidationError(
+        'ReadAuditEventModel requires operation to be "read"',
         'operation',
-        params.operation,
-        'ReadAuditEventModel requires operation to be "read"'
+        params.operation
       )
     }
 
     if (!params.before || !params.after) {
       throw new ValidationError(
+        'ReadAuditEventModel requires both before and after states',
         'before/after',
-        undefined,
-        'ReadAuditEventModel requires both before and after states'
+        undefined
       )
     }
 
@@ -513,17 +513,17 @@ export class UpdateAuditEventModel extends AuditEventModel implements UpdateAudi
 
     if (params.operation !== 'update') {
       throw new ValidationError(
+        'UpdateAuditEventModel requires operation to be "update"',
         'operation',
-        params.operation,
-        'UpdateAuditEventModel requires operation to be "update"'
+        params.operation
       )
     }
 
     if (!params.before || !params.after) {
       throw new ValidationError(
+        'UpdateAuditEventModel requires both before and after states',
         'before/after',
-        undefined,
-        'UpdateAuditEventModel requires both before and after states'
+        undefined
       )
     }
 
@@ -559,14 +559,14 @@ export class DeleteAuditEventModel extends AuditEventModel implements DeleteAudi
 
     if (params.operation !== 'delete') {
       throw new ValidationError(
+        'DeleteAuditEventModel requires operation to be "delete"',
         'operation',
-        params.operation,
-        'DeleteAuditEventModel requires operation to be "delete"'
+        params.operation
       )
     }
 
     if (!params.before) {
-      throw new ValidationError('before', undefined, 'DeleteAuditEventModel requires before state')
+      throw new ValidationError('DeleteAuditEventModel requires before state', 'before', undefined)
     }
 
     this.before = params.before
@@ -744,7 +744,7 @@ export const AuditEventUtils = {
         timestamp: parsed.timestamp, // Keep as ISO string
       })
     } catch (error) {
-      throw new ValidationError('json', json, `Failed to parse audit event from JSON: ${error}`)
+      throw new ValidationError(`Failed to parse audit event from JSON: ${error}`, 'json', json)
     }
   },
 

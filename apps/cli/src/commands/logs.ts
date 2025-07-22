@@ -95,7 +95,7 @@ export class LogsCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, LogsResp
 
   private displayLogs(result: LogsResponse): void {
     // Display summary
-    this.log(chalk.cyan('\\n📋 Log Summary'))
+    this.log(chalk.cyan('\n📋 Log Summary'))
     this.log(chalk.gray('─'.repeat(50)))
     this.log(`${chalk.white('Total logs:')} ${chalk.yellow(result.totalCount)}`)
     this.log(`${chalk.white('Displayed:')} ${chalk.yellow(result.logs.length)}`)
@@ -104,12 +104,12 @@ export class LogsCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, LogsResp
     }
 
     if (result.logs.length === 0) {
-      this.log(chalk.gray('\\nNo logs found matching the criteria.'))
+      this.log(chalk.gray('\nNo logs found matching the criteria.'))
       return
     }
 
     // Display logs
-    this.log(chalk.cyan('\\n📝 Logs'))
+    this.log(chalk.cyan('\n📝 Logs'))
     this.log(chalk.gray('─'.repeat(50)))
 
     result.logs.forEach(log => {

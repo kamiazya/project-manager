@@ -17,6 +17,7 @@ import type {
   DeleteAuditEvent,
   DeleteOperationEvent,
   LogConfig,
+  Logger,
   OperationAuditEvent,
   ReadAuditEvent,
   TimePeriod,
@@ -116,6 +117,7 @@ interface AuditOperationStats {
  */
 export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger {
   private config: FileAuditLoggerConfig
+  private logger: Logger
   private writeStream?: WriteStream
   private stats: AuditOperationStats
   private isInitialized = false
@@ -123,9 +125,10 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   private writeQueue: string[] = []
   private isShuttingDown = false
 
-  constructor(config: FileAuditLoggerConfig) {
+  constructor(config: FileAuditLoggerConfig, logger: Logger) {
     super()
     this.config = config
+    this.logger = logger
     this.stats = {
       totalEvents: 0,
       eventsByType: {},
@@ -611,7 +614,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
       await unlink(filePath)
     } catch (error) {
       // Keep original file if compression fails
-      console.warn(`Failed to compress ${filePath}:`, error)
+      this.logger.warn(`Failed to compress ${filePath}:`, { error, filePath })
     }
   }
 
@@ -639,11 +642,14 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
         try {
           await unlink(file.path)
         } catch (error) {
-          console.warn(`Failed to delete old audit file ${file.path}:`, error)
+          this.logger.warn(`Failed to delete old audit file ${file.path}:`, {
+            error,
+            filePath: file.path,
+          })
         }
       }
     } catch (error) {
-      console.warn('Failed to clean up old audit files:', error)
+      this.logger.warn('Failed to clean up old audit files:', { error })
     }
   }
 
@@ -861,8 +867,8 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
 /**
  * Factory function to create FileAuditLogger instances.
  */
-export function createFileAuditLogger(config: FileAuditLoggerConfig): AuditLogger {
-  return new FileAuditLoggerAdapter(config)
+export function createFileAuditLogger(config: FileAuditLoggerConfig, logger: Logger): AuditLogger {
+  return new FileAuditLoggerAdapter(config, logger)
 }
 
 /**

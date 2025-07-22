@@ -122,7 +122,7 @@ export class AuditCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, AuditLo
 
   private displayAuditLogs(result: AuditLogsResponse, showSummary?: boolean): void {
     // Display summary
-    this.log(chalk.cyan('\\n🔍 Audit Log Summary'))
+    this.log(chalk.cyan('\n🔍 Audit Log Summary'))
     this.log(chalk.gray('─'.repeat(50)))
     this.log(`${chalk.white('Total audit logs:')} ${chalk.yellow(result.totalCount)}`)
     this.log(`${chalk.white('Displayed:')} ${chalk.yellow(result.auditLogs.length)}`)
@@ -140,12 +140,12 @@ export class AuditCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, AuditLo
     }
 
     if (result.auditLogs.length === 0) {
-      this.log(chalk.gray('\\nNo audit logs found matching the criteria.'))
+      this.log(chalk.gray('\nNo audit logs found matching the criteria.'))
       return
     }
 
     // Display audit logs
-    this.log(chalk.cyan('\\n📋 Audit Logs'))
+    this.log(chalk.cyan('\n📋 Audit Logs'))
     this.log(chalk.gray('─'.repeat(50)))
 
     result.auditLogs.forEach(log => {

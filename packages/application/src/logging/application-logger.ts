@@ -10,6 +10,7 @@ import { Logging } from '@project-manager/base'
 type LogMetadata = Logging.LogMetadata
 type Logger = Logging.Logger
 type LogContext = Logging.LogContext
+type ArchitectureLayer = Logging.ArchitectureLayer
 
 import { LoggingContextService } from './context-service.ts'
 
@@ -261,9 +262,9 @@ export const ApplicationLoggerUtils = {
    * @param layer - Application layer name
    * @returns Layer-specific logger
    */
-  forLayer(baseLogger: Logger, layer: string): ApplicationLogger {
+  forLayer(baseLogger: Logger, layer: ArchitectureLayer): ApplicationLogger {
     const appLogger = createApplicationLogger(baseLogger)
-    return appLogger.child({ layer: layer as any })
+    return appLogger.child({ layer })
   },
 
   /**

@@ -231,7 +231,17 @@ export const TraceContextUtils = {
   generateTraceId(): string {
     // Generate 16 bytes (128 bits) as hex string
     const bytes = new Uint8Array(16)
-    crypto.getRandomValues(bytes)
+
+    // Check for crypto availability with fallback
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      crypto.getRandomValues(bytes)
+    } else {
+      // Fallback for environments without crypto.getRandomValues
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = Math.floor(Math.random() * 256)
+      }
+    }
+
     return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
   },
 
@@ -241,7 +251,17 @@ export const TraceContextUtils = {
   generateSpanId(): string {
     // Generate 8 bytes (64 bits) as hex string
     const bytes = new Uint8Array(8)
-    crypto.getRandomValues(bytes)
+
+    // Check for crypto availability with fallback
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      crypto.getRandomValues(bytes)
+    } else {
+      // Fallback for environments without crypto.getRandomValues
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = Math.floor(Math.random() * 256)
+      }
+    }
+
     return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
   },
 
@@ -297,7 +317,7 @@ export const TraceContextUtils = {
   /**
    * Create a child trace context.
    */
-  createChildContext(parent: TraceContext, newOperation?: string): TraceContext {
+  createChildContext(parent: TraceContext): TraceContext {
     return {
       traceId: parent.traceId,
       spanId: this.generateSpanId(),

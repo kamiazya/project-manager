@@ -126,10 +126,9 @@ AI assistants working on this project MUST use the project-manager system itself
    - Complete tickets promptly when work is finished
 
 4. **Planning and Coordination**
-   - Use `pnpm pm quick todo` to check work queue before starting
-   - Use `pnpm pm quick wip` to track current active work
-   - Create dependent tickets for complex multi-step tasks
-   - Use epics for large initiatives requiring multiple tickets
+   - Use tickets to plan features, document approaches, and validate designs
+   - Create epics for larger features or multi-step tasks
+   - Use TODOs for quick notes or simple tasks that don't require full tickets
 
 **AI Dogfooding Examples**:
 

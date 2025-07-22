@@ -100,16 +100,7 @@ git clone https://github.com/kamiazya/project-manager.git
 pnpm install
 
 # Create a new ticket
-pnpm pm new "Fix login bug" -d "Users cannot login with email" -p h
-
-# List tickets
-pnpm pm todo
-
-# Start working on a ticket
-pnpm pm start <ticket-id>
-
-# Complete a ticket
-pnpm pm done <ticket-id>
+pnpm pm create "Fix login bug" -d "Users cannot login with email" -p h
 ```
 
 ### SDK Usage (TypeScript)

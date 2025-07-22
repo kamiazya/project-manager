@@ -13,7 +13,7 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Update a ticket's priority
  */
-export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void> {
   static override description = 'Update ticket priority'
 
   static override args = {
@@ -32,7 +32,7 @@ export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags
     'pm update priority ticket-456 low',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any | undefined> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
     // Validate required arguments
     if (!args.ticketId) {
       this.error('Ticket ID is required')
@@ -46,12 +46,13 @@ export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags
 
     // Handle JSON output
     if (flags.json) {
-      return updatedTicket
+      this.logJson(updatedTicket)
+      return
     }
 
     // Display success message
     this.log(`Ticket ${args.ticketId} priority updated to: ${args.priority}`)
 
-    return undefined
+    return
   }
 }

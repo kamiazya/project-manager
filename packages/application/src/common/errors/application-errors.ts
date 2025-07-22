@@ -122,7 +122,6 @@ export abstract class InfrastructureError extends ApplicationError {
  */
 export class PersistenceError extends InfrastructureError {
   public readonly entityType?: string
-  public readonly persistenceOperation: string
 
   constructor(
     operation: string,
@@ -133,7 +132,6 @@ export class PersistenceError extends InfrastructureError {
   ) {
     super('Persistence', operation, message, context, cause)
     this.entityType = entityType
-    this.persistenceOperation = operation
   }
 }
 

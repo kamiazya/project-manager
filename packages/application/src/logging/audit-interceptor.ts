@@ -6,7 +6,8 @@
  * generates comprehensive audit records for compliance and traceability.
  */
 
-import type { AuditLogger } from '@project-manager/base/common/logging'
+import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
+import type { IdGenerator } from '../services/id-generator.interface.ts'
 import type {
   AuditableUseCase,
   AuditMetadata,
@@ -90,7 +91,12 @@ export interface UseCaseAuditRecord {
  * Service responsible for intercepting UseCase executions and generating audit records.
  */
 export class AuditInterceptor {
-  constructor(private readonly auditLogger: AuditLogger) {}
+  constructor(
+    private readonly auditLogger: AuditLogger,
+    private readonly logger: Logger,
+    private readonly idGenerator: IdGenerator,
+    private readonly entityType: string = 'usecase-execution'
+  ) {}
 
   /**
    * Record a successful UseCase execution.
@@ -114,7 +120,10 @@ export class AuditInterceptor {
     if (!context) {
       // If no context is available, we can't generate a proper audit record
       // This might happen in test scenarios or misconfigured environments
-      console.warn('No logging context available for audit record generation')
+      this.logger.warn('No logging context available for audit record generation', {
+        useCase: useCase.constructor.name,
+        operation: useCase.getAuditMetadata().operation,
+      })
       return
     }
 
@@ -130,12 +139,16 @@ export class AuditInterceptor {
       beforeState
     )
 
+    // Generate unique ID using the configured ID generator
+    const uniqueId = await this.idGenerator.generateTicketId()
+    const recordId = `${auditRecord.operation}-${auditRecord.execution.startTime}-${uniqueId}`
+
     await this.auditLogger.recordCreate({
-      id: `${auditRecord.operation}-${auditRecord.execution.startTime}-${Math.random().toString(36).substr(2, 9)}`,
+      id: recordId,
       timestamp: new Date(),
       operation: 'create' as const,
       actor: context.actor,
-      entityType: 'usecase-execution',
+      entityType: this.entityType,
       entityId: `${auditRecord.operation}-${auditRecord.execution.startTime}`,
       source: context.source,
       traceId: context.traceId,
@@ -164,7 +177,11 @@ export class AuditInterceptor {
   ): Promise<void> {
     const context = LoggingContextService.getContext()
     if (!context) {
-      console.warn('No logging context available for audit record generation')
+      this.logger.warn('No logging context available for audit record generation', {
+        useCase: useCase.constructor.name,
+        operation: useCase.getAuditMetadata().operation,
+        error: error.message,
+      })
       return
     }
 
@@ -180,12 +197,16 @@ export class AuditInterceptor {
       beforeState
     )
 
+    // Generate unique ID using the configured ID generator
+    const uniqueId = await this.idGenerator.generateTicketId()
+    const recordId = `${auditRecord.operation}-${auditRecord.execution.startTime}-${uniqueId}`
+
     await this.auditLogger.recordCreate({
-      id: `${auditRecord.operation}-${auditRecord.execution.startTime}-${Math.random().toString(36).substr(2, 9)}`,
+      id: recordId,
       timestamp: new Date(),
       operation: 'create' as const,
       actor: context.actor,
-      entityType: 'usecase-execution',
+      entityType: this.entityType,
       entityId: `${auditRecord.operation}-${auditRecord.execution.startTime}`,
       source: context.source,
       traceId: context.traceId,
@@ -202,7 +223,7 @@ export class AuditInterceptor {
   async recordExecutionResult<TResponse>(result: UseCaseExecutionResult<TResponse>): Promise<void> {
     const context = LoggingContextService.getContext()
     if (!context) {
-      console.warn('No logging context available for audit record generation')
+      this.logger.warn('No logging context available for audit record generation')
       return
     }
 
@@ -261,7 +282,7 @@ export class AuditInterceptor {
       try {
         entityId = auditMetadata.extractEntityId(response)
       } catch (extractError) {
-        console.warn('Failed to extract entity ID:', extractError)
+        this.logger.warn('Failed to extract entity ID:', { error: extractError })
       }
     }
 
@@ -272,7 +293,7 @@ export class AuditInterceptor {
         try {
           afterState = auditMetadata.extractAfterState(request, response)
         } catch (extractError) {
-          console.warn('Failed to extract after state:', extractError)
+          this.logger.warn('Failed to extract after state:', { error: extractError })
           afterState = response
         }
       } else {
@@ -286,7 +307,7 @@ export class AuditInterceptor {
       try {
         additionalFields = auditMetadata.additionalAuditFields(request, response)
       } catch (extractError) {
-        console.warn('Failed to extract additional audit fields:', extractError)
+        this.logger.warn('Failed to extract additional audit fields:', { error: extractError })
       }
     }
 
@@ -403,10 +424,18 @@ export class AuditInterceptor {
  * Factory function to create AuditInterceptor instances.
  *
  * @param auditLogger - Audit logger implementation
+ * @param logger - Logger for warnings and errors
+ * @param idGenerator - ID generator for unique record IDs
+ * @param entityType - Optional entity type for audit records (defaults to 'usecase-execution')
  * @returns New AuditInterceptor instance
  */
-export function createAuditInterceptor(auditLogger: AuditLogger): AuditInterceptor {
-  return new AuditInterceptor(auditLogger)
+export function createAuditInterceptor(
+  auditLogger: AuditLogger,
+  logger: Logger,
+  idGenerator: IdGenerator,
+  entityType?: string
+): AuditInterceptor {
+  return new AuditInterceptor(auditLogger, logger, idGenerator, entityType)
 }
 
 /**

@@ -1,3 +1,4 @@
+import type { Logger } from '@project-manager/base/common/logging'
 import { readdir, readFile, stat } from 'fs/promises'
 import { join } from 'path'
 
@@ -45,7 +46,10 @@ interface AuditReader {
  * Reads audit log files from the filesystem and provides filtering capabilities
  */
 export class FileAuditReader implements AuditReader {
-  constructor(private readonly auditDirectory: string) {}
+  constructor(
+    private readonly auditDirectory: string,
+    private readonly logger: Logger
+  ) {}
 
   async readAuditLogs(filters: AuditFilters): Promise<RawAuditLogEntry[]> {
     const result = await this.getAuditLogs(filters, filters.limit || 1000, filters.offset || 0)
@@ -127,12 +131,15 @@ export class FileAuditReader implements AuditReader {
     } catch (error: any) {
       // Provide more helpful error message for missing directory
       if (error.code === 'ENOENT') {
-        console.warn(`Audit log directory does not exist: ${this.auditDirectory}`)
-        console.warn(
+        this.logger.warn(`Audit log directory does not exist: ${this.auditDirectory}`)
+        this.logger.warn(
           'No audit log files available yet. Run the application to generate audit logs.'
         )
       } else {
-        console.warn('Unable to read audit log directory:', error)
+        this.logger.warn('Unable to read audit log directory:', {
+          error,
+          auditDirectory: this.auditDirectory,
+        })
       }
       return []
     }
@@ -152,13 +159,16 @@ export class FileAuditReader implements AuditReader {
             auditLogs.push(auditEntry)
           }
         } catch (error) {
-          console.warn(`Failed to parse audit log line: ${line.substring(0, 100)}...`, error)
+          this.logger.warn(`Failed to parse audit log line: ${line.substring(0, 100)}...`, {
+            error,
+            line: line.substring(0, 100),
+          })
         }
       }
 
       return auditLogs
     } catch (error) {
-      console.warn(`Unable to read audit file ${filePath}:`, error)
+      this.logger.warn(`Unable to read audit file ${filePath}:`, { error, filePath })
       return []
     }
   }
@@ -192,7 +202,7 @@ export class FileAuditReader implements AuditReader {
         duration: data.duration,
       }
     } catch (error) {
-      console.warn('Failed to parse audit log entry:', error)
+      this.logger.warn('Failed to parse audit log entry:', { error, data })
       return null
     }
   }

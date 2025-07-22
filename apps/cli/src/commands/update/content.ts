@@ -14,7 +14,7 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Update a ticket's content (title and description)
  */
-export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void> {
   static override description = 'Update ticket content (title and description)'
 
   static override args = {
@@ -41,17 +41,7 @@ export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
     'pm update content ticket-789 -t "Bug fix" -d "Fixed the login issue"',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any | undefined> {
-    // Validate required ticket ID
-    if (!args.ticketId) {
-      this.error('Ticket ID is required')
-    }
-
-    // Ensure at least one update flag is provided
-    if (!flags.title && !flags.description) {
-      this.error('At least one of --title or --description must be provided')
-    }
-
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
     // Execute the update operation using SDK
     const updatedTicket = await this.sdk.tickets.updateContent({
       id: args.ticketId,
@@ -61,7 +51,8 @@ export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
 
     // Handle JSON output
     if (flags.json) {
-      return updatedTicket
+      this.logJson(updatedTicket)
+      return
     }
 
     // Display success message
@@ -70,7 +61,5 @@ export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
     if (flags.description) updates.push('description')
 
     this.log(`Ticket ${args.ticketId} ${updates.join(' and ')} updated successfully.`)
-
-    return undefined
   }
 }

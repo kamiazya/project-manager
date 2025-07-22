@@ -1,3 +1,4 @@
+import type { Logger } from '@project-manager/base/common/logging'
 import { readdir, readFile, stat } from 'fs/promises'
 import { join } from 'path'
 
@@ -43,7 +44,10 @@ interface RawLogEntry {
  * Reads log files from the filesystem and provides filtering capabilities
  */
 export class FileLogReader implements LogReader {
-  constructor(private readonly logDirectory: string) {}
+  constructor(
+    private readonly logDirectory: string,
+    private readonly logger: Logger
+  ) {}
 
   async readLogs(filters: LogFilters): Promise<RawLogEntry[]> {
     const result = await this.getLogs(filters, 1000, 0)
@@ -125,10 +129,13 @@ export class FileLogReader implements LogReader {
     } catch (error: any) {
       // Provide more helpful error message for missing directory
       if (error.code === 'ENOENT') {
-        console.warn(`Log directory does not exist: ${this.logDirectory}`)
-        console.warn('No log files available yet. Run the application to generate logs.')
+        this.logger.warn(`Log directory does not exist: ${this.logDirectory}`)
+        this.logger.warn('No log files available yet. Run the application to generate logs.')
       } else {
-        console.warn('Unable to read log directory:', error)
+        this.logger.warn('Unable to read log directory:', {
+          error,
+          logDirectory: this.logDirectory,
+        })
       }
       return []
     }
@@ -159,7 +166,7 @@ export class FileLogReader implements LogReader {
 
       return logs
     } catch (error) {
-      console.warn(`Unable to read log file ${filePath}:`, error)
+      this.logger.warn(`Unable to read log file ${filePath}:`, { error, filePath })
       return []
     }
   }

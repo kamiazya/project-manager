@@ -265,14 +265,15 @@ describe('TicketMapper', () => {
     })
 
     describe('error handling', () => {
-      let consoleWarnSpy: any
+      let mockLogger: any
 
       beforeEach(() => {
-        consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      })
-
-      afterEach(() => {
-        consoleWarnSpy.mockRestore()
+        mockLogger = {
+          debug: vi.fn(),
+          info: vi.fn(),
+          warn: vi.fn(),
+          error: vi.fn(),
+        }
       })
 
       it('should handle partial failures gracefully by skipping invalid tickets', () => {
@@ -288,7 +289,7 @@ describe('TicketMapper', () => {
         const jsonList = [validTicket, invalidTicket, anotherValidTicket]
 
         // Act
-        const result = toDomainList(jsonList)
+        const result = toDomainList(jsonList, mockLogger)
 
         // Assert
         expect(result).toHaveLength(2) // Should skip the invalid one
@@ -296,7 +297,7 @@ describe('TicketMapper', () => {
         expect(result[1]?.title.value).toBe('Valid Ticket 2')
 
         // Should log warning for invalid ticket
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect(mockLogger.warn).toHaveBeenCalledWith(
           expect.stringContaining('Skipping invalid ticket during bulk reconstitution'),
           expect.objectContaining({ ticketId: 'unknown' })
         )
@@ -309,8 +310,8 @@ describe('TicketMapper', () => {
         const jsonList = [invalidTicket1, invalidTicket2]
 
         // Act & Assert
-        expect(() => toDomainList(jsonList)).toThrow(InfrastructureError)
-        expect(() => toDomainList(jsonList)).toThrow(
+        expect(() => toDomainList(jsonList, mockLogger)).toThrow(InfrastructureError)
+        expect(() => toDomainList(jsonList, mockLogger)).toThrow(
           'All 2 tickets failed validation during reconstitution'
         )
       })
@@ -322,17 +323,17 @@ describe('TicketMapper', () => {
         const jsonList = [validTicket, invalidTicket]
 
         // Act
-        const result = toDomainList(jsonList)
+        const result = toDomainList(jsonList, mockLogger)
 
         // Assert
         expect(result).toHaveLength(1) // One valid ticket
 
         // Should log both individual failure and summary
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect(mockLogger.warn).toHaveBeenCalledWith(
           expect.stringContaining('Skipping invalid ticket during bulk reconstitution'),
           expect.any(Object)
         )
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect(mockLogger.warn).toHaveBeenCalledWith(
           expect.stringContaining(
             'Partial failure during bulk ticket reconstitution: 1/2 tickets failed'
           ),
@@ -346,11 +347,11 @@ describe('TicketMapper', () => {
 
       it('should handle empty list without errors', () => {
         // Act
-        const result = toDomainList([])
+        const result = toDomainList([], mockLogger)
 
         // Assert
         expect(result).toEqual([])
-        expect(consoleWarnSpy).not.toHaveBeenCalled()
+        expect(mockLogger.warn).not.toHaveBeenCalled()
       })
 
       it('should preserve ticket IDs in error context when available', () => {
@@ -363,10 +364,10 @@ describe('TicketMapper', () => {
         const jsonList = [invalidTicket]
 
         // Act & Assert
-        expect(() => toDomainList(jsonList)).toThrow(InfrastructureError)
+        expect(() => toDomainList(jsonList, mockLogger)).toThrow(InfrastructureError)
 
         // Should log with correct ticket ID
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect(mockLogger.warn).toHaveBeenCalledWith(
           expect.stringContaining('Skipping invalid ticket during bulk reconstitution'),
           expect.objectContaining({ ticketId: 'error-ticket-id' })
         )
