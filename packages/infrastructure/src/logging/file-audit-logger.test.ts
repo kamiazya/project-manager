@@ -171,7 +171,6 @@ describe('FileAuditLogger Infrastructure Implementation', () => {
         accessDetails: {
           fieldsAccessed: ['email', 'phone', 'ssn'],
           containsSensitiveData: true,
-          dataClassification: 'confidential',
         },
       }
 

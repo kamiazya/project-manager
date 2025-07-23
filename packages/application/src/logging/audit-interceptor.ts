@@ -74,13 +74,8 @@ export interface UseCaseAuditRecord {
   /** Additional audit fields from metadata */
   additionalFields?: Record<string, any>
 
-  /** Risk and compliance information */
-  compliance: {
-    riskLevel: 'low' | 'medium' | 'high'
-    dataClassification: 'public' | 'internal' | 'confidential' | 'restricted'
-    containsSensitiveData: boolean
-    requiresRetention: boolean
-  }
+  /** Sensitive data flag */
+  containsSensitiveData: boolean
 }
 
 /**
@@ -136,7 +131,7 @@ export class AuditInterceptor {
     )
 
     // Generate unique ID using the configured ID generator
-    const uniqueId = await this.idGenerator.generateTicketId()
+    const uniqueId = this.idGenerator.generateId()
     const recordId = `${auditRecord.operation}-${auditRecord.execution.startTime}-${uniqueId}`
 
     await this.auditLogger.recordCreate({
@@ -193,7 +188,7 @@ export class AuditInterceptor {
     )
 
     // Generate unique ID using the configured ID generator
-    const uniqueId = await this.idGenerator.generateTicketId()
+    const uniqueId = this.idGenerator.generateId()
     const recordId = `${auditRecord.operation}-${auditRecord.execution.startTime}-${uniqueId}`
 
     await this.auditLogger.recordCreate({
@@ -299,12 +294,7 @@ export class AuditInterceptor {
       request: this.sanitizeMetadata(request),
       response: response ? this.sanitizeMetadata(response) : undefined,
       additionalFields,
-      compliance: {
-        riskLevel: auditMetadata.riskLevel || 'medium',
-        dataClassification: auditMetadata.dataClassification || 'internal',
-        containsSensitiveData: auditMetadata.containsSensitiveData || false,
-        requiresRetention: auditMetadata.requiresRetention || false,
-      },
+      containsSensitiveData: auditMetadata.containsSensitiveData || false,
     }
 
     // Apply data sanitization if needed
@@ -425,9 +415,6 @@ export const AuditInterceptorUtils = {
     return {
       operationId: useCase.auditMetadata.operationId,
       entityType: useCase.auditMetadata.resourceType,
-      useCaseName: useCase.auditMetadata.useCaseName,
-      riskLevel: useCase.auditMetadata.riskLevel || 'medium',
-      dataClassification: useCase.auditMetadata.dataClassification || 'internal',
     }
   },
 

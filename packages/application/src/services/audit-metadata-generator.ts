@@ -35,12 +35,6 @@ export interface AuditMetadata {
   description: string
 
   /**
-   * Display name for the UseCase (for logging purposes).
-   * Examples: 'CreateTicket', 'UpdateTicketStatus', 'DeleteProject'
-   */
-  useCaseName: string
-
-  /**
    * Function to extract the entity ID from the UseCase response.
    * Required for create/update/delete operations to link audit records to specific entities.
    */
@@ -69,24 +63,6 @@ export interface AuditMetadata {
    * These will be merged with the standard audit fields.
    */
   additionalAuditFields?: (request: any, response?: any) => Record<string, any>
-
-  /**
-   * Risk level of this operation for compliance purposes.
-   * High risk operations may require additional approval or logging.
-   */
-  riskLevel?: 'low' | 'medium' | 'high'
-
-  /**
-   * Data classification level for compliance.
-   * Determines retention periods and access controls.
-   */
-  dataClassification?: 'public' | 'internal' | 'confidential' | 'restricted'
-
-  /**
-   * Whether this operation requires retention for compliance.
-   * If true, audit records will be kept for extended periods.
-   */
-  requiresRetention?: boolean
 }
 
 /**
@@ -108,12 +84,8 @@ export class AuditMetadataGenerator {
       operationType,
       resourceType,
       description: this.generateDescription(operationType, resourceType),
-      useCaseName: className.replace(/UseCase$/, ''),
       extractEntityId: this.createDefaultEntityIdExtractor(resourceType),
-      riskLevel: this.determineRiskLevel(operationType),
-      dataClassification: 'internal',
       containsSensitiveData: false,
-      requiresRetention: operationType === 'delete',
     }
   }
 
@@ -135,35 +107,35 @@ export class AuditMetadataGenerator {
       [RegExp, AuditMetadata['operationType'], (match: RegExpMatchArray) => string]
     > = [
       // Create patterns
-      [/^Create(.+)$/, 'create', match => match[1]],
-      [/^Add(.+)$/, 'create', match => match[1]],
-      [/^New(.+)$/, 'create', match => match[1]],
+      [/^Create(.+)$/, 'create', (match: RegExpMatchArray) => match[1]!],
+      [/^Add(.+)$/, 'create', (match: RegExpMatchArray) => match[1]!],
+      [/^New(.+)$/, 'create', (match: RegExpMatchArray) => match[1]!],
 
       // Read patterns
-      [/^Get(.+)ById$/, 'read', match => match[1]],
-      [/^Get(.+)$/, 'read', match => match[1]],
-      [/^Fetch(.+)$/, 'read', match => match[1]],
-      [/^Find(.+)$/, 'read', match => match[1]],
-      [/^List(.+)$/, 'read', match => match[1]],
+      [/^Get(.+)ById$/, 'read', (match: RegExpMatchArray) => match[1]!],
+      [/^Get(.+)$/, 'read', (match: RegExpMatchArray) => match[1]!],
+      [/^Fetch(.+)$/, 'read', (match: RegExpMatchArray) => match[1]!],
+      [/^Find(.+)$/, 'read', (match: RegExpMatchArray) => match[1]!],
+      [/^List(.+)$/, 'read', (match: RegExpMatchArray) => match[1]!],
 
       // Update patterns
       [/^Update(.+)Status$/, 'update', () => 'Ticket'],
       [/^Update(.+)Content$/, 'update', () => 'Ticket'],
       [/^Update(.+)Priority$/, 'update', () => 'Ticket'],
-      [/^Update(.+)$/, 'update', match => match[1]],
-      [/^Edit(.+)$/, 'update', match => match[1]],
-      [/^Modify(.+)$/, 'update', match => match[1]],
-      [/^Change(.+)$/, 'update', match => match[1]],
+      [/^Update(.+)$/, 'update', (match: RegExpMatchArray) => match[1]!],
+      [/^Edit(.+)$/, 'update', (match: RegExpMatchArray) => match[1]!],
+      [/^Modify(.+)$/, 'update', (match: RegExpMatchArray) => match[1]!],
+      [/^Change(.+)$/, 'update', (match: RegExpMatchArray) => match[1]!],
 
       // Delete patterns
-      [/^Delete(.+)$/, 'delete', match => match[1]],
-      [/^Remove(.+)$/, 'delete', match => match[1]],
-      [/^Archive(.+)$/, 'delete', match => match[1]],
+      [/^Delete(.+)$/, 'delete', (match: RegExpMatchArray) => match[1]!],
+      [/^Remove(.+)$/, 'delete', (match: RegExpMatchArray) => match[1]!],
+      [/^Archive(.+)$/, 'delete', (match: RegExpMatchArray) => match[1]!],
 
       // Search patterns
-      [/^Search(.+)$/, 'search', match => match[1]],
-      [/^Query(.+)$/, 'search', match => match[1]],
-      [/^Find(.+)By/, 'search', match => match[1]],
+      [/^Search(.+)$/, 'search', (match: RegExpMatchArray) => match[1]!],
+      [/^Query(.+)$/, 'search', (match: RegExpMatchArray) => match[1]!],
+      [/^Find(.+)By/, 'search', (match: RegExpMatchArray) => match[1]!],
     ]
 
     for (const [pattern, operationType, extractResource] of patterns) {
@@ -236,29 +208,6 @@ export class AuditMetadataGenerator {
     return (response: any) => {
       // Common patterns for extracting IDs
       return response?.id || response?.entityId || response?.[`${resourceType.toLowerCase()}Id`]
-    }
-  }
-
-  /**
-   * Determine risk level based on operation type.
-   *
-   * @param operationType - Type of operation
-   * @returns Risk level
-   */
-  private determineRiskLevel(
-    operationType: AuditMetadata['operationType']
-  ): AuditMetadata['riskLevel'] {
-    switch (operationType) {
-      case 'delete':
-        return 'high'
-      case 'update':
-      case 'create':
-        return 'medium'
-      case 'read':
-      case 'search':
-        return 'low'
-      default:
-        return 'medium'
     }
   }
 }

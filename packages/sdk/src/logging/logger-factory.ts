@@ -497,7 +497,6 @@ export class LoggerFactory {
           compliance: {
             sensitiveDataOperations: 0,
             byDataClassification: {},
-            requiresRetention: 0,
           },
         }
       },

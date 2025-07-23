@@ -318,9 +318,6 @@ export interface AuditEventContext {
     /** Regulations this operation must comply with */
     regulations?: string[]
 
-    /** Data classification */
-    dataClassification?: 'public' | 'internal' | 'confidential' | 'restricted'
-
     /** Retention requirements */
     retention?: {
       period: string
@@ -366,15 +363,10 @@ export interface AuditEventFilter {
   /** Filter by trace ID */
   traceId?: string | string[]
 
-  /** Filter by risk level */
-  riskLevel?: ('low' | 'medium' | 'high' | 'critical')[]
-
   /** Filter by compliance requirements */
   compliance?: {
     /** Regulation filter */
     regulations?: string[]
-    /** Data classification filter */
-    dataClassification?: ('public' | 'internal' | 'confidential' | 'restricted')[]
   }
 
   /** Full-text search in event details */
@@ -443,9 +435,6 @@ export interface AuditEventStatistics {
 
     /** Operations by data classification */
     byDataClassification: Record<string, number>
-
-    /** Operations requiring retention */
-    requiresRetention: number
   }
 
   /** Error and anomaly detection */

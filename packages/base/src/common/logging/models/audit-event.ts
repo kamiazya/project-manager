@@ -463,13 +463,6 @@ export class AuditEventModel implements BaseAuditEvent {
       }
     }
 
-    // Check risk level
-    if (filter.riskLevel && this.context?.risk) {
-      if (!filter.riskLevel.includes(this.context.risk.level)) {
-        return false
-      }
-    }
-
     return true
   }
 }
