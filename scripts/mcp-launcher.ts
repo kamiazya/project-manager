@@ -44,6 +44,10 @@ const watchDirectories = [
 // Set development environment
 process.env.NODE_ENV = 'development'
 
+// Generate session ID for this MCP server instance (supports multiple concurrent servers)
+const sessionId = Math.random().toString(36).substring(2, 8)
+process.env.PM_SESSION_ID = sessionId
+
 // Forward all command line arguments to the MCP server
 const forwardedArgs = process.argv.slice(2)
 
@@ -94,11 +98,13 @@ async function runWithHotReload() {
   }
 
   function startServer() {
-    log(`${colors.green}Starting MCP server with hot reload...${colors.reset}`)
+    log(
+      `${colors.green}Starting MCP server with hot reload (session: ${sessionId})...${colors.reset}`
+    )
     try {
       child = spawn('tsx', ['--tsconfig', scriptsConfigPath, mcpServerEntry, ...forwardedArgs], {
         stdio: 'inherit',
-        env: { ...process.env, NODE_ENV: 'development' },
+        env: { ...process.env, NODE_ENV: 'development', PM_SESSION_ID: sessionId },
       })
 
       child.on('close', (code: number | null) => {
