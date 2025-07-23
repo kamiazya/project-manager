@@ -13,51 +13,14 @@ import type {
 import { ConfigurationError } from '@project-manager/application'
 
 /**
- * Singleton service for managing logging context using AsyncLocalStorage.
+ * Service for managing logging context using AsyncLocalStorage.
  * Provides automatic context propagation across asynchronous operations.
  */
 export class AsyncLocalStorageContextService implements LoggingContextService {
-  private static instance: AsyncLocalStorageContextService | null = null
   private asyncLocalStorage: AsyncContextStorage<LoggingContext>
 
-  private constructor(storage: AsyncContextStorage<LoggingContext>) {
+  constructor(storage: AsyncContextStorage<LoggingContext>) {
     this.asyncLocalStorage = storage
-  }
-
-  /**
-   * Get the singleton instance of LoggingContextService.
-   * Throws if not initialized.
-   */
-  static getInstance(): AsyncLocalStorageContextService {
-    if (!AsyncLocalStorageContextService.instance) {
-      throw new ConfigurationError(
-        'initialization',
-        'AsyncLocalStorageContextService not initialized. Call initialize() with an AsyncContextStorage implementation first.'
-      )
-    }
-    return AsyncLocalStorageContextService.instance
-  }
-
-  /**
-   * Initialize the singleton service with an AsyncContextStorage implementation.
-   * This must be called during application startup.
-   */
-  static initialize(storage: AsyncContextStorage<LoggingContext>): AsyncLocalStorageContextService {
-    if (AsyncLocalStorageContextService.instance) {
-      throw new ConfigurationError(
-        'initialization',
-        'AsyncLocalStorageContextService already initialized. Use getInstance() to access the service.'
-      )
-    }
-    AsyncLocalStorageContextService.instance = new AsyncLocalStorageContextService(storage)
-    return AsyncLocalStorageContextService.instance
-  }
-
-  /**
-   * Reset the singleton instance (mainly for testing).
-   */
-  static reset(): void {
-    AsyncLocalStorageContextService.instance = null
   }
 
   /**
@@ -97,24 +60,6 @@ export class AsyncLocalStorageContextService implements LoggingContextService {
    */
   getContext(): LoggingContext | undefined {
     return this.getStorage().getStore()
-  }
-
-  /**
-   * Update the current context with additional information.
-   *
-   * NOTE: AsyncLocalStorage does not support direct context updates.
-   * To update context, you must create a new context scope using run().
-   * This method throws an error to prevent confusion.
-   *
-   * @param updates - Partial context updates to apply
-   * @throws {ConfigurationError} Always throws - direct context updates not supported
-   */
-  async updateContext(updates: Partial<LoggingContext>): Promise<void> {
-    throw new ConfigurationError(
-      'updateContext',
-      'Direct context updates are not supported with AsyncLocalStorage. ' +
-        'Use LoggingContextService.run() to create a new context scope with updated values.'
-    )
   }
 
   /**

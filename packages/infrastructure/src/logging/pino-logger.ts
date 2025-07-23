@@ -627,7 +627,7 @@ export function createTestLogger(overrides?: Partial<PinoLoggerConfig>): Logger 
   const config: PinoLoggerConfig = {
     level: 'error',
     transport: { type: 'memory', maxEntries: 1000 },
-    environment: 'test',
+    environment: 'testing',
     ...overrides,
   }
 

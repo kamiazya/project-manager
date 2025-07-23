@@ -10,6 +10,7 @@
 
 import { join } from 'node:path'
 import type { StorageConfigService } from '@project-manager/application'
+import { type EnvironmentMode } from '@project-manager/base'
 import envPaths from 'env-paths'
 
 // Storage configuration constants
@@ -24,9 +25,6 @@ const STORAGE_CONFIG = {
 const ENV_VARS = {
   STORAGE_PATH: 'PM_STORAGE_PATH',
 } as const
-
-// Supported environment modes
-type EnvironmentMode = 'development' | 'test' | 'production' | string
 
 /**
  * Cross-platform storage configuration service using env-paths.
@@ -67,9 +65,8 @@ export class CrossPlatformStorageConfigService implements StorageConfigService {
 
   /**
    * Get the default storage directory path following platform conventions
-   * @param mode Optional SDK mode to override auto-detection
    */
-  getDefaultStorageDir(mode?: string): string {
+  getDefaultStorageDir(): string {
     // Since the app name already includes environment, no additional suffix needed
     return this.paths.config
   }
@@ -101,18 +98,17 @@ export class CrossPlatformStorageConfigService implements StorageConfigService {
   /**
    * Get the logs directory path following platform conventions
    *
-   * @param mode - Optional SDK mode to override auto-detection
    * @returns Platform-specific logs directory path
    *
    * @example
    * ```typescript
-   * service.getLogsPath('development')
+   * service.getLogsPath()
    * // Linux: ~/.local/state/project-manager-dev/logs
    * // macOS: ~/Library/Logs/project-manager-dev/logs
    * // Windows: %LOCALAPPDATA%\project-manager-dev\logs
    * ```
    */
-  getLogsPath(mode?: EnvironmentMode): string {
+  getLogsPath(): string {
     // Since the app name already includes environment, no additional suffix needed
     return join(this.paths.log, STORAGE_CONFIG.LOGS_SUBDIRECTORY)
   }
@@ -136,39 +132,5 @@ export class CrossPlatformStorageConfigService implements StorageConfigService {
       default:
         return `${STORAGE_CONFIG.APP_NAME}-${environment}` // Custom environment modes
     }
-  }
-
-  /**
-   * Get environment-specific directory suffix for multi-environment support
-   *
-   * @deprecated This method is no longer used since environment is handled in app name
-   * @param mode - Optional mode to override auto-detection from NODE_ENV
-   * @returns Environment suffix ('dev', 'test', '', or custom string)
-   * @private
-   */
-  private getEnvironmentSuffix(mode?: EnvironmentMode): string {
-    const environment = mode || process.env.NODE_ENV || 'development'
-
-    switch (environment) {
-      case 'development':
-        return 'dev'
-      case 'test':
-        return 'test'
-      case 'production':
-        return '' // No suffix for production
-      default:
-        return environment // Custom environment modes use the name as suffix
-    }
-  }
-
-  /**
-   * Resolve the actual environment mode from input or environment variables
-   *
-   * @param mode - Optional mode parameter
-   * @returns Resolved environment mode
-   * @private
-   */
-  private resolveEnvironmentMode(mode?: EnvironmentMode): EnvironmentMode {
-    return mode || process.env.NODE_ENV || 'development'
   }
 }
