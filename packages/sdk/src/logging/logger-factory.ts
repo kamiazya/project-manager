@@ -295,8 +295,9 @@ export class LoggerFactory {
 
       const pinoConfig: PinoLoggerConfig = {
         level: logLevel,
-        transport: { type: appConfig.transport! },
         environment: this.config.environment!,
+        transportType: appConfig.transport!,
+        transport: { type: appConfig.transport! },
         logFile: actualLogPath,
         rotation: appConfig.file?.rotation
           ? {

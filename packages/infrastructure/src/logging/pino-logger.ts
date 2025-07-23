@@ -19,9 +19,32 @@ import type {
 import pino, { type LoggerOptions, type Logger as PinoLogger } from 'pino'
 
 /**
+ * Transport configuration.
+ */
+export interface TransportConfig {
+  type: 'console' | 'file' | 'memory'
+  maxEntries?: number // For memory transport
+}
+
+/**
+ * Log rotation configuration.
+ */
+export interface RotationConfig {
+  maxSize?: string
+  maxFiles?: number
+  interval?: 'daily' | 'weekly'
+}
+
+/**
  * Pino-specific configuration options.
  */
 export interface PinoLoggerConfig extends LogConfig {
+  /** Transport configuration */
+  transport: TransportConfig
+
+  /** Rotation configuration for file transport */
+  rotation?: RotationConfig
+
   /** Pino-specific options */
   pino?: {
     /** Custom serializers */
@@ -572,20 +595,14 @@ export class PinoLoggerAdapter extends EventEmitter implements Logger {
 }
 
 /**
- * Factory function to create PinoLogger instances.
- */
-export function createPinoLogger(config: PinoLoggerConfig): Logger {
-  return new PinoLoggerAdapter(config)
-}
-
-/**
  * Create development-optimized logger.
  */
 export function createDevelopmentLogger(overrides?: Partial<PinoLoggerConfig>): Logger {
   const config: PinoLoggerConfig = {
     level: 'debug',
-    transport: { type: 'file' }, // Use file transport in development
     environment: 'development',
+    transportType: 'console',
+    transport: { type: 'console' },
     pino: {
       timestamp: true,
     },
@@ -604,9 +621,10 @@ export function createProductionLogger(
 ): Logger {
   const config: PinoLoggerConfig = {
     level: 'info',
-    transport: { type: 'file' },
     environment: 'production',
+    transportType: 'file',
     logFile: logPath,
+    transport: { type: 'file' },
     rotation: {
       maxSize: '100MB',
       maxFiles: 30,
@@ -626,8 +644,9 @@ export function createProductionLogger(
 export function createTestLogger(overrides?: Partial<PinoLoggerConfig>): Logger {
   const config: PinoLoggerConfig = {
     level: 'error',
-    transport: { type: 'memory', maxEntries: 1000 },
     environment: 'testing',
+    transportType: 'memory',
+    transport: { type: 'memory', maxEntries: 1000 },
     ...overrides,
   }
 
