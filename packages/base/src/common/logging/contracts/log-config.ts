@@ -251,7 +251,7 @@ export const LogConfigUtils = {
     return configs.reduce<LogConfig>((merged, config) => {
       const result: LogConfig = {
         level: config.level || merged.level || 'info',
-        environment: config.environment || merged.environment || 'development',
+        environment: config.environment || merged.environment || 'production',
         transport: {
           ...(merged.transport || {}),
           ...(config.transport || {}),
