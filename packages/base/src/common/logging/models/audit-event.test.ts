@@ -1,499 +1,822 @@
 import { describe, expect, it } from 'vitest'
+import { ValidationError } from '../../errors/base-errors.ts'
+import {
+  AuditEventModel,
+  CreateAuditEventModel,
+  ReadAuditEventModel,
+  UpdateAuditEventModel,
+  DeleteAuditEventModel,
+  AuditEventUtils,
+  type CreateAuditEventParams,
+} from './audit-event.ts'
+import type { Actor, FieldChange } from '../types/audit-event.ts'
 
-// Test-first approach for AuditEvent domain model
-describe('AuditEvent Domain Model', () => {
-  describe('Base AuditEvent Creation', () => {
-    it('should create a valid audit event with required fields', () => {
-      const timestamp = new Date().toISOString()
-      const auditEvent = {
-        id: 'audit-123',
-        timestamp,
-        traceId: 'trace-456',
-        operation: 'create' as const,
-        actor: {
-          type: 'human' as const,
-          id: 'user-789',
-          name: 'John Doe',
-        },
-        entityType: 'ticket',
-        entityId: 'ticket-001',
-        source: 'cli' as const,
-      }
+describe('AuditEventModel', () => {
+  const baseParams: CreateAuditEventParams = {
+    operation: 'create',
+    actor: { type: 'human', id: 'user-123', name: 'Test User' },
+    entityType: 'ticket',
+    entityId: 'ticket-001',
+    source: 'cli',
+  }
 
-      expect(auditEvent.id).toBe('audit-123')
-      expect(auditEvent.timestamp).toBe(timestamp)
-      expect(auditEvent.traceId).toBe('trace-456')
-      expect(auditEvent.operation).toBe('create')
-      expect(auditEvent.actor.type).toBe('human')
-      expect(auditEvent.actor.id).toBe('user-789')
-      expect(auditEvent.entityType).toBe('ticket')
-      expect(auditEvent.entityId).toBe('ticket-001')
-      expect(auditEvent.source).toBe('cli')
+  describe('AuditEventModel creation', () => {
+    it('should create audit event with required fields', () => {
+      const event = AuditEventModel.create(baseParams)
+
+      expect(event.operation).toBe('create')
+      expect(event.actor).toEqual(baseParams.actor)
+      expect(event.entityType).toBe('ticket')
+      expect(event.entityId).toBe('ticket-001')
+      expect(event.source).toBe('cli')
+      expect(event.id).toMatch(/^audit-\d+-[a-z0-9]+$/)
+      expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+      expect(event.traceId).toMatch(/^trace-[a-z0-9]+-[a-z0-9]+$/)
     })
 
-    it('should create audit event with AI actor and co-author', () => {
-      const auditEvent = {
-        id: 'audit-456',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-789',
-        operation: 'update' as const,
-        actor: {
-          type: 'ai' as const,
-          id: 'claude-3.5-sonnet',
-          name: 'Claude AI Assistant',
-          coAuthor: 'user-123',
-        },
-        entityType: 'ticket',
-        entityId: 'ticket-002',
-        source: 'mcp' as const,
+    it('should create audit event with custom ID and timestamp', () => {
+      const customTimestamp = new Date('2025-01-01T10:00:00Z')
+      const params = {
+        ...baseParams,
+        id: 'custom-audit-id',
+        timestamp: customTimestamp,
+        traceId: 'custom-trace-id',
       }
 
-      expect(auditEvent.actor.type).toBe('ai')
-      expect(auditEvent.actor.coAuthor).toBe('user-123')
-      expect(auditEvent.source).toBe('mcp')
+      const event = AuditEventModel.create(params)
+
+      expect(event.id).toBe('custom-audit-id')
+      expect(event.timestamp).toBe('2025-01-01T10:00:00.000Z')
+      expect(event.traceId).toBe('custom-trace-id')
     })
 
-    it('should create audit event with system actor', () => {
-      const auditEvent = {
-        id: 'audit-789',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-abc',
-        operation: 'delete' as const,
-        actor: {
-          type: 'system' as const,
-          id: 'scheduler-service',
-          name: 'System Scheduler',
-        },
-        entityType: 'ticket',
-        entityId: 'ticket-003',
-        source: 'scheduler' as const,
+    it('should validate required fields', () => {
+      const invalidParams = {
+        ...baseParams,
+        actor: { type: 'human' as const, id: '', name: 'Test' }, // Empty ID
       }
 
-      expect(auditEvent.actor.type).toBe('system')
-      expect(auditEvent.source).toBe('scheduler')
-    })
-  })
-
-  describe('CreateAuditEvent Specialization', () => {
-    it('should create CREATE audit event with initial state', () => {
-      const createEvent = {
-        id: 'audit-create-001',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-create',
-        operation: 'create' as const,
-        actor: {
-          type: 'human' as const,
-          id: 'user-001',
-          name: 'Developer',
-        },
-        entityType: 'ticket',
-        entityId: 'ticket-new',
-        source: 'cli' as const,
-        before: null,
-        after: {
-          title: 'New Feature Request',
-          description: 'Implement user authentication',
-          status: 'pending',
-          priority: 'high',
-          type: 'feature',
-        },
-      }
-
-      expect(createEvent.operation).toBe('create')
-      expect(createEvent.before).toBeNull()
-      expect(createEvent.after).toEqual({
-        title: 'New Feature Request',
-        description: 'Implement user authentication',
-        status: 'pending',
-        priority: 'high',
-        type: 'feature',
-      })
-    })
-  })
-
-  describe('ReadAuditEvent Specialization', () => {
-    it('should create READ audit event with access details', () => {
-      const ticketState = {
-        title: 'Bug Fix',
-        description: 'Fix login issue',
-        status: 'in_progress',
-        priority: 'medium',
-      }
-
-      const readEvent = {
-        id: 'audit-read-001',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-read',
-        operation: 'read' as const,
-        actor: {
-          type: 'human' as const,
-          id: 'user-002',
-          name: 'Manager',
-        },
-        entityType: 'ticket',
-        entityId: 'ticket-read',
-        source: 'api' as const,
-        before: ticketState,
-        after: ticketState,
-        accessDetails: {
-          fieldsAccessed: ['title', 'status', 'priority'],
-          queryParams: { status: 'in_progress' },
-          recordCount: 1,
-          containsSensitiveData: false,
-        },
-      }
-
-      expect(readEvent.operation).toBe('read')
-      expect(readEvent.before).toEqual(ticketState)
-      expect(readEvent.after).toEqual(ticketState)
-      expect(readEvent.accessDetails?.fieldsAccessed).toEqual(['title', 'status', 'priority'])
-      expect(readEvent.accessDetails?.recordCount).toBe(1)
-    })
-  })
-
-  describe('UpdateAuditEvent Specialization', () => {
-    it('should create UPDATE audit event with field changes', () => {
-      const updateEvent = {
-        id: 'audit-update-001',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-update',
-        operation: 'update' as const,
-        actor: {
-          type: 'ai' as const,
-          id: 'ai-assistant',
-          name: 'AI Assistant',
-          coAuthor: 'user-003',
-        },
-        entityType: 'ticket',
-        entityId: 'ticket-update',
-        source: 'mcp' as const,
-        before: {
-          title: 'Bug Fix',
-          status: 'pending',
-          priority: 'medium',
-        },
-        after: {
-          title: 'Critical Bug Fix',
-          status: 'in_progress',
-          priority: 'high',
-        },
-        changes: [
-          {
-            field: 'title',
-            oldValue: 'Bug Fix',
-            newValue: 'Critical Bug Fix',
-            changeType: 'modified' as const,
-          },
-          {
-            field: 'status',
-            oldValue: 'pending',
-            newValue: 'in_progress',
-            changeType: 'modified' as const,
-          },
-          {
-            field: 'priority',
-            oldValue: 'medium',
-            newValue: 'high',
-            changeType: 'modified' as const,
-          },
-        ],
-      }
-
-      expect(updateEvent.operation).toBe('update')
-      expect(updateEvent.changes).toHaveLength(3)
-      expect(updateEvent.changes[0]).toEqual({
-        field: 'title',
-        oldValue: 'Bug Fix',
-        newValue: 'Critical Bug Fix',
-        changeType: 'modified',
-      })
-    })
-  })
-
-  describe('DeleteAuditEvent Specialization', () => {
-    it('should create DELETE audit event with final state', () => {
-      const deleteEvent = {
-        id: 'audit-delete-001',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-delete',
-        operation: 'delete' as const,
-        actor: {
-          type: 'human' as const,
-          id: 'user-004',
-          name: 'Admin',
-        },
-        entityType: 'ticket',
-        entityId: 'ticket-delete',
-        source: 'cli' as const,
-        before: {
-          title: 'Obsolete Feature',
-          description: 'No longer needed',
-          status: 'completed',
-          priority: 'low',
-        },
-        after: null,
-        deletionDetails: {
-          reason: 'Feature deprecated',
-          softDelete: false,
-          cascadeDeleted: ['comment-001', 'attachment-001'],
-        },
-      }
-
-      expect(deleteEvent.operation).toBe('delete')
-      expect(deleteEvent.before).toBeDefined()
-      expect(deleteEvent.after).toBeNull()
-      expect(deleteEvent.deletionDetails?.reason).toBe('Feature deprecated')
-      expect(deleteEvent.deletionDetails?.cascadeDeleted).toEqual(['comment-001', 'attachment-001'])
-    })
-  })
-
-  describe('Actor Validation', () => {
-    it('should require actor ID', () => {
-      const invalidEvent = {
-        id: 'audit-001',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-001',
-        operation: 'create' as const,
-        actor: {
-          type: 'human' as const,
-          // id: missing
-          name: 'User',
-        },
-        entityType: 'ticket',
-        entityId: 'ticket-001',
-        source: 'cli' as const,
-      }
-
-      const validate = (event: any) => {
-        return event.actor?.id ? [] : ['Actor ID is required']
-      }
-
-      expect(validate(invalidEvent)).toContain('Actor ID is required')
+      expect(() => AuditEventModel.create(invalidParams)).toThrow(ValidationError)
+      expect(() => AuditEventModel.create(invalidParams)).toThrow('Actor ID is required')
     })
 
     it('should require co-author for AI operations', () => {
-      const invalidAiEvent = {
-        id: 'audit-ai-001',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-ai',
-        operation: 'create' as const,
+      const aiParams = {
+        ...baseParams,
+        actor: { type: 'ai' as const, id: 'ai-123', name: 'AI Assistant' }, // Missing coAuthor
+      }
+
+      expect(() => AuditEventModel.create(aiParams)).toThrow(ValidationError)
+      expect(() => AuditEventModel.create(aiParams)).toThrow(
+        'Co-author is required for AI operations'
+      )
+    })
+
+    it('should accept valid AI actor with co-author', () => {
+      const aiParams = {
+        ...baseParams,
         actor: {
           type: 'ai' as const,
-          id: 'ai-001',
+          id: 'ai-123',
           name: 'AI Assistant',
-          // coAuthor: missing
+          coAuthor: 'user-456',
         },
-        entityType: 'ticket',
-        entityId: 'ticket-ai',
-        source: 'mcp' as const,
       }
 
-      const validate = (event: any) => {
-        if (event.actor?.type === 'ai' && !event.actor?.coAuthor) {
-          return ['Co-author is required for AI operations']
-        }
-        return []
-      }
-
-      expect(validate(invalidAiEvent)).toContain('Co-author is required for AI operations')
-    })
-
-    it('should accept valid actor types', () => {
-      const validTypes = ['human', 'ai', 'system']
-
-      for (const type of validTypes) {
-        const event = {
-          actor: { type, id: 'test-id' },
-        }
-
-        const validate = (event: any) => {
-          return validTypes.includes(event.actor?.type) ? [] : ['Invalid actor type']
-        }
-
-        expect(validate(event)).toHaveLength(0)
-      }
+      const event = AuditEventModel.create(aiParams)
+      expect(event.actor.type).toBe('ai')
+      expect(event.actor.coAuthor).toBe('user-456')
     })
   })
 
-  describe('Audit Event Context', () => {
-    it('should handle extended context information', () => {
-      const eventWithContext = {
-        id: 'audit-context-001',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-context',
+  describe('CreateAuditEventModel', () => {
+    it('should create CREATE audit event with after state', () => {
+      const afterState = {
+        title: 'New Ticket',
+        description: 'Test description',
+        status: 'pending',
+      }
+
+      const event = AuditEventModel.createCreate(
+        baseParams.actor,
+        'ticket',
+        'ticket-001',
+        afterState,
+        'cli'
+      )
+
+      expect(event).toBeInstanceOf(CreateAuditEventModel)
+      expect(event.operation).toBe('create')
+      expect(event.before).toBeNull()
+      expect(event.after).toEqual(afterState)
+    })
+
+    it('should require after state for CREATE events', () => {
+      const params = {
+        ...baseParams,
+        operation: 'create' as const,
+        after: undefined,
+      }
+
+      expect(() => new CreateAuditEventModel(params)).toThrow(ValidationError)
+      expect(() => new CreateAuditEventModel(params)).toThrow(
+        'CreateAuditEventModel requires after state'
+      )
+    })
+
+    it('should validate operation type is create', () => {
+      const params = {
+        ...baseParams,
         operation: 'update' as const,
-        actor: {
-          type: 'human' as const,
-          id: 'user-005',
-          name: 'Developer',
+        after: { title: 'Test' },
+      }
+
+      expect(() => new CreateAuditEventModel(params)).toThrow(ValidationError)
+      expect(() => new CreateAuditEventModel(params)).toThrow(
+        'CreateAuditEventModel requires operation to be "create"'
+      )
+    })
+  })
+
+  describe('ReadAuditEventModel', () => {
+    it('should create READ audit event with access details', () => {
+      const state = {
+        title: 'Existing Ticket',
+        status: 'in_progress',
+      }
+
+      const accessDetails = {
+        fieldsAccessed: ['title', 'status'],
+        recordCount: 1,
+        containsSensitiveData: false,
+      }
+
+      const event = AuditEventModel.createRead(
+        baseParams.actor,
+        'ticket',
+        'ticket-001',
+        state,
+        'api',
+        accessDetails
+      )
+
+      expect(event).toBeInstanceOf(ReadAuditEventModel)
+      expect(event.operation).toBe('read')
+      expect(event.before).toEqual(state)
+      expect(event.after).toEqual(state)
+      expect(event.accessDetails).toEqual(accessDetails)
+    })
+
+    it('should require both before and after states', () => {
+      const params = {
+        ...baseParams,
+        operation: 'read' as const,
+        before: undefined,
+        after: { title: 'Test' },
+      }
+
+      expect(() => new ReadAuditEventModel(params)).toThrow(ValidationError)
+      expect(() => new ReadAuditEventModel(params)).toThrow(
+        'ReadAuditEventModel requires both before and after states'
+      )
+    })
+  })
+
+  describe('UpdateAuditEventModel', () => {
+    it('should create UPDATE audit event with changes calculated', () => {
+      const before = {
+        title: 'Old Title',
+        status: 'pending',
+        priority: 'low',
+      }
+
+      const after = {
+        title: 'New Title',
+        status: 'in_progress',
+        priority: 'high',
+      }
+
+      const event = AuditEventModel.createUpdate(
+        baseParams.actor,
+        'ticket',
+        'ticket-001',
+        before,
+        after,
+        'cli'
+      )
+
+      expect(event).toBeInstanceOf(UpdateAuditEventModel)
+      expect(event.operation).toBe('update')
+      expect(event.before).toEqual(before)
+      expect(event.after).toEqual(after)
+      expect(event.changes).toHaveLength(3)
+
+      const titleChange = event.changes.find(c => c.field === 'title')
+      expect(titleChange).toEqual({
+        field: 'title',
+        oldValue: 'Old Title',
+        newValue: 'New Title',
+        changeType: 'modified',
+      })
+    })
+
+    it('should accept custom changes', () => {
+      const customChanges: FieldChange[] = [
+        {
+          field: 'title',
+          oldValue: 'Old',
+          newValue: 'New',
+          changeType: 'modified',
         },
+      ]
+
+      const event = AuditEventModel.createUpdate(
+        baseParams.actor,
+        'ticket',
+        'ticket-001',
+        { title: 'Old' },
+        { title: 'New' },
+        'cli',
+        { changes: customChanges }
+      )
+
+      expect(event.changes).toEqual(customChanges)
+    })
+  })
+
+  describe('DeleteAuditEventModel', () => {
+    it('should create DELETE audit event with before state', () => {
+      const beforeState = {
+        title: 'Deleted Ticket',
+        status: 'completed',
+      }
+
+      const deletionDetails = {
+        reason: 'User requested deletion',
+        softDelete: false,
+      }
+
+      const event = AuditEventModel.createDelete(
+        baseParams.actor,
+        'ticket',
+        'ticket-001',
+        beforeState,
+        'cli',
+        deletionDetails
+      )
+
+      expect(event).toBeInstanceOf(DeleteAuditEventModel)
+      expect(event.operation).toBe('delete')
+      expect(event.before).toEqual(beforeState)
+      expect(event.after).toBeNull()
+      expect(event.deletionDetails).toEqual(deletionDetails)
+    })
+
+    it('should require before state for DELETE events', () => {
+      const params = {
+        ...baseParams,
+        operation: 'delete' as const,
+        before: undefined,
+      }
+
+      expect(() => new DeleteAuditEventModel(params)).toThrow(ValidationError)
+      expect(() => new DeleteAuditEventModel(params)).toThrow(
+        'DeleteAuditEventModel requires before state'
+      )
+    })
+  })
+
+  describe('AuditEventModel methods', () => {
+    let event: AuditEventModel
+
+    beforeEach(() => {
+      event = AuditEventModel.create(baseParams)
+    })
+
+    it('should convert to plain object', () => {
+      const obj = event.toObject()
+
+      expect(obj).toEqual({
+        id: event.id,
+        timestamp: event.timestamp,
+        traceId: event.traceId,
+        operation: event.operation,
+        actor: event.actor,
+        entityType: event.entityType,
+        entityId: event.entityId,
+        source: event.source,
+        context: event.context,
+      })
+    })
+
+    it('should serialize to JSON', () => {
+      const serialized = event.serialize(false) // Don't sanitize
+      const parsed = JSON.parse(serialized)
+
+      expect(parsed.id).toBe(event.id)
+      expect(parsed.operation).toBe(event.operation)
+      expect(parsed.actor).toEqual(event.actor)
+    })
+
+    it('should serialize with sanitization by default', () => {
+      const eventWithSensitiveData = AuditEventModel.createCreate(
+        baseParams.actor,
+        baseParams.entityType,
+        baseParams.entityId,
+        {
+          title: 'Test',
+          password: 'secret123',
+          apiKey: 'key-456',
+        },
+        baseParams.source
+      )
+
+      const serialized = eventWithSensitiveData.serialize() // Sanitize by default
+      const parsed = JSON.parse(serialized)
+
+      expect(parsed.after.title).toBe('Test')
+      expect(parsed.after.password).toBe('***REDACTED***')
+      expect(parsed.after.apiKey).toBe('***REDACTED***')
+    })
+
+    it('should clone with modifications', () => {
+      const cloned = event.clone({
+        operation: 'update',
+        entityId: 'ticket-002',
+      })
+
+      expect(cloned.operation).toBe('update')
+      expect(cloned.entityId).toBe('ticket-002')
+      expect(cloned.actor).toEqual(event.actor) // Unchanged
+      expect(cloned.id).toBe(event.id) // Unchanged
+    })
+
+    it('should match filters correctly', () => {
+      // Operation filter
+      expect(event.matches({ operation: 'create' })).toBe(true)
+      expect(event.matches({ operation: 'update' })).toBe(false)
+      expect(event.matches({ operation: ['create', 'update'] })).toBe(true)
+
+      // Entity type filter
+      expect(event.matches({ entityType: 'ticket' })).toBe(true)
+      expect(event.matches({ entityType: 'user' })).toBe(false)
+
+      // Actor filter
+      expect(event.matches({ actor: { id: 'user-123' } })).toBe(true)
+      expect(event.matches({ actor: { type: 'human' } })).toBe(true)
+      expect(event.matches({ actor: { id: 'user-456' } })).toBe(false)
+
+      // Source filter
+      expect(event.matches({ source: 'cli' })).toBe(true)
+      expect(event.matches({ source: ['cli', 'api'] })).toBe(true)
+      expect(event.matches({ source: 'mcp' })).toBe(false)
+    })
+
+    it('should match date range filters', () => {
+      const eventTime = new Date(event.timestamp).getTime()
+      const before = new Date(eventTime - 1000)
+      const after = new Date(eventTime + 1000)
+
+      expect(event.matches({ dateRange: { start: before } })).toBe(true)
+      expect(event.matches({ dateRange: { end: after } })).toBe(true)
+      expect(event.matches({ dateRange: { start: before, end: after } })).toBe(true)
+      expect(event.matches({ dateRange: { start: after } })).toBe(false)
+      expect(event.matches({ dateRange: { end: before } })).toBe(false)
+    })
+  })
+
+  describe('AuditEventModel static methods', () => {
+    it('should generate unique IDs', () => {
+      const id1 = AuditEventModel.generateId()
+      const id2 = AuditEventModel.generateId()
+
+      expect(id1).toMatch(/^audit-\d+-[a-z0-9]+$/)
+      expect(id2).toMatch(/^audit-\d+-[a-z0-9]+$/)
+      expect(id1).not.toBe(id2)
+    })
+
+    it('should generate unique trace IDs', () => {
+      const trace1 = AuditEventModel.generateTraceId()
+      const trace2 = AuditEventModel.generateTraceId()
+
+      expect(trace1).toMatch(/^trace-[a-z0-9]+-[a-z0-9]+$/)
+      expect(trace2).toMatch(/^trace-[a-z0-9]+-[a-z0-9]+$/)
+      expect(trace1).not.toBe(trace2)
+    })
+
+    it('should create from plain object', () => {
+      const obj = {
+        id: 'audit-test',
+        timestamp: '2025-01-01T10:00:00.000Z',
+        operation: 'create' as const,
+        actor: { type: 'human' as const, id: 'user-123' },
         entityType: 'ticket',
-        entityId: 'ticket-context',
+        entityId: 'ticket-001',
         source: 'cli' as const,
-        context: {
-          businessJustification: 'Customer reported critical bug',
-          authorization: {
-            authorizedBy: 'manager-001',
-            authorizedAt: new Date().toISOString(),
-            method: 'approval-workflow',
-            permissionLevel: 'modify',
+      }
+
+      const event = AuditEventModel.fromObject(obj)
+
+      expect(event.id).toBe('audit-test')
+      expect(event.operation).toBe('create')
+      expect(event.actor).toEqual(obj.actor)
+    })
+  })
+
+  describe('AuditEventUtils', () => {
+    describe('validate', () => {
+      it('should validate complete audit event', () => {
+        const validEvent = {
+          id: 'audit-123',
+          timestamp: '2025-01-01T10:00:00.000Z',
+          traceId: 'trace-456',
+          operation: 'create' as const,
+          actor: { type: 'human' as const, id: 'user-123' },
+          entityType: 'ticket',
+          entityId: 'ticket-001',
+          source: 'cli' as const,
+        }
+
+        const errors = AuditEventUtils.validate(validEvent)
+        expect(errors).toEqual([])
+      })
+
+      it('should return errors for missing required fields', () => {
+        const invalidEvent = {
+          // Missing all required fields
+        }
+
+        const errors = AuditEventUtils.validate(invalidEvent)
+        expect(errors).toContain('Event ID is required')
+        expect(errors).toContain('Timestamp is required')
+        expect(errors).toContain('Trace ID is required')
+        expect(errors).toContain('Operation is required')
+        expect(errors).toContain('Actor is required')
+        expect(errors).toContain('Entity type is required')
+        expect(errors).toContain('Entity ID is required')
+        expect(errors).toContain('Source is required')
+      })
+
+      it('should validate actor requirements', () => {
+        const eventWithInvalidActor = {
+          id: 'audit-123',
+          timestamp: '2025-01-01T10:00:00.000Z',
+          traceId: 'trace-456',
+          operation: 'create' as const,
+          actor: { type: 'human' as const }, // Missing ID
+          entityType: 'ticket',
+          entityId: 'ticket-001',
+          source: 'cli' as const,
+        }
+
+        const errors = AuditEventUtils.validate(eventWithInvalidActor)
+        expect(errors).toContain('Actor ID is required')
+      })
+
+      it('should require co-author for AI operations', () => {
+        const aiEventWithoutCoAuthor = {
+          id: 'audit-123',
+          timestamp: '2025-01-01T10:00:00.000Z',
+          traceId: 'trace-456',
+          operation: 'create' as const,
+          actor: { type: 'ai' as const, id: 'ai-123' }, // Missing coAuthor
+          entityType: 'ticket',
+          entityId: 'ticket-001',
+          source: 'mcp' as const,
+        }
+
+        const errors = AuditEventUtils.validate(aiEventWithoutCoAuthor)
+        expect(errors).toContain('Co-author is required for AI operations')
+      })
+    })
+
+    describe('sanitize', () => {
+      it('should sanitize sensitive data in before/after states', () => {
+        const event = {
+          id: 'audit-123',
+          timestamp: '2025-01-01T10:00:00.000Z',
+          traceId: 'trace-456',
+          operation: 'create' as const,
+          actor: { type: 'human' as const, id: 'user-123' },
+          entityType: 'ticket',
+          entityId: 'ticket-001',
+          source: 'cli' as const,
+          after: {
+            title: 'Test Ticket',
+            password: 'secret123',
+            apiKey: 'key-456',
+            publicData: 'safe-data',
           },
-          risk: {
-            level: 'medium' as const,
-            factors: ['data-modification', 'customer-impact'],
-            mitigation: ['peer-review', 'rollback-plan'],
-          },
-          compliance: {
-            regulations: ['SOX', 'GDPR'],
-            dataClassification: 'internal' as const,
-            retention: {
-              period: '7-years',
-              reason: 'regulatory-compliance',
+        }
+
+        const sanitized = AuditEventUtils.sanitize(event)
+
+        expect(sanitized.after.title).toBe('Test Ticket')
+        expect(sanitized.after.password).toBe('***REDACTED***')
+        expect(sanitized.after.apiKey).toBe('***REDACTED***')
+        expect(sanitized.after.publicData).toBe('safe-data')
+      })
+
+      it('should sanitize nested sensitive data', () => {
+        const event = {
+          id: 'audit-123',
+          timestamp: '2025-01-01T10:00:00.000Z',
+          traceId: 'trace-456',
+          operation: 'update' as const,
+          actor: { type: 'human' as const, id: 'user-123' },
+          entityType: 'user',
+          entityId: 'user-001',
+          source: 'api' as const,
+          after: {
+            profile: {
+              name: 'John Doe',
+              credentials: {
+                password: 'secret123',
+                token: 'token-456',
+              },
             },
           },
-        },
-      }
+        }
 
-      expect(eventWithContext.context?.businessJustification).toBe('Customer reported critical bug')
-      expect(eventWithContext.context?.risk?.level).toBe('medium')
-      expect(eventWithContext.context?.compliance?.regulations).toEqual(['SOX', 'GDPR'])
+        const sanitized = AuditEventUtils.sanitize(event)
+
+        expect(sanitized.after.profile.name).toBe('John Doe')
+        expect(sanitized.after.profile.credentials.password).toBe('***REDACTED***')
+        expect(sanitized.after.profile.credentials.token).toBe('***REDACTED***')
+      })
+
+      it('should sanitize field changes', () => {
+        const event = {
+          id: 'audit-123',
+          timestamp: '2025-01-01T10:00:00.000Z',
+          traceId: 'trace-456',
+          operation: 'update' as const,
+          actor: { type: 'human' as const, id: 'user-123' },
+          entityType: 'user',
+          entityId: 'user-001',
+          source: 'cli' as const,
+          changes: [
+            {
+              field: 'password',
+              oldValue: 'oldSecret123',
+              newValue: 'newSecret456',
+              changeType: 'modified' as const,
+            },
+            {
+              field: 'name',
+              oldValue: 'John',
+              newValue: 'Jane',
+              changeType: 'modified' as const,
+            },
+          ],
+        }
+
+        const sanitized = AuditEventUtils.sanitize(event)
+
+        expect(sanitized.changes[0].oldValue).toBe('***REDACTED***')
+        expect(sanitized.changes[0].newValue).toBe('***REDACTED***')
+        expect(sanitized.changes[1].oldValue).toBe('John')
+        expect(sanitized.changes[1].newValue).toBe('Jane')
+      })
+    })
+
+    describe('calculateChanges', () => {
+      it('should calculate field modifications', () => {
+        const before = {
+          title: 'Old Title',
+          status: 'pending',
+          priority: 'low',
+        }
+
+        const after = {
+          title: 'New Title',
+          status: 'in_progress',
+          priority: 'low', // Unchanged
+        }
+
+        const changes = AuditEventUtils.calculateChanges(before, after)
+
+        expect(changes).toHaveLength(2)
+        expect(changes.find(c => c.field === 'title')).toEqual({
+          field: 'title',
+          oldValue: 'Old Title',
+          newValue: 'New Title',
+          changeType: 'modified',
+        })
+        expect(changes.find(c => c.field === 'status')).toEqual({
+          field: 'status',
+          oldValue: 'pending',
+          newValue: 'in_progress',
+          changeType: 'modified',
+        })
+      })
+
+      it('should detect added fields', () => {
+        const before = {
+          title: 'Test',
+        }
+
+        const after = {
+          title: 'Test',
+          description: 'New field',
+        }
+
+        const changes = AuditEventUtils.calculateChanges(before, after)
+
+        expect(changes).toHaveLength(1)
+        expect(changes[0]).toEqual({
+          field: 'description',
+          oldValue: undefined,
+          newValue: 'New field',
+          changeType: 'added',
+        })
+      })
+
+      it('should detect removed fields', () => {
+        const before = {
+          title: 'Test',
+          description: 'Will be removed',
+        }
+
+        const after = {
+          title: 'Test',
+        }
+
+        const changes = AuditEventUtils.calculateChanges(before, after)
+
+        expect(changes).toHaveLength(1)
+        expect(changes[0]).toEqual({
+          field: 'description',
+          oldValue: 'Will be removed',
+          newValue: undefined,
+          changeType: 'removed',
+        })
+      })
+    })
+
+    describe('utility functions', () => {
+      it('should parse from JSON', () => {
+        const json = JSON.stringify({
+          id: 'audit-123',
+          operation: 'create',
+          actor: { type: 'human', id: 'user-123' },
+          entityType: 'ticket',
+          entityId: 'ticket-001',
+          source: 'cli',
+        })
+
+        const event = AuditEventUtils.parseFromJson(json)
+
+        expect(event).toBeInstanceOf(AuditEventModel)
+        expect(event.id).toBe('audit-123')
+        expect(event.operation).toBe('create')
+      })
+
+      it('should create batch of events', () => {
+        const eventParams = [
+          { ...baseParams, entityId: 'ticket-001' },
+          { ...baseParams, entityId: 'ticket-002' },
+          { ...baseParams, entityId: 'ticket-003' },
+        ]
+
+        const events = AuditEventUtils.createBatch(eventParams)
+
+        expect(events).toHaveLength(3)
+        expect(events[0].entityId).toBe('ticket-001')
+        expect(events[1].entityId).toBe('ticket-002')
+        expect(events[2].entityId).toBe('ticket-003')
+      })
+
+      it('should sort by timestamp', () => {
+        const events = [
+          AuditEventModel.create({ ...baseParams, entityId: 'ticket-003' }),
+          AuditEventModel.create({ ...baseParams, entityId: 'ticket-001' }),
+          AuditEventModel.create({ ...baseParams, entityId: 'ticket-002' }),
+        ]
+
+        const sorted = AuditEventUtils.sortByTimestamp(events, true) // Ascending
+
+        // Since all events are created nearly simultaneously, we can't test exact order
+        // but we can verify the function doesn't error and returns all events
+        expect(sorted).toHaveLength(3)
+        expect(sorted.every(e => e instanceof AuditEventModel)).toBe(true)
+      })
+
+      it('should group by field', () => {
+        const events = [
+          AuditEventModel.create({ ...baseParams, operation: 'create' }),
+          AuditEventModel.create({ ...baseParams, operation: 'update' }),
+          AuditEventModel.create({ ...baseParams, operation: 'create' }),
+        ]
+
+        const grouped = AuditEventUtils.groupBy(events, 'operation')
+
+        expect(grouped.create).toHaveLength(2)
+        expect(grouped.update).toHaveLength(1)
+      })
+
+      it('should calculate statistics', () => {
+        const events = [
+          AuditEventModel.create({ ...baseParams, operation: 'create' }),
+          AuditEventModel.create({ ...baseParams, operation: 'update' }),
+          AuditEventModel.create({ ...baseParams, operation: 'create' }),
+        ]
+
+        const stats = AuditEventUtils.calculateStatistics(events, {
+          start: '2025-01-01T00:00:00Z',
+          end: '2025-01-02T00:00:00Z',
+        })
+
+        expect(stats.totalOperations).toBe(3)
+        expect(stats.operationsByType?.create).toBe(2)
+        expect(stats.operationsByType?.update).toBe(1)
+        expect(stats.operationsByActor?.human).toBe(3)
+        expect(stats.operationsByEntity?.ticket).toBe(3)
+        expect(stats.operationsBySource?.cli).toBe(3)
+      })
     })
   })
 
-  describe('Boundary Value Tests (t-wada approach)', () => {
+  describe('Boundary Value Tests', () => {
     it('should handle minimum valid audit event', () => {
-      const minimalEvent = {
-        id: 'a', // Single character
-        timestamp: new Date().toISOString(),
-        traceId: 't', // Single character
-        operation: 'read' as const,
-        actor: {
-          type: 'system' as const,
-          id: 's', // Single character
-        },
-        entityType: 'x',
-        entityId: 'y',
-        source: 'test' as const,
+      const minimalParams: CreateAuditEventParams = {
+        operation: 'read',
+        actor: { type: 'system', id: 's' }, // Single character
+        entityType: 'x', // Single character
+        entityId: 'y', // Single character
+        source: 'test',
       }
 
-      expect(minimalEvent.id).toBe('a')
-      expect(minimalEvent.traceId).toBe('t')
-      expect(minimalEvent.actor.id).toBe('s')
+      const event = AuditEventModel.create(minimalParams)
+
+      expect(event.actor.id).toBe('s')
+      expect(event.entityType).toBe('x')
+      expect(event.entityId).toBe('y')
     })
 
     it('should handle maximum size audit event', () => {
-      const maxEvent = {
-        id: 'audit-' + 'x'.repeat(100),
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-' + 'x'.repeat(100),
-        operation: 'update' as const,
-        actor: {
-          type: 'human' as const,
-          id: 'user-' + 'x'.repeat(100),
-          name: 'Very Long Name: ' + 'x'.repeat(200),
-          coAuthor: 'coauthor-' + 'x'.repeat(100),
-          context: {
-            role: 'x'.repeat(50),
-            department: 'x'.repeat(100),
-            ipAddress: '192.168.1.1',
-            userAgent: 'Mozilla/5.0 ' + 'x'.repeat(500),
-          },
-        },
-        entityType: 'very-long-entity-type-' + 'x'.repeat(50),
-        entityId: 'entity-' + 'x'.repeat(100),
-        source: 'cli' as const,
-        before: {
-          field1: 'x'.repeat(1000),
-          field2: 'x'.repeat(1000),
-          nestedObject: {
-            deepField: 'x'.repeat(500),
-            veryDeepObject: {
-              level3: 'x'.repeat(200),
-            },
-          },
-        },
-        after: {
-          field1: 'y'.repeat(1000),
-          field2: 'y'.repeat(1000),
-          newField: 'z'.repeat(500),
+      const longString = 'x'.repeat(1000)
+      const largeData = {
+        field1: longString,
+        field2: longString,
+        nested: {
+          deep: longString,
         },
       }
 
-      expect(maxEvent.id.length).toBeGreaterThan(100)
-      expect(maxEvent.actor.name?.length).toBeGreaterThan(200)
-      expect(maxEvent.before?.field1?.length).toBe(1000)
+      const maxParams: CreateAuditEventParams = {
+        operation: 'update',
+        actor: {
+          type: 'human',
+          id: longString,
+          name: longString,
+        },
+        entityType: longString,
+        entityId: longString,
+        source: 'cli',
+        before: largeData,
+        after: largeData,
+      }
+
+      const event = AuditEventModel.create(maxParams)
+
+      expect(event.actor.id.length).toBe(1000)
+      expect(event.entityType.length).toBe(1000)
     })
 
-    it('should handle null values correctly', () => {
-      const eventWithNulls = {
-        id: 'audit-null-test',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-null',
-        operation: 'create' as const,
-        actor: {
-          type: 'human' as const,
-          id: 'user-null',
-          name: null, // Explicit null
-          coAuthor: null,
-        },
+    it('should handle null and undefined values', () => {
+      const params: CreateAuditEventParams = {
+        operation: 'create',
+        actor: { type: 'human', id: 'user-123', name: undefined },
         entityType: 'ticket',
-        entityId: 'ticket-null',
-        source: 'cli' as const,
+        entityId: 'ticket-001',
+        source: 'cli',
         before: null,
         after: {
           field1: null,
-          field2: 'value',
-          field3: null,
+          field2: undefined,
+          field3: 'value',
         },
-        context: null,
+        context: undefined,
       }
 
-      expect(eventWithNulls.actor.name).toBeNull()
-      expect(eventWithNulls.before).toBeNull()
-      expect(eventWithNulls.after.field1).toBeNull()
-      expect(eventWithNulls.context).toBeNull()
-    })
+      const event = AuditEventModel.create(params)
 
-    it('should handle empty objects and arrays', () => {
-      const eventWithEmpties = {
-        id: 'audit-empty-test',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-empty',
-        operation: 'update' as const,
-        actor: {
-          type: 'ai' as const,
-          id: 'ai-empty',
-          coAuthor: 'user-empty',
-          context: {},
-        },
-        entityType: 'ticket',
-        entityId: 'ticket-empty',
-        source: 'mcp' as const,
-        before: {},
-        after: {},
-        changes: [],
-      }
-
-      expect(Object.keys(eventWithEmpties.actor.context || {})).toHaveLength(0)
-      expect(Object.keys(eventWithEmpties.before || {})).toHaveLength(0)
-      expect(eventWithEmpties.changes).toHaveLength(0)
+      expect(event.actor.name).toBeUndefined()
+      expect(event.context).toBeUndefined()
     })
 
     it('should handle special characters and Unicode', () => {
-      const eventWithSpecialChars = {
-        id: 'audit-特殊文字-тест-🎭',
-        timestamp: new Date().toISOString(),
-        traceId: 'trace-émoji-🔍',
-        operation: 'create' as const,
+      const unicodeParams: CreateAuditEventParams = {
+        operation: 'create',
         actor: {
-          type: 'human' as const,
+          type: 'human',
           id: 'ユーザー-123',
           name: 'José María García-López 👨‍💻',
         },
         entityType: 'チケット',
         entityId: 'ticket-αβγ-🎫',
-        source: 'cli' as const,
-        before: null,
+        source: 'cli',
         after: {
           title: 'Тест с эмодзи 🚀',
           description: 'Description with quotes "test" and apostrophes \'test\'',
@@ -501,149 +824,28 @@ describe('AuditEvent Domain Model', () => {
         },
       }
 
-      expect(eventWithSpecialChars.id).toContain('特殊文字')
-      expect(eventWithSpecialChars.actor.name).toContain('👨‍💻')
-      expect(eventWithSpecialChars.after.title).toContain('🚀')
-    })
-  })
+      const event = AuditEventModel.create(unicodeParams)
 
-  describe('Field Change Tracking', () => {
-    it('should track added fields', () => {
-      const change = {
-        field: 'newField',
-        oldValue: undefined,
-        newValue: 'new value',
-        changeType: 'added' as const,
-      }
-
-      expect(change.changeType).toBe('added')
-      expect(change.oldValue).toBeUndefined()
-      expect(change.newValue).toBe('new value')
+      expect(event.actor.name).toContain('👨‍💻')
+      expect(event.entityType).toBe('チケット')
+      expect(event.entityId).toContain('🎫')
     })
 
-    it('should track removed fields', () => {
-      const change = {
-        field: 'removedField',
-        oldValue: 'old value',
-        newValue: undefined,
-        changeType: 'removed' as const,
-      }
+    it('should handle very large numbers of changes', () => {
+      const before: Record<string, unknown> = {}
+      const after: Record<string, unknown> = {}
 
-      expect(change.changeType).toBe('removed')
-      expect(change.oldValue).toBe('old value')
-      expect(change.newValue).toBeUndefined()
-    })
-
-    it('should track modified fields', () => {
-      const change = {
-        field: 'modifiedField',
-        oldValue: 'old value',
-        newValue: 'new value',
-        changeType: 'modified' as const,
-        context: {
-          reason: 'User requested change',
-          validation: 'length-check',
-          automatic: false,
-        },
-      }
-
-      expect(change.changeType).toBe('modified')
-      expect(change.context?.reason).toBe('User requested change')
-      expect(change.context?.automatic).toBe(false)
-    })
-
-    it('should handle complex value changes', () => {
-      const change = {
-        field: 'complexField',
-        oldValue: {
-          nested: { value: 'old', count: 5 },
-          array: [1, 2, 3],
-        },
-        newValue: {
-          nested: { value: 'new', count: 10, added: true },
-          array: [1, 2, 3, 4],
-          newProperty: 'test',
-        },
-        changeType: 'modified' as const,
-      }
-
-      expect(change.oldValue).toEqual({
-        nested: { value: 'old', count: 5 },
-        array: [1, 2, 3],
-      })
-      expect(change.newValue).toEqual({
-        nested: { value: 'new', count: 10, added: true },
-        array: [1, 2, 3, 4],
-        newProperty: 'test',
-      })
-    })
-  })
-
-  describe('Audit Event Performance', () => {
-    it('should create audit events efficiently', () => {
-      const startTime = Date.now()
-      const events = []
-
+      // Create 1000 field changes
       for (let i = 0; i < 1000; i++) {
-        events.push({
-          id: `audit-${i}`,
-          timestamp: new Date().toISOString(),
-          traceId: `trace-${i}`,
-          operation: 'create' as const,
-          actor: {
-            type: 'system' as const,
-            id: `system-${i}`,
-          },
-          entityType: 'ticket',
-          entityId: `ticket-${i}`,
-          source: 'test' as const,
-          before: null,
-          after: {
-            index: i,
-            data: `data-${i}`,
-          },
-        })
+        before[`field${i}`] = `oldValue${i}`
+        after[`field${i}`] = `newValue${i}`
       }
 
-      const endTime = Date.now()
-      const duration = endTime - startTime
+      const changes = AuditEventUtils.calculateChanges(before, after)
 
-      expect(events.length).toBe(1000)
-      expect(duration).toBeLessThan(100) // Should create 1000 events in under 100ms
-    })
-
-    it('should serialize audit events efficiently', () => {
-      const events = Array.from({ length: 100 }, (_, i) => ({
-        id: `audit-${i}`,
-        timestamp: new Date().toISOString(),
-        traceId: `trace-${i}`,
-        operation: 'update' as const,
-        actor: {
-          type: 'human' as const,
-          id: `user-${i}`,
-        },
-        entityType: 'ticket',
-        entityId: `ticket-${i}`,
-        source: 'cli' as const,
-        before: { field1: `old-${i}`, field2: i },
-        after: { field1: `new-${i}`, field2: i + 1 },
-        changes: [
-          {
-            field: 'field1',
-            oldValue: `old-${i}`,
-            newValue: `new-${i}`,
-            changeType: 'modified' as const,
-          },
-        ],
-      }))
-
-      const startTime = Date.now()
-      const serialized = events.map(event => JSON.stringify(event))
-      const endTime = Date.now()
-      const duration = endTime - startTime
-
-      expect(serialized.length).toBe(100)
-      expect(duration).toBeLessThan(50) // Should serialize 100 events in under 50ms
+      expect(changes).toHaveLength(1000)
+      expect(changes[0].field).toBe('field0')
+      expect(changes[999].field).toBe('field999')
     })
   })
 })

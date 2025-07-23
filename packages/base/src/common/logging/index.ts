@@ -49,5 +49,7 @@ export type {
   ArchitectureLayer,
   LogContext,
   LogMetadata,
+  LogSource,
+  OperationType,
 } from './types/log-metadata.ts'
 export type { TraceContext } from './types/trace-context.ts'

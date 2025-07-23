@@ -4,12 +4,15 @@
  * Provides comprehensive configuration options for different environments,
  * transport mechanisms, performance tuning, and operational settings.
  */
+
+import { type EnvironmentMode } from '../../environment/environment-mode.ts'
+import { type LogLevel, LogLevelValues } from '../types/log-level.ts'
 export interface LogConfig {
   /** Minimum log level to output (debug, info, warn, error, fatal) */
   level: LogLevel
 
   /** Environment mode affecting default behaviors */
-  environment: Environment
+  environment: EnvironmentMode
 
   /** Optional path to main application log file */
   logFile?: string
@@ -33,27 +36,6 @@ export interface LogConfig {
   sampling?: LogSamplingConfig
 }
 
-/**
- * Log level enumeration with hierarchical ordering.
- * Each level includes all higher-severity levels.
- */
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal'
-
-/**
- * Numeric representation of log levels for comparison.
- */
-export const LogLevelValues = {
-  debug: 0,
-  info: 1,
-  warn: 2,
-  error: 3,
-  fatal: 4,
-} as const
-
-/**
- * Environment enumeration affecting logging behavior.
- */
-export type Environment = 'development' | 'test' | 'production'
 
 /**
  * Transport configuration specifying where and how logs are output.
@@ -153,7 +135,7 @@ export const LogConfigPresets = {
    */
   development: {
     level: 'debug' as LogLevel,
-    environment: 'development' as Environment,
+    environment: 'development' as EnvironmentMode,
     transport: {
       type: 'console' as TransportType,
       colorize: true,
@@ -165,7 +147,7 @@ export const LogConfigPresets = {
    */
   test: {
     level: 'warn' as LogLevel,
-    environment: 'test' as Environment,
+    environment: 'testing' as EnvironmentMode,
     transport: {
       type: 'memory' as TransportType,
       maxEntries: 1000,
@@ -177,7 +159,7 @@ export const LogConfigPresets = {
    */
   production: {
     level: 'info' as LogLevel,
-    environment: 'production' as Environment,
+    environment: 'production' as EnvironmentMode,
     logFile: '~/.local/share/project-manager/logs/app.log',
     auditFile: '~/.local/share/project-manager/logs/audit.log',
     transport: {
@@ -311,7 +293,7 @@ export const LogConfigUtils = {
     }
 
     // Validate environment
-    if (!['development', 'test', 'production'].includes(config.environment)) {
+    if (!['development', 'testing', 'production', 'in-memory', 'isolated'].includes(config.environment)) {
       errors.push(`Invalid environment: ${config.environment}`)
     }
 
@@ -323,6 +305,14 @@ export const LogConfigUtils = {
     // Validate file paths for file transport
     if (config.transport.type === 'file' && !config.logFile) {
       errors.push('Log file path required for file transport')
+    }
+
+    // Validate that file paths are not empty strings
+    if (config.logFile !== undefined && config.logFile.trim() === '') {
+      errors.push('Log file path cannot be empty')
+    }
+    if (config.auditFile !== undefined && config.auditFile.trim() === '') {
+      errors.push('Audit file path cannot be empty')
     }
 
     // Validate rotation settings

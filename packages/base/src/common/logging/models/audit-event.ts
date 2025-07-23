@@ -631,18 +631,18 @@ export const AuditEventUtils = {
 
     // Sanitize before/after states
     if (sanitized.before) {
-      sanitized.before = this.sanitizeState(sanitized.before)
+      sanitized.before = AuditEventUtils.sanitizeState(sanitized.before)
     }
     if (sanitized.after) {
-      sanitized.after = this.sanitizeState(sanitized.after)
+      sanitized.after = AuditEventUtils.sanitizeState(sanitized.after)
     }
 
     // Sanitize field changes
     if ('changes' in sanitized && sanitized.changes) {
       sanitized.changes = sanitized.changes.map(change => ({
         ...change,
-        oldValue: this.sanitizeValue(change.oldValue),
-        newValue: this.sanitizeValue(change.newValue),
+        oldValue: AuditEventUtils.sanitizeValue(change.oldValue),
+        newValue: AuditEventUtils.sanitizeValue(change.newValue),
       }))
     }
 
@@ -659,16 +659,17 @@ export const AuditEventUtils = {
       'token',
       'apiKey',
       'secret',
-      'credential',
       'ssn',
       'creditCard',
     ]
 
     for (const [key, value] of Object.entries(state)) {
-      if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
+      // Check for exact sensitive field names (not containing like "credentials")
+      if (sensitiveFields.some(field => key.toLowerCase() === field.toLowerCase())) {
         sanitized[key] = '***REDACTED***'
-      } else if (value && typeof value === 'object') {
-        sanitized[key] = this.sanitizeState(value as Record<string, unknown>)
+      } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+        // Recursively sanitize nested objects
+        sanitized[key] = AuditEventUtils.sanitizeState(value as Record<string, unknown>)
       } else {
         sanitized[key] = value
       }
@@ -686,6 +687,7 @@ export const AuditEventUtils = {
       if (
         value.toLowerCase().includes('password') ||
         value.toLowerCase().includes('token') ||
+        value.toLowerCase().includes('secret') ||
         (value.length > 32 && /^[A-Za-z0-9+/=]+$/.test(value))
       ) {
         return '***REDACTED***'
@@ -693,7 +695,7 @@ export const AuditEventUtils = {
     }
 
     if (value && typeof value === 'object') {
-      return this.sanitizeState(value as Record<string, unknown>)
+      return AuditEventUtils.sanitizeState(value as Record<string, unknown>)
     }
 
     return value

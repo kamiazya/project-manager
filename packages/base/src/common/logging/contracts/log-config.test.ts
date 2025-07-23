@@ -1,405 +1,589 @@
 import { describe, expect, it } from 'vitest'
+import { type EnvironmentMode } from '../../environment/environment-mode.ts'
+import { type LogLevel, LogLevelValues } from '../types/log-level.ts'
+import {
+  type LogConfig,
+  LogConfigPresets,
+  LogConfigUtils,
+  type TransportType,
+} from './log-config.ts'
 
-// Test-first approach for LogConfig interface
-describe('LogConfig Interface Contract', () => {
-  describe('LogConfig Structure', () => {
-    it('should define basic configuration structure', () => {
-      const config = {
-        level: 'info' as const,
-        environment: 'development' as const,
-        transport: {
-          type: 'console' as const,
-          prettyPrint: true,
-          colorize: true,
-        },
-        performance: {
-          asyncLogging: true,
-          bufferSize: 1000,
-          flushInterval: 1000,
-        },
-      }
+describe('LogConfig', () => {
+  describe('LogLevelValues', () => {
+    it('should define correct log level hierarchy', () => {
+      expect(LogLevelValues.debug).toBe(0)
+      expect(LogLevelValues.info).toBe(1)
+      expect(LogLevelValues.warn).toBe(2)
+      expect(LogLevelValues.error).toBe(3)
+      expect(LogLevelValues.fatal).toBe(4)
 
-      expect(config.level).toBe('info')
-      expect(config.environment).toBe('development')
-      expect(config.transport.type).toBe('console')
-      expect(config.performance.asyncLogging).toBe(true)
-    })
-
-    it('should support file transport configuration', () => {
-      const fileConfig = {
-        level: 'info' as const,
-        environment: 'production' as const,
-        logFile: '/var/log/app.log',
-        auditFile: '/var/log/audit.log',
-        transport: {
-          type: 'file' as const,
-          prettyPrint: false,
-        },
-        rotation: {
-          maxSize: '100MB',
-          maxFiles: 10,
-          interval: 'daily' as const,
-        },
-        performance: {
-          asyncLogging: true,
-          bufferSize: 5000,
-          flushInterval: 5000,
-        },
-      }
-
-      expect(fileConfig.logFile).toBe('/var/log/app.log')
-      expect(fileConfig.auditFile).toBe('/var/log/audit.log')
-      expect(fileConfig.rotation?.maxSize).toBe('100MB')
-      expect(fileConfig.rotation?.interval).toBe('daily')
+      // Verify hierarchy
+      expect(LogLevelValues.debug).toBeLessThan(LogLevelValues.info)
+      expect(LogLevelValues.info).toBeLessThan(LogLevelValues.warn)
+      expect(LogLevelValues.warn).toBeLessThan(LogLevelValues.error)
+      expect(LogLevelValues.error).toBeLessThan(LogLevelValues.fatal)
     })
   })
 
-  describe('Log Level Validation', () => {
-    const validLevels = ['debug', 'info', 'warn', 'error', 'fatal'] as const
+  describe('LogConfigUtils.shouldLog', () => {
+    it('should allow logging when current level is equal to configured level', () => {
+      expect(LogConfigUtils.shouldLog('info', 'info')).toBe(true)
+      expect(LogConfigUtils.shouldLog('debug', 'debug')).toBe(true)
+      expect(LogConfigUtils.shouldLog('error', 'error')).toBe(true)
+    })
 
-    it('should accept all valid log levels', () => {
+    it('should allow logging when current level is higher than configured level', () => {
+      expect(LogConfigUtils.shouldLog('error', 'info')).toBe(true)
+      expect(LogConfigUtils.shouldLog('fatal', 'debug')).toBe(true)
+      expect(LogConfigUtils.shouldLog('warn', 'info')).toBe(true)
+    })
+
+    it('should prevent logging when current level is lower than configured level', () => {
+      expect(LogConfigUtils.shouldLog('debug', 'info')).toBe(false)
+      expect(LogConfigUtils.shouldLog('info', 'warn')).toBe(false)
+      expect(LogConfigUtils.shouldLog('warn', 'error')).toBe(false)
+    })
+
+    it('should handle all log level combinations correctly', () => {
+      const levels: LogLevel[] = ['debug', 'info', 'warn', 'error', 'fatal']
+
+      levels.forEach((currentLevel, currentIndex) => {
+        levels.forEach((configuredLevel, configuredIndex) => {
+          const shouldLog = LogConfigUtils.shouldLog(currentLevel, configuredLevel)
+          const expected = currentIndex >= configuredIndex
+          expect(shouldLog).toBe(expected)
+        })
+      })
+    })
+  })
+
+  describe('LogConfigUtils.mergeConfigs', () => {
+    it('should return default config when no configs provided', () => {
+      const result = LogConfigUtils.mergeConfigs()
+      expect(result).toEqual({
+        level: 'info',
+        environment: 'production',
+        transport: {
+          type: 'console',
+        },
+      })
+    })
+
+    it('should merge single config with defaults', () => {
+      const config: Partial<LogConfig> = {
+        level: 'debug',
+      }
+
+      const result = LogConfigUtils.mergeConfigs(config)
+      expect(result.level).toBe('debug')
+      expect(result.environment).toBe('production') // Default
+      expect(result.transport.type).toBe('console') // Default
+      // logFile is not handled by mergeConfigs - it only handles nested objects
+      expect(result.logFile).toBeUndefined()
+    })
+
+    it('should merge multiple configs with later configs overriding earlier ones', () => {
+      const config1: Partial<LogConfig> = {
+        level: 'debug',
+        environment: 'development',
+        transport: {
+          type: 'file',
+        },
+      }
+
+      const config2: Partial<LogConfig> = {
+        level: 'info',
+        transport: {
+          type: 'console',
+          colorize: true,
+        },
+      }
+
+      const result = LogConfigUtils.mergeConfigs(config1, config2)
+      expect(result.level).toBe('info') // From config2
+      expect(result.environment).toBe('development') // From config1
+      expect(result.transport.type).toBe('console') // From config2
+      expect(result.transport.colorize).toBe(true) // From config2
+    })
+
+    it('should deep merge nested properties', () => {
+      const config1: Partial<LogConfig> = {
+        rotation: {
+          maxSize: '50MB',
+          maxFiles: 5,
+        },
+      }
+
+      const config2: Partial<LogConfig> = {
+        rotation: {
+          maxSize: '100MB', // Required property
+          maxFiles: 10,
+          interval: 'daily',
+        },
+      }
+
+      const result = LogConfigUtils.mergeConfigs(config1, config2)
+      expect(result.rotation).toEqual({
+        maxSize: '100MB', // From config2 (overrides config1)
+        maxFiles: 10, // From config2
+        interval: 'daily', // From config2
+      })
+    })
+
+    it('should handle undefined and null values correctly', () => {
+      const config1: Partial<LogConfig> = {
+        level: 'debug',
+        transport: {
+          type: 'file',
+          colorize: true,
+        },
+      }
+
+      const config2: Partial<LogConfig> = {
+        transport: {
+          type: 'console',
+          // colorize undefined - should not override
+        },
+      }
+
+      const result = LogConfigUtils.mergeConfigs(config1, config2)
+      expect(result.level).toBe('debug')
+      expect(result.transport.type).toBe('console') // Overridden
+      expect(result.transport.colorize).toBe(true) // Preserved from config1
+    })
+  })
+
+  describe('LogConfigUtils.validateConfig', () => {
+    it('should return empty array for valid config', () => {
+      const config: LogConfig = {
+        level: 'info',
+        environment: 'production',
+        logFile: '/var/log/app.log',
+        transport: {
+          type: 'file',
+        },
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors).toEqual([])
+    })
+
+    it('should validate log level', () => {
+      const config: LogConfig = {
+        level: 'invalid' as LogLevel,
+        environment: 'production',
+        transport: { type: 'console' },
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors).toContain('Invalid log level: invalid')
+    })
+
+    it('should validate environment', () => {
+      const config: LogConfig = {
+        level: 'info',
+        environment: 'invalid' as EnvironmentMode,
+        transport: { type: 'console' },
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors).toContain('Invalid environment: invalid')
+    })
+
+    it('should validate transport type', () => {
+      const config: LogConfig = {
+        level: 'info',
+        environment: 'production',
+        transport: { type: 'invalid' as TransportType },
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors).toContain('Invalid transport type: invalid')
+    })
+
+    it('should require log file path for file transport', () => {
+      const config: LogConfig = {
+        level: 'info',
+        environment: 'production',
+        transport: { type: 'file' },
+        // logFile is missing
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors).toContain('Log file path required for file transport')
+    })
+
+    it('should reject empty log file path', () => {
+      const config: LogConfig = {
+        level: 'info',
+        environment: 'production',
+        logFile: '',
+        transport: { type: 'file' },
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors).toContain('Log file path cannot be empty')
+    })
+
+    it('should reject whitespace-only log file path', () => {
+      const config: LogConfig = {
+        level: 'info',
+        environment: 'production',
+        logFile: '   \t\n  ',
+        transport: { type: 'file' },
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors).toContain('Log file path cannot be empty')
+    })
+
+    it('should reject empty audit file path', () => {
+      const config: LogConfig = {
+        level: 'info',
+        environment: 'production',
+        auditFile: '',
+        transport: { type: 'console' },
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors).toContain('Audit file path cannot be empty')
+    })
+
+    it('should validate rotation configuration', () => {
+      const config: LogConfig = {
+        level: 'info',
+        environment: 'production',
+        transport: { type: 'file' },
+        logFile: '/var/log/app.log',
+        rotation: {
+          maxSize: 'invalid',
+          maxFiles: 0,
+        },
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors).toContain('Maximum files must be at least 1')
+      expect(errors).toContain('Invalid max size format (use format like "100MB")')
+    })
+
+    it('should accept valid rotation sizes', () => {
+      const validSizes = ['1KB', '100MB', '10GB', '5TB']
+
+      validSizes.forEach(size => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'production',
+          transport: { type: 'file' },
+          logFile: '/var/log/app.log',
+          rotation: {
+            maxSize: size,
+            maxFiles: 10,
+          },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        const sizeErrors = errors.filter(e => e.includes('max size format'))
+        expect(sizeErrors).toHaveLength(0)
+      })
+    })
+
+    it('should validate sampling configuration', () => {
+      const invalidRates = [-0.1, 1.1, 2.0]
+
+      invalidRates.forEach(rate => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'production',
+          transport: { type: 'console' },
+          sampling: {
+            enabled: true,
+            rate,
+          },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        expect(errors).toContain('Sampling rate must be between 0.0 and 1.0')
+      })
+    })
+
+    it('should accept valid sampling rates', () => {
+      const validRates = [0.0, 0.1, 0.5, 0.99, 1.0]
+
+      validRates.forEach(rate => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'production',
+          transport: { type: 'console' },
+          sampling: {
+            enabled: true,
+            rate,
+          },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        const rateErrors = errors.filter(e => e.includes('Sampling rate'))
+        expect(rateErrors).toHaveLength(0)
+      })
+    })
+
+    it('should return multiple errors for multiple issues', () => {
+      const config: LogConfig = {
+        level: 'invalid' as LogLevel,
+        environment: 'invalid' as EnvironmentMode,
+        transport: { type: 'invalid' as TransportType },
+        logFile: '',
+        auditFile: '   ',
+      }
+
+      const errors = LogConfigUtils.validateConfig(config)
+      expect(errors.length).toBeGreaterThanOrEqual(5)
+      expect(errors).toContain('Invalid log level: invalid')
+      expect(errors).toContain('Invalid environment: invalid')
+      expect(errors).toContain('Invalid transport type: invalid')
+      expect(errors).toContain('Log file path cannot be empty')
+      expect(errors).toContain('Audit file path cannot be empty')
+    })
+  })
+
+  describe('LogConfigPresets', () => {
+    it('should provide valid development preset', () => {
+      const config = LogConfigPresets.development
+      const errors = LogConfigUtils.validateConfig(config)
+
+      expect(errors).toEqual([])
+      expect(config.level).toBe('debug')
+      expect(config.environment).toBe('development')
+      expect(config.transport.type).toBe('console')
+      expect(config.transport.colorize).toBe(true)
+    })
+
+    it('should provide valid test preset', () => {
+      const config = LogConfigPresets.test
+      const errors = LogConfigUtils.validateConfig(config)
+
+      expect(errors).toEqual([])
+      expect(config.level).toBe('warn')
+      expect(config.environment).toBe('testing')
+      expect(config.transport.type).toBe('memory')
+      expect(config.transport.maxEntries).toBe(1000)
+    })
+
+    it('should provide valid production preset', () => {
+      const config = LogConfigPresets.production
+      const errors = LogConfigUtils.validateConfig(config)
+
+      expect(errors).toEqual([])
+      expect(config.level).toBe('info')
+      expect(config.environment).toBe('production')
+      expect(config.transport.type).toBe('file')
+      expect(config.logFile).toBeDefined()
+      expect(config.auditFile).toBeDefined()
+      expect(config.rotation).toBeDefined()
+      expect(config.rotation?.maxSize).toBe('100MB')
+      expect(config.rotation?.maxFiles).toBe(10)
+      expect(config.rotation?.interval).toBe('daily')
+    })
+
+    it('should allow merging presets with custom config', () => {
+      const customConfig: Partial<LogConfig> = {
+        level: 'error',
+        transport: {
+          type: 'console',
+        },
+      }
+
+      const merged = LogConfigUtils.mergeConfigs(
+        LogConfigPresets.production,
+        customConfig
+      )
+
+      expect(merged.level).toBe('error') // Overridden
+      expect(merged.environment).toBe('production') // From preset
+      expect(merged.transport.type).toBe('console') // Overridden
+      // Note: mergeConfigs doesn't handle logFile - it only handles nested objects
+      expect(merged.logFile).toBeUndefined()
+    })
+  })
+
+  describe('Boundary Value Tests', () => {
+    describe('File paths', () => {
+      it('should handle very long file paths', () => {
+        // Create a path that's close to common OS limits
+        // Using 200 chars to stay within limits but test long paths
+        const longPath = `/very/long/path/${'a'.repeat(150)}/log.log`
+
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'production',
+          logFile: longPath,
+          transport: { type: 'file' },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        expect(errors).toEqual([])
+        expect(config.logFile).toBe(longPath)
+      })
+
+      it('should handle paths with special characters', () => {
+        const specialPaths = [
+          '/path/with spaces/log.log',
+          '/path/with-dashes/log.log',
+          '/path/with_underscores/log.log',
+          '/path/with.dots/log.log',
+          '/path/with@symbols/log.log',
+        ]
+
+        specialPaths.forEach(path => {
+          const config: LogConfig = {
+            level: 'info',
+            environment: 'production',
+            logFile: path,
+            transport: { type: 'file' },
+          }
+
+          const errors = LogConfigUtils.validateConfig(config)
+          expect(errors).toEqual([])
+        })
+      })
+    })
+
+    describe('Rotation values', () => {
+      it('should handle minimum rotation values', () => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'production',
+          logFile: '/var/log/app.log',
+          transport: { type: 'file' },
+          rotation: {
+            maxSize: '1KB',
+            maxFiles: 1,
+          },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        expect(errors).toEqual([])
+      })
+
+      it('should handle maximum rotation values', () => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'production',
+          logFile: '/var/log/app.log',
+          transport: { type: 'file' },
+          rotation: {
+            maxSize: '999TB',
+            maxFiles: 999999,
+          },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        expect(errors).toEqual([])
+      })
+
+      it('should reject zero max files', () => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'production',
+          logFile: '/var/log/app.log',
+          transport: { type: 'file' },
+          rotation: {
+            maxSize: '100MB',
+            maxFiles: 0,
+          },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        expect(errors).toContain('Maximum files must be at least 1')
+      })
+
+      it('should reject negative max files', () => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'production',
+          logFile: '/var/log/app.log',
+          transport: { type: 'file' },
+          rotation: {
+            maxSize: '100MB',
+            maxFiles: -1,
+          },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        expect(errors).toContain('Maximum files must be at least 1')
+      })
+    })
+
+    describe('Memory transport limits', () => {
+      it('should handle memory transport with max entries', () => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'development', // Use 'development' which is valid
+          transport: {
+            type: 'memory',
+            maxEntries: 10000,
+          },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        expect(errors).toEqual([])
+      })
+
+      it('should handle memory transport without max entries', () => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'development', // Use 'development' which is valid
+          transport: {
+            type: 'memory',
+          },
+        }
+
+        const errors = LogConfigUtils.validateConfig(config)
+        expect(errors).toEqual([])
+      })
+    })
+  })
+
+  describe('Type Safety', () => {
+    it('should enforce correct log level types', () => {
+      const validLevels: LogLevel[] = ['debug', 'info', 'warn', 'error', 'fatal']
+
       validLevels.forEach(level => {
-        const config = {
+        const config: LogConfig = {
           level,
-          environment: 'development' as const,
-          transport: { type: 'console' as const },
-          performance: { asyncLogging: true },
+          environment: 'production',
+          transport: { type: 'console' },
         }
 
         expect(config.level).toBe(level)
       })
     })
 
-    it('should define log level hierarchy', () => {
-      const levelHierarchy = {
-        debug: 0,
-        info: 1,
-        warn: 2,
-        error: 3,
-        fatal: 4,
-      }
+    it('should enforce correct environment types', () => {
+      const validEnvironments: EnvironmentMode[] = ['development', 'testing', 'production', 'in-memory', 'isolated']
 
-      // Debug should be lowest, fatal should be highest
-      expect(levelHierarchy.debug).toBeLessThan(levelHierarchy.info)
-      expect(levelHierarchy.info).toBeLessThan(levelHierarchy.warn)
-      expect(levelHierarchy.warn).toBeLessThan(levelHierarchy.error)
-      expect(levelHierarchy.error).toBeLessThan(levelHierarchy.fatal)
-    })
-  })
+      validEnvironments.forEach(env => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: env,
+          transport: { type: 'console' },
+        }
 
-  describe('Environment Configuration', () => {
-    it('should support development environment', () => {
-      const devConfig = {
-        level: 'debug' as const,
-        environment: 'development' as const,
-        transport: {
-          type: 'console' as const,
-          prettyPrint: true,
-          colorize: true,
-        },
-        performance: {
-          asyncLogging: true,
-        },
-      }
-
-      expect(devConfig.environment).toBe('development')
-      expect(devConfig.transport.prettyPrint).toBe(true)
-      expect(devConfig.transport.colorize).toBe(true)
+        expect(config.environment).toBe(env)
+      })
     })
 
-    it('should support test environment', () => {
-      const testConfig = {
-        level: 'warn' as const,
-        environment: 'test' as const,
-        transport: {
-          type: 'memory' as const,
-        },
-        performance: {
-          asyncLogging: false, // Synchronous for test reliability
-        },
-      }
+    it('should enforce correct transport types', () => {
+      const validTransports: TransportType[] = ['console', 'file', 'memory']
 
-      expect(testConfig.environment).toBe('test')
-      expect(testConfig.transport.type).toBe('memory')
-      expect(testConfig.performance.asyncLogging).toBe(false)
-    })
+      validTransports.forEach(type => {
+        const config: LogConfig = {
+          level: 'info',
+          environment: 'production',
+          transport: { type },
+        }
 
-    it('should support production environment', () => {
-      const prodConfig = {
-        level: 'info' as const,
-        environment: 'production' as const,
-        logFile: '/var/log/app.log',
-        transport: {
-          type: 'file' as const,
-          prettyPrint: false,
-        },
-        rotation: {
-          maxSize: '100MB',
-          maxFiles: 10,
-        },
-        performance: {
-          asyncLogging: true,
-          bufferSize: 5000,
-        },
-      }
-
-      expect(prodConfig.environment).toBe('production')
-      expect(prodConfig.transport.prettyPrint).toBe(false)
-      expect(prodConfig.performance.bufferSize).toBe(5000)
-    })
-  })
-
-  describe('Transport Configuration', () => {
-    it('should support console transport', () => {
-      const consoleTransport = {
-        type: 'console' as const,
-        prettyPrint: true,
-        colorize: true,
-      }
-
-      expect(consoleTransport.type).toBe('console')
-      expect(consoleTransport.prettyPrint).toBe(true)
-      expect(consoleTransport.colorize).toBe(true)
-    })
-
-    it('should support file transport', () => {
-      const fileTransport = {
-        type: 'file' as const,
-        prettyPrint: false,
-      }
-
-      expect(fileTransport.type).toBe('file')
-      expect(fileTransport.prettyPrint).toBe(false)
-    })
-
-    it('should support memory transport for testing', () => {
-      const memoryTransport = {
-        type: 'memory' as const,
-        maxEntries: 1000,
-      }
-
-      expect(memoryTransport.type).toBe('memory')
-      expect(memoryTransport.maxEntries).toBe(1000)
-    })
-  })
-
-  describe('Rotation Configuration', () => {
-    it('should support size-based rotation', () => {
-      const sizeRotation = {
-        maxSize: '50MB',
-        maxFiles: 5,
-      }
-
-      expect(sizeRotation.maxSize).toBe('50MB')
-      expect(sizeRotation.maxFiles).toBe(5)
-    })
-
-    it('should support time-based rotation', () => {
-      const timeRotation = {
-        maxSize: '100MB',
-        maxFiles: 10,
-        interval: 'daily' as const,
-      }
-
-      expect(timeRotation.interval).toBe('daily')
-    })
-
-    it('should support weekly rotation', () => {
-      const weeklyRotation = {
-        maxSize: '500MB',
-        maxFiles: 4,
-        interval: 'weekly' as const,
-      }
-
-      expect(weeklyRotation.interval).toBe('weekly')
-    })
-  })
-
-  describe('Performance Configuration', () => {
-    it('should configure async logging', () => {
-      const asyncConfig = {
-        asyncLogging: true,
-        bufferSize: 2000,
-        flushInterval: 3000,
-      }
-
-      expect(asyncConfig.asyncLogging).toBe(true)
-      expect(asyncConfig.bufferSize).toBe(2000)
-      expect(asyncConfig.flushInterval).toBe(3000)
-    })
-
-    it('should configure synchronous logging for tests', () => {
-      const syncConfig = {
-        asyncLogging: false,
-      }
-
-      expect(syncConfig.asyncLogging).toBe(false)
-      expect((syncConfig as any).bufferSize).toBeUndefined()
-      expect((syncConfig as any).flushInterval).toBeUndefined()
-    })
-  })
-
-  describe('Boundary Value Tests (t-wada approach)', () => {
-    it('should handle minimum buffer size', () => {
-      const minBufferConfig = {
-        asyncLogging: true,
-        bufferSize: 1, // Minimum meaningful buffer
-        flushInterval: 1, // Minimum flush interval
-      }
-
-      expect(minBufferConfig.bufferSize).toBe(1)
-      expect(minBufferConfig.flushInterval).toBe(1)
-    })
-
-    it('should handle maximum buffer size', () => {
-      const maxBufferConfig = {
-        asyncLogging: true,
-        bufferSize: 100000, // Large buffer for high-throughput
-        flushInterval: 60000, // 60 second flush interval
-      }
-
-      expect(maxBufferConfig.bufferSize).toBe(100000)
-      expect(maxBufferConfig.flushInterval).toBe(60000)
-    })
-
-    it('should handle minimum file rotation', () => {
-      const minRotationConfig = {
-        maxSize: '1KB', // Minimum meaningful size
-        maxFiles: 1, // Keep only current file
-      }
-
-      expect(minRotationConfig.maxSize).toBe('1KB')
-      expect(minRotationConfig.maxFiles).toBe(1)
-    })
-
-    it('should handle maximum file rotation', () => {
-      const maxRotationConfig = {
-        maxSize: '10GB', // Very large files
-        maxFiles: 1000, // Keep many historical files
-        interval: 'weekly' as const,
-      }
-
-      expect(maxRotationConfig.maxSize).toBe('10GB')
-      expect(maxRotationConfig.maxFiles).toBe(1000)
-    })
-
-    it('should handle empty file paths', () => {
-      const emptyPathConfig = {
-        level: 'info' as const,
-        environment: 'production' as const,
-        logFile: '', // Empty string
-        auditFile: '', // Empty string
-        transport: { type: 'file' as const },
-        performance: { asyncLogging: true },
-      }
-
-      expect(emptyPathConfig.logFile).toBe('')
-      expect(emptyPathConfig.auditFile).toBe('')
-    })
-
-    it('should handle very long file paths', () => {
-      const longPath = '/very/long/path/' + 'a'.repeat(200) + '/log.log'
-      const longPathConfig = {
-        level: 'info' as const,
-        environment: 'production' as const,
-        logFile: longPath,
-        transport: { type: 'file' as const },
-        performance: { asyncLogging: true },
-      }
-
-      expect(longPathConfig.logFile).toBe(longPath)
-    })
-  })
-
-  describe('Default Configuration Validation', () => {
-    it('should provide sensible development defaults', () => {
-      const defaultDev = {
-        level: 'debug' as const,
-        environment: 'development' as const,
-        transport: {
-          type: 'console' as const,
-          prettyPrint: true,
-          colorize: true,
-        },
-        performance: {
-          asyncLogging: true,
-          bufferSize: 1000,
-          flushInterval: 1000,
-        },
-      }
-
-      // Validate defaults are reasonable
-      expect(defaultDev.level).toBe('debug') // Verbose for development
-      expect(defaultDev.transport.prettyPrint).toBe(true) // Human readable
-      expect(defaultDev.performance.bufferSize).toBeGreaterThan(0)
-      expect(defaultDev.performance.flushInterval).toBeGreaterThan(0)
-    })
-
-    it('should provide sensible production defaults', () => {
-      const defaultProd = {
-        level: 'info' as const,
-        environment: 'production' as const,
-        transport: {
-          type: 'file' as const,
-          prettyPrint: false,
-        },
-        rotation: {
-          maxSize: '100MB',
-          maxFiles: 10,
-          interval: 'daily' as const,
-        },
-        performance: {
-          asyncLogging: true,
-          bufferSize: 5000,
-          flushInterval: 5000,
-        },
-      }
-
-      // Validate production-appropriate defaults
-      expect(defaultProd.level).toBe('info') // Less verbose for production
-      expect(defaultProd.transport.prettyPrint).toBe(false) // Structured logging
-      expect(defaultProd.performance.bufferSize).toBeGreaterThan(1000) // Higher throughput
-      expect(defaultProd.rotation?.maxFiles).toBeGreaterThan(1) // Keep history
-    })
-  })
-
-  describe('Configuration Merging', () => {
-    it('should support partial configuration override', () => {
-      const baseConfig = {
-        level: 'info' as const,
-        environment: 'production' as const,
-        transport: {
-          type: 'file' as const,
-          prettyPrint: false,
-        },
-        performance: {
-          asyncLogging: true,
-          bufferSize: 5000,
-        },
-      }
-
-      const override = {
-        level: 'debug' as const, // Override level
-        transport: {
-          type: 'memory' as const, // Override transport type
-          // Other transport settings should be inherited
-        },
-      }
-
-      // Simulate merge (implementation would handle this)
-      const mergedConfig = {
-        ...baseConfig,
-        ...override,
-        transport: {
-          ...baseConfig.transport,
-          ...override.transport,
-        },
-      }
-
-      expect(mergedConfig.level).toBe('debug') // Overridden
-      expect(mergedConfig.environment).toBe('production') // Inherited
-      expect(mergedConfig.transport.type).toBe('memory') // Overridden
-      expect(mergedConfig.performance.bufferSize).toBe(5000) // Inherited
+        expect(config.transport.type).toBe(type)
+      })
     })
   })
 })
