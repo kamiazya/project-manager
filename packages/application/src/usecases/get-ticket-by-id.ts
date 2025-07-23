@@ -27,7 +27,6 @@ export namespace GetTicketById {
       operationType: 'read',
       resourceType: 'Ticket',
       description: 'Retrieves a ticket by its ID',
-      useCaseName: 'GetTicketById',
 
       extractBeforeState: async (request: Request) => {
         // For read operations, we can capture what was requested

@@ -65,7 +65,6 @@ export namespace GetLogs {
       operationType: 'read',
       resourceType: 'LogEntry',
       description: 'Retrieves system logs with optional filtering',
-      useCaseName: 'GetLogs',
 
       extractBeforeState: async (request: Request) => {
         return {

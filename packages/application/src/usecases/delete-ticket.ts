@@ -17,7 +17,6 @@ export namespace DeleteTicket {
       operationType: 'delete',
       resourceType: 'Ticket',
       description: 'Deletes an existing ticket',
-      useCaseName: 'DeleteTicket',
 
       extractBeforeState: async (request: Request) => {
         // Get the ticket state before deletion

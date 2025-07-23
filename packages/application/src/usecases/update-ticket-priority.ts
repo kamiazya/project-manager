@@ -28,7 +28,6 @@ export namespace UpdateTicketPriority {
       operationType: 'update',
       resourceType: 'Ticket',
       description: 'Updates the priority of a ticket',
-      useCaseName: 'UpdateTicketPriority',
 
       extractBeforeState: async (request: Request) => {
         const ticketId = TicketId.create(request.id)

@@ -48,7 +48,6 @@ export namespace SearchTickets {
       operationType: 'search',
       resourceType: 'Ticket',
       description: 'Searches and filters tickets based on criteria',
-      useCaseName: 'SearchTickets',
 
       extractBeforeState: async (request: Request) => {
         // For search operations, capture the search criteria

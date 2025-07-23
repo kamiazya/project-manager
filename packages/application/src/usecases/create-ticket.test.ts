@@ -17,8 +17,7 @@ describe('CreateTicket', () => {
       delete: vi.fn(),
     }
     mockIdGenerator = {
-      generateTicketId: vi.fn().mockResolvedValue('a1b2c3d4'),
-      generateTicketIdSync: vi.fn().mockReturnValue('a1b2c3d4'),
+      generateId: vi.fn().mockReturnValue('a1b2c3d4'),
     }
 
     const mockLogger = {
@@ -93,9 +92,9 @@ describe('CreateTicket', () => {
 
     it('should generate unique IDs for multiple tickets', async () => {
       // Configure the mock to return different values for different calls
-      vi.mocked(mockIdGenerator.generateTicketId)
-        .mockResolvedValueOnce('a1b2c3d4')
-        .mockResolvedValueOnce('e5f6a7b8')
+      vi.mocked(mockIdGenerator.generateId)
+        .mockReturnValueOnce('a1b2c3d4')
+        .mockReturnValueOnce('e5f6a7b8')
 
       const request1: CreateTicket.Request = {
         title: 'Ticket 1',

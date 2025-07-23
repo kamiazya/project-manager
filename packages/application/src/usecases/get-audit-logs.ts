@@ -111,7 +111,6 @@ export namespace GetAuditLogs {
       operationType: 'read',
       resourceType: 'AuditLogEntry',
       description: 'Retrieves audit logs with optional filtering',
-      useCaseName: 'GetAuditLogs',
 
       extractBeforeState: async (request: Request) => {
         return {

@@ -32,7 +32,6 @@ export namespace CreateTicket {
       operationType: 'create',
       resourceType: 'Ticket',
       description: 'Creates a new ticket with specified properties',
-      useCaseName: 'CreateTicket',
 
       extractBeforeState: async (_request: Request) => {
         // For creation operations, there's no before state
@@ -65,7 +64,7 @@ export namespace CreateTicket {
       })
 
       // Generate ID using infrastructure service
-      const idValue = await this.idGenerator.generateTicketId()
+      const idValue = this.idGenerator.generateId()
       const ticketId = TicketId.create(idValue)
 
       await this.logger.debug('ID generation completed', {

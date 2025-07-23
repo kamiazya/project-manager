@@ -33,7 +33,6 @@ export namespace UpdateTicketContent {
       operationType: 'update',
       resourceType: 'Ticket',
       description: 'Updates ticket title and/or description',
-      useCaseName: 'UpdateTicketContent',
 
       extractBeforeState: async (request: Request) => {
         const ticketId = TicketId.create(request.id)
