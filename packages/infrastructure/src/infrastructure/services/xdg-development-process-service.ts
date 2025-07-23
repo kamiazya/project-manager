@@ -2,16 +2,20 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import type { DevelopmentProcessService } from '@project-manager/application'
+import type { DevelopmentProcessService, IdGenerator } from '@project-manager/application'
+import type { EnvironmentMode } from '@project-manager/base'
+import { getStorageDir } from '@project-manager/base'
 
 const ENV_VARS = {
   XDG_CONFIG_HOME: 'XDG_CONFIG_HOME',
   PM_PID_FILE: 'PM_PID_FILE',
+  PM_SESSION_ID: 'PM_SESSION_ID',
 } as const
 
 const PROCESS_CONFIG = {
   CONFIG_DIR_NAME: 'project-manager',
-  PID_FILE_NAME: '.dev-server.pid',
+  PID_FILE_PREFIX: '.dev-server',
+  PID_FILE_SUFFIX: '.pid',
 } as const
 
 /**
@@ -36,7 +40,7 @@ export class XdgDevelopmentProcessService implements DevelopmentProcessService {
    */
   readonly serviceId = 'XdgDevelopmentProcessService'
 
-  constructor(private mode?: string) {}
+  constructor(private mode?: EnvironmentMode) {}
 
   async registerProcess(processId: number): Promise<void> {
     this.currentProcessId = processId
@@ -143,7 +147,14 @@ export class XdgDevelopmentProcessService implements DevelopmentProcessService {
 
     // Use XDG-compliant directory structure with mode support
     const processDir = this.getProcessDir()
-    return join(processDir, PROCESS_CONFIG.PID_FILE_NAME)
+    const sessionId = process.env[ENV_VARS.PM_SESSION_ID]
+
+    // Construct PID filename with session ID support
+    const pidFileName = sessionId
+      ? `${PROCESS_CONFIG.PID_FILE_PREFIX}-${sessionId}${PROCESS_CONFIG.PID_FILE_SUFFIX}`
+      : `${PROCESS_CONFIG.PID_FILE_PREFIX}${PROCESS_CONFIG.PID_FILE_SUFFIX}`
+
+    return join(processDir, pidFileName)
   }
 
   private getProcessDir(): string {
