@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { ValidationError } from '../../errors/base-errors.ts'
+import type { FieldChange } from '../types/audit-event.ts'
 import {
   AuditEventModel,
+  AuditEventUtils,
   CreateAuditEventModel,
+  type CreateAuditEventParams,
+  DeleteAuditEventModel,
   ReadAuditEventModel,
   UpdateAuditEventModel,
-  DeleteAuditEventModel,
-  AuditEventUtils,
-  type CreateAuditEventParams,
 } from './audit-event.ts'
-import type { Actor, FieldChange } from '../types/audit-event.ts'
 
 describe('AuditEventModel', () => {
   const baseParams: CreateAuditEventParams = {

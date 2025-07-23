@@ -5,8 +5,6 @@
  * that accompanies log messages across all architectural layers.
  */
 
-import type { LogLevel } from './log-level.ts'
-
 /**
  * Core metadata interface for all log entries.
  * Provides essential context that should be included with log messages.

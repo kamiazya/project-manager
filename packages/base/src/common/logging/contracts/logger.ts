@@ -5,13 +5,7 @@
  * making it available to all other layers while keeping implementation details in Infrastructure.
  */
 
-import type {
-  ArchitectureLayer,
-  LogContext,
-  LogMetadata,
-  LogSource,
-  OperationType,
-} from '../types/log-metadata.ts'
+import type { LogContext, LogMetadata } from '../types/log-metadata.ts'
 export interface Logger {
   /**
    * Log debug information for development troubleshooting.

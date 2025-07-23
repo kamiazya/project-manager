@@ -654,14 +654,7 @@ export const AuditEventUtils = {
    */
   sanitizeState(state: Record<string, unknown>): Record<string, unknown> {
     const sanitized: Record<string, unknown> = {}
-    const sensitiveFields = [
-      'password',
-      'token',
-      'apiKey',
-      'secret',
-      'ssn',
-      'creditCard',
-    ]
+    const sensitiveFields = ['password', 'token', 'apiKey', 'secret', 'ssn', 'creditCard']
 
     for (const [key, value] of Object.entries(state)) {
       // Check for exact sensitive field names (not containing like "credentials")

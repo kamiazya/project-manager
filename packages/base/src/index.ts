@@ -43,11 +43,11 @@ export {
   shouldLogErrors,
   shouldLogVerbose,
 } from './common/environment/environment-utilities.ts'
+// Export commonly used logging types directly
+export type { ActorType, LogSource, OperationType } from './common/logging/index.ts'
 // Logging Infrastructure (Common Infrastructure)
 // Re-export the logging module for internal use
 export * as Logging from './common/logging/index.ts'
-// Export commonly used logging types directly
-export type { ActorType, LogSource, OperationType } from './common/logging/index.ts'
 // Type System (Shared Kernel)
 export * from './kernel/types/branded-types.ts'
 export * from './kernel/types/utility-types.ts'

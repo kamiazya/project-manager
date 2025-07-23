@@ -36,7 +36,6 @@ export interface LogConfig {
   sampling?: LogSamplingConfig
 }
 
-
 /**
  * Transport configuration specifying where and how logs are output.
  */
@@ -293,7 +292,11 @@ export const LogConfigUtils = {
     }
 
     // Validate environment
-    if (!['development', 'testing', 'production', 'in-memory', 'isolated'].includes(config.environment)) {
+    if (
+      !['development', 'testing', 'production', 'in-memory', 'isolated'].includes(
+        config.environment
+      )
+    ) {
       errors.push(`Invalid environment: ${config.environment}`)
     }
 

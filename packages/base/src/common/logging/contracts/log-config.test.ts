@@ -392,10 +392,7 @@ describe('LogConfig', () => {
         },
       }
 
-      const merged = LogConfigUtils.mergeConfigs(
-        LogConfigPresets.production,
-        customConfig
-      )
+      const merged = LogConfigUtils.mergeConfigs(LogConfigPresets.production, customConfig)
 
       expect(merged.level).toBe('error') // Overridden
       expect(merged.environment).toBe('production') // From preset
@@ -559,7 +556,13 @@ describe('LogConfig', () => {
     })
 
     it('should enforce correct environment types', () => {
-      const validEnvironments: EnvironmentMode[] = ['development', 'testing', 'production', 'in-memory', 'isolated']
+      const validEnvironments: EnvironmentMode[] = [
+        'development',
+        'testing',
+        'production',
+        'in-memory',
+        'isolated',
+      ]
 
       validEnvironments.forEach(env => {
         const config: LogConfig = {

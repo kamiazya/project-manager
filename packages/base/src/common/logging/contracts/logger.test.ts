@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { Logger } from './logger.ts'
 import {
-  LogMetadataUtils,
+  type ArchitectureLayer,
   type LogContext,
   type LogMetadata,
-  type OperationType,
-  type ArchitectureLayer,
+  LogMetadataUtils,
   type LogSource,
+  type OperationType,
 } from '../types/log-metadata.ts'
+import type { Logger } from './logger.ts'
 
 describe('Logger', () => {
   describe('Logger interface contract', () => {
@@ -606,7 +606,9 @@ describe('Logger', () => {
 
         // The current implementation doesn't handle circular references
         // This test documents the current behavior
-        expect(() => LogMetadataUtils.sanitize(metadata)).toThrow('Maximum call stack size exceeded')
+        expect(() => LogMetadataUtils.sanitize(metadata)).toThrow(
+          'Maximum call stack size exceeded'
+        )
       })
 
       it('should handle null and undefined values in sanitization', () => {

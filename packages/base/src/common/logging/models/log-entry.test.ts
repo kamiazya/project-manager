@@ -1,14 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { ValidationError } from '../../errors/base-errors.ts'
-import {
-  LogEntryModel,
-  LogEntryUtils,
-  type CreateLogEntryParams,
-  type LogEntryFormatOptions,
-  type LogEntrySerializationOptions,
-} from './log-entry.ts'
 import type { LogLevel } from '../types/log-level.ts'
 import type { LogMetadata } from '../types/log-metadata.ts'
+import {
+  type CreateLogEntryParams,
+  type LogEntryFormatOptions,
+  LogEntryModel,
+  type LogEntrySerializationOptions,
+  LogEntryUtils,
+} from './log-entry.ts'
 
 describe('LogEntryModel', () => {
   const baseParams: CreateLogEntryParams = {
@@ -170,16 +170,16 @@ describe('LogEntryModel', () => {
       expect(obj.message).toBe(entry.message)
       expect(obj.metadata).toEqual(entry.metadata)
       expect(obj.traceContext).toEqual(entry.traceContext)
-      
+
       // These are private cached values, undefined until getters are accessed
       expect(obj.formatted).toBeUndefined()
       expect(obj.serialized).toBeUndefined()
-      
+
       // But accessing the getters should populate the values
       const formatted = entry.formatted
       const serialized = entry.serialized
       const objAfterAccess = entry.toObject()
-      
+
       expect(objAfterAccess.formatted).toBe(formatted)
       expect(objAfterAccess.serialized).toBe(serialized)
     })
@@ -366,7 +366,7 @@ describe('LogEntryModel', () => {
     it('should truncate long messages', () => {
       const longMessageEntry = LogEntryModel.create({
         level: 'info',
-        message: 'Very long message: ' + 'x'.repeat(100),
+        message: `Very long message: ${'x'.repeat(100)}`,
       })
 
       const options: LogEntryFormatOptions = {
@@ -613,7 +613,11 @@ describe('LogEntryModel', () => {
 
       it('should handle entries with missing field', () => {
         const entries = [
-          LogEntryModel.create({ level: 'info', message: 'With component', metadata: { component: 'Service' } }),
+          LogEntryModel.create({
+            level: 'info',
+            message: 'With component',
+            metadata: { component: 'Service' },
+          }),
           LogEntryModel.create({ level: 'info', message: 'Without component' }),
         ]
 
@@ -640,11 +644,11 @@ describe('LogEntryModel', () => {
     })
 
     it('should handle maximum size log entry', () => {
-      const longMessage = 'Very long message: ' + 'x'.repeat(10000)
+      const longMessage = `Very long message: ${'x'.repeat(10000)}`
       const largeMetadata: LogMetadata = {
-        traceId: 'trace-' + 'x'.repeat(100),
-        operation: 'operation-' + 'x'.repeat(200),
-        component: 'component-' + 'x'.repeat(100),
+        traceId: `trace-${'x'.repeat(100)}`,
+        operation: `operation-${'x'.repeat(200)}`,
+        component: `component-${'x'.repeat(100)}`,
         customField: 'x'.repeat(5000),
       }
 
@@ -733,7 +737,7 @@ describe('LogEntryModel', () => {
 
     it('should handle very large metadata objects', () => {
       const largeMetadata: Record<string, unknown> = {}
-      
+
       // Create 1000 metadata fields
       for (let i = 0; i < 1000; i++) {
         largeMetadata[`field${i}`] = `value${i}`
@@ -750,5 +754,4 @@ describe('LogEntryModel', () => {
       expect((entry.metadata as any).field999).toBe('value999')
     })
   })
-
 })

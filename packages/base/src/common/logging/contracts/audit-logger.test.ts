@@ -5,11 +5,11 @@ describe('AuditLogger Interface Contract', () => {
   describe('AuditLogger Interface', () => {
     it('should define all required audit methods', () => {
       const auditLoggerInterface = {
-        recordCreate: (event: unknown) => Promise.resolve(),
-        recordUpdate: (event: unknown) => Promise.resolve(),
-        recordDelete: (event: unknown) => Promise.resolve(),
-        queryEvents: (filter: unknown) => Promise.resolve([]),
-        getStatistics: (period: unknown) => Promise.resolve({} as any),
+        recordCreate: (_event: unknown) => Promise.resolve(),
+        recordUpdate: (_event: unknown) => Promise.resolve(),
+        recordDelete: (_event: unknown) => Promise.resolve(),
+        queryEvents: (_filter: unknown) => Promise.resolve([]),
+        getStatistics: (_period: unknown) => Promise.resolve({} as any),
       }
 
       expect(typeof auditLoggerInterface.recordCreate).toBe('function')
@@ -250,18 +250,18 @@ describe('AuditLogger Interface Contract', () => {
       }
 
       const complexEvent = {
-        id: 'evt-' + 'x'.repeat(100),
+        id: `evt-${'x'.repeat(100)}`,
         timestamp: new Date(),
-        traceId: 'trace-' + 'x'.repeat(100),
+        traceId: `trace-${'x'.repeat(100)}`,
         operation: 'update' as const,
         actor: {
           type: 'ai' as const,
-          id: 'ai-' + 'x'.repeat(100),
-          name: 'Very Long AI Assistant Name ' + 'x'.repeat(100),
-          coAuthor: 'user-' + 'x'.repeat(100),
+          id: `ai-${'x'.repeat(100)}`,
+          name: `Very Long AI Assistant Name ${'x'.repeat(100)}`,
+          coAuthor: `user-${'x'.repeat(100)}`,
         },
-        entityType: 'complex-entity-type-' + 'x'.repeat(50),
-        entityId: 'entity-' + 'x'.repeat(100),
+        entityType: `complex-entity-type-${'x'.repeat(50)}`,
+        entityId: `entity-${'x'.repeat(100)}`,
         source: 'mcp' as const,
         before: complexState,
         after: { ...complexState, modified: true },

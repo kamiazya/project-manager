@@ -293,7 +293,7 @@ export class LogEntryModel implements LogEntry {
         : this.metadata
 
       if (Object.keys(metadataToShow).length > 0) {
-        formatted += ' ' + JSON.stringify(metadataToShow)
+        formatted += ` ${JSON.stringify(metadataToShow)}`
       }
     }
 

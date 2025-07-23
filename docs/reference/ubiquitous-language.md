@@ -48,6 +48,7 @@ The current state of a ticket in its lifecycle.
 
 **Valid Values**: `pending`, `in_progress`, `completed`, `archived`
 **Context**: Ticket Management
+**Note**: These values are project-specific. Future implementation will allow each project to define its own state machine and workflow transitions.
 
 ### Priority
 
@@ -55,6 +56,7 @@ The relative importance and urgency of a ticket.
 
 **Valid Values**: `high`, `medium`, `low`
 **Context**: Ticket Management
+**Note**: Priority levels are project-specific. Projects will be able to define custom priority schemes.
 
 ### Ticket Type
 
@@ -62,6 +64,7 @@ The category of work represented by a ticket.
 
 **Valid Values**: `feature`, `bug`, `task`, `research`, `design`, `chore`
 **Context**: Ticket Management
+**Note**: Ticket types are project-specific. Projects can define their own categorization schemes.
 
 ### Privacy Level
 
