@@ -66,14 +66,14 @@ See [Architecture Decision Records](./adr/) for:
 - **Runtime**: Node.js with ES modules
 - **Language**: TypeScript for type safety
 - **Package Manager**: pnpm for monorepo management (following npm ecosystem standards)
-- **CLI Framework**: Commander.js (following POSIX and GNU conventions)
+- **CLI Framework**: oclif (following POSIX and GNU conventions)
 
 ### Storage
 
-- **Local Storage**: JSON files for structured data (XDG Base Directory compliance)
+- **Local Storage**: JSON files for structured data (cross-platform directory compliance)
 - **Documentation**: CommonMark format for Markdown files
 - **Templates**: File-based template system
-- **Configuration**: XDG Base Directory specification
+- **Configuration**: Cross-platform directory specification (Windows: AppData, macOS: Library, Linux: XDG spec)
 
 ### Integration
 

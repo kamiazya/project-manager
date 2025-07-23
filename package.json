@@ -8,12 +8,14 @@
     "build": "pnpm -r build",
     "test": "vitest run",
     "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "markdownlint": "markdownlint-cli2",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "prepare": "husky",
-    "pm": "pm"
+    "pm": "pm",
+    "pm-mcp-server": "tsx scripts/mcp-launcher.ts"
   },
   "keywords": [
     "cli",
@@ -24,10 +26,17 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@biomejs/biome": "^2.1.1",
+    "@biomejs/biome": "^2.1.2",
+    "@modelcontextprotocol/sdk": "catalog:",
+    "@project-manager/application": "workspace:*",
+    "@project-manager/base": "workspace:*",
     "@project-manager/cli": "workspace:*",
+    "@project-manager/domain": "workspace:*",
+    "@project-manager/infrastructure": "workspace:*",
     "@project-manager/mcp-server": "workspace:*",
+    "@project-manager/sdk": "workspace:*",
     "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "markdownlint-cli2": "catalog:",
@@ -36,7 +45,8 @@
     "typescript-mcp": "^0.0.14",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "zod": "^3.25.76"
   },
   "packageManager": "pnpm@10.13.1",
   "lint-staged": {

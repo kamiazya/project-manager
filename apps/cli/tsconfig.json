@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "allowImportingTsExtensions": true,
+    "customConditions": ["development"],
+    "baseUrl": "../..",
+    "paths": {
+      "@project-manager/*": ["packages/*/src"]
+    }
+  },
+  "include": ["src/**/*", "../../packages/*/src/**/*"],
+  "exclude": ["dist", "**/*.test.ts", "**/*.spec.ts"]
+}

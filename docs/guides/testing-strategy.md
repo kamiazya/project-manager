@@ -14,24 +14,56 @@ This document defines the comprehensive testing strategy for the Project Manager
 - Maintain high code quality and coverage
 - Support continuous integration and deployment
 
+## 2.1. Current Testing Status
+
+**Overall Coverage**: Comprehensive test suite with high success rate across all packages
+
+**Test Distribution by Layer**:
+
+- **Domain Layer**: Comprehensive unit tests for entities, value objects, and business logic
+- **Application Layer**: Use case testing with repository mocking
+- **Infrastructure Layer**: Repository implementations and data mapping tests
+- **SDK Layer**: Facade pattern and dependency injection validation
+- **CLI Layer**: Command interface and user input validation
+- **MCP Server Layer**: AI integration tools and protocol compliance
+
+**Testing Approach**: Following t-wada (Takuto Wada) methodology:
+
+- Boundary value testing for all input validation
+- Error case coverage for exception scenarios
+- Edge case testing for data limits and special characters
+- Comprehensive mocking for external dependencies
+
 ## 3. Test Levels and Types
 
 ### 3.1. Unit Testing
 
 **Scope**: Individual functions, classes, and modules
 
-**Coverage Target**: 90%+ for core business logic
+**Coverage Target**: High coverage for core business logic with quality focus
 
 **Technology Stack**:
 
 - **Vitest**: Primary testing framework
+- **Mock Functions**: vi.fn() for dependency isolation
+- **Test Doubles**: Comprehensive mocking of external dependencies
 
 **Test Categories**:
 
-- Domain model validation
-- Business logic verification
-- Utility function testing
-- Error handling scenarios
+- **Domain model validation**: Entity and value object behavior
+- **Business logic verification**: Use case execution and workflow
+- **Utility function testing**: Helper functions and data transformation
+- **Error handling scenarios**: Exception throwing and graceful failure
+- **Boundary value testing**: Input limits and edge cases
+- **Integration testing**: Layer interactions and dependency injection
+
+**Implemented Test Examples**:
+
+- `TicketStatus` - Comprehensive status transitions and validation testing
+- `TicketMapper` - Domain/persistence data conversion testing
+- `CLI Commands` - Create/update/delete operations with error handling
+- `ProjectManagerSDK` - Facade pattern and API operations testing
+- `UseCaseFactoryProvider` - Dependency injection pattern validation
 
 **Example Test Structure**:
 
@@ -62,15 +94,40 @@ describe('TicketManager', () => {
 
 **Scope**: Component interactions and API endpoints
 
-> TODO: Define integration test scenarios based on system architecture
-> Not sure how to implement integration tests yet.
+**Current Implementation**: Integration testing is implemented through repository integration tests and cross-layer component testing.
+
+**Test Categories**:
+
+- **Repository Integration**: Testing repository implementations with actual data persistence
+- **Use Case Integration**: Testing complete use case workflows with real dependencies
+- **SDK Integration**: Testing the SDK facade with underlying application layer
+- **CLI Integration**: Testing CLI commands with service layer integration
+- **MCP Server Integration**: Testing AI integration tools with protocol compliance
+
+**Examples**:
+
+- Repository tests using real file system operations
+- Use case tests with dependency injection containers
+- End-to-end command execution testing
 
 ### 3.3. End-to-End Testing
 
 **Scope**: Full system workflows and user interactions
 
-> TODO: Define E2E test scenarios based on user stories
-> Not sure how to implement E2E tests yet.
+**Current Approach**: E2E testing is implemented through CLI command testing and full workflow validation.
+
+**Test Categories**:
+
+- **CLI Workflow Testing**: Full command execution from input to output
+- **MCP Server Workflow Testing**: Complete AI integration scenarios
+- **File System Integration**: Testing persistence across complete workflows
+- **Configuration Integration**: Testing XDG-compliant configuration handling
+
+**Future Considerations**:
+
+- Automated user scenario testing for complex multi-step workflows
+- Cross-application integration testing (CLI + MCP Server)
+- Performance testing under realistic usage patterns
 
 ### 3.4. Dogfooding Testing
 
@@ -118,7 +175,7 @@ describe('TicketManager', () => {
 
 **Requirements**:
 
-- Node.js 20+
+- Node.js LTS version
 - pnpm package manager
 
 ### 4.2. Continuous Integration

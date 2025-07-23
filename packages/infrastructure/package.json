@@ -1,0 +1,54 @@
+{
+  "name": "@project-manager/infrastructure",
+  "version": "0.0.0",
+  "description": "Infrastructure layer for project-manager - repositories, persistence, external integrations",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./logging": {
+      "development": "./src/logging/index.ts",
+      "types": "./dist/logging/index.d.ts",
+      "import": "./dist/logging/index.js"
+    }
+  },
+  "publishConfig": {
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./logging": {
+        "types": "./dist/logging/index.d.ts",
+        "import": "./dist/logging/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@project-manager/application": "workspace:*",
+    "@project-manager/base": "workspace:*",
+    "@project-manager/domain": "workspace:*",
+    "env-paths": "^3.0.0",
+    "pino": "^8.21.0",
+    "sonic-boom": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vitest": "catalog:"
+  }
+}

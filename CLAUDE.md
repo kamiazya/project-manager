@@ -15,11 +15,15 @@ Project Manager is a local-first ticket management system designed to enable eff
 
 ### Architecture
 
-The system follows a local-first approach with external integration capabilities:
+The system implements Clean Architecture with local-first approach and external integration capabilities:
 
-- **Local Ticket Management**: Full CRUD operations for tickets, epics, and roadmaps
-- **CLI Interface**: Command-line tools for developer productivity
-- **MCP Server**: Model Context Protocol implementation for AI integration
+- **Clean Architecture**: Domain-driven design with strict layer separation (Domain → Application → Infrastructure)
+- **SDK Layer**: Facade pattern providing unified API access (`packages/sdk`)
+- **Local Ticket Management**: Complete ticket management operations using Clean Architecture patterns
+- **CLI Application**: Command-line interface in `apps/cli` with service layer integration
+- **MCP Server**: Model Context Protocol server in `apps/mcp-server` for AI integration
+- **Layered Packages**: Domain (`packages/domain`), Application (`packages/application`), Infrastructure (`packages/infrastructure`)
+- **Cross-Platform Storage**: Platform-appropriate data directories (Windows: AppData, macOS: Library, Linux: XDG spec)
 - **External Sync**: External tool-based synchronization with GitHub Issues, Jira, and other project management tools
 
 ### Target Users
@@ -31,7 +35,12 @@ The system follows a local-first approach with external integration capabilities
 
 ### Current Status
 
-The project is in early development phase with comprehensive requirements and architecture documentation completed. Implementation is planned to begin with the core CLI interface and local ticket management system.
+- ✅ **Domain Layer**: Rich domain models with business logic encapsulation
+- ✅ **Application Layer**: Use cases with single responsibility principle
+- ✅ **Infrastructure Layer**: Repository implementations and external adapters
+- ✅ **SDK Layer**: Facade pattern for unified API access
+- ✅ **Applications**: CLI and MCP server as separate applications
+- ✅ **Monorepo Structure**: Organized packages and applications with pnpm workspaces
 
 ## Language and Communication Policy
 
@@ -112,34 +121,33 @@ AI assistants working on this project MUST use the project-manager system itself
 
 3. **Real-time Status Updates**
    - Mark tickets as in_progress when starting work
-   - Add progress updates via new tickets (comment command not yet implemented)
+   - Add progress updates via new tickets
    - Create new tickets for unexpected issues or requirements
    - Complete tickets promptly when work is finished
 
 4. **Planning and Coordination**
-   - Use `pnpm pm todo` to check work queue before starting
-   - Use `pnpm pm wip` to track current active work
-   - Create dependent tickets for complex multi-step tasks
-   - Use epics for large initiatives requiring multiple tickets
+   - Use tickets to plan features, document approaches, and validate designs
+   - Create epics for larger features or multi-step tasks
+   - Use TODOs for quick notes or simple tasks that don't require full tickets
 
 **AI Dogfooding Examples**:
 
 ```bash
 # Before starting feature implementation
-pnpm pm new "Implement user authentication system" -d "Add login/logout with JWT tokens" -p h --type feature
+pnpm pm create "Implement user authentication system" -d "Add login/logout with JWT tokens" -p h --type feature
 # Note: Capture the ticket ID from the output for use in subsequent commands
 
 # Start work on the ticket (use actual ticket ID from above)
-pnpm pm start 1751764474
+pnpm pm quick start 1751764474
 
-# Add progress updates (comment command not yet implemented - use workaround)
-pnpm pm new "Progress on #1751764474: JWT library research" -d "Researched JWT libraries, selected jsonwebtoken for implementation" -p l --type task
+# Add progress updates through new tickets
+pnpm pm create "Progress on #1751764474: JWT library research" -d "Researched JWT libraries, selected jsonwebtoken for implementation" -p l --type task
 
 # Create dependent tickets as needed
-pnpm pm new "Design authentication middleware" -d "Create Express middleware for JWT validation" -p m --depends-on 1751764474
+pnpm pm create "Design authentication middleware" -d "Create Express middleware for JWT validation" -p m --depends-on 1751764474
 
 # Complete when finished
-pnpm pm done 1751764474
+pnpm pm quick done 1751764474
 ```
 
 **AI Self-Validation Process**:
@@ -151,7 +159,7 @@ pnpm pm done 1751764474
 
 2. **Implementation Tracking**
    - Update ticket status as work progresses
-   - Document decisions and learnings in progress tickets (comment command not yet implemented)
+   - Document decisions and learnings in progress tickets
    - Create new tickets for discovered issues
 
 3. **Completion Validation**
@@ -250,10 +258,10 @@ When encountering usability issues or improvement opportunities, create specific
 
 ```bash
 # Report usability issues
-pnpm pm new "Improve clarity of pm-todo output" -d "Current output format difficult to scan quickly" -p m --type improvement
+pnpm pm create "Improve clarity of pm-todo output" -d "Current output format difficult to scan quickly" -p m --type improvement
 
 # Suggest enhancements
-pnpm pm new "Add ticket template support" -d "Common ticket patterns need templates for efficiency" -p l --type enhancement
+pnpm pm create "Add ticket template support" -d "Common ticket patterns need templates for efficiency" -p l --type enhancement
 ```
 
 **Error Handling Protocol**:
@@ -261,7 +269,7 @@ pnpm pm new "Add ticket template support" -d "Common ticket patterns need templa
 If project-manager CLI commands fail during the workflow:
 
 1. **Document the error**: Note the exact command and error message
-2. **Create a bug ticket**: `pnpm pm new "CLI command error: [command]" -d "Error details and reproduction steps" -p h --type bug`
+2. **Create a bug ticket**: `pnpm pm create "CLI command error: [command]" -d "Error details and reproduction steps" -p h --type bug`
 3. **Use fallback method**: Continue with manual tracking until the issue is resolved
 4. **Report to human developer**: Mention the error and ticket ID for immediate attention
 
@@ -273,7 +281,25 @@ If project-manager CLI commands fail during the workflow:
 
 ### Local Development Workflow
 
-TODO: Define local development workflow for project-manager
+The project has a comprehensive development workflow with hot-reload capabilities and efficient tooling. See the [Development Commands](#development-commands) section above for detailed CLI usage, MCP server development, and performance optimization techniques.
+
+**Key Development Patterns**:
+
+- **Hot-reload Development**: `pnpm pm-mcp-server` for MCP server with file watching
+- **Direct TypeScript Execution**: `pnpm pm` commands via tsx for immediate feedback
+- **Comprehensive Testing**: `pnpm run test` with complete test coverage across all layers
+- **Type Safety**: `pnpm run typecheck` for strict TypeScript validation
+- **Development vs Production**: Clear separation with environment-based configurations
+
+**Logging in Development Environment**:
+
+- **Multi-Transport Logging**: Development environment outputs logs to both console (with pino-pretty formatting) and file
+- **Log File Location**: `~/.local/share/project-manager-dev/logs/app.log` (XDG Base Directory compliant)
+- **Audit Log Location**: `~/.local/share/project-manager-dev/logs/audit.log`
+- **Automatic Directory Creation**: Log directories are created automatically when needed
+- **Environment Detection**: Set `NODE_ENV=development` for development logging behavior
+- **Log Viewing**: Use `NODE_ENV=development pnpm pm logs` to view logs from files
+- **Audit Viewing**: Use `NODE_ENV=development pnpm pm audit` to view audit logs
 
 ## Development Process Guidelines
 
@@ -346,13 +372,29 @@ When implementing features:
 
 ## Use Cases and Target Users
 
-The framework serves multiple personas from package developers to team leads.
+The framework serves multiple personas from package developers to team leads. For detailed use cases and user scenarios, see:
 
-<!-- TODO: Create USECASE.md document -->
+- [Domain Overview](./docs/explanation/domain-overview.md) - Core domain concepts and user personas
+- [User Stories](./docs/explanation/user-stories.md) - Detailed user scenarios and workflows
+- [Requirements](./docs/explanation/requirements.md) - Functional and non-functional requirements
+- [Target Users](#target-users) section in README.md - Primary user segments
 
 ## Development Status
 
-TODO: Update development status for project-manager
+**Current Status**: Clean Architecture implementation complete with comprehensive testing infrastructure.
+
+**Completed Implementation**:
+
+- ✅ **Clean Architecture Migration**: Successfully implemented with comprehensive test coverage
+- ✅ **Domain Layer**: Rich domain models with encapsulated business logic
+- ✅ **Application Layer**: Use cases following single responsibility principle
+- ✅ **Infrastructure Layer**: Repository implementations with XDG-compliant configuration
+- ✅ **SDK Layer**: Facade pattern for unified API access with dependency injection
+- ✅ **CLI Application**: Complete ticket management operations with service layer integration
+- ✅ **MCP Server**: AI integration with 9 tools and hot-reload development
+- ✅ **Testing Infrastructure**: Comprehensive unit, integration, and CLI testing
+
+**Current Focus**: Enhancing domain features and AI collaboration capabilities. See [README.md](./README.md) for detailed development status and roadmap.
 
 ## Technology Stack
 
@@ -401,13 +443,18 @@ pnpm run typecheck
 **Fast Development (tsx - no build required)**
 
 ```bash
-# Direct tsx execution (recommended for development)
-pnpm pm <command>                     # Run CLI directly
-pnpm pm new "Task" -p h               # Create high-priority task
-pnpm pm todo                          # List pending tickets
-pnpm pm wip                           # List work-in-progress
-pnpm pm start <ticket-id>             # Start working on ticket
-pnpm pm done <ticket-id>              # Complete ticket
+# Direct tsx execution from monorepo root (recommended for development)
+pnpm pm <command>                     # Run CLI directly via apps/cli
+pnpm pm create "Task" -p h            # Create high-priority task
+pnpm pm quick todo                    # List pending tickets
+pnpm pm quick wip                     # List work-in-progress
+pnpm pm quick start <ticket-id>       # Start working on ticket
+pnpm pm quick done <ticket-id>        # Complete ticket
+
+# SDK usage in TypeScript projects
+import { createProjectManagerSDK } from '@project-manager/sdk'
+const sdk = await createProjectManagerSDK({ environment: 'development' })
+const ticket = await sdk.tickets.create({ title: 'New feature', description: 'Details' })
 ```
 
 ### MCP Server Development
@@ -415,7 +462,7 @@ pnpm pm done <ticket-id>              # Complete ticket
 **Hot Reload Development (recommended for MCP server development)**
 
 ```bash
-# Development mode with intelligent hot reload (default)
+# Development mode with intelligent hot reload (from monorepo root)
 pnpm pm-mcp-server                    # Auto-detects NODE_ENV, enables hot reload
 
 # Explicit development mode (same as above)
@@ -423,6 +470,11 @@ NODE_ENV=development pnpm pm-mcp-server
 
 # Production mode (no hot reload)
 NODE_ENV=production pnpm pm-mcp-server
+
+# Direct development from apps/mcp-server
+cd apps/mcp-server
+pnpm dev                              # Hot reload development
+pnpm build && node dist/bin/mcp-server.js  # Production testing
 ```
 
 **Features:**
@@ -437,28 +489,13 @@ NODE_ENV=production pnpm pm-mcp-server
 **Production Testing (build required)**
 
 ```bash
-# Build and run (slower but matches production)
+# Build all packages and test CLI
 pnpm run build
-node packages/cli/dist/bin/pm.js <command>
-```
+node apps/cli/dist/bin/run.js <command>
 
-**Development Aliases**
-
-For maximum productivity, use the development aliases:
-
-```bash
-# Load development aliases
-source pm-dev-alias.sh
-
-# Fast development commands (tsx) - Simplified shortcuts
-pm new "Task" -p h                   # Create task
-pm-todo                              # List pending
-pm-wip                               # List in-progress
-pm-start <id>                        # Start ticket
-pm-done <id>                         # Complete ticket
-
-# Production testing (build)
-pm-build todo                        # Test built version
+# Test specific applications
+cd apps/cli && pnpm build && node dist/bin/run.js <command>
+cd apps/mcp-server && pnpm build && node dist/bin/mcp-server.js
 ```
 
 **Performance Comparison**
@@ -494,3 +531,29 @@ pm-build todo                        # Test built version
 4. **Documentation Index** - Navigation to detailed resources
 5. **Development Status** - Current implementation state
 6. **Other sections** - Use TODO placeholders for low-priority or frequently changing content
+
+## Clean Architecture Package Structure
+
+The project now follows Clean Architecture with the following package organization:
+
+```
+project-manager/
+├── apps/                    # Applications (final deliverables)
+│   ├── cli/                 # CLI application
+│   └── mcp-server/          # MCP server for AI integration
+└── packages/                # Libraries and shared code
+    ├── base/                # Foundation package (configuration, types)
+    ├── domain/              # Domain layer (entities, value objects)
+    ├── application/         # Application layer (use cases, interfaces)
+    ├── infrastructure/      # Infrastructure layer (repositories, adapters)
+    ├── sdk/                 # TypeScript SDK with Facade pattern
+    └── shared/              # Shared utilities and types
+```
+
+### Layer Dependencies
+
+- **Domain** (`packages/domain`): No dependencies on other layers
+- **Application** (`packages/application`): Depends only on Domain and Base
+- **Infrastructure** (`packages/infrastructure`): Implements Application interfaces
+- **SDK** (`packages/sdk`): Facade over Application layer
+- **Apps** (`apps/`): Use SDK or Application layer directly

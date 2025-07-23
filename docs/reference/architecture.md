@@ -10,6 +10,7 @@ Project Manager is a local-first ticket management system designed to enable eff
 
 **Design Philosophy**
 
+- **Clean Architecture**: Domain-driven design with strict layer separation and dependency inversion
 - **Local-First Architecture**: All core functionality works offline with local data storage
 - **AI-Driven Development**: Built specifically to support AI-assisted development workflows
 - **Issue-Based Development**: Structured around tickets, epics, and implementation planning
@@ -24,6 +25,8 @@ Project Manager is a local-first ticket management system designed to enable eff
 - **Test-Driven Development**: Comprehensive testing strategy from unit to integration levels
 - **Domain-Driven Design**: Clear domain model with ubiquitous language
 - **Separation of Concerns**: Clear distinction between architectural decisions and implementation status
+- **Dependency Inversion**: All dependencies point inward toward the domain layer
+- **Single Responsibility**: Each layer and component has one reason to change
 
 ### System Components
 
@@ -63,7 +66,7 @@ graph TB
 
         subgraph "Services"
             STORAGE[File Storage<br/>Local Data]
-            CONFIG[Configuration<br/>XDG Compliant]
+            CONFIG[Configuration<br/>Cross-Platform]
             LOG[Logging<br/>Audit Trail]
             SYNC[Sync Services<br/>External Integration]
         end
@@ -126,6 +129,126 @@ graph TB
 - **SDK → Core**: Direct access to core for programmatic use
 - Core maintains configuration and state, ensuring consistent behavior across all access patterns
 
+## Clean Architecture Implementation
+
+### Layer Structure
+
+The system implements Clean Architecture with strict dependency rules and clear separation of concerns:
+
+```mermaid
+---
+title: Clean Architecture Layers
+---
+%%{init: {"theme": "neutral", "themeVariables": {"primaryColor": "#4caf50", "primaryTextColor": "#2e7d32", "primaryBorderColor": "#2e7d32"}}}%%
+graph TB
+    subgraph "Applications (apps/)"
+        CLI[CLI Application]
+        MCP[MCP Server]
+    end
+
+    subgraph "SDK (packages/sdk)"
+        SDK_FACADE[SDK Facade]
+    end
+
+    subgraph "Infrastructure Layer (packages/infrastructure)"
+        REPO_IMPL[Repository Implementations]
+        EXT_ADAPTERS[External Adapters]
+        CONFIG_IMPL[Configuration Implementation]
+    end
+
+    subgraph "Application Layer (packages/application)"
+        USECASES[Use Cases]
+        REPO_INT[Repository Interfaces]
+        FACTORIES[Use Case Factories]
+    end
+
+    subgraph "Domain Layer (packages/domain)"
+        ENTITIES[Entities]
+        VALUE_OBJECTS[Value Objects]
+        DOMAIN_SERVICES[Domain Services]
+    end
+
+    subgraph "Base Layer (packages/base)"
+        CONFIG[Configuration]
+        TYPES[Common Types]
+        PATTERNS[Base Patterns]
+    end
+
+    %% Dependencies flow inward
+    CLI --> SDK_FACADE
+    MCP --> SDK_FACADE
+    SDK_FACADE --> USECASES
+    REPO_IMPL --> REPO_INT
+    USECASES --> ENTITIES
+    USECASES --> VALUE_OBJECTS
+    USECASES --> DOMAIN_SERVICES
+    USECASES --> REPO_INT
+    ENTITIES --> VALUE_OBJECTS
+    DOMAIN_SERVICES --> ENTITIES
+
+    %% Base layer dependencies
+    ENTITIES --> TYPES
+    VALUE_OBJECTS --> PATTERNS
+    CONFIG_IMPL --> CONFIG
+
+    %% Styling
+    classDef app fill:#e3f2fd,stroke:#2196f3,stroke-width:3px
+    classDef sdk fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef infra fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px
+    classDef app_layer fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef domain fill:#f3e5f5,stroke:#9c27b0,stroke-width:3px
+    classDef base fill:#f0f0f0,stroke:#757575,stroke-width:1px
+
+    class CLI,MCP app
+    class SDK_FACADE sdk
+    class REPO_IMPL,EXT_ADAPTERS,CONFIG_IMPL infra
+    class USECASES,REPO_INT,FACTORIES app_layer
+    class ENTITIES,VALUE_OBJECTS,DOMAIN_SERVICES domain
+    class CONFIG,TYPES,PATTERNS base
+```
+
+### Package Structure
+
+```
+packages/
+├── domain/              # Domain Layer - Core business logic
+│   ├── entities/        # Rich domain entities with business rules
+│   ├── value-objects/   # Immutable value objects
+│   └── services/        # Domain services for cross-entity operations
+├── application/         # Application Layer - Use cases and interfaces
+│   ├── usecases/        # Single-responsibility use cases
+│   ├── repositories/    # Repository interfaces
+│   └── factories/       # Use case factory patterns
+├── infrastructure/      # Infrastructure Layer - External concerns
+│   ├── adapters/        # Repository implementations
+│   ├── config/          # Configuration implementations
+│   └── types/           # Infrastructure-specific types
+├── sdk/                 # SDK Layer - Facade pattern
+├── base/                # Foundation Layer - Shared infrastructure
+│   ├── kernel/          # Shared Kernel (domain knowledge sharing)
+│   │   ├── configuration/ # Business configuration concepts & schema
+│   │   ├── events/      # Domain event foundation
+│   │   └── types/       # Shared domain types
+│   └── common/          # Common Infrastructure (technical foundation)
+│       ├── patterns/    # BaseEntity, BaseValueObject etc.
+│       ├── errors/      # Common error foundation
+│       ├── configuration/ # Configuration technical foundation
+│       ├── utils/       # General utilities
+│       └── logging/     # Logging foundation
+and shared/              # Shared utilities
+apps/
+├── cli/                 # CLI Application
+└── mcp-server/          # MCP Server Application
+```
+
+### Dependency Rules
+
+1. **Domain Layer** (`packages/domain`): No dependencies on other layers
+2. **Application Layer** (`packages/application`): Depends only on Domain and Base
+3. **Infrastructure Layer** (`packages/infrastructure`): Implements Application interfaces
+4. **SDK Layer** (`packages/sdk`): Facade over Application layer
+5. **Applications** (`apps/`): Use SDK or Application layer directly
+
 ## Component Architecture
 
 ### Core System Components
@@ -146,10 +269,43 @@ graph TB
 
 **Configuration Service**
 
-- XDG Base Directory compliance
-- Environment variable resolution
-- Cascading configuration (global → project → local)
-- Settings validation and defaults
+The configuration service uses the `CrossPlatformStorageConfigService` implementation based on the `env-paths` library, providing true cross-platform directory support:
+
+- **Cross-platform directory conventions**: Automatically selects appropriate directories per platform
+  - Windows: `%APPDATA%` (config), `%LOCALAPPDATA%` (cache/logs)
+  - macOS: `~/Library/Application Support` (config), `~/Library/Caches` (cache), `~/Library/Logs` (logs)
+  - Linux: `~/.config` (config), `~/.cache` (cache), `~/.local/state` (logs)
+- **Environment-specific naming**: Automatic app name generation based on `NODE_ENV`
+  - Production: `project-manager`
+  - Development: `project-manager-dev`
+  - Test: `project-manager-test`
+- **Environment variable resolution**: Support for overriding default paths
+- **Cascading configuration**: (global → project → local)
+- **Settings validation and defaults**: Built-in validation with sensible defaults
+
+**Logging Service**
+
+- Unified logging interface across all layers
+- Structured logging with metadata (NDJSON format)
+- Multi-process safe operations (CLI and MCP concurrent access)
+- Configurable log levels and destinations
+- Performance-optimized with Pino integration
+- Environment-aware transport configuration:
+  - **Development**: Multi-transport output (console with pino-pretty + file)
+  - **Production**: File-based logging with rotation
+  - **Test**: Memory-based logging
+- Cross-platform log storage using env-paths:
+  - **Windows**: `%LOCALAPPDATA%\project-manager[-dev|-test]\logs\`
+  - **macOS**: `~/Library/Logs/project-manager[-dev|-test]/logs/`
+  - **Linux**: `~/.local/state/project-manager[-dev|-test]/logs/`
+
+**Audit Service**
+
+- Comprehensive system operation tracking across all operation types
+- AI and human operation attribution with co-authorship tracking
+- Tamper-proof append-only audit trail
+- Operation context preservation (trace IDs, session data)
+- Compliance and troubleshooting support
 
 **Sync Service**
 
@@ -345,12 +501,18 @@ All entities support the complete set of cross-cutting features, but are typical
 
 ### File System Structure
 
-Following XDG Base Directory specification:
+Following cross-platform directory conventions using env-paths library:
 
 ```
-# Home directory structure
-~/.config/project-manager/     # XDG Base Directory compliance
+# Cross-Platform Directory Structure
+
+# Configuration Directory (env-paths config)
+# Windows: %APPDATA%\project-manager[-dev|-test]
+# macOS:   ~/Library/Application Support/project-manager[-dev|-test]
+# Linux:   ~/.config/project-manager[-dev|-test]
+<config-dir>/
 ├── config.json              # Global configuration
+├── logging.json             # Logging configuration
 ├── projects/                # Project data
 │   ├── {project-id}/       # Individual project
 │   │   ├── project.json   # Project metadata
@@ -365,11 +527,23 @@ Following XDG Base Directory specification:
     ├── mappings/           # Entity mappings
     └── cache/              # External data cache
 
-~/.cache/project-manager/      # XDG Base Directory compliance
+# Cache Directory (env-paths cache)
+# Windows: %LOCALAPPDATA%\project-manager[-dev|-test]
+# macOS:   ~/Library/Caches/project-manager[-dev|-test]
+# Linux:   ~/.cache/project-manager[-dev|-test]
+<cache-dir>/
 └── [cache files]
 
-~/.local/share/project-manager/ # XDG Base Directory compliance
-└── [user data]
+# Log Directory (env-paths log)
+# Windows: %LOCALAPPDATA%\project-manager[-dev|-test]\logs
+# macOS:   ~/Library/Logs/project-manager[-dev|-test]/logs
+# Linux:   ~/.local/state/project-manager[-dev|-test]/logs
+<log-dir>/
+├── app.log                  # Main application log
+├── audit.log               # Audit trail log
+├── cli.log                 # CLI-specific operations
+├── mcp.log                 # MCP server operations
+└── archived/               # Rotated log archives
 ```
 
 ### Data Format Specifications
@@ -413,7 +587,8 @@ interface Ticket {
 **Data Storage Philosophy**
 
 - **Local-First**: All data stored locally for offline operation and data sovereignty
-- **Standards Compliance**: Following XDG Base Directory specification for cross-platform compatibility
+- **Cross-Platform Compatibility**: Using env-paths library for platform-appropriate directories
+- **Environment Separation**: Distinct directories for production, development, and test environments
 - **Version Control Friendly**: JSON and Markdown formats work well with Git
 - **Privacy by Design**: Clear separation of local-only and shareable data
 - **Version Control**: Snapshot-based storage initially, with future migration to diff-based storage
@@ -441,8 +616,8 @@ Following the CLI-first architecture principle:
 
 **API Endpoints**
 
-- CRUD operations for tickets and epics
-- Search and filtering capabilities
+- Complete ticket and epic management operations
+- Advanced search and filtering capabilities
 - Status reporting and analytics
 - Template management
 
@@ -545,13 +720,14 @@ Following the CLI-first architecture principle:
 
 **CLI Framework (CLI-First Implementation)**
 
-- **Commander.js**: Command structure following POSIX and GNU conventions
+- '**clif**': Command-line interface framework following POSIX and GNU conventions
 - **tsx**: Direct TypeScript execution for development efficiency
 - **Chalk**: Terminal styling and structured output
 
 **Configuration Management (Standards Adoption)**
 
-- **XDG Base Directory**: Specification for file locations
+- **env-paths Library**: Cross-platform directory resolution for consistent file locations
+- **Platform-Specific Conventions**: Windows (AppData), macOS (Library), Linux (XDG spec)
 - **JSON**: Format for structured configuration
 - **Environment Variables**: Support following dotenv standards
 
@@ -573,6 +749,23 @@ Following the CLI-first architecture principle:
 - **CommonMark**: For Markdown documentation
 - **File-based Templates**: For code generation
 
+**Logging and Audit Infrastructure**
+
+- **Pino Logging Framework**: High-performance structured logging with NDJSON output
+- **Concurrent Process Support**: Safe multi-process operations via sonic-boom
+- **Cross-Platform Storage**: Environment-specific log directories using env-paths
+  - Development: `<platform-log-dir>/project-manager-dev/logs/`
+  - Production: `<platform-log-dir>/project-manager/logs/`
+  - Test: `<platform-log-dir>/project-manager-test/logs/`
+- **Configurable Transports**:
+  - Development: Multi-transport (console with pino-pretty + file output)
+  - Production: File-based with rotation
+  - Test: Memory-based for test isolation
+- **Log Rotation**: External rotation via logrotate for production environments
+- **Audit Trail**: Append-only operation tracking with tamper-proof design
+- **Trace Context**: Request/session correlation across system boundaries
+- **Automatic Directory Creation**: Log directories created on-demand with proper error handling
+
 **AI Integration**
 
 - **Model Context Protocol (MCP)**: Server implementation (mandatory standard)
@@ -585,8 +778,12 @@ Following the CLI-first architecture principle:
 **Key Technology Decisions**
 
 - **Local-First Storage**: JSON files provide simplicity and version control compatibility
+- **env-paths for Configuration**: Cross-platform directory resolution following platform conventions
+- **Environment-Specific Naming**: Simple, clear naming scheme for different deployment environments
 - **Model Context Protocol**: Industry standard for AI integration
 - **Conventional Commits**: Enables automated versioning and changelog generation
+- **Pino for Logging**: High-performance structured logging with minimal overhead
+- **Foundation Layer Logging**: Cross-cutting concern placement for universal access
 
 ## Implementation Guidelines
 
@@ -639,12 +836,17 @@ Following the CLI-first architecture principle:
 ### Code Organization
 
 ```
-packages/
-├── core/               # Business logic
-├── cli/                # CLI implementation
-├── mcp-server/         # MCP server
-├── sdk/                # SDK library
-└── shared/             # Shared utilities
+project-manager/
+├── apps/                    # Applications (final deliverables)
+│   ├── cli/                 # CLI application
+│   └── mcp-server/          # MCP server for AI integration
+└── packages/                # Libraries (Clean Architecture layers)
+    ├── domain/              # Domain Layer - Core business logic
+    ├── application/         # Application Layer - Use cases
+    ├── infrastructure/      # Infrastructure Layer - External concerns
+    ├── sdk/                 # SDK Layer - Facade pattern
+    ├── base/                # Foundation Layer - Shared infrastructure
+    └── shared/              # Shared utilities
 ```
 
 ### Quality Assurance
@@ -653,6 +855,62 @@ packages/
 - Static analysis and linting
 - Security scanning and vulnerability assessment
 - Performance monitoring and optimization
+
+## Implementation Status
+
+### Clean Architecture Migration Complete ✅
+
+The system has successfully completed its migration to Clean Architecture:
+
+**Architecture Achievements**
+
+- ✅ **Domain Layer**: Rich domain models with encapsulated business logic
+  - Ticket, TicketId, TicketTitle, TicketDescription, TicketStatus, TicketPriority
+  - Domain services for cross-entity operations
+  - No external dependencies
+
+- ✅ **Application Layer**: Use cases following single responsibility principle
+  - 15+ use cases implemented (CreateTicket, GetTicketById, UpdateTicketStatus, etc.)
+  - Repository interfaces defining domain contracts
+  - Use case factory pattern for dependency injection
+
+- ✅ **Infrastructure Layer**: Repository implementations and external adapters
+  - JsonTicketRepository with file-based persistence
+  - Cross-platform configuration management using env-paths
+  - Proper dependency inversion implementation
+
+- ✅ **SDK Layer**: Facade pattern for unified API access
+  - ProjectManagerSDK with clean external interface
+  - Dependency injection container for use case access
+  - Type-safe request/response DTOs
+
+- ✅ **Applications**: CLI and MCP server as separate applications
+  - CLI application in `apps/cli` with service layer integration
+  - MCP server in `apps/mcp-server` with comprehensive AI integration tools
+  - Hot reload development workflow
+
+**Test Coverage**
+
+- ✅ **Comprehensive test suite with high success rate** across all layers
+- ✅ **Comprehensive unit tests**: All layers covered with boundary value testing
+- ✅ **Integration tests**: Repository implementations and service integration
+- ✅ **Layer-specific testing**: All architectural layers covered
+
+**Quality Metrics**
+
+- ✅ **Dependency Direction**: All dependencies point inward toward domain
+- ✅ **Layer Isolation**: No circular dependencies between layers
+- ✅ **Interface Segregation**: Clean contracts between layers
+- ✅ **Single Responsibility**: Each component has one reason to change
+- ✅ **Test Quality**: Comprehensive mocking, error handling, and validation
+
+### Development Tools
+
+- ✅ **Monorepo Structure**: pnpm workspaces with proper package organization
+- ✅ **TypeScript Configuration**: Strict type checking with custom conditions
+- ✅ **Hot Reload**: Development efficiency with tsx and file watching
+- ✅ **Build Pipeline**: Vite-based building with proper externalization
+- ✅ **Testing**: Vitest with comprehensive test coverage
 
 ## Future Considerations
 
