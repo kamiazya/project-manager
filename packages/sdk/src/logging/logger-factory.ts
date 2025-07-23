@@ -31,7 +31,7 @@ import { join, resolve } from 'path'
  */
 export interface LoggerFactoryConfig {
   /** Environment configuration */
-  environment?: 'development' | 'production' | 'test'
+  environment?: 'development' | 'production' | 'testing'
 
   /** Default log level for all loggers */
   defaultLogLevel?: LogLevel
@@ -220,11 +220,11 @@ export class LoggerFactory extends EventEmitter {
   /**
    * Detect environment from process.env.
    */
-  private detectEnvironment(): 'development' | 'production' | 'test' {
+  private detectEnvironment(): 'development' | 'production' | 'testing' {
     const nodeEnv = process.env.NODE_ENV?.toLowerCase()
 
     if (nodeEnv === 'production') return 'production'
-    if (nodeEnv === 'test') return 'test'
+    if (nodeEnv === 'test') return 'testing'
     return 'development'
   }
 
@@ -235,7 +235,7 @@ export class LoggerFactory extends EventEmitter {
     switch (environment) {
       case 'production':
         return 'info'
-      case 'test':
+      case 'testing':
         return 'error'
       default:
         return 'debug'
@@ -308,7 +308,7 @@ export class LoggerFactory extends EventEmitter {
         case 'production':
           return createProductionLogger(actualLogPath || 'logs/app.log', pinoConfig)
 
-        case 'test':
+        case 'testing':
           return createTestLogger(pinoConfig)
 
         default:

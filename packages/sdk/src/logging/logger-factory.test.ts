@@ -521,7 +521,7 @@ describe('LoggerFactory SDK Integration', () => {
   describe('Boundary Value Tests (t-wada approach)', () => {
     it('should handle minimum logger configuration', () => {
       const minimalConfig = {
-        environment: 'test' as const,
+        environment: 'testing' as const,
       }
 
       const createMinimalFactory = (config: any) => {
@@ -536,7 +536,7 @@ describe('LoggerFactory SDK Integration', () => {
 
       const factory = createMinimalFactory(minimalConfig)
 
-      expect(factory.config.environment).toBe('test')
+      expect(factory.config.environment).toBe('testing')
       expect(factory.config.level).toBe('info')
       expect(factory.config.transport).toBe('console')
     })

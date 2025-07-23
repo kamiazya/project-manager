@@ -106,14 +106,16 @@ vi.mock('@project-manager/infrastructure', () => ({
       generateTicketId: vi.fn(() => Promise.resolve('a1b2c3d4')),
     }
   }),
-  AsyncLocalStorageContextService: {
-    initialize: vi.fn().mockReturnValue({
-      constructor: { name: 'AsyncLocalStorageContextService' },
-      run: vi.fn(),
-      getContext: vi.fn(),
-      getContextForLogging: vi.fn(() => ({})),
+  AsyncLocalStorageContextService: vi
+    .fn()
+    .mockImplementation(function MockAsyncLocalStorageContextService() {
+      return {
+        constructor: { name: 'AsyncLocalStorageContextService' },
+        run: vi.fn(),
+        getContext: vi.fn(),
+        getContextForLogging: vi.fn(() => ({})),
+      }
     }),
-  },
 }))
 
 // Mock application layer use cases

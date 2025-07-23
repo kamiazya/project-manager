@@ -137,7 +137,7 @@ export function createContainer(config: SDKConfig): Container {
       const environment = envService.resolveEnvironment(config.environment) as
         | 'development'
         | 'production'
-        | 'test'
+        | 'testing'
 
       const loggerFactory = getGlobalLoggerFactory({ environment })
       return loggerFactory.getApplicationLogger()
@@ -154,7 +154,7 @@ export function createContainer(config: SDKConfig): Container {
       const environment = envService.resolveEnvironment(config.environment) as
         | 'development'
         | 'production'
-        | 'test'
+        | 'testing'
 
       const loggerFactory = getGlobalLoggerFactory({ environment })
       return loggerFactory.getAuditLogger()
@@ -190,7 +190,7 @@ export function createContainer(config: SDKConfig): Container {
       const asyncContextStorage = context.get<AsyncContextStorage<LoggingContext>>(
         TYPES.AsyncContextStorage
       )
-      return AsyncLocalStorageContextService.initialize(asyncContextStorage)
+      return new AsyncLocalStorageContextService(asyncContextStorage)
     })
     .inSingletonScope()
 
