@@ -48,7 +48,6 @@ export namespace UpdateTicketPriority {
         return {
           ticketId: response.id,
           priority: response.priority,
-          previousPriority: request.newPriority,
         }
       },
     }

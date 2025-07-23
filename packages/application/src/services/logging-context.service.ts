@@ -5,6 +5,8 @@
  * The implementation will be provided by the Infrastructure layer.
  */
 
+import type { ActorType, EnvironmentMode, LogSource } from '@project-manager/base'
+
 /**
  * Logging context interface containing all contextual information
  * that should be automatically included in logs and audit records.
@@ -17,14 +19,14 @@ export interface LoggingContext {
   sessionId?: string
 
   /** Source of the operation (cli, mcp, api, etc.) */
-  source: 'cli' | 'mcp' | 'api' | 'scheduler' | 'test'
+  source: LogSource
 
   /** Current operation being performed */
   operation?: string
 
   /** Actor performing the operation */
   actor: {
-    type: 'human' | 'ai' | 'system'
+    type: ActorType
     id: string
     name: string
     coAuthor?: string // For AI operations with human instruction
@@ -34,7 +36,7 @@ export interface LoggingContext {
   metadata?: Record<string, any>
 
   /** Environment context */
-  environment?: 'development' | 'production' | 'test'
+  environment?: EnvironmentMode
 
   /** Correlation ID for related operations */
   correlationId?: string
@@ -51,7 +53,6 @@ export interface LoggingContextService {
   run<T>(context: LoggingContext, fn: () => Promise<T>): Promise<T>
   runSync<T>(context: LoggingContext, fn: () => T): T
   getContext(): LoggingContext | undefined
-  updateContext(updates: Partial<LoggingContext>): Promise<void>
   createUpdatedContext(updates: Partial<LoggingContext>): LoggingContext
   createChildContext(childContext: Partial<LoggingContext>): LoggingContext
   hasContext(): boolean

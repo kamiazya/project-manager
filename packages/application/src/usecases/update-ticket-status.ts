@@ -48,7 +48,6 @@ export namespace UpdateTicketStatus {
         return {
           ticketId: response.id,
           status: response.status,
-          previousStatus: request.newStatus,
         }
       },
     }

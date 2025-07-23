@@ -42,8 +42,16 @@ export namespace GetLogs {
     ) {}
 
     static create(logs: LogEntry[], totalCount: number, limit?: number): Response {
-      const hasMore = limit ? logs.length >= limit : false
-      return new Response(logs, totalCount, hasMore)
+      let actualLogs = logs
+      let hasMore = false
+
+      if (limit && logs.length > limit) {
+        // If we got more logs than requested, there are more available
+        actualLogs = logs.slice(0, limit)
+        hasMore = true
+      }
+
+      return new Response(actualLogs, totalCount, hasMore)
     }
   }
 
@@ -117,9 +125,13 @@ export namespace GetLogs {
         filters: this.sanitizeFilters(filters),
       })
 
+      // Fetch one extra log to determine if more logs exist beyond the requested limit
+      const requestedLimit = request.limit || 100
+      const fetchLimit = requestedLimit + 1
+
       const { logs, totalCount } = await this.logReader.getLogs(
         filters,
-        request.limit || 100,
+        fetchLimit,
         request.offset || 0
       )
 
@@ -128,7 +140,7 @@ export namespace GetLogs {
       })
 
       const logEntries = logs.map(log => this.convertToLogEntry(log))
-      const response = Response.create(logEntries, totalCount, request.limit)
+      const response = Response.create(logEntries, totalCount, requestedLimit)
 
       await this.logger.info('Log retrieval completed', {
         logsRetrieved: response.logs.length,

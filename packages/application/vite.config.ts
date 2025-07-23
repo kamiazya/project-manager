@@ -11,7 +11,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
   },
   resolve: {
-    conditions: ['development', 'import', 'module', 'browser', 'default'],
+    conditions: ['development', 'import', 'module', 'default'],
   },
   plugins: [
     cleanArchitecture(projectManagerArchitectureRules),
