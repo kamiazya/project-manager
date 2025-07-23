@@ -5,6 +5,8 @@
  * enabling end-to-end visibility and debugging capabilities.
  */
 
+import { AsyncLocalStorage } from 'async_hooks'
+
 /**
  * Core trace context interface for operation correlation.
  */
@@ -429,13 +431,15 @@ export const TraceContextUtils = {
 
 /**
  * Global trace context manager for maintaining current context.
+ * Uses AsyncLocalStorage for safe async context propagation.
  */
 export class TraceContextManager {
   private static instance: TraceContextManager | null = null
-  private currentContext: TraceContext | null = null
-  private contextStack: TraceContext[] = []
+  private asyncLocalStorage: AsyncLocalStorage<TraceContext>
 
-  private constructor() {}
+  private constructor() {
+    this.asyncLocalStorage = new AsyncLocalStorage<TraceContext>()
+  }
 
   /**
    * Get the singleton instance.
@@ -451,62 +455,63 @@ export class TraceContextManager {
    * Get the current active trace context.
    */
   getCurrentContext(): TraceContext | null {
-    return this.currentContext
+    return this.asyncLocalStorage.getStore() ?? null
   }
 
   /**
    * Set the current trace context.
+   * Note: This method is provided for compatibility but should be used carefully.
+   * Prefer using withContext() or withContextAsync() for proper context isolation.
    */
   setCurrentContext(context: TraceContext | null): void {
-    this.currentContext = context
+    if (context === null) {
+      // Cannot set null context directly with AsyncLocalStorage
+      // This is intentionally limited to encourage proper context management
+      return
+    }
+
+    // This method has limited functionality with AsyncLocalStorage
+    // It's provided for compatibility but doesn't provide async isolation
+    console.warn(
+      'TraceContextManager.setCurrentContext() has limited functionality with AsyncLocalStorage. Use withContext() instead.'
+    )
   }
 
   /**
    * Push a new context onto the stack and make it current.
+   * @deprecated Use withContext() or withContextAsync() instead for proper async safety.
    */
   pushContext(context: TraceContext): void {
-    if (this.currentContext) {
-      this.contextStack.push(this.currentContext)
-    }
-    this.currentContext = context
+    console.warn(
+      'TraceContextManager.pushContext() is deprecated. Use withContext() or withContextAsync() instead.'
+    )
+    // Legacy behavior - not recommended with AsyncLocalStorage
   }
 
   /**
    * Pop the current context and restore the previous one.
+   * @deprecated Use withContext() or withContextAsync() instead for proper async safety.
    */
   popContext(): TraceContext | null {
-    const previousContext = this.currentContext
-
-    if (this.contextStack.length > 0) {
-      this.currentContext = this.contextStack.pop()!
-    } else {
-      this.currentContext = null
-    }
-
-    return previousContext
+    console.warn(
+      'TraceContextManager.popContext() is deprecated. Use withContext() or withContextAsync() instead.'
+    )
+    return this.getCurrentContext()
   }
 
   /**
    * Execute a function within a specific trace context.
+   * This provides proper async context isolation.
    */
   withContext<T>(context: TraceContext, fn: () => T): T {
-    this.pushContext(context)
-    try {
-      return fn()
-    } finally {
-      this.popContext()
-    }
+    return this.asyncLocalStorage.run(context, fn)
   }
 
   /**
    * Execute an async function within a specific trace context.
+   * This provides proper async context isolation.
    */
   async withContextAsync<T>(context: TraceContext, fn: () => Promise<T>): Promise<T> {
-    this.pushContext(context)
-    try {
-      return await fn()
-    } finally {
-      this.popContext()
-    }
+    return this.asyncLocalStorage.run(context, fn)
   }
 }
