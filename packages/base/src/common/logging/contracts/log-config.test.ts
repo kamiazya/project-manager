@@ -63,9 +63,7 @@ describe('LogConfig', () => {
       expect(result).toEqual({
         level: 'info',
         environment: 'production',
-        transport: {
-          type: 'console',
-        },
+        transportType: 'console',
       })
     })
 
@@ -77,8 +75,7 @@ describe('LogConfig', () => {
       const result = LogConfigUtils.mergeConfigs(config)
       expect(result.level).toBe('debug')
       expect(result.environment).toBe('production') // Default
-      expect(result.transport.type).toBe('console') // Default
-      // logFile is not handled by mergeConfigs - it only handles nested objects
+      expect(result.transportType).toBe('console') // Default
       expect(result.logFile).toBeUndefined()
     })
 
@@ -86,70 +83,51 @@ describe('LogConfig', () => {
       const config1: Partial<LogConfig> = {
         level: 'debug',
         environment: 'development',
-        transport: {
-          type: 'file',
-        },
+        transportType: 'file',
       }
 
       const config2: Partial<LogConfig> = {
         level: 'info',
-        transport: {
-          type: 'console',
-          colorize: true,
-        },
+        transportType: 'console',
+        colorize: true,
       }
 
       const result = LogConfigUtils.mergeConfigs(config1, config2)
       expect(result.level).toBe('info') // From config2
       expect(result.environment).toBe('development') // From config1
-      expect(result.transport.type).toBe('console') // From config2
-      expect(result.transport.colorize).toBe(true) // From config2
+      expect(result.transportType).toBe('console') // From config2
+      expect(result.colorize).toBe(true) // From config2
     })
 
-    it('should deep merge nested properties', () => {
+    it('should handle maxEntries merging', () => {
       const config1: Partial<LogConfig> = {
-        rotation: {
-          maxSize: '50MB',
-          maxFiles: 5,
-        },
+        maxEntries: 500,
       }
 
       const config2: Partial<LogConfig> = {
-        rotation: {
-          maxSize: '100MB', // Required property
-          maxFiles: 10,
-          interval: 'daily',
-        },
+        maxEntries: 1000,
       }
 
       const result = LogConfigUtils.mergeConfigs(config1, config2)
-      expect(result.rotation).toEqual({
-        maxSize: '100MB', // From config2 (overrides config1)
-        maxFiles: 10, // From config2
-        interval: 'daily', // From config2
-      })
+      expect(result.maxEntries).toBe(1000) // From config2 (overrides config1)
     })
 
     it('should handle undefined and null values correctly', () => {
       const config1: Partial<LogConfig> = {
         level: 'debug',
-        transport: {
-          type: 'file',
-          colorize: true,
-        },
+        transportType: 'file',
+        colorize: true,
       }
 
       const config2: Partial<LogConfig> = {
-        transport: {
-          type: 'console',
-          // colorize undefined - should not override
-        },
+        transportType: 'console',
+        // colorize undefined - should not override
       }
 
       const result = LogConfigUtils.mergeConfigs(config1, config2)
       expect(result.level).toBe('debug')
-      expect(result.transport.type).toBe('console') // Overridden
-      expect(result.transport.colorize).toBe(true) // Preserved from config1
+      expect(result.transportType).toBe('console') // Overridden
+      expect(result.colorize).toBe(true) // Preserved from config1
     })
   })
 
@@ -159,9 +137,7 @@ describe('LogConfig', () => {
         level: 'info',
         environment: 'production',
         logFile: '/var/log/app.log',
-        transport: {
-          type: 'file',
-        },
+        transportType: 'file',
       }
 
       const errors = LogConfigUtils.validateConfig(config)
@@ -172,7 +148,7 @@ describe('LogConfig', () => {
       const config: LogConfig = {
         level: 'invalid' as LogLevel,
         environment: 'production',
-        transport: { type: 'console' },
+        transportType: 'console',
       }
 
       const errors = LogConfigUtils.validateConfig(config)
@@ -183,7 +159,7 @@ describe('LogConfig', () => {
       const config: LogConfig = {
         level: 'info',
         environment: 'invalid' as EnvironmentMode,
-        transport: { type: 'console' },
+        transportType: 'console',
       }
 
       const errors = LogConfigUtils.validateConfig(config)
@@ -194,7 +170,7 @@ describe('LogConfig', () => {
       const config: LogConfig = {
         level: 'info',
         environment: 'production',
-        transport: { type: 'invalid' as TransportType },
+        transportType: 'invalid' as TransportType,
       }
 
       const errors = LogConfigUtils.validateConfig(config)
@@ -205,7 +181,7 @@ describe('LogConfig', () => {
       const config: LogConfig = {
         level: 'info',
         environment: 'production',
-        transport: { type: 'file' },
+        transportType: 'file',
         // logFile is missing
       }
 
@@ -218,7 +194,7 @@ describe('LogConfig', () => {
         level: 'info',
         environment: 'production',
         logFile: '',
-        transport: { type: 'file' },
+        transportType: 'file',
       }
 
       const errors = LogConfigUtils.validateConfig(config)
@@ -230,7 +206,7 @@ describe('LogConfig', () => {
         level: 'info',
         environment: 'production',
         logFile: '   \t\n  ',
-        transport: { type: 'file' },
+        transportType: 'file',
       }
 
       const errors = LogConfigUtils.validateConfig(config)
@@ -242,95 +218,18 @@ describe('LogConfig', () => {
         level: 'info',
         environment: 'production',
         auditFile: '',
-        transport: { type: 'console' },
+        transportType: 'console',
       }
 
       const errors = LogConfigUtils.validateConfig(config)
       expect(errors).toContain('Audit file path cannot be empty')
     })
 
-    it('should validate rotation configuration', () => {
-      const config: LogConfig = {
-        level: 'info',
-        environment: 'production',
-        transport: { type: 'file' },
-        logFile: '/var/log/app.log',
-        rotation: {
-          maxSize: 'invalid',
-          maxFiles: 0,
-        },
-      }
-
-      const errors = LogConfigUtils.validateConfig(config)
-      expect(errors).toContain('Maximum files must be at least 1')
-      expect(errors).toContain('Invalid max size format (use format like "100MB")')
-    })
-
-    it('should accept valid rotation sizes', () => {
-      const validSizes = ['1KB', '100MB', '10GB', '5TB']
-
-      validSizes.forEach(size => {
-        const config: LogConfig = {
-          level: 'info',
-          environment: 'production',
-          transport: { type: 'file' },
-          logFile: '/var/log/app.log',
-          rotation: {
-            maxSize: size,
-            maxFiles: 10,
-          },
-        }
-
-        const errors = LogConfigUtils.validateConfig(config)
-        const sizeErrors = errors.filter(e => e.includes('max size format'))
-        expect(sizeErrors).toHaveLength(0)
-      })
-    })
-
-    it('should validate sampling configuration', () => {
-      const invalidRates = [-0.1, 1.1, 2.0]
-
-      invalidRates.forEach(rate => {
-        const config: LogConfig = {
-          level: 'info',
-          environment: 'production',
-          transport: { type: 'console' },
-          sampling: {
-            enabled: true,
-            rate,
-          },
-        }
-
-        const errors = LogConfigUtils.validateConfig(config)
-        expect(errors).toContain('Sampling rate must be between 0.0 and 1.0')
-      })
-    })
-
-    it('should accept valid sampling rates', () => {
-      const validRates = [0.0, 0.1, 0.5, 0.99, 1.0]
-
-      validRates.forEach(rate => {
-        const config: LogConfig = {
-          level: 'info',
-          environment: 'production',
-          transport: { type: 'console' },
-          sampling: {
-            enabled: true,
-            rate,
-          },
-        }
-
-        const errors = LogConfigUtils.validateConfig(config)
-        const rateErrors = errors.filter(e => e.includes('Sampling rate'))
-        expect(rateErrors).toHaveLength(0)
-      })
-    })
-
     it('should return multiple errors for multiple issues', () => {
       const config: LogConfig = {
         level: 'invalid' as LogLevel,
         environment: 'invalid' as EnvironmentMode,
-        transport: { type: 'invalid' as TransportType },
+        transportType: 'invalid' as TransportType,
         logFile: '',
         auditFile: '   ',
       }
@@ -353,8 +252,8 @@ describe('LogConfig', () => {
       expect(errors).toEqual([])
       expect(config.level).toBe('debug')
       expect(config.environment).toBe('development')
-      expect(config.transport.type).toBe('console')
-      expect(config.transport.colorize).toBe(true)
+      expect(config.transportType).toBe('console')
+      expect(config.colorize).toBe(true)
     })
 
     it('should provide valid test preset', () => {
@@ -364,8 +263,8 @@ describe('LogConfig', () => {
       expect(errors).toEqual([])
       expect(config.level).toBe('warn')
       expect(config.environment).toBe('testing')
-      expect(config.transport.type).toBe('memory')
-      expect(config.transport.maxEntries).toBe(1000)
+      expect(config.transportType).toBe('memory')
+      expect(config.maxEntries).toBe(1000)
     })
 
     it('should provide valid production preset', () => {
@@ -375,30 +274,23 @@ describe('LogConfig', () => {
       expect(errors).toEqual([])
       expect(config.level).toBe('info')
       expect(config.environment).toBe('production')
-      expect(config.transport.type).toBe('file')
+      expect(config.transportType).toBe('file')
       expect(config.logFile).toBeDefined()
       expect(config.auditFile).toBeDefined()
-      expect(config.rotation).toBeDefined()
-      expect(config.rotation?.maxSize).toBe('100MB')
-      expect(config.rotation?.maxFiles).toBe(10)
-      expect(config.rotation?.interval).toBe('daily')
     })
 
     it('should allow merging presets with custom config', () => {
       const customConfig: Partial<LogConfig> = {
         level: 'error',
-        transport: {
-          type: 'console',
-        },
+        transportType: 'console',
       }
 
       const merged = LogConfigUtils.mergeConfigs(LogConfigPresets.production, customConfig)
 
       expect(merged.level).toBe('error') // Overridden
       expect(merged.environment).toBe('production') // From preset
-      expect(merged.transport.type).toBe('console') // Overridden
-      // Note: mergeConfigs doesn't handle logFile - it only handles nested objects
-      expect(merged.logFile).toBeUndefined()
+      expect(merged.transportType).toBe('console') // Overridden
+      expect(merged.logFile).toBe('~/.local/share/project-manager/logs/app.log') // From preset
     })
   })
 
@@ -413,7 +305,7 @@ describe('LogConfig', () => {
           level: 'info',
           environment: 'production',
           logFile: longPath,
-          transport: { type: 'file' },
+          transportType: 'file',
         }
 
         const errors = LogConfigUtils.validateConfig(config)
@@ -435,7 +327,7 @@ describe('LogConfig', () => {
             level: 'info',
             environment: 'production',
             logFile: path,
-            transport: { type: 'file' },
+            transportType: 'file',
           }
 
           const errors = LogConfigUtils.validateConfig(config)
@@ -444,81 +336,13 @@ describe('LogConfig', () => {
       })
     })
 
-    describe('Rotation values', () => {
-      it('should handle minimum rotation values', () => {
-        const config: LogConfig = {
-          level: 'info',
-          environment: 'production',
-          logFile: '/var/log/app.log',
-          transport: { type: 'file' },
-          rotation: {
-            maxSize: '1KB',
-            maxFiles: 1,
-          },
-        }
-
-        const errors = LogConfigUtils.validateConfig(config)
-        expect(errors).toEqual([])
-      })
-
-      it('should handle maximum rotation values', () => {
-        const config: LogConfig = {
-          level: 'info',
-          environment: 'production',
-          logFile: '/var/log/app.log',
-          transport: { type: 'file' },
-          rotation: {
-            maxSize: '999TB',
-            maxFiles: 999999,
-          },
-        }
-
-        const errors = LogConfigUtils.validateConfig(config)
-        expect(errors).toEqual([])
-      })
-
-      it('should reject zero max files', () => {
-        const config: LogConfig = {
-          level: 'info',
-          environment: 'production',
-          logFile: '/var/log/app.log',
-          transport: { type: 'file' },
-          rotation: {
-            maxSize: '100MB',
-            maxFiles: 0,
-          },
-        }
-
-        const errors = LogConfigUtils.validateConfig(config)
-        expect(errors).toContain('Maximum files must be at least 1')
-      })
-
-      it('should reject negative max files', () => {
-        const config: LogConfig = {
-          level: 'info',
-          environment: 'production',
-          logFile: '/var/log/app.log',
-          transport: { type: 'file' },
-          rotation: {
-            maxSize: '100MB',
-            maxFiles: -1,
-          },
-        }
-
-        const errors = LogConfigUtils.validateConfig(config)
-        expect(errors).toContain('Maximum files must be at least 1')
-      })
-    })
-
     describe('Memory transport limits', () => {
       it('should handle memory transport with max entries', () => {
         const config: LogConfig = {
           level: 'info',
-          environment: 'development', // Use 'development' which is valid
-          transport: {
-            type: 'memory',
-            maxEntries: 10000,
-          },
+          environment: 'development',
+          transportType: 'memory',
+          maxEntries: 10000,
         }
 
         const errors = LogConfigUtils.validateConfig(config)
@@ -528,10 +352,8 @@ describe('LogConfig', () => {
       it('should handle memory transport without max entries', () => {
         const config: LogConfig = {
           level: 'info',
-          environment: 'development', // Use 'development' which is valid
-          transport: {
-            type: 'memory',
-          },
+          environment: 'development',
+          transportType: 'memory',
         }
 
         const errors = LogConfigUtils.validateConfig(config)
@@ -548,7 +370,7 @@ describe('LogConfig', () => {
         const config: LogConfig = {
           level,
           environment: 'production',
-          transport: { type: 'console' },
+          transportType: 'console',
         }
 
         expect(config.level).toBe(level)
@@ -568,7 +390,7 @@ describe('LogConfig', () => {
         const config: LogConfig = {
           level: 'info',
           environment: env,
-          transport: { type: 'console' },
+          transportType: 'console',
         }
 
         expect(config.environment).toBe(env)
@@ -582,10 +404,10 @@ describe('LogConfig', () => {
         const config: LogConfig = {
           level: 'info',
           environment: 'production',
-          transport: { type },
+          transportType: type,
         }
 
-        expect(config.transport.type).toBe(type)
+        expect(config.transportType).toBe(type)
       })
     })
   })
