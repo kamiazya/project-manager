@@ -105,7 +105,7 @@ vi.mock('@project-manager/infrastructure', () => ({
   CryptoIdGenerator: vi.fn().mockImplementation(function MockCryptoIdGenerator() {
     return {
       constructor: { name: 'CryptoIdGenerator' },
-      generateTicketId: vi.fn(() => Promise.resolve('a1b2c3d4')),
+      generateId: vi.fn(() => 'a1b2c3d4'),
     }
   }),
   AsyncLocalStorageContextService: vi
@@ -134,11 +134,7 @@ vi.mock('@project-manager/infrastructure', () => ({
       operationType: 'create',
       resourceType: 'Test',
       description: 'Test operation',
-      useCaseName: useCase.constructor.name,
-      riskLevel: 'medium',
-      dataClassification: 'internal',
       containsSensitiveData: false,
-      requiresRetention: false,
     })),
   },
 }))
@@ -230,11 +226,7 @@ vi.mock('@project-manager/application', () => ({
       operationType: 'create',
       resourceType: 'Test',
       description: 'Test operation',
-      useCaseName: useCase.constructor.name,
-      riskLevel: 'medium',
-      dataClassification: 'internal',
       containsSensitiveData: false,
-      requiresRetention: false,
     })),
   },
 }))

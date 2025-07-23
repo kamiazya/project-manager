@@ -164,7 +164,8 @@ export function createContainer(config: SDKConfig): Container {
     .toDynamicValue(context => {
       const baseLogger = context.get<Logger>(TYPES.BaseLogger)
       const contextService = context.get<LoggingContextService>(TYPES.LoggingContextService)
-      return new ApplicationLogger(baseLogger, contextService)
+      const idGenerator = context.get<IdGenerator>(TYPES.IdGenerator)
+      return new ApplicationLogger(baseLogger, contextService, idGenerator)
     })
     .inTransientScope()
 
@@ -322,7 +323,7 @@ function createUseCaseActivationHandler(container: Container) {
     useCase.execute = new Proxy(originalExecute, {
       async apply(target, thisArg, argumentsList: any[]) {
         const [request] = argumentsList
-        const useCaseName = useCase.auditMetadata.useCaseName
+        const useCaseName = useCase.constructor.name.replace(/UseCase$/, '')
         const startTime = Date.now()
 
         // Generate unique execution ID

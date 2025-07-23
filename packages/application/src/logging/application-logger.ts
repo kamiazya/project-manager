@@ -12,6 +12,7 @@ type Logger = Logging.Logger
 type LogContext = Logging.LogContext
 type ArchitectureLayer = Logging.ArchitectureLayer
 
+import type { IdGenerator } from '../services/id-generator.interface.ts'
 import type { LoggingContextService } from '../services/logging-context.service.ts'
 
 /**
@@ -21,7 +22,8 @@ import type { LoggingContextService } from '../services/logging-context.service.
 export class ApplicationLogger implements Logger {
   constructor(
     private readonly baseLogger: Logger,
-    private readonly contextService?: LoggingContextService
+    private readonly contextService?: LoggingContextService,
+    private readonly idGenerator?: IdGenerator
   ) {}
 
   /**
@@ -78,7 +80,7 @@ export class ApplicationLogger implements Logger {
   child(childContext: LogMetadata): ApplicationLogger {
     // Create a child logger from the base logger with the additional context
     const childBaseLogger = this.baseLogger.child(childContext)
-    return new ApplicationLogger(childBaseLogger)
+    return new ApplicationLogger(childBaseLogger, this.contextService, this.idGenerator)
   }
 
   /**
@@ -87,49 +89,6 @@ export class ApplicationLogger implements Logger {
    */
   async flush(): Promise<void> {
     await this.baseLogger.flush()
-  }
-
-  /**
-   * Create a scoped logger for a specific component.
-   *
-   * @param component - Component name
-   * @param additionalContext - Additional context for the component
-   * @returns New ApplicationLogger scoped to the component
-   */
-  forComponent(component: string, additionalContext?: LogMetadata): ApplicationLogger {
-    return this.child({
-      component,
-      ...additionalContext,
-    })
-  }
-
-  /**
-   * Create a scoped logger for a specific operation.
-   *
-   * @param operation - Operation name
-   * @param additionalContext - Additional context for the operation
-   * @returns New ApplicationLogger scoped to the operation
-   */
-  forOperation(operation: string, additionalContext?: LogMetadata): ApplicationLogger {
-    return this.child({
-      operation,
-      ...additionalContext,
-    })
-  }
-
-  /**
-   * Create a scoped logger for a specific UseCase execution.
-   *
-   * @param useCaseName - UseCase class name
-   * @param executionId - Optional execution identifier
-   * @returns New ApplicationLogger scoped to the UseCase
-   */
-  forUseCase(useCaseName: string, executionId?: string): ApplicationLogger {
-    return this.child({
-      component: 'UseCase',
-      useCase: useCaseName,
-      executionId: executionId || this.generateExecutionId(),
-    })
   }
 
   /**
@@ -238,6 +197,12 @@ export class ApplicationLogger implements Logger {
    * @returns Unique execution identifier
    */
   private generateExecutionId(): string {
+    if (this.idGenerator) {
+      const id = this.idGenerator.generateId()
+      return `exec-${id}`
+    }
+
+    // Fallback to original implementation if no IdGenerator is provided
     const timestamp = Date.now().toString(36)
     const random = Math.random().toString(36).substring(2, 8)
     return `exec-${timestamp}-${random}`
@@ -249,13 +214,15 @@ export class ApplicationLogger implements Logger {
  *
  * @param baseLogger - The base logger implementation to wrap
  * @param contextService - Optional logging context service for automatic context integration
+ * @param idGenerator - Optional ID generator for execution IDs
  * @returns New ApplicationLogger instance
  */
 export function createApplicationLogger(
   baseLogger: Logger,
-  contextService?: LoggingContextService
+  contextService?: LoggingContextService,
+  idGenerator?: IdGenerator
 ): ApplicationLogger {
-  return new ApplicationLogger(baseLogger, contextService)
+  return new ApplicationLogger(baseLogger, contextService, idGenerator)
 }
 
 /**
@@ -273,9 +240,10 @@ export const ApplicationLoggerUtils = {
   forLayer(
     baseLogger: Logger,
     layer: ArchitectureLayer,
-    contextService?: LoggingContextService
+    contextService?: LoggingContextService,
+    idGenerator?: IdGenerator
   ): ApplicationLogger {
-    const appLogger = createApplicationLogger(baseLogger, contextService)
+    const appLogger = createApplicationLogger(baseLogger, contextService, idGenerator)
     return appLogger.child({ layer })
   },
 
@@ -284,10 +252,15 @@ export const ApplicationLoggerUtils = {
    *
    * @param baseLogger - Base logger instance
    * @param contextService - Optional logging context service
+   * @param idGenerator - Optional ID generator for execution IDs
    * @returns Domain layer logger
    */
-  forDomain(baseLogger: Logger, contextService?: LoggingContextService): ApplicationLogger {
-    return this.forLayer(baseLogger, 'domain', contextService)
+  forDomain(
+    baseLogger: Logger,
+    contextService?: LoggingContextService,
+    idGenerator?: IdGenerator
+  ): ApplicationLogger {
+    return this.forLayer(baseLogger, 'domain', contextService, idGenerator)
   },
 
   /**
@@ -295,10 +268,15 @@ export const ApplicationLoggerUtils = {
    *
    * @param baseLogger - Base logger instance
    * @param contextService - Optional logging context service
+   * @param idGenerator - Optional ID generator for execution IDs
    * @returns Application layer logger
    */
-  forApplication(baseLogger: Logger, contextService?: LoggingContextService): ApplicationLogger {
-    return this.forLayer(baseLogger, 'application', contextService)
+  forApplication(
+    baseLogger: Logger,
+    contextService?: LoggingContextService,
+    idGenerator?: IdGenerator
+  ): ApplicationLogger {
+    return this.forLayer(baseLogger, 'application', contextService, idGenerator)
   },
 
   /**
@@ -306,10 +284,15 @@ export const ApplicationLoggerUtils = {
    *
    * @param baseLogger - Base logger instance
    * @param contextService - Optional logging context service
+   * @param idGenerator - Optional ID generator for execution IDs
    * @returns Infrastructure layer logger
    */
-  forInfrastructure(baseLogger: Logger, contextService?: LoggingContextService): ApplicationLogger {
-    return this.forLayer(baseLogger, 'infrastructure', contextService)
+  forInfrastructure(
+    baseLogger: Logger,
+    contextService?: LoggingContextService,
+    idGenerator?: IdGenerator
+  ): ApplicationLogger {
+    return this.forLayer(baseLogger, 'infrastructure', contextService, idGenerator)
   },
 }
 
