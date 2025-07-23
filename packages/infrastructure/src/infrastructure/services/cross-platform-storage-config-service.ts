@@ -113,6 +113,40 @@ export class CrossPlatformStorageConfigService implements StorageConfigService {
   }
 
   /**
+   * Get full path for application log file.
+   *
+   * @param filename Optional filename (defaults to 'app.log')
+   * @returns Full path to application log file
+   *
+   * @example
+   * ```typescript
+   * const service = new CrossPlatformStorageConfigService()
+   * const appLogPath = service.getApplicationLogPath()
+   * // Linux: ~/.local/state/project-manager-dev/logs/app.log
+   * ```
+   */
+  getApplicationLogPath(filename: string = 'app.log'): string {
+    return join(this.getLogsPath(), filename)
+  }
+
+  /**
+   * Get full path for audit log file.
+   *
+   * @param filename Optional filename (defaults to 'audit.log')
+   * @returns Full path to audit log file
+   *
+   * @example
+   * ```typescript
+   * const service = new CrossPlatformStorageConfigService()
+   * const auditLogPath = service.getAuditLogPath()
+   * // Linux: ~/.local/state/project-manager-dev/logs/audit.log
+   * ```
+   */
+  getAuditLogPath(filename: string = 'audit.log'): string {
+    return join(this.getLogsPath(), filename)
+  }
+
+  /**
    * Get environment-specific app name for env-paths
    *
    * @returns App name with environment suffix (e.g., 'project-manager-dev')

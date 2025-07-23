@@ -22,6 +22,9 @@ export type {
   TicketStatusKey as TicketStatus,
   TicketTypeKey as TicketType,
 } from '@project-manager/domain'
+export * from './common/events/node-event-emitter-adapter.ts'
+// Event system infrastructure
+export * from './common/events/simple-event-emitter.ts'
 export * from './infrastructure/adapters/in-memory-ticket-repository.ts'
 // Infrastructure implementations
 export * from './infrastructure/adapters/json-ticket-repository.ts'

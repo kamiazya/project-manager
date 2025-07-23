@@ -21,6 +21,8 @@ export {
   TicketValidationError,
   UseCaseExecutionError,
 } from './common/errors/application-errors.ts'
+// Event system interfaces
+export * from './common/events/event-emitter.ts'
 export * from './common/ticket.response.ts'
 // Logging services
 export * from './logging/index.ts'

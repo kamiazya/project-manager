@@ -5,8 +5,7 @@
  * configuration management, and lifecycle handling for the SDK layer.
  */
 
-import { EventEmitter } from 'node:events'
-import { join } from 'node:path'
+import type { ApplicationEventEmitter, EventEmitterFactory } from '@project-manager/application'
 import type {
   AuditLogger,
   LogContext,
@@ -20,6 +19,7 @@ import {
   createDevelopmentLogger,
   createProductionLogger,
   createTestLogger,
+  defaultEventEmitterFactory,
   type FileAuditLoggerConfig,
   type PinoLoggerConfig,
 } from '@project-manager/infrastructure'
@@ -33,6 +33,9 @@ export interface LoggerFactoryConfig {
 
   /** Default log level for all loggers */
   defaultLogLevel?: LogLevel
+
+  /** Event emitter factory for creating event emitters */
+  eventEmitterFactory?: EventEmitterFactory
 
   /** Application logger configuration */
   application?: {
@@ -133,7 +136,7 @@ class LazyLogger<T> {
 /**
  * Centralized logger factory with dependency injection support.
  */
-export class LoggerFactory extends EventEmitter {
+export class LoggerFactory {
   private config: LoggerFactoryConfig
   private applicationLogger: LazyLogger<Logger>
   private auditLogger: LazyLogger<AuditLogger>
@@ -141,12 +144,16 @@ export class LoggerFactory extends EventEmitter {
   private isInitialized = false
   private isShuttingDown = false
   private readonly storageService: CrossPlatformStorageConfigService
+  private readonly eventEmitter: ApplicationEventEmitter
 
   constructor(config: LoggerFactoryConfig = {}) {
-    super()
     this.config = this.mergeWithDefaults(config)
     this.loggerCache = new LoggerCache()
     this.storageService = new CrossPlatformStorageConfigService()
+
+    // Initialize event emitter using the factory from config or default
+    const eventEmitterFactory = config.eventEmitterFactory || defaultEventEmitterFactory
+    this.eventEmitter = eventEmitterFactory.create()
 
     // Initialize lazy loggers
     this.applicationLogger = new LazyLogger(() => this.createApplicationLoggerInstance())
@@ -162,6 +169,7 @@ export class LoggerFactory extends EventEmitter {
     const defaults: LoggerFactoryConfig = {
       environment,
       defaultLogLevel: this.getDefaultLogLevel(environment),
+      eventEmitterFactory: defaultEventEmitterFactory,
       application: {
         level: undefined, // Will use defaultLogLevel
         transport: 'file', // Always use file transport for both development and production
@@ -267,9 +275,9 @@ export class LoggerFactory extends EventEmitter {
       await Promise.all(initPromises)
 
       this.isInitialized = true
-      this.emit('initialized')
+      this.eventEmitter.emit('initialized')
     } catch (error) {
-      this.emit('error', { message: 'Failed to initialize logger factory', error })
+      this.eventEmitter.emit('error', { message: 'Failed to initialize logger factory', error })
       throw error
     }
   }
@@ -313,7 +321,7 @@ export class LoggerFactory extends EventEmitter {
           return createDevelopmentLogger(pinoConfig)
       }
     } catch (error) {
-      this.emit('error', { message: 'Failed to create application logger', error })
+      this.eventEmitter.emit('error', { message: 'Failed to create application logger', error })
 
       // Return fallback console logger
       return this.createFallbackLogger()
@@ -333,14 +341,12 @@ export class LoggerFactory extends EventEmitter {
         return appConfig.file.path
       }
 
-      // If relative path, resolve against cross-platform logs directory
-      const logsDir = this.storageService.getLogsPath()
-      return join(logsDir, 'app.log')
+      // If relative path, use the service to get full path
+      return this.storageService.getApplicationLogPath('app.log')
     }
 
-    // Default: use cross-platform logs directory
-    const logsDir = this.storageService.getLogsPath()
-    return join(logsDir, 'app.log')
+    // Default: use cross-platform logs directory service
+    return this.storageService.getApplicationLogPath()
   }
 
   /**
@@ -356,14 +362,12 @@ export class LoggerFactory extends EventEmitter {
         return auditConfig.path
       }
 
-      // If relative path, resolve against cross-platform logs directory
-      const logsDir = this.storageService.getLogsPath()
-      return join(logsDir, 'audit.log')
+      // If relative path, use the service to get full path
+      return this.storageService.getAuditLogPath('audit.log')
     }
 
-    // Default: use cross-platform logs directory
-    const logsDir = this.storageService.getLogsPath()
-    return join(logsDir, 'audit.log')
+    // Default: use cross-platform logs directory service
+    return this.storageService.getAuditLogPath()
   }
 
   /**
@@ -417,7 +421,7 @@ export class LoggerFactory extends EventEmitter {
           return createDevelopmentAuditLogger(actualAuditPath, baseLogger, fileAuditConfig)
       }
     } catch (error) {
-      this.emit('error', { message: 'Failed to create audit logger', error })
+      this.eventEmitter.emit('error', { message: 'Failed to create audit logger', error })
 
       // Return null audit logger as fallback
       return this.createNullAuditLogger()
@@ -614,7 +618,7 @@ export class LoggerFactory extends EventEmitter {
    */
   clearCache(): void {
     this.loggerCache.clear()
-    this.emit('cacheCleared')
+    this.eventEmitter.emit('cacheCleared')
   }
 
   /**
@@ -635,6 +639,27 @@ export class LoggerFactory extends EventEmitter {
     }
 
     await Promise.all(flushPromises)
+  }
+
+  /**
+   * Add event listener.
+   */
+  on(event: string, listener: (data?: any) => void): void {
+    this.eventEmitter.on(event, listener)
+  }
+
+  /**
+   * Remove event listener.
+   */
+  off(event: string, listener: (data?: any) => void): void {
+    this.eventEmitter.off(event, listener)
+  }
+
+  /**
+   * Remove all event listeners.
+   */
+  removeAllListeners(event?: string): void {
+    this.eventEmitter.removeAllListeners(event)
   }
 
   /**
@@ -672,11 +697,11 @@ export class LoggerFactory extends EventEmitter {
 
       // Clear cache and listeners
       this.clearCache()
-      this.removeAllListeners()
+      this.eventEmitter.removeAllListeners()
 
-      this.emit('shutdown')
+      this.eventEmitter.emit('shutdown')
     } catch (error) {
-      this.emit('error', { message: 'Error during shutdown', error })
+      this.eventEmitter.emit('error', { message: 'Error during shutdown', error })
       throw error
     }
   }
