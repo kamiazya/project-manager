@@ -590,9 +590,11 @@ export const LogEntryUtils = {
       let value: string
 
       if (field in entry) {
-        value = String((entry as any)[field])
-      } else if (entry.metadata && field in entry.metadata) {
-        value = String(entry.metadata[field])
+        // Type-safe access using bracket notation with proper type checking
+        const entryValue = entry[field as keyof LogEntry]
+        value = String(entryValue)
+      } else if (entry.metadata && typeof entry.metadata === 'object' && field in entry.metadata) {
+        value = String(entry.metadata[field as keyof typeof entry.metadata])
       } else {
         value = 'unknown'
       }
