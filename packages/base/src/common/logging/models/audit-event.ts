@@ -20,8 +20,57 @@ import type {
   FieldChangeType,
   ReadAuditEvent,
   UpdateAuditEvent,
+  ValidationResult,
 } from '../types/audit-event.ts'
 import type { LogSource, OperationType } from '../types/log-metadata.ts'
+
+/**
+ * Access details for READ operations.
+ * Tracks what was accessed and how for compliance and monitoring.
+ */
+export interface AccessDetails {
+  /** Fields that were accessed */
+  fieldsAccessed?: string[]
+
+  /** Query parameters used */
+  queryParams?: Record<string, unknown>
+
+  /** Number of records accessed */
+  recordCount?: number
+
+  /** Whether sensitive data was accessed */
+  containsSensitiveData?: boolean
+}
+
+/**
+ * Update details for UPDATE operations.
+ * Provides context about the nature and reason for updates.
+ */
+export interface UpdateDetails {
+  /** Reason for the update */
+  reason?: string
+
+  /** Whether this was a partial or complete update */
+  updateType?: 'partial' | 'complete'
+
+  /** Validation results */
+  validationResults?: ValidationResult[]
+}
+
+/**
+ * Deletion details for DELETE operations.
+ * Tracks deletion context and cascading effects.
+ */
+export interface DeletionDetails {
+  /** Reason for deletion */
+  reason?: string
+
+  /** Whether this was a soft delete */
+  softDelete?: boolean
+
+  /** Related entities that were also affected */
+  cascadeDeleted?: string[]
+}
 
 /**
  * Parameters for creating audit events.
@@ -48,6 +97,9 @@ export interface CreateAuditEventParams {
   /** New state */
   after?: Record<string, unknown> | null
 
+  /** State for read operations */
+  state?: Record<string, unknown>
+
   /** Optional custom timestamp (defaults to current time) */
   timestamp?: Date
 
@@ -64,13 +116,13 @@ export interface CreateAuditEventParams {
   changes?: FieldChange[]
 
   /** Optional access details (for read operations) */
-  accessDetails?: any
+  accessDetails?: AccessDetails
 
   /** Optional update details (for update operations) */
-  updateDetails?: any
+  updateDetails?: UpdateDetails
 
   /** Optional deletion details (for delete operations) */
-  deletionDetails?: any
+  deletionDetails?: DeletionDetails
 }
 
 /**
@@ -141,7 +193,7 @@ export class AuditEventModel implements BaseAuditEvent {
     entityId: string,
     state: Record<string, unknown>,
     source: LogSource,
-    accessDetails?: any,
+    accessDetails?: AccessDetails,
     options: Partial<CreateAuditEventParams> = {}
   ): ReadAuditEventModel {
     return new ReadAuditEventModel({
@@ -151,8 +203,7 @@ export class AuditEventModel implements BaseAuditEvent {
       entityType,
       entityId,
       source,
-      before: state,
-      after: state,
+      state,
       accessDetails,
     })
   }
@@ -193,7 +244,7 @@ export class AuditEventModel implements BaseAuditEvent {
     entityId: string,
     before: Record<string, unknown>,
     source: LogSource,
-    deletionDetails?: any,
+    deletionDetails?: DeletionDetails,
     options: Partial<CreateAuditEventParams> = {}
   ): DeleteAuditEventModel {
     return new DeleteAuditEventModel({
@@ -222,9 +273,14 @@ export class AuditEventModel implements BaseAuditEvent {
       entityType: obj.entityType || '',
       entityId: obj.entityId || '',
       source: obj.source || 'system',
-      before: obj.before,
-      after: obj.after,
+      before: 'before' in obj ? obj.before : undefined,
+      after: 'after' in obj ? obj.after : undefined,
       context: obj.context,
+    }
+
+    // Add state for read operations
+    if ('state' in obj && obj.state) {
+      params.state = obj.state
     }
 
     // Add operation-specific details
@@ -459,11 +515,10 @@ export class CreateAuditEventModel extends AuditEventModel implements CreateAudi
  */
 export class ReadAuditEventModel extends AuditEventModel implements ReadAuditEvent {
   readonly operation = 'read' as const
-  readonly before: Record<string, unknown>
-  readonly after: Record<string, unknown>
-  readonly accessDetails?: any
+  readonly state: Record<string, unknown>
+  readonly accessDetails?: AccessDetails
 
-  constructor(params: CreateAuditEventParams & { accessDetails?: any }) {
+  constructor(params: CreateAuditEventParams & { accessDetails?: AccessDetails }) {
     super(params)
 
     if (params.operation !== 'read') {
@@ -474,16 +529,11 @@ export class ReadAuditEventModel extends AuditEventModel implements ReadAuditEve
       )
     }
 
-    if (!params.before || !params.after) {
-      throw new ValidationError(
-        'ReadAuditEventModel requires both before and after states',
-        'before/after',
-        undefined
-      )
+    if (!params.state) {
+      throw new ValidationError('ReadAuditEventModel requires state parameter', 'state', undefined)
     }
 
-    this.before = params.before
-    this.after = params.after
+    this.state = params.state
     this.accessDetails = params.accessDetails
   }
 
@@ -491,8 +541,7 @@ export class ReadAuditEventModel extends AuditEventModel implements ReadAuditEve
     return {
       ...super.toObject(),
       operation: this.operation,
-      before: this.before,
-      after: this.after,
+      state: this.state,
       accessDetails: this.accessDetails,
     }
   }
@@ -506,9 +555,9 @@ export class UpdateAuditEventModel extends AuditEventModel implements UpdateAudi
   readonly before: Record<string, unknown>
   readonly after: Record<string, unknown>
   readonly changes: FieldChange[]
-  readonly updateDetails?: any
+  readonly updateDetails?: UpdateDetails
 
-  constructor(params: CreateAuditEventParams & { updateDetails?: any }) {
+  constructor(params: CreateAuditEventParams & { updateDetails?: UpdateDetails }) {
     super(params)
 
     if (params.operation !== 'update') {
@@ -552,9 +601,9 @@ export class DeleteAuditEventModel extends AuditEventModel implements DeleteAudi
   readonly operation = 'delete' as const
   readonly before: Record<string, unknown>
   readonly after = null
-  readonly deletionDetails?: any
+  readonly deletionDetails?: DeletionDetails
 
-  constructor(params: CreateAuditEventParams & { deletionDetails?: any }) {
+  constructor(params: CreateAuditEventParams & { deletionDetails?: DeletionDetails }) {
     super(params)
 
     if (params.operation !== 'delete') {
@@ -629,12 +678,17 @@ export const AuditEventUtils = {
   sanitize(event: AuditEvent): AuditEvent {
     const sanitized = { ...event }
 
-    // Sanitize before/after states
-    if (sanitized.before) {
+    // Sanitize before/after states for create, update, delete operations
+    if ('before' in sanitized && sanitized.before) {
       sanitized.before = AuditEventUtils.sanitizeState(sanitized.before)
     }
-    if (sanitized.after) {
+    if ('after' in sanitized && sanitized.after) {
       sanitized.after = AuditEventUtils.sanitizeState(sanitized.after)
+    }
+
+    // Sanitize state for read operations
+    if ('state' in sanitized && sanitized.state) {
+      sanitized.state = AuditEventUtils.sanitizeState(sanitized.state)
     }
 
     // Sanitize field changes

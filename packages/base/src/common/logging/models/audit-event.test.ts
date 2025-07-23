@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ValidationError } from '../../errors/base-errors.ts'
-import type { FieldChange } from '../types/audit-event.ts'
+import type { CreateAuditEvent, FieldChange, UpdateAuditEvent } from '../types/audit-event.ts'
 import {
   AuditEventModel,
   AuditEventUtils,
@@ -162,22 +162,20 @@ describe('AuditEventModel', () => {
 
       expect(event).toBeInstanceOf(ReadAuditEventModel)
       expect(event.operation).toBe('read')
-      expect(event.before).toEqual(state)
-      expect(event.after).toEqual(state)
+      expect(event.state).toEqual(state)
       expect(event.accessDetails).toEqual(accessDetails)
     })
 
-    it('should require both before and after states', () => {
+    it('should require state parameter', () => {
       const params = {
         ...baseParams,
         operation: 'read' as const,
-        before: undefined,
-        after: { title: 'Test' },
+        state: undefined,
       }
 
       expect(() => new ReadAuditEventModel(params)).toThrow(ValidationError)
       expect(() => new ReadAuditEventModel(params)).toThrow(
-        'ReadAuditEventModel requires both before and after states'
+        'ReadAuditEventModel requires state parameter'
       )
     })
   })
@@ -501,6 +499,7 @@ describe('AuditEventModel', () => {
           entityType: 'ticket',
           entityId: 'ticket-001',
           source: 'cli' as const,
+          before: null,
           after: {
             title: 'Test Ticket',
             password: 'secret123',
@@ -509,7 +508,7 @@ describe('AuditEventModel', () => {
           },
         }
 
-        const sanitized = AuditEventUtils.sanitize(event)
+        const sanitized = AuditEventUtils.sanitize(event) as CreateAuditEvent
 
         expect(sanitized.after.title).toBe('Test Ticket')
         expect(sanitized.after.password).toBe('***REDACTED***')
@@ -527,6 +526,15 @@ describe('AuditEventModel', () => {
           entityType: 'user',
           entityId: 'user-001',
           source: 'api' as const,
+          before: {
+            profile: {
+              name: 'John Doe',
+              credentials: {
+                password: 'old-secret',
+                token: 'old-token',
+              },
+            },
+          },
           after: {
             profile: {
               name: 'John Doe',
@@ -536,9 +544,10 @@ describe('AuditEventModel', () => {
               },
             },
           },
+          changes: [],
         }
 
-        const sanitized = AuditEventUtils.sanitize(event)
+        const sanitized = AuditEventUtils.sanitize(event) as UpdateAuditEvent
 
         expect(sanitized.after.profile.name).toBe('John Doe')
         expect(sanitized.after.profile.credentials.password).toBe('***REDACTED***')
@@ -555,6 +564,14 @@ describe('AuditEventModel', () => {
           entityType: 'user',
           entityId: 'user-001',
           source: 'cli' as const,
+          before: {
+            password: 'oldSecret123',
+            name: 'John',
+          },
+          after: {
+            password: 'newSecret456',
+            name: 'Jane',
+          },
           changes: [
             {
               field: 'password',
@@ -571,7 +588,7 @@ describe('AuditEventModel', () => {
           ],
         }
 
-        const sanitized = AuditEventUtils.sanitize(event)
+        const sanitized = AuditEventUtils.sanitize(event) as UpdateAuditEvent
 
         expect(sanitized.changes[0].oldValue).toBe('***REDACTED***')
         expect(sanitized.changes[0].newValue).toBe('***REDACTED***')

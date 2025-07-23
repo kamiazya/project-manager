@@ -61,11 +61,8 @@ export interface CreateAuditEvent extends BaseAuditEvent {
 export interface ReadAuditEvent extends BaseAuditEvent {
   operation: 'read'
 
-  /** Current state that was accessed */
-  before: Record<string, unknown>
-
-  /** No changes for read operations */
-  after: Record<string, unknown>
+  /** State of the entity that was accessed */
+  state: Record<string, unknown>
 
   /** Access details */
   accessDetails?: {
@@ -514,12 +511,17 @@ export const AuditEventUtils = {
   sanitize(event: AuditEvent): AuditEvent {
     const sanitized = { ...event }
 
-    // Sanitize before/after states
-    if (sanitized.before) {
+    // Sanitize before/after states for create, update, delete operations
+    if ('before' in sanitized && sanitized.before) {
       sanitized.before = this.sanitizeState(sanitized.before)
     }
-    if (sanitized.after) {
+    if ('after' in sanitized && sanitized.after) {
       sanitized.after = this.sanitizeState(sanitized.after)
+    }
+
+    // Sanitize state for read operations
+    if ('state' in sanitized && sanitized.state) {
+      sanitized.state = this.sanitizeState(sanitized.state)
     }
 
     // Sanitize field changes
