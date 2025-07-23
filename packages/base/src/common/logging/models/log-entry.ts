@@ -391,8 +391,14 @@ export class LogEntryModel implements LogEntry {
 
     // Check message
     if (filter.messagePattern) {
-      const pattern = new RegExp(filter.messagePattern, 'i')
-      if (!pattern.test(this.message)) {
+      try {
+        const pattern = new RegExp(filter.messagePattern, 'i')
+        if (!pattern.test(this.message)) {
+          return false
+        }
+      } catch (error) {
+        // Invalid regex pattern - skip this filter to prevent crashes
+        // Return false to indicate no match for invalid patterns
         return false
       }
     }
