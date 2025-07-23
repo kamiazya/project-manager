@@ -247,6 +247,49 @@ export interface AuditMetadata extends LogMetadata {
 }
 
 /**
+ * List of field names that might contain sensitive data.
+ * Used for sanitizing log metadata to prevent sensitive information leakage.
+ */
+const SENSITIVE_FIELD_PATTERNS = ['password', 'token', 'apiKey', 'secret', 'credential'] as const
+
+/**
+ * Check if a field name indicates it might contain sensitive data.
+ *
+ * @param fieldName - The field name to check
+ * @returns True if the field name matches sensitive patterns
+ */
+function isSensitiveField(fieldName: string): boolean {
+  return SENSITIVE_FIELD_PATTERNS.some(pattern =>
+    fieldName.toLowerCase().includes(pattern.toLowerCase())
+  )
+}
+
+/**
+ * Sanitize a single value based on its type and field sensitivity.
+ *
+ * @param key - The field name
+ * @param value - The value to sanitize
+ * @param sanitizeObject - Function to recursively sanitize nested objects
+ * @returns Sanitized value or undefined if the field should be removed
+ */
+function sanitizeValue(
+  key: string,
+  value: unknown,
+  sanitizeObject: (obj: Record<string, unknown>) => Record<string, unknown>
+): unknown {
+  if (isSensitiveField(key)) {
+    // Only keep string sensitive fields as redacted, remove others
+    return typeof value === 'string' ? '***REDACTED***' : undefined
+  }
+
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return sanitizeObject(value as Record<string, unknown>)
+  }
+
+  return value
+}
+
+/**
  * Utility functions for working with log metadata.
  */
 export const LogMetadataUtils = {
@@ -257,26 +300,15 @@ export const LogMetadataUtils = {
    * @returns Sanitized metadata
    */
   sanitize(metadata: LogMetadata): LogMetadata {
-    const sanitized = { ...metadata }
+    const sanitized: LogMetadata = {}
 
-    // List of fields that might contain sensitive data
-    const sensitiveFields = ['password', 'token', 'apiKey', 'secret', 'credential']
+    // Process each field using the shared sanitization logic
+    for (const [key, value] of Object.entries(metadata)) {
+      const sanitizedValue = sanitizeValue(key, value, this.sanitizeObject.bind(this))
 
-    // Remove or redact sensitive fields
-    for (const [key, value] of Object.entries(sanitized)) {
-      if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
-        if (typeof value === 'string') {
-          sanitized[key] = '***REDACTED***'
-        } else {
-          delete sanitized[key]
-        }
-      }
-    }
-
-    // Sanitize nested objects
-    for (const [key, value] of Object.entries(sanitized)) {
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
-        sanitized[key] = this.sanitizeObject(value as Record<string, unknown>)
+      // Only include the field if it's not marked for removal
+      if (sanitizedValue !== undefined) {
+        sanitized[key] = sanitizedValue
       }
     }
 
@@ -288,18 +320,14 @@ export const LogMetadataUtils = {
    */
   sanitizeObject(obj: Record<string, unknown>): Record<string, unknown> {
     const sanitized: Record<string, unknown> = {}
-    const sensitiveFields = ['password', 'token', 'apiKey', 'secret', 'credential']
 
+    // Process each field using the shared sanitization logic
     for (const [key, value] of Object.entries(obj)) {
-      if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
-        if (typeof value === 'string') {
-          sanitized[key] = '***REDACTED***'
-        }
-        // Skip non-string sensitive fields
-      } else if (value && typeof value === 'object' && !Array.isArray(value)) {
-        sanitized[key] = this.sanitizeObject(value as Record<string, unknown>)
-      } else {
-        sanitized[key] = value
+      const sanitizedValue = sanitizeValue(key, value, this.sanitizeObject.bind(this))
+
+      // Only include the field if it's not marked for removal
+      if (sanitizedValue !== undefined) {
+        sanitized[key] = sanitizedValue
       }
     }
 
@@ -434,7 +462,7 @@ export const LogMetadataUtils = {
 
       case 'performance':
         if (!metadata.operation) errors.push('operation is required for performance logs')
-        if (metadata.startTime && metadata.duration === undefined) {
+        if (metadata.startTime && metadata.duration == null) {
           errors.push('duration should be provided when startTime is present')
         }
         break
