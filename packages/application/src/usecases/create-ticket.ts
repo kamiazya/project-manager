@@ -1,8 +1,6 @@
 import { Ticket, TicketId } from '@project-manager/domain'
-import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
-import { AuditableUseCaseUtils } from '../logging/index.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import type { IdGenerator } from '../services/id-generator.interface.ts'
 
@@ -37,12 +35,12 @@ export namespace CreateTicket {
       description: 'Creates a new ticket with specified properties',
       useCaseName: 'CreateTicket',
 
-      extractBeforeState: async (request: Request) => {
+      extractBeforeState: async (_request: Request) => {
         // For creation operations, there's no before state
         return null
       },
 
-      extractAfterState: async (request: Request, response: Response) => {
+      extractAfterState: async (_request: Request, response: Response) => {
         return {
           ticketId: response.id,
           title: response.title,

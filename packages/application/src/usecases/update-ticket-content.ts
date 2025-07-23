@@ -1,5 +1,4 @@
 import { TicketId } from '@project-manager/domain'
-import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.js'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'

@@ -130,7 +130,7 @@ describe('DeleteCommand', () => {
     describe('input validation boundary tests', () => {
       it('should handle very long ticket ID', async () => {
         // Arrange
-        const longTicketId = 'ticket-' + 'a'.repeat(100)
+        const longTicketId = `ticket-${'a'.repeat(100)}`
         const args = { ticketId: longTicketId }
         const flags = { force: true }
 

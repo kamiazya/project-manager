@@ -243,7 +243,7 @@ function validatePersistenceData(json: unknown): asserts json is TicketJSON {
   const dateFields = ['createdAt', 'updatedAt']
   for (const field of dateFields) {
     const dateValue = data[field] as string
-    if (isNaN(Date.parse(dateValue))) {
+    if (Number.isNaN(Date.parse(dateValue))) {
       throw new PersistenceError(
         'validatePersistenceData',
         `Invalid date format in field: ${field}`,

@@ -6,9 +6,7 @@
 import {
   ApplicationLogger,
   type AsyncContextStorage,
-  type AuditableUseCase,
   AuditInterceptor,
-  type AuditReader,
   CreateTicket,
   DeleteTicket,
   type DevelopmentProcessService,
@@ -20,7 +18,6 @@ import {
   isAuditableUseCase,
   type LoggingContext,
   type LoggingContextService,
-  type LogReader,
   SearchTickets,
   type StorageConfigService,
   type TicketRepository,
@@ -66,13 +63,13 @@ export function createContainer(config: SDKConfig): Container {
       const envService = container.get<EnvironmentDetectionService>(
         TYPES.EnvironmentDetectionService
       )
-      const environment = envService.resolveEnvironment(config.environment)
+      const _environment = envService.resolveEnvironment(config.environment)
 
       // Create cross-platform service with environment context
       const service = new CrossPlatformStorageConfigService()
       // Override getDefaultStoragePath to use environment-specific directory
       service.getDefaultStoragePath = () => {
-        const storageDir = service.getDefaultStorageDir(environment)
+        const storageDir = service.getDefaultStorageDir()
         return `${storageDir}/tickets.json`
       }
 
@@ -304,7 +301,7 @@ export function createContainer(config: SDKConfig): Container {
  * @returns onActivation handler function
  */
 function createUseCaseActivationHandler(container: Container) {
-  return (context: any, useCase: any) => {
+  return (_context: any, useCase: any) => {
     // Inject ApplicationLogger into the UseCase
     const applicationLogger = container.get<ApplicationLogger>(TYPES.ApplicationLogger)
     useCase.logger = applicationLogger

@@ -1,5 +1,5 @@
 // Test constants (previously from shared package)
-const VALIDATION = {
+const _VALIDATION = {
   TICKET_ID_MIN_LENGTH: 8,
   TICKET_ID_MAX_LENGTH: 8,
 }

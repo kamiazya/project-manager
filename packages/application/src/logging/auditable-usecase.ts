@@ -191,18 +191,17 @@ export const AuditableUseCaseUtils = {
       operationType: baseOperation as 'create' | 'read' | 'update' | 'delete' | 'search',
       resourceType: 'Ticket',
       description: `${operation.charAt(0).toUpperCase() + operation.slice(1).replace(/-/g, ' ')} ticket`,
-      useCaseName:
-        operation
-          .split('-')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join('') + 'Ticket',
+      useCaseName: `${operation
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('')}Ticket`,
       extractEntityId: (response: any) => response?.id,
       extractBeforeState: options.extractBeforeState,
       riskLevel: options.riskLevel || (operation === 'delete' ? 'high' : 'low'),
       dataClassification: 'internal',
       containsSensitiveData: false,
       requiresRetention: operation === 'delete',
-      additionalAuditFields: (request: any, response?: any) => ({
+      additionalAuditFields: (_request: any, response?: any) => ({
         ticketOperation: operation,
         hasAttachments: response?.attachments?.length > 0,
         fieldCount: response ? Object.keys(response).length : 0,

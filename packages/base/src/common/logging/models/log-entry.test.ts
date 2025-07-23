@@ -387,8 +387,8 @@ describe('LogEntryModel', () => {
 
       const formatted = entry.format(options)
 
-      // Should contain ANSI color codes
-      expect(formatted).toMatch(/\x1b\[\d+m/)
+      // Should contain ANSI color codes (ESC sequence)
+      expect(formatted).toContain(String.fromCharCode(27) + '[')
     })
   })
 
@@ -582,8 +582,8 @@ describe('LogEntryModel', () => {
 
         expect(grouped.info).toHaveLength(2)
         expect(grouped.error).toHaveLength(1)
-        expect(grouped.info[0]!.message).toBe('Info 1')
-        expect(grouped.info[1]!.message).toBe('Info 2')
+        expect(grouped.info![0]!.message).toBe('Info 1')
+        expect(grouped.info![1]!.message).toBe('Info 2')
       })
 
       it('should group entries by metadata field', () => {
@@ -659,7 +659,7 @@ describe('LogEntryModel', () => {
       })
 
       expect(entry.message.length).toBeGreaterThan(10000)
-      expect(entry.metadata?.customField?.length).toBe(5000)
+      expect((entry.metadata as any)?.customField?.length).toBe(5000)
     })
 
     it('should handle empty metadata object', () => {
@@ -670,7 +670,7 @@ describe('LogEntryModel', () => {
       })
 
       expect(entry.metadata).toEqual({})
-      expect(Object.keys(entry.metadata)).toHaveLength(0)
+      expect(Object.keys(entry.metadata!)).toHaveLength(0)
     })
 
     it('should handle null and undefined metadata', () => {

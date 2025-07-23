@@ -3,10 +3,6 @@ import { ValueObject } from './base-value-object.ts'
 
 // Test value objects for testing purposes
 class SimpleValue extends ValueObject<{ value: string }> {
-  constructor(props: { value: string }) {
-    super(props)
-  }
-
   get value(): string {
     return this.props.value
   }
@@ -17,10 +13,6 @@ class SimpleValue extends ValueObject<{ value: string }> {
 }
 
 class ComplexValue extends ValueObject<{ name: string; count: number; tags: string[] }> {
-  constructor(props: { name: string; count: number; tags: string[] }) {
-    super(props)
-  }
-
   get name(): string {
     return this.props.name
   }
@@ -42,13 +34,6 @@ class NestedValue extends ValueObject<{
   simple: { value: string }
   complex: { data: { id: number; label: string } }
 }> {
-  constructor(props: {
-    simple: { value: string }
-    complex: { data: { id: number; label: string } }
-  }) {
-    super(props)
-  }
-
   static create(value: string, id: number, label: string): NestedValue {
     return new NestedValue({
       simple: { value },
@@ -209,9 +194,6 @@ describe('ValueObject', () => {
   describe('deep equality edge cases', () => {
     it('should handle null values in properties', () => {
       class NullableValue extends ValueObject<{ value: string | null }> {
-        constructor(props: { value: string | null }) {
-          super(props)
-        }
         static create(value: string | null): NullableValue {
           return new NullableValue({ value })
         }
@@ -227,9 +209,6 @@ describe('ValueObject', () => {
 
     it('should handle undefined values in properties', () => {
       class UndefinedValue extends ValueObject<{ value?: string }> {
-        constructor(props: { value?: string }) {
-          super(props)
-        }
         static create(value?: string): UndefinedValue {
           return new UndefinedValue({ value })
         }
@@ -245,9 +224,6 @@ describe('ValueObject', () => {
 
     it('should handle boolean values correctly', () => {
       class BooleanValue extends ValueObject<{ flag: boolean }> {
-        constructor(props: { flag: boolean }) {
-          super(props)
-        }
         static create(flag: boolean): BooleanValue {
           return new BooleanValue({ flag })
         }
@@ -263,9 +239,6 @@ describe('ValueObject', () => {
 
     it('should handle number values including zero and negative', () => {
       class NumberValue extends ValueObject<{ count: number }> {
-        constructor(props: { count: number }) {
-          super(props)
-        }
         static create(count: number): NumberValue {
           return new NumberValue({ count })
         }
@@ -293,9 +266,6 @@ describe('ValueObject', () => {
           }
         }
       }> {
-        constructor(props: { level1: { level2: { level3: { value: string; array: number[] } } } }) {
-          super(props)
-        }
         static create(value: string, array: number[]): DeeplyNested {
           return new DeeplyNested({
             level1: {
@@ -317,9 +287,6 @@ describe('ValueObject', () => {
 
     it('should handle Date objects in properties', () => {
       class DateValue extends ValueObject<{ timestamp: Date }> {
-        constructor(props: { timestamp: Date }) {
-          super(props)
-        }
         static create(timestamp: Date): DateValue {
           return new DateValue({ timestamp })
         }
@@ -376,9 +343,6 @@ describe('ValueObject', () => {
   describe('error handling and edge cases', () => {
     it('should handle circular references gracefully', () => {
       class CircularValue extends ValueObject<{ data: any }> {
-        constructor(props: { data: any }) {
-          super(props)
-        }
         static create(data: any): CircularValue {
           return new CircularValue({ data })
         }
@@ -396,9 +360,6 @@ describe('ValueObject', () => {
 
     it('should handle very large objects', () => {
       class LargeValue extends ValueObject<{ data: string[] }> {
-        constructor(props: { data: string[] }) {
-          super(props)
-        }
         static create(data: string[]): LargeValue {
           return new LargeValue({ data })
         }

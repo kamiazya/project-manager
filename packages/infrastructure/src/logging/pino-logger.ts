@@ -5,6 +5,9 @@
  * Supports multi-process safety, file rotation, and environment-specific configuration.
  */
 
+import { EventEmitter } from 'node:events'
+import { mkdir } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
 import { LoggingError } from '@project-manager/application'
 import type {
   LogConfig,
@@ -13,9 +16,6 @@ import type {
   LogLevel,
   LogMetadata,
 } from '@project-manager/base/common/logging'
-import { EventEmitter } from 'events'
-import { mkdir } from 'fs/promises'
-import { dirname, resolve } from 'path'
 import pino, { type LoggerOptions, type Logger as PinoLogger } from 'pino'
 
 /**
@@ -177,7 +177,7 @@ export class PinoLoggerAdapter extends EventEmitter implements Logger {
             ignore: 'pid,hostname',
           },
         })
-      } catch (error) {
+      } catch (_error) {
         // Fallback to stdout if pino-pretty is not available
         console.warn('pino-pretty not available, using plain console output')
         return process.stdout
@@ -306,7 +306,7 @@ export class PinoLoggerAdapter extends EventEmitter implements Logger {
       if (this.config.transport.type !== 'console') {
         console.error('[LOGGER ERROR]', error.message)
       }
-    } catch (fallbackError) {
+    } catch (_fallbackError) {
       // Last resort: do nothing to prevent error loops
     }
   }
@@ -325,7 +325,7 @@ export class PinoLoggerAdapter extends EventEmitter implements Logger {
 
       // Also try to log normally if possible
       this.pinoLogger.fatal?.(error, `Critical ${type}`)
-    } catch (logError) {
+    } catch (_logError) {
       // Ensure we don't create error loops
     }
   }

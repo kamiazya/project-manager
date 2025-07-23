@@ -99,7 +99,7 @@ describe('createTicketStatus (boundary value tests)', () => {
       ['pending\\status', 'backslash character'],
       ['pending\nstatus', 'newline character'],
       ['pending\tstatus', 'tab character'],
-    ])('should reject invalid status: %s (%s)', (status, description) => {
+    ])('should reject invalid status: %s (%s)', (status, _description) => {
       expect(() => createTicketStatus(status)).toThrow()
       expect(() => createTicketStatus(status)).toThrow(/Invalid ticket status/)
     })

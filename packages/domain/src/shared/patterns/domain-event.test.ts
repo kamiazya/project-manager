@@ -137,7 +137,7 @@ describe('DomainEvent', () => {
     })
 
     it('should handle very long eventId', () => {
-      const longId = 'evt-' + 'a'.repeat(1000)
+      const longId = `evt-${'a'.repeat(1000)}`
       const event: DomainEvent = {
         eventId: longId,
         occurredOn: new Date(),
@@ -331,7 +331,7 @@ describe('TicketCompletedEvent', () => {
     })
 
     it('should handle very long ticket titles', () => {
-      const longTitle = 'Very long ticket title: ' + 'A'.repeat(1000)
+      const longTitle = `Very long ticket title: ${'A'.repeat(1000)}`
       const event: TicketCompletedEvent = {
         eventId: 'evt-long',
         occurredOn: new Date(),
@@ -493,19 +493,19 @@ describe('TicketStatusChangedEvent', () => {
     })
 
     it('should handle very long status values', () => {
-      const longStatus = 'very-long-status-' + 'a'.repeat(100)
+      const longStatus = `very-long-status-${'a'.repeat(100)}`
       const event: TicketStatusChangedEvent = {
         eventId: 'evt-long',
         occurredOn: new Date(),
         eventType: 'TicketStatusChanged',
         ticketId: 'TKT-LONG',
         fromStatus: longStatus,
-        toStatus: longStatus + '-modified',
+        toStatus: `${longStatus}-modified`,
         changedAt: new Date(),
       }
 
       expect(event.fromStatus).toBe(longStatus)
-      expect(event.toStatus).toBe(longStatus + '-modified')
+      expect(event.toStatus).toBe(`${longStatus}-modified`)
     })
   })
 })

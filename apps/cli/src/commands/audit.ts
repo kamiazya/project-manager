@@ -92,7 +92,7 @@ export class AuditCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, AuditLo
     }),
   }
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<AuditLogsResponse> {
+  async execute(_args: ExecuteArgs, flags: ExecuteFlags): Promise<AuditLogsResponse> {
     const request: GetAuditLogs.Request = {
       operation: flags.operation as 'create' | 'read' | 'update' | 'delete' | 'search' | undefined,
       operationId: flags['operation-id'],

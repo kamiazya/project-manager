@@ -1,4 +1,3 @@
-import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
 
 export namespace GetAuditLogs {
@@ -139,7 +138,7 @@ export namespace GetAuditLogs {
         }
       },
 
-      extractAfterState: async (request: Request, response: Response) => {
+      extractAfterState: async (_request: Request, response: Response) => {
         return {
           auditLogsRetrieved: response.auditLogs.length,
           totalCount: response.totalCount,

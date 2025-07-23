@@ -1,6 +1,6 @@
-import { mkdtemp, rm } from 'fs/promises'
-import { tmpdir } from 'os'
-import { join } from 'path'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Test-first approach for PinoLogger infrastructure implementation
@@ -19,7 +19,7 @@ describe('PinoLogger Infrastructure Implementation', () => {
 
   describe('PinoLogger Creation and Configuration', () => {
     it('should create logger with default configuration', () => {
-      const mockPino = vi.fn(() => ({
+      const _mockPino = vi.fn(() => ({
         debug: vi.fn(),
         info: vi.fn(),
         warn: vi.fn(),
@@ -206,7 +206,7 @@ describe('PinoLogger Infrastructure Implementation', () => {
         traceId: 'trace-child',
       }
 
-      const expectedMergedContext = {
+      const _expectedMergedContext = {
         ...parentContext,
         ...childContext,
       }
@@ -227,7 +227,7 @@ describe('PinoLogger Infrastructure Implementation', () => {
 
   describe('Multi-process Concurrency Safety', () => {
     it('should handle concurrent writes from multiple processes', async () => {
-      const logFile = join(tempDir, 'concurrent-test.log')
+      const _logFile = join(tempDir, 'concurrent-test.log')
 
       // Simulate multiple process writes
       const processes = [
@@ -267,7 +267,7 @@ describe('PinoLogger Infrastructure Implementation', () => {
         check: vi.fn().mockResolvedValue(false),
       }
 
-      const atomicWrite = async (data: string) => {
+      const _atomicWrite = async (data: string) => {
         await mockLockFile.lock()
         try {
           // Simulate write operation

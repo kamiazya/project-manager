@@ -88,11 +88,11 @@ const mockRules: ArchitectureRules = {
 // Absolute paths for realistic testing with new monorepo structure
 const baseDir = resolve(process.cwd(), 'project')
 const presentationFile = resolve(baseDir, 'apps/cli/src/command.ts')
-const sdkFile = resolve(baseDir, 'packages/sdk/src/index.ts')
+const _sdkFile = resolve(baseDir, 'packages/sdk/src/index.ts')
 const infrastructureFile = resolve(baseDir, 'packages/infrastructure/src/repository.ts')
 const applicationFile = resolve(baseDir, 'packages/application/src/service.ts')
 const domainFile = resolve(baseDir, 'packages/domain/src/entity.ts')
-const baseFile = resolve(baseDir, 'packages/base/src/utils.ts')
+const _baseFile = resolve(baseDir, 'packages/base/src/utils.ts')
 const baseIndexFile = resolve(baseDir, 'packages/base/index.ts')
 
 describe('architectureFitnessPlugin', () => {

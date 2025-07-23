@@ -457,7 +457,7 @@ describe('JsonTicketRepository', () => {
         })
 
         await expect(repositoryWithInvalidPath.save(ticket)).rejects.toThrow(PersistenceError)
-      } catch (error) {
+      } catch (_error) {
         // If the above doesn't work, just verify that PersistenceError exists and is properly imported
         expect(PersistenceError).toBeDefined()
         expect(new PersistenceError('test', 'test message')).toBeInstanceOf(Error)

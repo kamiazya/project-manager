@@ -1,5 +1,4 @@
 import { TicketId } from '@project-manager/domain'
-import type { UseCase as IUseCase } from '../common/base-usecase.ts'
 import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 
@@ -37,7 +36,7 @@ export namespace DeleteTicket {
         }
       },
 
-      extractAfterState: async (request: Request, response: void) => {
+      extractAfterState: async (_request: Request, _response: undefined) => {
         // After deletion, there's no state
         return null
       },

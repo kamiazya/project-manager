@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { ValidationError } from '../../errors/base-errors.ts'
 import type { CreateAuditEvent, FieldChange, UpdateAuditEvent } from '../types/audit-event.ts'
 import {
@@ -375,11 +375,33 @@ describe('AuditEventModel', () => {
       const before = new Date(eventTime - 1000)
       const after = new Date(eventTime + 1000)
 
-      expect(event.matches({ dateRange: { start: before } })).toBe(true)
-      expect(event.matches({ dateRange: { end: after } })).toBe(true)
-      expect(event.matches({ dateRange: { start: before, end: after } })).toBe(true)
-      expect(event.matches({ dateRange: { start: after } })).toBe(false)
-      expect(event.matches({ dateRange: { end: before } })).toBe(false)
+      expect(
+        event.matches({
+          dateRange: {
+            start: before.toISOString(),
+            end: new Date(Date.now() + 10000).toISOString(),
+          },
+        })
+      ).toBe(true)
+      expect(
+        event.matches({ dateRange: { start: new Date(0).toISOString(), end: after.toISOString() } })
+      ).toBe(true)
+      expect(
+        event.matches({ dateRange: { start: before.toISOString(), end: after.toISOString() } })
+      ).toBe(true)
+      expect(
+        event.matches({
+          dateRange: {
+            start: after.toISOString(),
+            end: new Date(Date.now() + 10000).toISOString(),
+          },
+        })
+      ).toBe(false)
+      expect(
+        event.matches({
+          dateRange: { start: new Date(0).toISOString(), end: before.toISOString() },
+        })
+      ).toBe(false)
     })
   })
 
@@ -461,7 +483,7 @@ describe('AuditEventModel', () => {
           timestamp: '2025-01-01T10:00:00.000Z',
           traceId: 'trace-456',
           operation: 'create' as const,
-          actor: { type: 'human' as const }, // Missing ID
+          actor: { type: 'human' as const, id: '' }, // Empty ID for testing
           entityType: 'ticket',
           entityId: 'ticket-001',
           source: 'cli' as const,
@@ -549,9 +571,9 @@ describe('AuditEventModel', () => {
 
         const sanitized = AuditEventUtils.sanitize(event) as UpdateAuditEvent
 
-        expect(sanitized.after.profile.name).toBe('John Doe')
-        expect(sanitized.after.profile.credentials.password).toBe('***REDACTED***')
-        expect(sanitized.after.profile.credentials.token).toBe('***REDACTED***')
+        expect((sanitized.after as any).profile.name).toBe('John Doe')
+        expect((sanitized.after as any).profile.credentials.password).toBe('***REDACTED***')
+        expect((sanitized.after as any).profile.credentials.token).toBe('***REDACTED***')
       })
 
       it('should sanitize field changes', () => {
@@ -590,10 +612,10 @@ describe('AuditEventModel', () => {
 
         const sanitized = AuditEventUtils.sanitize(event) as UpdateAuditEvent
 
-        expect(sanitized.changes[0].oldValue).toBe('***REDACTED***')
-        expect(sanitized.changes[0].newValue).toBe('***REDACTED***')
-        expect(sanitized.changes[1].oldValue).toBe('John')
-        expect(sanitized.changes[1].newValue).toBe('Jane')
+        expect(sanitized.changes[0]!.oldValue).toBe('***REDACTED***')
+        expect(sanitized.changes[0]!.newValue).toBe('***REDACTED***')
+        expect(sanitized.changes[1]!.oldValue).toBe('John')
+        expect(sanitized.changes[1]!.newValue).toBe('Jane')
       })
     })
 
@@ -699,9 +721,9 @@ describe('AuditEventModel', () => {
         const events = AuditEventUtils.createBatch(eventParams)
 
         expect(events).toHaveLength(3)
-        expect(events[0].entityId).toBe('ticket-001')
-        expect(events[1].entityId).toBe('ticket-002')
-        expect(events[2].entityId).toBe('ticket-003')
+        expect(events[0]!.entityId).toBe('ticket-001')
+        expect(events[1]!.entityId).toBe('ticket-002')
+        expect(events[2]!.entityId).toBe('ticket-003')
       })
 
       it('should sort by timestamp', () => {
@@ -861,8 +883,8 @@ describe('AuditEventModel', () => {
       const changes = AuditEventUtils.calculateChanges(before, after)
 
       expect(changes).toHaveLength(1000)
-      expect(changes[0].field).toBe('field0')
-      expect(changes[999].field).toBe('field999')
+      expect(changes[0]!.field).toBe('field0')
+      expect(changes[999]!.field).toBe('field999')
     })
   })
 })

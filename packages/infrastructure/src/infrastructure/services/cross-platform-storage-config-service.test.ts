@@ -6,7 +6,7 @@
  */
 
 import type { StorageConfigService } from '@project-manager/application'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { CrossPlatformStorageConfigService } from './cross-platform-storage-config-service.ts'
 
 // Environment variable constants (matching implementation)

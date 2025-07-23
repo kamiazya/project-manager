@@ -1,6 +1,6 @@
-import { mkdtemp, readFile, rm, stat } from 'fs/promises'
-import { tmpdir } from 'os'
-import { join } from 'path'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Test-first approach for FileAuditLogger infrastructure implementation
@@ -353,7 +353,7 @@ describe('FileAuditLogger Infrastructure Implementation', () => {
 
   describe('Append-Only File Operations', () => {
     it('should append audit events to file without modifying existing entries', async () => {
-      const auditFile = join(tempDir, 'append-test.log')
+      const _auditFile = join(tempDir, 'append-test.log')
       const mockFileOps = {
         written: [] as string[],
         append: vi.fn((data: string) => {
@@ -370,7 +370,7 @@ describe('FileAuditLogger Infrastructure Implementation', () => {
       ]
 
       for (const event of events) {
-        const line = JSON.stringify(event) + '\n'
+        const line = `${JSON.stringify(event)}\n`
         mockFileOps.append(line)
       }
 
@@ -410,7 +410,7 @@ describe('FileAuditLogger Infrastructure Implementation', () => {
 
   describe('File Rotation and Management', () => {
     it('should rotate audit files when size limit is reached', () => {
-      const rotationConfig = {
+      const _rotationConfig = {
         enabled: true,
         maxSize: '10MB',
         maxFiles: 5,
@@ -627,7 +627,7 @@ describe('FileAuditLogger Infrastructure Implementation', () => {
         // Timestamp validation
         if (event.timestamp) {
           const timestamp = new Date(event.timestamp)
-          if (isNaN(timestamp.getTime())) {
+          if (Number.isNaN(timestamp.getTime())) {
             errors.push('Invalid timestamp format')
           }
         }
@@ -724,13 +724,13 @@ describe('FileAuditLogger Infrastructure Implementation', () => {
 
     it('should handle maximum size audit event', () => {
       const maxEvent = {
-        id: 'audit-' + 'x'.repeat(1000),
+        id: `audit-${'x'.repeat(1000)}`,
         timestamp: new Date().toISOString(),
-        traceId: 'trace-' + 'x'.repeat(1000),
+        traceId: `trace-${'x'.repeat(1000)}`,
         operation: 'update' as const,
         actor: {
           type: 'human' as const,
-          id: 'user-' + 'x'.repeat(1000),
+          id: `user-${'x'.repeat(1000)}`,
           name: 'x'.repeat(5000),
         },
         entityType: 'x'.repeat(100),

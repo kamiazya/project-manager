@@ -5,23 +5,23 @@
  * and compliance-focused features for tamper-proof audit trails.
  */
 
+import { EventEmitter } from 'node:events'
+import { createReadStream, createWriteStream, type WriteStream } from 'node:fs'
+import { mkdir, readdir, rename, stat, unlink } from 'node:fs/promises'
+import { basename, dirname, join, resolve } from 'node:path'
+import { pipeline } from 'node:stream/promises'
+import { createGzip } from 'node:zlib'
 import { LoggingError } from '@project-manager/application'
 import type {
   AuditEventFilter,
-  AuditEventStatistics,
   AuditFilter,
   AuditLogger,
   AuditStatistics,
-  CreateAuditEvent,
   CreateOperationEvent,
-  DeleteAuditEvent,
   DeleteOperationEvent,
-  LogConfig,
   Logger,
   OperationAuditEvent,
-  ReadAuditEvent,
   TimePeriod,
-  UpdateAuditEvent,
   UpdateOperationEvent,
 } from '@project-manager/base/common/logging'
 import {
@@ -32,13 +32,6 @@ import {
   ReadAuditEventModel,
   UpdateAuditEventModel,
 } from '@project-manager/base/common/logging'
-import { createHash } from 'crypto'
-import { EventEmitter } from 'events'
-import { createReadStream, createWriteStream, type WriteStream } from 'fs'
-import { mkdir, open, readdir, rename, stat, unlink } from 'fs/promises'
-import { basename, dirname, extname, join, resolve } from 'path'
-import { pipeline } from 'stream/promises'
-import { createGzip } from 'zlib'
 
 /**
  * File audit logger specific configuration.
@@ -346,7 +339,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
    */
   private async writeAuditEvent(event: AuditEventModel): Promise<void> {
     const serialized = event.serialize(true) // Sanitized serialization
-    const line = serialized + '\n'
+    const line = `${serialized}\n`
 
     if (
       this.config.performance?.batchSize &&
@@ -455,7 +448,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
         const lineCount = await this.countLines(filePath)
         this.stats.totalEvents = lineCount
       }
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist yet, start with empty stats
     }
   }
@@ -501,7 +494,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
       if (fileStats.size >= maxBytes) {
         await this.rotateFile()
       }
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist yet
     }
   }
@@ -583,7 +576,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
         } else if (await this.fileExists(currentPath)) {
           await rename(currentPath, nextPath)
         }
-      } catch (error) {
+      } catch (_error) {
         // File doesn't exist, continue
       }
     }
@@ -667,7 +660,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
     return new Promise((resolve, reject) => {
       const stream = createReadStream(filePath, { encoding: 'utf8' })
       let buffer = ''
-      let processedCount = 0
+      let _processedCount = 0
 
       stream.on('data', (chunk: string | Buffer) => {
         buffer += chunk.toString()
@@ -703,14 +696,14 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
               events.push(event.toObject() as unknown as OperationAuditEvent)
             }
 
-            processedCount++
+            _processedCount++
 
             // Limit results to prevent memory issues
             if (filter.limit && events.length >= filter.limit) {
               stream.destroy()
               break
             }
-          } catch (error) {
+          } catch (_error) {
             // Skip invalid lines
           }
         }
@@ -736,13 +729,6 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
 
       stream.on('error', reject)
     })
-  }
-
-  /**
-   * Get nested property value for sorting.
-   */
-  private getNestedProperty(obj: any, path: string): any {
-    return path.split('.').reduce((current, key) => current?.[key], obj)
   }
 
   /**

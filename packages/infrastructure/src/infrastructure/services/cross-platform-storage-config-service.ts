@@ -10,7 +10,6 @@
 
 import { join } from 'node:path'
 import type { StorageConfigService } from '@project-manager/application'
-import { type EnvironmentMode } from '@project-manager/base'
 import envPaths from 'env-paths'
 
 // Storage configuration constants

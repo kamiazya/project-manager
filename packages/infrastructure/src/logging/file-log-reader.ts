@@ -1,6 +1,6 @@
+import { readdir, readFile, stat } from 'node:fs/promises'
+import { join } from 'node:path'
 import type { Logger } from '@project-manager/base/common/logging'
-import { readdir, readFile, stat } from 'fs/promises'
-import { join } from 'path'
 
 /**
  * Interface for log reading service
@@ -176,7 +176,7 @@ export class FileLogReader implements LogReader {
       // Handle Pino-style structured logs
       if (data.time && data.level && data.msg) {
         const timestamp = new Date(data.time)
-        const timeString = timestamp.toISOString()
+        const _timeString = timestamp.toISOString()
         const level = this.mapLogLevel(data.level)
         const message = data.msg
 
@@ -198,7 +198,7 @@ export class FileLogReader implements LogReader {
       // Handle general structured logs
       if (data.timestamp && data.level && data.message) {
         const timestamp = new Date(data.timestamp)
-        const timeString = timestamp.toISOString()
+        const _timeString = timestamp.toISOString()
         const message = data.message
 
         return {
@@ -234,7 +234,7 @@ export class FileLogReader implements LogReader {
 
       if (timestampMatch?.[1] && levelMatch?.[1]) {
         const timestamp = new Date(timestampMatch[1])
-        const timeString = timestamp.toISOString()
+        const _timeString = timestamp.toISOString()
         const level = levelMatch[1].toLowerCase() as 'debug' | 'info' | 'warn' | 'error'
 
         // Extract message (everything after the level)
@@ -253,7 +253,7 @@ export class FileLogReader implements LogReader {
 
       // Fallback: treat as info level with current timestamp
       const timestamp = new Date()
-      const timeString = timestamp.toISOString()
+      const _timeString = timestamp.toISOString()
       const message = line.trim()
 
       return {

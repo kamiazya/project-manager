@@ -1,5 +1,4 @@
-import { createTicketStatus, TicketId, type TicketStatusKey } from '@project-manager/domain'
-import type { UseCase as IUseCase } from '../common/base-usecase.ts'
+import { createTicketStatus, TicketId } from '@project-manager/domain'
 import { TicketNotFoundError } from '../common/errors/application-errors.js'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
@@ -44,7 +43,7 @@ export namespace UpdateTicketStatus {
         }
       },
 
-      extractAfterState: async (request: Request, response: Response) => {
+      extractAfterState: async (_request: Request, response: Response) => {
         return {
           ticketId: response.id,
           status: response.status,

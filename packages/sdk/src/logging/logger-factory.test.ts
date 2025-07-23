@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 // Test-first approach for LoggerFactory SDK integration
 describe('LoggerFactory SDK Integration', () => {
@@ -308,14 +308,14 @@ describe('LoggerFactory SDK Integration', () => {
       }
 
       const mergeConfigs = (...configs: any[]) => {
-        return configs.reduce(
-          (merged, config) => ({
-            ...merged,
-            ...config,
-            audit: { ...merged.audit, ...config.audit },
-          }),
-          {}
-        )
+        const merged: any = {}
+        for (const config of configs) {
+          Object.assign(merged, config)
+          if (config.audit) {
+            merged.audit = Object.assign(merged.audit || {}, config.audit)
+          }
+        }
+        return merged
       }
 
       const finalConfig = mergeConfigs(defaultConfig, envConfig, fileConfig)
@@ -417,7 +417,7 @@ describe('LoggerFactory SDK Integration', () => {
           try {
             await mockLogger.initialize()
             return mockLogger
-          } catch (error) {
+          } catch (_error) {
             // Create fallback console logger
             return {
               debug: console.debug,
@@ -450,7 +450,7 @@ describe('LoggerFactory SDK Integration', () => {
           log: (level: string, message: string, meta?: any) => {
             try {
               primaryLogger[level](message, meta)
-            } catch (error) {
+            } catch (_error) {
               fallbackLogger[level as keyof typeof fallbackLogger](message, meta)
             }
           },

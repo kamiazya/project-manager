@@ -396,7 +396,7 @@ export class LogEntryModel implements LogEntry {
         if (!pattern.test(this.message)) {
           return false
         }
-      } catch (error) {
+      } catch (_error) {
         // Invalid regex pattern - skip this filter to prevent crashes
         // Return false to indicate no match for invalid patterns
         return false

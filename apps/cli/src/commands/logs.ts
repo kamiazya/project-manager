@@ -70,7 +70,7 @@ export class LogsCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, LogsResp
     }),
   }
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<LogsResponse> {
+  async execute(_args: ExecuteArgs, flags: ExecuteFlags): Promise<LogsResponse> {
     const request: GetLogs.Request = {
       level: flags.level as 'debug' | 'info' | 'warn' | 'error' | undefined,
       component: flags.component,

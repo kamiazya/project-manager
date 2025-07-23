@@ -5,9 +5,10 @@
  * configuration management, and lifecycle handling for the SDK layer.
  */
 
+import { EventEmitter } from 'node:events'
+import { join } from 'node:path'
 import type {
   AuditLogger,
-  LogConfig,
   LogContext,
   Logger,
   LogLevel,
@@ -19,12 +20,9 @@ import {
   createDevelopmentLogger,
   createProductionLogger,
   createTestLogger,
-  FileAuditLogger,
   type FileAuditLoggerConfig,
   type PinoLoggerConfig,
 } from '@project-manager/infrastructure'
-import { EventEmitter } from 'events'
-import { join, resolve } from 'path'
 
 /**
  * Configuration for the logger factory.
@@ -336,12 +334,12 @@ export class LoggerFactory extends EventEmitter {
       }
 
       // If relative path, resolve against cross-platform logs directory
-      const logsDir = this.storageService.getLogsPath(this.config.environment)
+      const logsDir = this.storageService.getLogsPath()
       return join(logsDir, 'app.log')
     }
 
     // Default: use cross-platform logs directory
-    const logsDir = this.storageService.getLogsPath(this.config.environment)
+    const logsDir = this.storageService.getLogsPath()
     return join(logsDir, 'app.log')
   }
 
@@ -359,12 +357,12 @@ export class LoggerFactory extends EventEmitter {
       }
 
       // If relative path, resolve against cross-platform logs directory
-      const logsDir = this.storageService.getLogsPath(this.config.environment)
+      const logsDir = this.storageService.getLogsPath()
       return join(logsDir, 'audit.log')
     }
 
     // Default: use cross-platform logs directory
-    const logsDir = this.storageService.getLogsPath(this.config.environment)
+    const logsDir = this.storageService.getLogsPath()
     return join(logsDir, 'audit.log')
   }
 
@@ -447,7 +445,7 @@ export class LoggerFactory extends EventEmitter {
         console.error(`[ERROR] ${message}`, metadata)
       },
 
-      child(context: LogContext): Logger {
+      child(_context: LogContext): Logger {
         // Return same logger for fallback
         return this
       },
@@ -458,42 +456,6 @@ export class LoggerFactory extends EventEmitter {
     }
 
     return fallbackLogger
-  }
-
-  /**
-   * Create contextual fallback logger.
-   */
-  private createContextualFallbackLogger(context: LogContext): Logger {
-    const contextStr = JSON.stringify(context)
-
-    const contextualLogger: Logger = {
-      async debug(message: string, metadata?: any): Promise<void> {
-        console.debug(`[DEBUG] ${contextStr} ${message}`, metadata)
-      },
-
-      async info(message: string, metadata?: any): Promise<void> {
-        console.info(`[INFO] ${contextStr} ${message}`, metadata)
-      },
-
-      async warn(message: string, metadata?: any): Promise<void> {
-        console.warn(`[WARN] ${contextStr} ${message}`, metadata)
-      },
-
-      async error(message: string, metadata?: any): Promise<void> {
-        console.error(`[ERROR] ${contextStr} ${message}`, metadata)
-      },
-
-      child(childContext: LogContext): Logger {
-        // Return same logger for fallback
-        return this
-      },
-
-      async flush(): Promise<void> {
-        // No-op for console logger
-      },
-    }
-
-    return contextualLogger
   }
 
   /**
@@ -625,7 +587,7 @@ export class LoggerFactory extends EventEmitter {
       }
 
       return true
-    } catch (error) {
+    } catch (_error) {
       return false
     }
   }
@@ -790,7 +752,7 @@ export const LoggerFactoryDI = {
   /**
    * Register logger factory in a DI container.
    */
-  register<T>(container: any, config?: LoggerFactoryConfig): void {
+  register<_T>(container: any, config?: LoggerFactoryConfig): void {
     // Register as singleton
     container.registerSingleton('LoggerFactory', () => {
       return createLoggerFactory(config)
@@ -818,7 +780,7 @@ export const LoggerFactoryDI = {
   /**
    * Create initialization function for DI containers.
    */
-  createInitializer(config?: LoggerFactoryConfig) {
+  createInitializer(_config?: LoggerFactoryConfig) {
     return async (container: any) => {
       const factory: LoggerFactory = container.resolve('LoggerFactory')
       await factory.initialize()

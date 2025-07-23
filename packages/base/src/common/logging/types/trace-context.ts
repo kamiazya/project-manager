@@ -5,7 +5,7 @@
  * enabling end-to-end visibility and debugging capabilities.
  */
 
-import { AsyncLocalStorage } from 'async_hooks'
+import { AsyncLocalStorage } from 'node:async_hooks'
 
 /**
  * Core trace context interface for operation correlation.
@@ -481,7 +481,7 @@ export class TraceContextManager {
    * Push a new context onto the stack and make it current.
    * @deprecated Use withContext() or withContextAsync() instead for proper async safety.
    */
-  pushContext(context: TraceContext): void {
+  pushContext(_context: TraceContext): void {
     console.warn(
       'TraceContextManager.pushContext() is deprecated. Use withContext() or withContextAsync() instead.'
     )

@@ -1,6 +1,6 @@
+import { readdir, readFile, stat } from 'node:fs/promises'
+import { join } from 'node:path'
 import type { Logger } from '@project-manager/base/common/logging'
-import { readdir, readFile, stat } from 'fs/promises'
-import { join } from 'path'
 
 // Define types locally as they are not in base layer
 interface AuditFilters {

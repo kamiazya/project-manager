@@ -4,18 +4,15 @@
 
 import { describe, expect, it } from 'vitest'
 import {
-  type ConfigurationId,
   createConfigurationId,
   createEnvironmentName,
   createFilePath,
   createSemanticVersion,
   createTimestamp,
-  type EnvironmentName,
   type FilePath,
   isFilePath,
   isSemanticVersion,
   type SemanticVersion,
-  type Timestamp,
 } from './branded-types.ts'
 
 describe('Branded Types', () => {

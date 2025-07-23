@@ -430,7 +430,7 @@ describe('UseCase interface', () => {
     it('should support command/query separation', async () => {
       // Command (modifies state, returns void or simple acknowledgment)
       class CreateTicketCommand implements UseCase<{ title: string }, { id: string }> {
-        async execute(request: { title: string }): Promise<{ id: string }> {
+        async execute(_request: { title: string }): Promise<{ id: string }> {
           // Simulate creating a ticket
           const id = `ticket-${Date.now()}`
           return { id }

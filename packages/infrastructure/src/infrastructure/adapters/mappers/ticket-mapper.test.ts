@@ -4,11 +4,9 @@ import {
   createTicketStatus,
   createTicketType,
   Ticket,
-  TicketDescription,
   TicketId,
-  TicketTitle,
 } from '@project-manager/domain'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TicketJSON } from '../../types/persistence-types.ts'
 import {
   InfrastructureError,
