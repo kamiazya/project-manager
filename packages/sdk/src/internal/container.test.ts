@@ -93,6 +93,8 @@ vi.mock('@project-manager/infrastructure', () => ({
         getDefaultStorageDir: vi.fn(() => '/default/storage'),
         resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
         getLogsPath: vi.fn(() => '/default/logs'),
+        getApplicationLogPath: vi.fn(() => '/default/logs/app.log'),
+        getAuditLogPath: vi.fn(() => '/default/logs/audit.log'),
       }
     }),
   XdgDevelopmentProcessService: vi
@@ -116,6 +118,29 @@ vi.mock('@project-manager/infrastructure', () => ({
         getContextForLogging: vi.fn(() => ({})),
       }
     }),
+  // Event emitter factory
+  defaultEventEmitterFactory: {
+    create: vi.fn(() => ({
+      emit: vi.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
+      removeAllListeners: vi.fn(),
+    })),
+  },
+  // Audit metadata generator
+  auditMetadataGenerator: {
+    generateMetadata: vi.fn(useCase => ({
+      operationId: `test-${useCase.constructor.name}`,
+      operationType: 'create',
+      resourceType: 'Test',
+      description: 'Test operation',
+      useCaseName: useCase.constructor.name,
+      riskLevel: 'medium',
+      dataClassification: 'internal',
+      containsSensitiveData: false,
+      requiresRetention: false,
+    })),
+  },
 }))
 
 // Mock application layer use cases
@@ -195,9 +220,23 @@ vi.mock('@project-manager/application', () => ({
   AuditInterceptor: vi.fn().mockImplementation(function MockAuditInterceptor() {
     return {
       constructor: { name: 'AuditInterceptor' },
-      intercept: vi.fn(),
+      recordSuccess: vi.fn(),
+      recordFailure: vi.fn(),
     }
   }),
+  auditMetadataGenerator: {
+    generateMetadata: vi.fn(useCase => ({
+      operationId: `test-${useCase.constructor.name}`,
+      operationType: 'create',
+      resourceType: 'Test',
+      description: 'Test operation',
+      useCaseName: useCase.constructor.name,
+      riskLevel: 'medium',
+      dataClassification: 'internal',
+      containsSensitiveData: false,
+      requiresRetention: false,
+    })),
+  },
 }))
 
 describe('createContainer', () => {

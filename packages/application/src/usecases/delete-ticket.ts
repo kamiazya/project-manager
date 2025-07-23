@@ -1,6 +1,7 @@
 import { TicketId } from '@project-manager/domain'
-import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
+import { BaseUseCase } from '../common/base-usecase.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
 
 export namespace DeleteTicket {
   export interface Request {
@@ -10,9 +11,7 @@ export namespace DeleteTicket {
   /**
    * Use case for deleting a ticket.
    */
-  export class UseCase implements AuditableUseCase<Request, void> {
-    public logger!: ApplicationLogger // Injected by framework
-
+  export class UseCase extends BaseUseCase<Request, void> {
     public readonly auditMetadata: AuditMetadata = {
       operationId: 'ticket.delete',
       operationType: 'delete',
@@ -42,7 +41,9 @@ export namespace DeleteTicket {
       },
     }
 
-    constructor(private readonly ticketRepository: TicketRepository) {}
+    constructor(private readonly ticketRepository: TicketRepository) {
+      super()
+    }
 
     async execute(request: Request): Promise<void> {
       await this.logger.info('Starting ticket deletion', {

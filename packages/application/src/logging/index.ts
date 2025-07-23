@@ -22,13 +22,3 @@ export {
   AuditInterceptorUtils,
   createAuditInterceptor,
 } from './audit-interceptor.ts'
-export type {
-  AuditableUseCase,
-  AuditMetadata,
-  UseCaseExecutionResult,
-} from './auditable-usecase.ts'
-export {
-  AuditableUseCaseUtils,
-  BaseAuditableUseCase,
-  isAuditableUseCase,
-} from './auditable-usecase.ts'

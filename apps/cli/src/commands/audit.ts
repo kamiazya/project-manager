@@ -203,7 +203,7 @@ export class AuditCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, AuditLo
   }
 
   private displayDetailedSummary(summary: AuditLogsResponse['summary']): void {
-    this.log(chalk.cyan('\\n📊 Detailed Summary'))
+    this.log(chalk.cyan('\n📊 Detailed Summary'))
     this.log(chalk.gray('─'.repeat(30)))
 
     // Operations breakdown

@@ -1,4 +1,5 @@
-import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
+import { BaseUseCase } from '../common/base-usecase.ts'
+import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
 
 export namespace GetAuditLogs {
   /**
@@ -104,9 +105,7 @@ export namespace GetAuditLogs {
    * Use case for retrieving audit logs with filtering capabilities.
    * This provides access to audit trail for compliance and security monitoring.
    */
-  export class UseCase implements AuditableUseCase<Request, Response> {
-    public logger!: ApplicationLogger // Injected by framework
-
+  export class UseCase extends BaseUseCase<Request, Response> {
     public readonly auditMetadata: AuditMetadata = {
       operationId: 'auditLogs.read',
       operationType: 'read',
@@ -148,7 +147,9 @@ export namespace GetAuditLogs {
       },
     }
 
-    constructor(private readonly auditReader: AuditReader) {}
+    constructor(private readonly auditReader: AuditReader) {
+      super()
+    }
 
     async execute(request: Request): Promise<Response> {
       await this.logger.info('Starting audit log retrieval', {

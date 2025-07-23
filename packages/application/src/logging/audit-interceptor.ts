@@ -7,9 +7,9 @@
  */
 
 import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
+import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
 import type { IdGenerator } from '../services/id-generator.interface.ts'
 import type { LoggingContextService } from '../services/logging-context.service.ts'
-import type { AuditableUseCase, UseCaseExecutionResult } from './auditable-usecase.ts'
 
 /**
  * Audit record data structure for UseCase execution.
@@ -106,7 +106,7 @@ export class AuditInterceptor {
    * @param beforeState - State before execution (if captured)
    */
   async recordSuccess<TRequest, TResponse>(
-    useCase: AuditableUseCase<TRequest, TResponse>,
+    useCase: { auditMetadata: AuditMetadata },
     request: TRequest,
     response: TResponse,
     executionStart: number,
@@ -164,7 +164,7 @@ export class AuditInterceptor {
    * @param beforeState - State before execution (if captured)
    */
   async recordFailure<TRequest>(
-    useCase: AuditableUseCase<TRequest, any>,
+    useCase: { auditMetadata: AuditMetadata },
     request: TRequest,
     error: Error,
     executionStart: number,
@@ -211,39 +211,6 @@ export class AuditInterceptor {
   }
 
   /**
-   * Record the complete execution result including audit information.
-   *
-   * @param result - Complete execution result
-   */
-  async recordExecutionResult<TResponse>(result: UseCaseExecutionResult<TResponse>): Promise<void> {
-    const context = this.contextService?.getContext()
-    if (!context) {
-      this.logger.warn('No logging context available for audit record generation')
-      return
-    }
-
-    await this.auditLogger.recordCreate({
-      id: `${result.audit.operationId}-${result.execution.startTime}-${Date.now()}`,
-      timestamp: new Date(),
-      operation: 'create' as const,
-      actor: context.actor,
-      entityType: 'usecase-execution-result',
-      entityId: `${result.audit.operationId}-${result.execution.startTime}`,
-      source: context.source,
-      traceId: context.traceId,
-      before: null,
-      after: {
-        operation: result.audit.operationId,
-        entityType: result.audit.entityType,
-        entityId: result.audit.entityId,
-        execution: result.execution,
-        audit: result.audit,
-        hasResponse: result.response !== undefined,
-      },
-    })
-  }
-
-  /**
    * Build a comprehensive audit record from UseCase execution information.
    *
    * @param useCase - UseCase instance
@@ -258,7 +225,7 @@ export class AuditInterceptor {
    * @returns Complete audit record
    */
   private async buildAuditRecord<TRequest, TResponse>(
-    useCase: AuditableUseCase<TRequest, TResponse>,
+    useCase: { auditMetadata: AuditMetadata },
     request: TRequest,
     response: TResponse | undefined,
     executionStart: number,
@@ -377,12 +344,21 @@ export class AuditInterceptor {
    * Sanitize sensitive data by redacting sensitive fields.
    *
    * @param data - Data that may contain sensitive information
+   * @param visited - WeakSet to track visited objects and prevent circular references
    * @returns Sanitized data with sensitive fields redacted
    */
-  private sanitizeSensitiveData(data: any): any {
+  private sanitizeSensitiveData(data: any, visited: WeakSet<object> = new WeakSet()): any {
     if (!data || typeof data !== 'object') {
       return data
     }
+
+    // Check for circular reference
+    if (visited.has(data)) {
+      return '[Circular Reference]'
+    }
+
+    // Mark this object as visited
+    visited.add(data)
 
     const sensitiveKeys = [
       'password',
@@ -407,7 +383,7 @@ export class AuditInterceptor {
       if (isSensitive) {
         sanitized[key] = '[REDACTED]'
       } else if (value && typeof value === 'object') {
-        sanitized[key] = this.sanitizeSensitiveData(value)
+        sanitized[key] = this.sanitizeSensitiveData(value, visited)
       }
     }
 
@@ -445,7 +421,7 @@ export const AuditInterceptorUtils = {
    * @param useCase - UseCase instance
    * @returns Basic audit information
    */
-  extractBasicAuditInfo(useCase: AuditableUseCase<any, any>) {
+  extractBasicAuditInfo(useCase: { auditMetadata: AuditMetadata }) {
     return {
       operationId: useCase.auditMetadata.operationId,
       entityType: useCase.auditMetadata.resourceType,

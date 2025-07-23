@@ -1,7 +1,8 @@
 import { Ticket, TicketId } from '@project-manager/domain'
+import { BaseUseCase } from '../common/base-usecase.ts'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
-import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
 import type { IdGenerator } from '../services/id-generator.interface.ts'
 
 export namespace CreateTicket {
@@ -25,9 +26,7 @@ export namespace CreateTicket {
    * Use case for creating a new ticket.
    * Follows the Single Responsibility Principle with focused responsibility.
    */
-  export class UseCase implements AuditableUseCase<Request, Response> {
-    public logger!: ApplicationLogger // Injected by framework
-
+  export class UseCase extends BaseUseCase<Request, Response> {
     public readonly auditMetadata: AuditMetadata = {
       operationId: 'ticket.create',
       operationType: 'create',
@@ -54,7 +53,9 @@ export namespace CreateTicket {
     constructor(
       private readonly ticketRepository: TicketRepository,
       private readonly idGenerator: IdGenerator
-    ) {}
+    ) {
+      super()
+    }
 
     async execute(request: Request): Promise<Response> {
       await this.logger.info('Starting ticket creation', {

@@ -1,7 +1,8 @@
 import { TicketId } from '@project-manager/domain'
+import { BaseUseCase } from '../common/base-usecase.ts'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
-import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
 
 export namespace GetTicketById {
   /**
@@ -20,9 +21,7 @@ export namespace GetTicketById {
    * Use case for retrieving a ticket by its ID.
    * Returns null if ticket is not found.
    */
-  export class UseCase implements AuditableUseCase<Request, Response | null> {
-    public logger!: ApplicationLogger // Injected by framework
-
+  export class UseCase extends BaseUseCase<Request, Response | null> {
     public readonly auditMetadata: AuditMetadata = {
       operationId: 'ticket.read',
       operationType: 'read',
@@ -54,7 +53,9 @@ export namespace GetTicketById {
       },
     }
 
-    constructor(private readonly ticketRepository: TicketRepository) {}
+    constructor(private readonly ticketRepository: TicketRepository) {
+      super()
+    }
 
     async execute(request: Request): Promise<Response | null> {
       await this.logger.info('Starting ticket retrieval', {

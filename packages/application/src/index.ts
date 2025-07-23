@@ -30,6 +30,7 @@ export * from './logging/index.ts'
 export * from './repositories/ticket-repository.ts'
 // Services
 export * from './services/async-context-storage.interface.ts'
+export * from './services/audit-metadata-generator.ts'
 export * from './services/development-process.ts'
 export * from './services/environment-detection.ts'
 export * from './services/id-generator.interface.ts'

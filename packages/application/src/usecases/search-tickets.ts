@@ -1,7 +1,8 @@
 import type { Ticket } from '@project-manager/domain'
+import { BaseUseCase } from '../common/base-usecase.ts'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
-import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
 import type { TicketQueryCriteria, TicketRepository } from '../repositories/ticket-repository.ts'
+import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
 
 export namespace SearchTickets {
   /**
@@ -41,9 +42,7 @@ export namespace SearchTickets {
    * Handles both text-based search and basic filtering.
    * If no criteria are provided, returns all tickets.
    */
-  export class UseCase implements AuditableUseCase<Request, Response> {
-    public logger!: ApplicationLogger // Injected by framework
-
+  export class UseCase extends BaseUseCase<Request, Response> {
     public readonly auditMetadata: AuditMetadata = {
       operationId: 'ticket.search',
       operationType: 'search',
@@ -75,7 +74,9 @@ export namespace SearchTickets {
       },
     }
 
-    constructor(private readonly ticketRepository: TicketRepository) {}
+    constructor(private readonly ticketRepository: TicketRepository) {
+      super()
+    }
 
     async execute(request: Request): Promise<Response> {
       const criteria = request.criteria || {}

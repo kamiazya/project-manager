@@ -1,8 +1,9 @@
 import { createTicketStatus, TicketId } from '@project-manager/domain'
+import { BaseUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError } from '../common/errors/application-errors.js'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
-import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
 
 export namespace UpdateTicketStatus {
   /**
@@ -21,9 +22,7 @@ export namespace UpdateTicketStatus {
   /**
    * Use case for updating a ticket's status.
    */
-  export class UseCase implements AuditableUseCase<Request, Response> {
-    public logger!: ApplicationLogger // Injected by framework
-
+  export class UseCase extends BaseUseCase<Request, Response> {
     public readonly auditMetadata: AuditMetadata = {
       operationId: 'ticket.updateStatus',
       operationType: 'update',
@@ -51,7 +50,9 @@ export namespace UpdateTicketStatus {
       },
     }
 
-    constructor(private readonly ticketRepository: TicketRepository) {}
+    constructor(private readonly ticketRepository: TicketRepository) {
+      super()
+    }
 
     async execute(request: Request): Promise<Response> {
       await this.logger.info('Starting ticket status update', {

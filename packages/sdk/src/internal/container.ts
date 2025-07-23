@@ -7,6 +7,7 @@ import {
   ApplicationLogger,
   type AsyncContextStorage,
   AuditInterceptor,
+  auditMetadataGenerator,
   CreateTicket,
   DeleteTicket,
   type DevelopmentProcessService,
@@ -15,7 +16,6 @@ import {
   GetLogs,
   GetTicketById,
   type IdGenerator,
-  isAuditableUseCase,
   type LoggingContext,
   type LoggingContextService,
   SearchTickets,
@@ -309,6 +309,12 @@ function createUseCaseActivationHandler(container: Container) {
     // Get AuditInterceptor for audit recording
     const auditInterceptor = container.get<AuditInterceptor>(TYPES.AuditInterceptor)
 
+    // Ensure useCase has audit metadata
+    if (!useCase.auditMetadata) {
+      // Generate default audit metadata based on class name
+      useCase.auditMetadata = auditMetadataGenerator.generateMetadata(useCase)
+    }
+
     // Store the original execute method
     const originalExecute = useCase.execute.bind(useCase)
 
@@ -316,9 +322,7 @@ function createUseCaseActivationHandler(container: Container) {
     useCase.execute = new Proxy(originalExecute, {
       async apply(target, thisArg, argumentsList: any[]) {
         const [request] = argumentsList
-        const useCaseName = isAuditableUseCase(useCase)
-          ? useCase.auditMetadata.useCaseName
-          : useCase.constructor.name
+        const useCaseName = useCase.auditMetadata.useCaseName
         const startTime = Date.now()
 
         // Generate unique execution ID
@@ -331,8 +335,8 @@ function createUseCaseActivationHandler(container: Container) {
           // Pre-execution logging
           await applicationLogger.logUseCaseStart(useCaseName, request, executionId)
 
-          // Capture before state if this is an auditable UseCase
-          if (isAuditableUseCase(useCase) && useCase.auditMetadata.extractBeforeState) {
+          // Capture before state if defined
+          if (useCase.auditMetadata.extractBeforeState) {
             try {
               beforeState = await useCase.auditMetadata.extractBeforeState(request)
             } catch (beforeStateError: unknown) {
@@ -354,17 +358,15 @@ function createUseCaseActivationHandler(container: Container) {
           // Post-execution logging
           await applicationLogger.logUseCaseSuccess(useCaseName, duration, result, executionId)
 
-          // Record audit trail if this is an auditable UseCase
-          if (isAuditableUseCase(useCase)) {
-            await auditInterceptor.recordSuccess(
-              useCase,
-              request,
-              result,
-              startTime,
-              endTime,
-              beforeState
-            )
-          }
+          // Record audit trail - all UseCases are now auditable
+          await auditInterceptor.recordSuccess(
+            useCase,
+            request,
+            result,
+            startTime,
+            endTime,
+            beforeState
+          )
 
           return result
         } catch (error: any) {
@@ -375,16 +377,14 @@ function createUseCaseActivationHandler(container: Container) {
           await applicationLogger.logUseCaseError(useCaseName, error, duration, executionId)
 
           // Record audit trail for failed execution
-          if (isAuditableUseCase(useCase)) {
-            await auditInterceptor.recordFailure(
-              useCase,
-              request,
-              error,
-              startTime,
-              endTime,
-              beforeState
-            )
-          }
+          await auditInterceptor.recordFailure(
+            useCase,
+            request,
+            error,
+            startTime,
+            endTime,
+            beforeState
+          )
 
           // Re-throw the original error
           throw error

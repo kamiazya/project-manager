@@ -1,8 +1,9 @@
 import { TicketId } from '@project-manager/domain'
+import { BaseUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.js'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
-import type { ApplicationLogger, AuditableUseCase, AuditMetadata } from '../logging/index.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
 
 export namespace UpdateTicketContent {
   /**
@@ -26,9 +27,7 @@ export namespace UpdateTicketContent {
    * This provides a focused approach for content updates, with other aspects like
    * status, priority, and type handled by dedicated use cases.
    */
-  export class UseCase implements AuditableUseCase<Request, Response> {
-    public logger!: ApplicationLogger // Injected by framework
-
+  export class UseCase extends BaseUseCase<Request, Response> {
     public readonly auditMetadata: AuditMetadata = {
       operationId: 'ticket.updateContent',
       operationType: 'update',
@@ -59,7 +58,9 @@ export namespace UpdateTicketContent {
       },
     }
 
-    constructor(private readonly ticketRepository: TicketRepository) {}
+    constructor(private readonly ticketRepository: TicketRepository) {
+      super()
+    }
 
     async execute(request: Request): Promise<Response> {
       await this.logger.info('Starting ticket content update', {
