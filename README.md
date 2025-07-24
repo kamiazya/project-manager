@@ -212,4 +212,4 @@ For AI assistant integration, also check [CLAUDE.md](./CLAUDE.md).
 
 ## License
 
-See the main project [LICENSE](https://github.com/kamiazya/project-manager/blob/main/LICENSE) file.
+This project is licensed under the Apache License 2.0. See the [LICENSE](./LICENSE) file for details.

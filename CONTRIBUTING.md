@@ -414,6 +414,10 @@ Every Task-level issue must include:
 - Write clear, concise comments when necessary
 - Follow the existing code style and patterns
 
+### Licensing
+
+By contributing to Project Manager, you agree that your contributions will be licensed under the Apache License 2.0. You can find the full license text in the [LICENSE](./LICENSE) file in the root of the repository.
+
 ### Security Best Practices
 
 - Never expose or log secrets and keys

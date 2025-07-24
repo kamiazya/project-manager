@@ -147,6 +147,8 @@ graph TD
 
     %% Process and Organization
     ADR_006[ADR-0006: Adopt Diátaxis Documentation Framework<br/>📋 Documentation Organization]
+    ADR_0010[ADR-0010: Adopt Apache License 2.0<br/>⚖️ Governance]
+
 
     %% Architecture Design
     ADR_007[ADR-0007: Domain-Driven Design<br/>🎯 Domain Modeling]
@@ -159,6 +161,9 @@ graph TD
     ADR_004 --> ADR_005
     ADR_001 --> ADR_007
     ADR_003 --> ADR_007
+    ADR_002 --> ADR_0010
+    ADR_003 --> ADR_0010
+
 
     %% Influences (dotted lines)
     ADR_002 -.-> ADR_005
@@ -171,12 +176,15 @@ graph TD
     classDef implementation fill:#fff3e0,stroke:#ff9800,stroke-width:2px
     classDef process fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
     classDef architecture fill:#fce4ec,stroke:#e91e63,stroke-width:2px
+    classDef governance fill:#ede7f6,stroke:#673ab7,stroke-width:2px
+
 
     class ADR_001,ADR_002 foundation
     class ADR_003,ADR_004 standards
     class ADR_005 implementation
     class ADR_006 process
     class ADR_007 architecture
+    class ADR_0010 governance
 ```
 
 ### ADR Index
@@ -190,6 +198,7 @@ graph TD
 | [0005](./0005-cli-first-interface-architecture.md) | Accepted | CLI-First Interface Architecture | Command-line interface as foundation for all other interfaces |
 | [0006](./0006-adopt-diataxis-documentation-framework.md) | Accepted | Adopt Diátaxis Documentation Framework | Organize documentation using user-centered categories |
 | [0007](./0007-domain-driven-design-adoption.md) | Accepted | Domain-Driven Design (DDD) Adoption | Model complex business logic with DDD principles and patterns |
+| [0010](./0010-adopt-apache-license-2.0.md) | Accepted | Adopt Apache License 2.0 | Change project license to Apache 2.0 for better legal protection |
 
 **Legend:**
 
@@ -200,6 +209,7 @@ graph TD
 - 📊 Documentation and communication
 - 💻 Interface and user experience
 - 🎯 Architecture design patterns
+- ⚖️ Governance and legal decisions
 
 ## Tools and Resources
 
