@@ -1,4 +1,5 @@
 import type { Hook } from '@oclif/core'
+import { CLIError } from '@oclif/core'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 /**
@@ -16,16 +17,16 @@ const hook: Hook<'postrun'> = async () => {
     // Clear SDK cache for future commands
     BaseCommand.clearSDKCache()
 
-    // Exit cleanly - no setTimeout needed with synchronous logger
-    process.exit(0)
+    // Normal completion - let oclif handle the exit
   } catch (error) {
     // Log error in debug mode
     if (process.env.DEBUG) {
       console.error('Error during cleanup:', error)
     }
 
-    // Exit with error code
-    process.exit(1)
+    // Throw CLIError instead of calling process.exit
+    // This allows oclif to handle the exit properly and makes testing easier
+    throw new CLIError('Failed to cleanup SDK resources', { exit: 1 })
   }
 }
 
