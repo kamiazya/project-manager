@@ -14,10 +14,10 @@ describe('Logger', () => {
     it('should define all required log level methods', () => {
       // Create a minimal Logger implementation to test interface compliance
       const logger: Logger = {
-        debug: vi.fn().mockResolvedValue(undefined),
-        info: vi.fn().mockResolvedValue(undefined),
-        warn: vi.fn().mockResolvedValue(undefined),
-        error: vi.fn().mockResolvedValue(undefined),
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
         child: vi.fn().mockReturnThis(),
       }
 
@@ -28,12 +28,12 @@ describe('Logger', () => {
       expect(typeof logger.child).toBe('function')
     })
 
-    it('should accept LogMetadata for all log methods', async () => {
+    it('should accept LogMetadata for all log methods', () => {
       const mockLogger: Logger = {
-        debug: vi.fn().mockResolvedValue(undefined),
-        info: vi.fn().mockResolvedValue(undefined),
-        warn: vi.fn().mockResolvedValue(undefined),
-        error: vi.fn().mockResolvedValue(undefined),
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
         child: vi.fn().mockReturnThis(),
       }
 
@@ -45,10 +45,10 @@ describe('Logger', () => {
         userId: 'user-456',
       }
 
-      await mockLogger.debug('debug message', metadata)
-      await mockLogger.info('info message', metadata)
-      await mockLogger.warn('warn message', metadata)
-      await mockLogger.error('error message', metadata)
+      mockLogger.debug('debug message', metadata)
+      mockLogger.info('info message', metadata)
+      mockLogger.warn('warn message', metadata)
+      mockLogger.error('error message', metadata)
 
       expect(mockLogger.debug).toHaveBeenCalledWith('debug message', metadata)
       expect(mockLogger.info).toHaveBeenCalledWith('info message', metadata)
@@ -58,18 +58,18 @@ describe('Logger', () => {
 
     it('should accept LogContext for child method', () => {
       const mockChildLogger: Logger = {
-        debug: vi.fn().mockResolvedValue(undefined),
-        info: vi.fn().mockResolvedValue(undefined),
-        warn: vi.fn().mockResolvedValue(undefined),
-        error: vi.fn().mockResolvedValue(undefined),
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
         child: vi.fn().mockReturnThis(),
       }
 
       const mockLogger: Logger = {
-        debug: vi.fn().mockResolvedValue(undefined),
-        info: vi.fn().mockResolvedValue(undefined),
-        warn: vi.fn().mockResolvedValue(undefined),
-        error: vi.fn().mockResolvedValue(undefined),
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
         child: vi.fn().mockReturnValue(mockChildLogger),
       }
 
@@ -86,21 +86,21 @@ describe('Logger', () => {
       expect(child).toBe(mockChildLogger)
     })
 
-    it('should handle optional metadata parameter', async () => {
+    it('should handle optional metadata parameter', () => {
       const mockLogger: Logger = {
-        debug: vi.fn().mockResolvedValue(undefined),
-        info: vi.fn().mockResolvedValue(undefined),
-        warn: vi.fn().mockResolvedValue(undefined),
-        error: vi.fn().mockResolvedValue(undefined),
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
         child: vi.fn().mockReturnThis(),
       }
 
       // Test without metadata
-      await mockLogger.info('message without metadata')
+      mockLogger.info('message without metadata')
       expect(mockLogger.info).toHaveBeenCalledWith('message without metadata')
 
       // Test with undefined metadata
-      await mockLogger.info('message with undefined', undefined)
+      mockLogger.info('message with undefined', undefined)
       expect(mockLogger.info).toHaveBeenCalledWith('message with undefined', undefined)
     })
   })

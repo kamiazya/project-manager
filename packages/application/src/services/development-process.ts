@@ -19,7 +19,7 @@ export interface DevelopmentProcessService {
    *
    * @param processId - The process ID to register
    */
-  registerProcess(processId: number): Promise<void>
+  registerProcess(processId: number): void
 
   /**
    * Clean up process resources
@@ -28,7 +28,7 @@ export interface DevelopmentProcessService {
    *
    * @param processId - Optional specific process ID to clean up. If not provided, uses current process
    */
-  cleanupProcess(processId?: number): Promise<void>
+  cleanupProcess(processId?: number): void
 
   /**
    * Check if a process is currently active

@@ -45,7 +45,7 @@ export class CreateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void> 
     }),
   }
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): void {
     // Create ticket using SDK
     const ticket = await this.sdk.tickets.create({
       title: args.title,

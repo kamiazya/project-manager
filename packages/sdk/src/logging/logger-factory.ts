@@ -251,12 +251,12 @@ export class LoggerFactory {
   /**
    * Initialize the logger factory and all loggers.
    */
-  async initialize(): Promise<void> {
+  async initialize(): void {
     if (this.isInitialized) return
 
     try {
       // Initialize loggers if they need async initialization
-      const initPromises: Promise<void>[] = []
+      const initPromises: undefined[] = []
 
       if (this.applicationLogger.isInitialized()) {
         const appLogger = this.applicationLogger.instance
@@ -427,19 +427,19 @@ export class LoggerFactory {
    */
   private createFallbackLogger(): Logger {
     const fallbackLogger: Logger = {
-      async debug(message: string, metadata?: any): Promise<void> {
+      debug(message: string, metadata?: any): void {
         console.debug(`[DEBUG] ${message}`, metadata)
       },
 
-      async info(message: string, metadata?: any): Promise<void> {
+      info(message: string, metadata?: any): void {
         console.info(`[INFO] ${message}`, metadata)
       },
 
-      async warn(message: string, metadata?: any): Promise<void> {
+      warn(message: string, metadata?: any): void {
         console.warn(`[WARN] ${message}`, metadata)
       },
 
-      async error(message: string, metadata?: any): Promise<void> {
+      error(message: string, metadata?: any): void {
         console.error(`[ERROR] ${message}`, metadata)
       },
 
@@ -457,15 +457,15 @@ export class LoggerFactory {
    */
   private createNullAuditLogger(): AuditLogger {
     const nullAuditLogger: AuditLogger = {
-      async recordCreate(): Promise<void> {
+      async recordCreate(): void {
         // No-op
       },
 
-      async recordUpdate(): Promise<void> {
+      async recordUpdate(): void {
         // No-op
       },
 
-      async recordDelete(): Promise<void> {
+      async recordDelete(): void {
         // No-op
       },
 
@@ -634,14 +634,14 @@ export class LoggerFactory {
   /**
    * Shutdown all loggers and clean up resources.
    */
-  async shutdown(): Promise<void> {
+  async shutdown(): void {
     if (this.isShuttingDown) return
 
     this.isShuttingDown = true
 
     try {
       // Close loggers
-      const closePromises: Promise<void>[] = []
+      const closePromises: undefined[] = []
 
       if (this.applicationLogger.isInitialized()) {
         const appLogger = this.applicationLogger.instance as any

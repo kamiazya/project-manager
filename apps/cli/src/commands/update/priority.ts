@@ -32,7 +32,7 @@ export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags
     'pm update priority ticket-456 low',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): void {
     // Validate required arguments
     if (!args.ticketId) {
       this.error('Ticket ID is required')

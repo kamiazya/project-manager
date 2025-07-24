@@ -14,7 +14,7 @@ import { Ticket, type TicketId } from '@project-manager/domain'
 export class InMemoryTicketRepository implements TicketRepository {
   private tickets = new Map<string, Ticket>()
 
-  async save(ticket: Ticket): Promise<void> {
+  async save(ticket: Ticket): void {
     this.tickets.set(ticket.id.value, ticket)
   }
 
@@ -70,7 +70,7 @@ export class InMemoryTicketRepository implements TicketRepository {
     return results
   }
 
-  async delete(id: TicketId): Promise<void> {
+  async delete(id: TicketId): void {
     this.tickets.delete(id.value)
   }
 

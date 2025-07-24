@@ -107,7 +107,7 @@ export class AuditInterceptor {
     executionStart: number,
     executionEnd: number,
     beforeState?: any
-  ): Promise<void> {
+  ): void {
     const context = this.contextService?.getContext()
     if (!context) {
       // If no context is available, we can't generate a proper audit record
@@ -165,7 +165,7 @@ export class AuditInterceptor {
     executionStart: number,
     executionEnd: number,
     beforeState?: any
-  ): Promise<void> {
+  ): void {
     const context = this.contextService?.getContext()
     if (!context) {
       this.logger.warn('No logging context available for audit record generation', {

@@ -13,10 +13,7 @@ export class McpCommand extends BaseCommand {
     '<%= config.bin %> <%= command.id %> --help # Show available options',
   ]
 
-  protected async execute(
-    _args: Record<string, unknown>,
-    _flags: Record<string, unknown>
-  ): Promise<void> {
+  protected async execute(_args: Record<string, unknown>, _flags: Record<string, unknown>): void {
     try {
       // Create MCP server using the SDK from CLI for process consistency
       const server = await createMcpServer(this.sdk)

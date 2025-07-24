@@ -30,7 +30,7 @@ import {
  * }
  *
  * export class CreateCommand extends BaseCommand<CreateArgs, CreateFlags, void> {
- *   async execute(args: CreateArgs, flags: CreateFlags): Promise<void> {
+ *   async execute(args: CreateArgs, flags: CreateFlags): void {
  *     // TypeScript provides full type safety for args and flags
  *     if (args.title) { ... }
  *     if (flags.priority) { ... }
@@ -65,7 +65,7 @@ export abstract class BaseCommand<
    * oclif lifecycle method called before command execution.
    * Initializes the ProjectManagerSDK with caching support.
    */
-  async init(): Promise<void> {
+  async init(): void {
     await super.init()
 
     try {

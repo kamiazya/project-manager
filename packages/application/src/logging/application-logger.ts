@@ -9,7 +9,6 @@ import { Logging } from '@project-manager/base'
 
 type LogMetadata = Logging.LogMetadata
 type Logger = Logging.Logger
-type LogContext = Logging.LogContext
 type ArchitectureLayer = Logging.ArchitectureLayer
 
 import type { IdGenerator } from '../services/id-generator.interface.ts'
@@ -32,9 +31,9 @@ export class ApplicationLogger implements Logger {
    * @param message - The log message
    * @param additionalMetadata - Additional metadata specific to this log entry
    */
-  async debug(message: string, additionalMetadata?: LogMetadata): Promise<void> {
+  debug(message: string, additionalMetadata?: LogMetadata): void {
     const mergedMetadata = this.mergeContextWithMetadata(additionalMetadata)
-    await this.baseLogger.debug(message, mergedMetadata)
+    this.baseLogger.debug(message, mergedMetadata)
   }
 
   /**
@@ -43,9 +42,9 @@ export class ApplicationLogger implements Logger {
    * @param message - The log message
    * @param additionalMetadata - Additional metadata specific to this log entry
    */
-  async info(message: string, additionalMetadata?: LogMetadata): Promise<void> {
+  info(message: string, additionalMetadata?: LogMetadata): void {
     const mergedMetadata = this.mergeContextWithMetadata(additionalMetadata)
-    await this.baseLogger.info(message, mergedMetadata)
+    this.baseLogger.info(message, mergedMetadata)
   }
 
   /**
@@ -54,9 +53,9 @@ export class ApplicationLogger implements Logger {
    * @param message - The log message
    * @param additionalMetadata - Additional metadata specific to this log entry
    */
-  async warn(message: string, additionalMetadata?: LogMetadata): Promise<void> {
+  warn(message: string, additionalMetadata?: LogMetadata): void {
     const mergedMetadata = this.mergeContextWithMetadata(additionalMetadata)
-    await this.baseLogger.warn(message, mergedMetadata)
+    this.baseLogger.warn(message, mergedMetadata)
   }
 
   /**
@@ -65,9 +64,9 @@ export class ApplicationLogger implements Logger {
    * @param message - The log message
    * @param additionalMetadata - Additional metadata specific to this log entry
    */
-  async error(message: string, additionalMetadata?: LogMetadata): Promise<void> {
+  error(message: string, additionalMetadata?: LogMetadata): void {
     const mergedMetadata = this.mergeContextWithMetadata(additionalMetadata)
-    await this.baseLogger.error(message, mergedMetadata)
+    this.baseLogger.error(message, mergedMetadata)
   }
 
   /**
@@ -77,7 +76,7 @@ export class ApplicationLogger implements Logger {
    * @param childContext - Additional context for the child logger
    * @returns New ApplicationLogger instance with extended context
    */
-  child(childContext: LogMetadata): ApplicationLogger {
+  child(childContext: Logging.LogContext): ApplicationLogger {
     // Create a child logger from the base logger with the additional context
     const childBaseLogger = this.baseLogger.child(childContext)
     return new ApplicationLogger(childBaseLogger, this.contextService, this.idGenerator)
@@ -90,8 +89,8 @@ export class ApplicationLogger implements Logger {
    * @param request - UseCase request (will be sanitized)
    * @param executionId - Optional execution identifier
    */
-  async logUseCaseStart(useCaseName: string, request?: any, executionId?: string): Promise<void> {
-    await this.info('UseCase execution started', {
+  logUseCaseStart(useCaseName: string, request?: any, executionId?: string): void {
+    this.info('UseCase execution started', {
       useCase: useCaseName,
       executionId: executionId || this.generateExecutionId(),
       requestType: request ? typeof request : undefined,
@@ -107,13 +106,13 @@ export class ApplicationLogger implements Logger {
    * @param result - UseCase result (will be sanitized)
    * @param executionId - Optional execution identifier
    */
-  async logUseCaseSuccess(
+  logUseCaseSuccess(
     useCaseName: string,
     duration: number,
     result?: any,
     executionId?: string
-  ): Promise<void> {
-    await this.info('UseCase execution completed successfully', {
+  ): void {
+    this.info('UseCase execution completed successfully', {
       useCase: useCaseName,
       duration,
       executionId: executionId || this.generateExecutionId(),
@@ -130,13 +129,8 @@ export class ApplicationLogger implements Logger {
    * @param duration - Execution duration in milliseconds
    * @param executionId - Optional execution identifier
    */
-  async logUseCaseError(
-    useCaseName: string,
-    error: Error,
-    duration: number,
-    executionId?: string
-  ): Promise<void> {
-    await this.error('UseCase execution failed', {
+  logUseCaseError(useCaseName: string, error: Error, duration: number, executionId?: string): void {
+    this.error('UseCase execution failed', {
       useCase: useCaseName,
       error: {
         name: error.name,

@@ -47,7 +47,7 @@ export abstract class BaseUseCase<TRequest, TResponse> implements UseCase<TReque
     level: 'debug' | 'info' | 'warn' | 'error',
     message: string,
     metadata?: Record<string, any>
-  ): Promise<void> {
+  ): void {
     const contextualMetadata = {
       useCase: this.getUseCaseName(),
       operationId: this.auditMetadata?.operationId,
@@ -73,28 +73,28 @@ export abstract class BaseUseCase<TRequest, TResponse> implements UseCase<TReque
   /**
    * Convenience method for info logging.
    */
-  protected async logInfo(message: string, metadata?: Record<string, any>): Promise<void> {
+  protected async logInfo(message: string, metadata?: Record<string, any>): void {
     await this.log('info', message, metadata)
   }
 
   /**
    * Convenience method for debug logging.
    */
-  protected async logDebug(message: string, metadata?: Record<string, any>): Promise<void> {
+  protected async logDebug(message: string, metadata?: Record<string, any>): void {
     await this.log('debug', message, metadata)
   }
 
   /**
    * Convenience method for warn logging.
    */
-  protected async logWarn(message: string, metadata?: Record<string, any>): Promise<void> {
+  protected async logWarn(message: string, metadata?: Record<string, any>): void {
     await this.log('warn', message, metadata)
   }
 
   /**
    * Convenience method for error logging.
    */
-  protected async logError(message: string, metadata?: Record<string, any>): Promise<void> {
+  protected async logError(message: string, metadata?: Record<string, any>): void {
     await this.log('error', message, metadata)
   }
 }

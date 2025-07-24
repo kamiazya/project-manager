@@ -138,7 +138,6 @@ export class SyncLoggerAdapter implements Logger {
         return now.getTime().toString()
       case 'locale':
         return now.toLocaleString()
-      case 'iso':
       default:
         return now.toISOString()
     }
@@ -288,28 +287,28 @@ export class SyncLoggerAdapter implements Logger {
   /**
    * Log debug message.
    */
-  async debug(message: string, metadata?: LogMetadata): Promise<void> {
+  debug(message: string, metadata?: LogMetadata): void {
     this.writeLogEntry('debug', message, metadata)
   }
 
   /**
    * Log info message.
    */
-  async info(message: string, metadata?: LogMetadata): Promise<void> {
+  info(message: string, metadata?: LogMetadata): void {
     this.writeLogEntry('info', message, metadata)
   }
 
   /**
    * Log warn message.
    */
-  async warn(message: string, metadata?: LogMetadata): Promise<void> {
+  warn(message: string, metadata?: LogMetadata): void {
     this.writeLogEntry('warn', message, metadata)
   }
 
   /**
    * Log error message.
    */
-  async error(message: string, metadata?: LogMetadata): Promise<void> {
+  error(message: string, metadata?: LogMetadata): void {
     this.writeLogEntry('error', message, metadata)
   }
 

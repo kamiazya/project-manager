@@ -84,7 +84,7 @@ export class JsonTicketRepository implements TicketRepository {
     this.logger = logger
   }
 
-  async save(ticket: Ticket): Promise<void> {
+  async save(ticket: Ticket): void {
     await this.withFileLock(async () => {
       const tickets = await this.loadTicketsFromFile()
 
@@ -171,7 +171,7 @@ export class JsonTicketRepository implements TicketRepository {
     return TicketMapper.toDomainList(filteredTickets, this.logger)
   }
 
-  async delete(id: TicketId): Promise<void> {
+  async delete(id: TicketId): void {
     await this.withFileLock(async () => {
       const tickets = await this.loadTicketsFromFile()
       const filteredTickets = tickets.filter(t => t.id !== id.value)
@@ -227,7 +227,7 @@ export class JsonTicketRepository implements TicketRepository {
     }
   }
 
-  private async saveTicketsToFile(tickets: TicketJSON[]): Promise<void> {
+  private async saveTicketsToFile(tickets: TicketJSON[]): void {
     try {
       const dir = dirname(this.filePath)
 

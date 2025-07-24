@@ -2,9 +2,8 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import type { DevelopmentProcessService, IdGenerator } from '@project-manager/application'
+import type { DevelopmentProcessService } from '@project-manager/application'
 import type { EnvironmentMode } from '@project-manager/base'
-import { getStorageDir } from '@project-manager/base'
 
 const ENV_VARS = {
   XDG_CONFIG_HOME: 'XDG_CONFIG_HOME',
@@ -42,7 +41,7 @@ export class XdgDevelopmentProcessService implements DevelopmentProcessService {
 
   constructor(private mode?: EnvironmentMode) {}
 
-  async registerProcess(processId: number): Promise<void> {
+  async registerProcess(processId: number): void {
     this.currentProcessId = processId
 
     // Create PID file
@@ -52,7 +51,7 @@ export class XdgDevelopmentProcessService implements DevelopmentProcessService {
     this.setupSignalHandlers()
   }
 
-  async cleanupProcess(processId?: number): Promise<void> {
+  async cleanupProcess(processId?: number): void {
     const targetPid = processId || this.currentProcessId
     if (!targetPid) {
       return
@@ -117,7 +116,7 @@ export class XdgDevelopmentProcessService implements DevelopmentProcessService {
     return this.getPidFilePath()
   }
 
-  private async writePidFile(processId: number): Promise<void> {
+  private async writePidFile(processId: number): void {
     const pidFilePath = this.getPidFilePath()
     const pidDir = dirname(pidFilePath)
 
