@@ -8,6 +8,11 @@
   "bin": {
     "pm": "src/bin/run-dev.ts"
   },
+  "files": [
+    "bin",
+    "dist",
+    "oclif.manifest.json"
+  ],
   "exports": {
     ".": {
       "development": "./src/index.ts",
@@ -54,7 +59,8 @@
     "hooks": {
       "init": [
         "./src/hooks/init/plugin-support.ts"
-      ]
+      ],
+      "postrun": "./src/hooks/postrun/cleanup.ts"
     },
     "topics": {
       "update": {
@@ -64,8 +70,12 @@
   },
   "scripts": {
     "build": "vite build",
+    "generate-manifest": "node scripts/generate-manifest.js",
+    "postbuild": "pnpm run generate-manifest",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest",
+    "prepack": "pnpm run build",
+    "postpack": "rm -f oclif.manifest.json"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.7.1",
