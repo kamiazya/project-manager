@@ -407,6 +407,24 @@ export class ProjectManagerSDK {
   }
 
   /**
+   * Shutdown the SDK and clean up resources
+   */
+  async shutdown(): Promise<void> {
+    try {
+      // Get LoggerFactory from container and shutdown
+      const loggerFactory = this.container.get<any>('LoggerFactory')
+      if (loggerFactory && typeof loggerFactory.shutdown === 'function') {
+        await loggerFactory.shutdown()
+      }
+    } catch (error) {
+      // Ignore errors during shutdown
+      if (process.env.DEBUG) {
+        console.error('Error during SDK shutdown:', error)
+      }
+    }
+  }
+
+  /**
    * Helper method to map TicketResponse from Application layer to SDK Response DTO
    */
   private mapTicketResponseToSDKResponse(

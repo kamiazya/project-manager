@@ -68,7 +68,6 @@ describe('LoggerFactory SDK Integration', () => {
         warn: vi.fn(),
         error: vi.fn(),
         child: vi.fn(),
-        flush: vi.fn(),
       }
 
       const mockFactory = {
@@ -354,12 +353,10 @@ describe('LoggerFactory SDK Integration', () => {
 
     it('should gracefully shutdown all loggers', async () => {
       const mockLogger = {
-        flush: vi.fn().mockResolvedValue(undefined),
         close: vi.fn().mockResolvedValue(undefined),
       }
 
       const mockAuditLogger = {
-        flush: vi.fn().mockResolvedValue(undefined),
         close: vi.fn().mockResolvedValue(undefined),
       }
 
@@ -367,15 +364,12 @@ describe('LoggerFactory SDK Integration', () => {
         applicationLogger: mockLogger,
         auditLogger: mockAuditLogger,
         shutdown: vi.fn(async () => {
-          await Promise.all([mockLogger.flush(), mockAuditLogger.flush()])
           await Promise.all([mockLogger.close(), mockAuditLogger.close()])
         }),
       }
 
       await mockFactory.shutdown()
 
-      expect(mockLogger.flush).toHaveBeenCalled()
-      expect(mockAuditLogger.flush).toHaveBeenCalled()
       expect(mockLogger.close).toHaveBeenCalled()
       expect(mockAuditLogger.close).toHaveBeenCalled()
     })

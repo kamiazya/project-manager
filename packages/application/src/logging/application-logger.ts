@@ -84,14 +84,6 @@ export class ApplicationLogger implements Logger {
   }
 
   /**
-   * Flush any pending log entries.
-   * Delegates to the base logger's flush method.
-   */
-  async flush(): Promise<void> {
-    await this.baseLogger.flush()
-  }
-
-  /**
    * Log UseCase execution start.
    *
    * @param useCaseName - Name of the UseCase being executed

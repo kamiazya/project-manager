@@ -21,7 +21,7 @@ import {
   createTestLogger,
   defaultEventEmitterFactory,
   type FileAuditLoggerConfig,
-  type PinoLoggerConfig,
+  type SyncLoggerConfig,
 } from '@project-manager/infrastructure'
 
 /**
@@ -293,33 +293,26 @@ export class LoggerFactory {
       // Get actual log path from XDG storage service
       const actualLogPath = this.getActualLogPath(appConfig)
 
-      const pinoConfig: PinoLoggerConfig = {
+      const syncConfig: SyncLoggerConfig = {
         level: logLevel,
         environment: this.config.environment!,
         transportType: appConfig.transport!,
         transport: { type: appConfig.transport! },
         logFile: actualLogPath,
-        rotation: appConfig.file?.rotation
-          ? {
-              maxSize: appConfig.file.rotation.maxSize || '10MB',
-              maxFiles: appConfig.file.rotation.maxFiles || 5,
-            }
-          : undefined,
-        pino: {
-          timestamp: true,
-        },
+        colorize: this.config.environment === 'development',
+        timestampFormat: this.config.environment === 'production' ? 'iso' : 'locale',
       }
 
       // Use factory functions for different environments
       switch (this.config.environment) {
         case 'production':
-          return createProductionLogger(actualLogPath || 'logs/app.log', pinoConfig)
+          return createProductionLogger(actualLogPath || 'logs/app.log', syncConfig)
 
         case 'testing':
-          return createTestLogger(pinoConfig)
+          return createTestLogger(syncConfig)
 
         default:
-          return createDevelopmentLogger(pinoConfig)
+          return createDevelopmentLogger(syncConfig)
       }
     } catch (error) {
       this.eventEmitter.emit('error', { message: 'Failed to create application logger', error })
@@ -453,10 +446,6 @@ export class LoggerFactory {
       child(_context: LogContext): Logger {
         // Return same logger for fallback
         return this
-      },
-
-      async flush(): Promise<void> {
-        // No-op for console logger
       },
     }
 
@@ -622,26 +611,6 @@ export class LoggerFactory {
   }
 
   /**
-   * Flush all loggers.
-   */
-  async flush(): Promise<void> {
-    const flushPromises: Promise<void>[] = []
-
-    if (this.applicationLogger.isInitialized()) {
-      flushPromises.push(this.applicationLogger.instance.flush())
-    }
-
-    if (this.auditLogger.isInitialized()) {
-      const audLogger = this.auditLogger.instance as any
-      if (typeof audLogger.flush === 'function') {
-        flushPromises.push(audLogger.flush())
-      }
-    }
-
-    await Promise.all(flushPromises)
-  }
-
-  /**
    * Add event listener.
    */
   on(event: string, listener: (data?: any) => void): void {
@@ -671,9 +640,6 @@ export class LoggerFactory {
     this.isShuttingDown = true
 
     try {
-      // Flush all pending operations
-      await this.flush()
-
       // Close loggers
       const closePromises: Promise<void>[] = []
 
