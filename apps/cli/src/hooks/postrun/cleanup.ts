@@ -1,5 +1,5 @@
 import type { Hook } from '@oclif/core'
-import { CLIError } from '@oclif/core'
+import { Errors } from '@oclif/core'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 /**
@@ -26,7 +26,7 @@ const hook: Hook<'postrun'> = async () => {
 
     // Throw CLIError instead of calling process.exit
     // This allows oclif to handle the exit properly and makes testing easier
-    throw new CLIError('Failed to cleanup SDK resources', { exit: 1 })
+    throw new Errors.CLIError('Failed to cleanup SDK resources', { exit: 1 })
   }
 }
 

@@ -139,7 +139,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Initialize the audit logger.
    */
-  async initialize(): void {
+  async initialize(): Promise<void> {
     if (this.isInitialized) return
 
     try {
@@ -169,7 +169,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Initialize the write stream for audit file.
    */
-  private async initializeWriteStream(): void {
+  private async initializeWriteStream(): Promise<void> {
     const filePath = resolve(this.config.auditFile.path)
 
     // Create write stream with append mode
@@ -223,7 +223,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Record a CREATE operation audit event.
    */
-  async recordCreate(event: CreateOperationEvent): void {
+  async recordCreate(event: CreateOperationEvent): Promise<void> {
     if (!this.isInitialized) {
       await this.initialize()
     }
@@ -251,7 +251,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Record a READ operation audit event.
    */
-  async recordRead(event: any): void {
+  async recordRead(event: any): Promise<void> {
     if (!this.isInitialized) {
       await this.initialize()
     }
@@ -280,7 +280,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Record an UPDATE operation audit event.
    */
-  async recordUpdate(event: UpdateOperationEvent): void {
+  async recordUpdate(event: UpdateOperationEvent): Promise<void> {
     if (!this.isInitialized) {
       await this.initialize()
     }
@@ -309,7 +309,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Record a DELETE operation audit event.
    */
-  async recordDelete(event: DeleteOperationEvent): void {
+  async recordDelete(event: DeleteOperationEvent): Promise<void> {
     if (!this.isInitialized) {
       await this.initialize()
     }
@@ -337,7 +337,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Write audit event to file with integrity checks.
    */
-  private async writeAuditEvent(event: AuditEventModel): void {
+  private async writeAuditEvent(event: AuditEventModel): Promise<void> {
     const serialized = event.serialize(true) // Sanitized serialization
     const line = `${serialized}\n`
 
@@ -394,7 +394,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Flush pending writes to disk.
    */
-  private async flushPendingWrites(): void {
+  private async flushPendingWrites(): Promise<void> {
     if (this.writeQueue.length === 0) return
 
     const linesToWrite = [...this.writeQueue]
@@ -435,7 +435,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Load existing statistics from file.
    */
-  private async loadStatistics(): void {
+  private async loadStatistics(): Promise<void> {
     try {
       const filePath = resolve(this.config.auditFile.path)
       const fileStats = await stat(filePath).catch(() => null)
@@ -481,7 +481,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Check if file rotation is needed and perform rotation.
    */
-  private async checkRotationNeeded(): void {
+  private async checkRotationNeeded(): Promise<void> {
     const rotation = this.config.auditFile.rotation
     if (!rotation?.enabled) return
 
@@ -524,7 +524,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Rotate audit file.
    */
-  private async rotateFile(): void {
+  private async rotateFile(): Promise<void> {
     const filePath = resolve(this.config.auditFile.path)
     const rotation = this.config.auditFile.rotation!
 
@@ -563,7 +563,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Rotate existing numbered files.
    */
-  private async rotateExistingFiles(basePath: string, maxFiles: number): void {
+  private async rotateExistingFiles(basePath: string, maxFiles: number): Promise<void> {
     for (let i = maxFiles - 1; i >= 1; i--) {
       const currentPath = `${basePath}.${i}`
       const nextPath = `${basePath}.${i + 1}`
@@ -597,7 +597,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Compress rotated file.
    */
-  private async compressFile(filePath: string): void {
+  private async compressFile(filePath: string): Promise<void> {
     const compressedPath = `${filePath}.gz`
 
     try {
@@ -614,7 +614,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Clean up old rotated files.
    */
-  private async cleanupOldFiles(basePath: string, maxFiles: number): void {
+  private async cleanupOldFiles(basePath: string, maxFiles: number): Promise<void> {
     try {
       const dir = dirname(basePath)
       const baseFilename = basename(basePath)
@@ -800,7 +800,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Flush all pending operations.
    */
-  async flush(): void {
+  async flush(): Promise<void> {
     await this.flushPendingWrites()
 
     if (this.writeStream) {
@@ -821,7 +821,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   /**
    * Close audit logger and clean up resources.
    */
-  async close(): void {
+  async close(): Promise<void> {
     this.isShuttingDown = true
 
     // Clear flush timer

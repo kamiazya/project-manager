@@ -44,20 +44,20 @@ export namespace DeleteTicket {
       super()
     }
 
-    async execute(request: Request): void {
-      await this.logger.info('Starting ticket deletion', {
+    async execute(request: Request): Promise<void> {
+      this.logger.info('Starting ticket deletion', {
         ticketId: request.id,
       })
 
       const ticketId = TicketId.create(request.id)
 
-      await this.logger.debug('Validating ticket for deletion', {
+      this.logger.debug('Validating ticket for deletion', {
         ticketId: ticketId.value,
       })
 
       await this.ticketRepository.delete(ticketId)
 
-      await this.logger.info('Ticket deletion completed', {
+      this.logger.info('Ticket deletion completed', {
         ticketId: ticketId.value,
       })
     }

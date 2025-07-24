@@ -41,7 +41,7 @@ export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
     'pm update content ticket-789 -t "Bug fix" -d "Fixed the login issue"',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): void {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
     // Execute the update operation using SDK
     const updatedTicket = await this.sdk.tickets.updateContent({
       id: args.ticketId,

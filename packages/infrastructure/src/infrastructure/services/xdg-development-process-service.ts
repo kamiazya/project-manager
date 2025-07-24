@@ -41,7 +41,7 @@ export class XdgDevelopmentProcessService implements DevelopmentProcessService {
 
   constructor(private mode?: EnvironmentMode) {}
 
-  async registerProcess(processId: number): void {
+  async registerProcess(processId: number): Promise<void> {
     this.currentProcessId = processId
 
     // Create PID file
@@ -51,7 +51,7 @@ export class XdgDevelopmentProcessService implements DevelopmentProcessService {
     this.setupSignalHandlers()
   }
 
-  async cleanupProcess(processId?: number): void {
+  async cleanupProcess(processId?: number): Promise<void> {
     const targetPid = processId || this.currentProcessId
     if (!targetPid) {
       return
@@ -116,7 +116,7 @@ export class XdgDevelopmentProcessService implements DevelopmentProcessService {
     return this.getPidFilePath()
   }
 
-  private async writePidFile(processId: number): void {
+  private async writePidFile(processId: number): Promise<void> {
     const pidFilePath = this.getPidFilePath()
     const pidDir = dirname(pidFilePath)
 

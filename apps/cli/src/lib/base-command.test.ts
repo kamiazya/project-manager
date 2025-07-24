@@ -68,7 +68,7 @@ describe('BaseCommand', () => {
 
   it('should initialize SDK', async () => {
     class TestCommand extends BaseCommand {
-      async execute(): void {
+      async execute(): Promise<void> {
         // Check that the SDK was initialized
         expect(this.sdk).toBe(mockSDK)
       }
@@ -88,7 +88,7 @@ describe('BaseCommand', () => {
     const testError = new Error('Test error')
 
     class TestCommand extends BaseCommand {
-      async execute(): void {
+      async execute(): Promise<void> {
         throw testError
       }
     }
@@ -115,7 +115,7 @@ describe('BaseCommand', () => {
     vi.mocked(mockSDK.tickets.search).mockResolvedValue(mockTickets)
 
     class TestCommand extends BaseCommand {
-      async execute(): void {
+      async execute(): Promise<void> {
         const tickets = await this.sdk.tickets.search({})
         expect(tickets).toBe(mockTickets)
       }
@@ -131,7 +131,7 @@ describe('BaseCommand', () => {
   describe('SDK Caching', () => {
     it('should cache SDK instance across multiple command executions', async () => {
       class TestCommand extends BaseCommand {
-        async execute(): void {
+        async execute(): Promise<void> {
           expect(this.sdk).toBe(mockSDK)
         }
       }
@@ -166,7 +166,7 @@ describe('BaseCommand', () => {
           super(argv, config)
         }
 
-        async execute(): void {}
+        async execute(): Promise<void> {}
 
         // Override to simulate environment change
         public generateConfigHashOverride(config: { environment: 'auto' }): string {
@@ -199,7 +199,7 @@ describe('BaseCommand', () => {
 
     it('should allow manual cache clearing', async () => {
       class TestCommand extends BaseCommand {
-        async execute(): void {}
+        async execute(): Promise<void> {}
       }
 
       // First initialization
@@ -222,7 +222,7 @@ describe('BaseCommand', () => {
 
     beforeEach(() => {
       class TestCommand extends BaseCommand {
-        async execute(): void {}
+        async execute(): Promise<void> {}
       }
       command = new TestCommand([], {} as any)
       // Mock oclif's error method

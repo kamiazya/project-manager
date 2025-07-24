@@ -28,7 +28,7 @@ export class DeleteCommand extends BaseCommand {
     }),
   }
 
-  async execute(args: { ticketId: string }, flags: ExecuteFlags): void {
+  async execute(args: { ticketId: string }, flags: ExecuteFlags): Promise<void> {
     // First, verify the ticket exists
     const ticket = await this.sdk.tickets.getById(args.ticketId)
 

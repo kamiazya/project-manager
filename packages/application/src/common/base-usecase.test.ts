@@ -107,7 +107,7 @@ describe('UseCase interface', () => {
 
     it('should support void/undefined response types', () => {
       class NoResponseUseCase implements UseCase<string, void> {
-        async execute(request: string): void {
+        async execute(request: string): Promise<void> {
           console.log(`Processing: ${request}`)
           // No return value
         }
@@ -370,7 +370,7 @@ describe('UseCase interface', () => {
       class MockRepository implements Repository {
         private data = new Map()
 
-        async save(data: any): void {
+        async save(data: any): Promise<void> {
           this.data.set(data.id, data)
         }
 

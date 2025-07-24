@@ -43,7 +43,7 @@ export abstract class BaseUseCase<TRequest, TResponse> implements UseCase<TReque
    * @param message - Log message
    * @param metadata - Additional metadata
    */
-  protected async log(
+  protected log(
     level: 'debug' | 'info' | 'warn' | 'error',
     message: string,
     metadata?: Record<string, any>
@@ -56,16 +56,16 @@ export abstract class BaseUseCase<TRequest, TResponse> implements UseCase<TReque
 
     switch (level) {
       case 'debug':
-        await this.logger.debug(message, contextualMetadata)
+        this.logger.debug(message, contextualMetadata)
         break
       case 'info':
-        await this.logger.info(message, contextualMetadata)
+        this.logger.info(message, contextualMetadata)
         break
       case 'warn':
-        await this.logger.warn(message, contextualMetadata)
+        this.logger.warn(message, contextualMetadata)
         break
       case 'error':
-        await this.logger.error(message, contextualMetadata)
+        this.logger.error(message, contextualMetadata)
         break
     }
   }
@@ -73,28 +73,28 @@ export abstract class BaseUseCase<TRequest, TResponse> implements UseCase<TReque
   /**
    * Convenience method for info logging.
    */
-  protected async logInfo(message: string, metadata?: Record<string, any>): void {
-    await this.log('info', message, metadata)
+  protected logInfo(message: string, metadata?: Record<string, any>): void {
+    this.log('info', message, metadata)
   }
 
   /**
    * Convenience method for debug logging.
    */
-  protected async logDebug(message: string, metadata?: Record<string, any>): void {
-    await this.log('debug', message, metadata)
+  protected logDebug(message: string, metadata?: Record<string, any>): void {
+    this.log('debug', message, metadata)
   }
 
   /**
    * Convenience method for warn logging.
    */
-  protected async logWarn(message: string, metadata?: Record<string, any>): void {
-    await this.log('warn', message, metadata)
+  protected logWarn(message: string, metadata?: Record<string, any>): void {
+    this.log('warn', message, metadata)
   }
 
   /**
    * Convenience method for error logging.
    */
-  protected async logError(message: string, metadata?: Record<string, any>): void {
-    await this.log('error', message, metadata)
+  protected logError(message: string, metadata?: Record<string, any>): void {
+    this.log('error', message, metadata)
   }
 }

@@ -259,7 +259,7 @@ export class ProjectManagerSDK {
     /**
      * Delete ticket
      */
-    delete: async (id: string): void => {
+    delete: async (id: string): Promise<void> => {
       const useCase = this.container.get<DeleteTicket.UseCase>(TYPES.DeleteTicketUseCase)
       const request = { id }
 
@@ -409,12 +409,12 @@ export class ProjectManagerSDK {
   /**
    * Shutdown the SDK and clean up resources
    */
-  async shutdown(): void {
+  async shutdown(): Promise<void> {
     try {
       // Get LoggerFactory from container and shutdown
       const loggerFactory = this.container.get<any>('LoggerFactory')
       if (loggerFactory && typeof loggerFactory.shutdown === 'function') {
-        await loggerFactory.shutdown()
+        loggerFactory.shutdown()
       }
     } catch (error) {
       // Ignore errors during shutdown

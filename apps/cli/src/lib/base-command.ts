@@ -65,7 +65,7 @@ export abstract class BaseCommand<
    * oclif lifecycle method called before command execution.
    * Initializes the ProjectManagerSDK with caching support.
    */
-  async init(): void {
+  async init(): Promise<void> {
     await super.init()
 
     try {
