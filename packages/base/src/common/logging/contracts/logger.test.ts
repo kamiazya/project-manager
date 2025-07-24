@@ -19,7 +19,6 @@ describe('Logger', () => {
         warn: vi.fn().mockResolvedValue(undefined),
         error: vi.fn().mockResolvedValue(undefined),
         child: vi.fn().mockReturnThis(),
-        flush: vi.fn().mockResolvedValue(undefined),
       }
 
       expect(typeof logger.debug).toBe('function')
@@ -27,7 +26,6 @@ describe('Logger', () => {
       expect(typeof logger.warn).toBe('function')
       expect(typeof logger.error).toBe('function')
       expect(typeof logger.child).toBe('function')
-      expect(typeof logger.flush).toBe('function')
     })
 
     it('should accept LogMetadata for all log methods', async () => {
@@ -37,7 +35,6 @@ describe('Logger', () => {
         warn: vi.fn().mockResolvedValue(undefined),
         error: vi.fn().mockResolvedValue(undefined),
         child: vi.fn().mockReturnThis(),
-        flush: vi.fn().mockResolvedValue(undefined),
       }
 
       const metadata: LogMetadata = {
@@ -66,7 +63,6 @@ describe('Logger', () => {
         warn: vi.fn().mockResolvedValue(undefined),
         error: vi.fn().mockResolvedValue(undefined),
         child: vi.fn().mockReturnThis(),
-        flush: vi.fn().mockResolvedValue(undefined),
       }
 
       const mockLogger: Logger = {
@@ -75,7 +71,6 @@ describe('Logger', () => {
         warn: vi.fn().mockResolvedValue(undefined),
         error: vi.fn().mockResolvedValue(undefined),
         child: vi.fn().mockReturnValue(mockChildLogger),
-        flush: vi.fn().mockResolvedValue(undefined),
       }
 
       const context: LogContext = {
@@ -98,7 +93,6 @@ describe('Logger', () => {
         warn: vi.fn().mockResolvedValue(undefined),
         error: vi.fn().mockResolvedValue(undefined),
         child: vi.fn().mockReturnThis(),
-        flush: vi.fn().mockResolvedValue(undefined),
       }
 
       // Test without metadata

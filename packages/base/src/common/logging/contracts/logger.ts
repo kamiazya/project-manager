@@ -51,10 +51,4 @@ export interface Logger {
    * @returns A new Logger instance with the additional context
    */
   child(context: LogContext): Logger
-
-  /**
-   * Flush any pending log entries to ensure they are written.
-   * This is useful for ensuring logs are written before application shutdown.
-   */
-  flush(): Promise<void>
 }
