@@ -3,37 +3,29 @@ import { BaseCommand } from '../../lib/base-command.ts'
 
 /**
  * Postrun hook for cleanup operations.
- * Ensures proper shutdown of SDK resources including logger and forces process exit.
+ * Ensures proper shutdown of SDK resources including logger.
  */
-const hook: Hook<'postrun'> = async options => {
+const hook: Hook<'postrun'> = async () => {
   try {
-    // If we have an SDK instance, shutdown properly
-    const command = options.Command as any
-    if (command?.sdk && typeof command.sdk.shutdown === 'function') {
-      await command.sdk.shutdown()
+    // Access the statically cached SDK instance
+    const sdk = (BaseCommand as any).cachedSDK
+    if (sdk && typeof sdk.shutdown === 'function') {
+      await sdk.shutdown()
     }
 
     // Clear SDK cache for future commands
     BaseCommand.clearSDKCache()
 
-    // Force immediate process termination for synchronous logger
-    // Since we're using synchronous logging, all writes are already complete
-    setTimeout(() => {
-      if (process.env.DEBUG) {
-        console.error('Forcing process exit after cleanup timeout')
-      }
-      process.exit(0)
-    }, 100)
+    // Exit cleanly - no setTimeout needed with synchronous logger
+    process.exit(0)
   } catch (error) {
-    // Ignore errors during cleanup, but still force exit
+    // Log error in debug mode
     if (process.env.DEBUG) {
       console.error('Error during cleanup:', error)
     }
 
-    // Force exit even on error
-    setTimeout(() => {
-      process.exit(1)
-    }, 100)
+    // Exit with error code
+    process.exit(1)
   }
 }
 
