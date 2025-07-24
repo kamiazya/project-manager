@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { projectManagerArchitectureRules } from '../../etc/vite/architecture.config.ts'
+import { licenseBanner } from '../../etc/vite/license-banner.ts'
 import {
   type ArchitectureRules,
   cleanArchitecture,
@@ -113,9 +114,9 @@ export default defineConfig({
       output: {
         banner: chunk => {
           if (chunk.name === 'bin/run') {
-            return '#!/usr/bin/env node'
+            return `#!/usr/bin/env node\n${licenseBanner}`
           }
-          return ''
+          return licenseBanner
         },
       },
     },

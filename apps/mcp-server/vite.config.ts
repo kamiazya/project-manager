@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { projectManagerArchitectureRules } from '../../etc/vite/architecture.config.ts'
+import { licenseBanner } from '../../etc/vite/license-banner.ts'
 import { cleanArchitecture } from '../../etc/vite/plugins/architecture-fitness.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -45,9 +46,9 @@ export default defineConfig({
       output: {
         banner: chunk => {
           if (chunk.name === 'bin/mcp-server') {
-            return '#!/usr/bin/env node'
+            return `#!/usr/bin/env node\n${licenseBanner}`
           }
-          return ''
+          return licenseBanner
         },
       },
     },

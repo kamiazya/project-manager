@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { projectManagerArchitectureRules } from '../../etc/vite/architecture.config.ts'
+import { licenseBanner } from '../../etc/vite/license-banner.ts'
 import { cleanArchitecture } from '../../etc/vite/plugins/architecture-fitness.ts'
 
 export default defineConfig({
@@ -35,6 +36,7 @@ export default defineConfig({
         globals: {
           '@project-manager/base': 'ProjectManagerBase',
         },
+        banner: licenseBanner,
       },
     },
     outDir: 'dist',
