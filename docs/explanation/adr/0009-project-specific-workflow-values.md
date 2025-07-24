@@ -11,6 +11,7 @@ Different projects have varying workflow requirements, priority schemes, and cat
 ### Current Implementation
 
 Currently, the system uses hardcoded values for:
+
 - **Ticket Status**: `pending`, `in_progress`, `completed`, `archived`
 - **Ticket Priority**: `high`, `medium`, `low`  
 - **Ticket Type**: `feature`, `bug`, `task`, `research`, `design`, `chore`
@@ -27,6 +28,7 @@ These values are scattered throughout the codebase as string literals and are no
 ### Future Requirements
 
 The planned Project entity implementation will need to support:
+
 - Custom state machines with project-specific transitions
 - Configurable priority levels and meanings
 - Project-specific ticket categorization schemes

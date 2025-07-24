@@ -2,6 +2,7 @@
   "name": "@project-manager/mcp-server",
   "version": "0.0.0",
   "description": "Model Context Protocol server for project-manager AI integration",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",

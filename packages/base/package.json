@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Base package with Shared Kernel and Common Infrastructure patterns",
+  "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
