@@ -388,7 +388,7 @@ describe('LogEntryModel', () => {
       const formatted = entry.format(options)
 
       // Should contain ANSI color codes (ESC sequence)
-      expect(formatted).toContain(String.fromCharCode(27) + '[')
+      expect(formatted).toContain(`${String.fromCharCode(27)}[`)
     })
   })
 

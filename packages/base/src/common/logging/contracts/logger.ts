@@ -14,7 +14,7 @@ export interface Logger {
    * @param message - Human-readable description of what happened
    * @param metadata - Structured data providing context (traceId, component, etc.)
    */
-  debug(message: string, metadata?: LogMetadata): Promise<void>
+  debug(message: string, metadata?: LogMetadata): void
 
   /**
    * Log general information about application flow.
@@ -23,7 +23,7 @@ export interface Logger {
    * @param message - Human-readable description of what happened
    * @param metadata - Structured data providing context (traceId, component, etc.)
    */
-  info(message: string, metadata?: LogMetadata): Promise<void>
+  info(message: string, metadata?: LogMetadata): void
 
   /**
    * Log warning conditions that should be addressed.
@@ -32,7 +32,7 @@ export interface Logger {
    * @param message - Human-readable description of what happened
    * @param metadata - Structured data providing context (traceId, component, etc.)
    */
-  warn(message: string, metadata?: LogMetadata): Promise<void>
+  warn(message: string, metadata?: LogMetadata): void
 
   /**
    * Log error conditions that require immediate attention.
@@ -41,7 +41,7 @@ export interface Logger {
    * @param message - Human-readable description of what happened
    * @param metadata - Structured data providing context (traceId, component, etc.)
    */
-  error(message: string, metadata?: LogMetadata): Promise<void>
+  error(message: string, metadata?: LogMetadata): void
 
   /**
    * Create a child logger with persistent context.
@@ -51,10 +51,4 @@ export interface Logger {
    * @returns A new Logger instance with the additional context
    */
   child(context: LogContext): Logger
-
-  /**
-   * Flush any pending log entries to ensure they are written.
-   * This is useful for ensuring logs are written before application shutdown.
-   */
-  flush(): Promise<void>
 }

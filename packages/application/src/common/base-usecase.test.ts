@@ -363,7 +363,7 @@ describe('UseCase interface', () => {
   describe('integration patterns', () => {
     it('should support dependency injection pattern', () => {
       interface Repository {
-        save(data: any): Promise<void>
+        save(data: any): void
         findById(id: string): Promise<any>
       }
 

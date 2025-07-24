@@ -83,6 +83,7 @@ export default defineConfig({
         'commands/mcp': 'src/commands/mcp.ts',
         'lib/base-command': 'src/lib/base-command.ts',
         'hooks/init/plugin-support': 'src/hooks/init/plugin-support.ts',
+        'hooks/postrun/cleanup': 'src/hooks/postrun/cleanup.ts',
       },
       formats: ['es'],
     },

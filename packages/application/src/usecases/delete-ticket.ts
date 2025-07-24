@@ -45,19 +45,19 @@ export namespace DeleteTicket {
     }
 
     async execute(request: Request): Promise<void> {
-      await this.logger.info('Starting ticket deletion', {
+      this.logger.info('Starting ticket deletion', {
         ticketId: request.id,
       })
 
       const ticketId = TicketId.create(request.id)
 
-      await this.logger.debug('Validating ticket for deletion', {
+      this.logger.debug('Validating ticket for deletion', {
         ticketId: ticketId.value,
       })
 
       await this.ticketRepository.delete(ticketId)
 
-      await this.logger.info('Ticket deletion completed', {
+      this.logger.info('Ticket deletion completed', {
         ticketId: ticketId.value,
       })
     }

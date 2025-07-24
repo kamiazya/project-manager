@@ -21,7 +21,7 @@ import {
   createTestLogger,
   defaultEventEmitterFactory,
   type FileAuditLoggerConfig,
-  type PinoLoggerConfig,
+  type SyncLoggerConfig,
 } from '@project-manager/infrastructure'
 
 /**
@@ -256,7 +256,7 @@ export class LoggerFactory {
 
     try {
       // Initialize loggers if they need async initialization
-      const initPromises: Promise<void>[] = []
+      const initPromises: undefined[] = []
 
       if (this.applicationLogger.isInitialized()) {
         const appLogger = this.applicationLogger.instance
@@ -293,33 +293,25 @@ export class LoggerFactory {
       // Get actual log path from XDG storage service
       const actualLogPath = this.getActualLogPath(appConfig)
 
-      const pinoConfig: PinoLoggerConfig = {
+      const syncConfig: SyncLoggerConfig = {
         level: logLevel,
         environment: this.config.environment!,
         transportType: appConfig.transport!,
-        transport: { type: appConfig.transport! },
         logFile: actualLogPath,
-        rotation: appConfig.file?.rotation
-          ? {
-              maxSize: appConfig.file.rotation.maxSize || '10MB',
-              maxFiles: appConfig.file.rotation.maxFiles || 5,
-            }
-          : undefined,
-        pino: {
-          timestamp: true,
-        },
+        colorize: this.config.environment === 'development',
+        timestampFormat: this.config.environment === 'production' ? 'iso' : 'locale',
       }
 
       // Use factory functions for different environments
       switch (this.config.environment) {
         case 'production':
-          return createProductionLogger(actualLogPath || 'logs/app.log', pinoConfig)
+          return createProductionLogger(actualLogPath || 'logs/app.log', syncConfig)
 
         case 'testing':
-          return createTestLogger(pinoConfig)
+          return createTestLogger(syncConfig)
 
         default:
-          return createDevelopmentLogger(pinoConfig)
+          return createDevelopmentLogger(syncConfig)
       }
     } catch (error) {
       this.eventEmitter.emit('error', { message: 'Failed to create application logger', error })
@@ -434,29 +426,25 @@ export class LoggerFactory {
    */
   private createFallbackLogger(): Logger {
     const fallbackLogger: Logger = {
-      async debug(message: string, metadata?: any): Promise<void> {
+      debug(message: string, metadata?: any): void {
         console.debug(`[DEBUG] ${message}`, metadata)
       },
 
-      async info(message: string, metadata?: any): Promise<void> {
+      info(message: string, metadata?: any): void {
         console.info(`[INFO] ${message}`, metadata)
       },
 
-      async warn(message: string, metadata?: any): Promise<void> {
+      warn(message: string, metadata?: any): void {
         console.warn(`[WARN] ${message}`, metadata)
       },
 
-      async error(message: string, metadata?: any): Promise<void> {
+      error(message: string, metadata?: any): void {
         console.error(`[ERROR] ${message}`, metadata)
       },
 
       child(_context: LogContext): Logger {
         // Return same logger for fallback
         return this
-      },
-
-      async flush(): Promise<void> {
-        // No-op for console logger
       },
     }
 
@@ -622,26 +610,6 @@ export class LoggerFactory {
   }
 
   /**
-   * Flush all loggers.
-   */
-  async flush(): Promise<void> {
-    const flushPromises: Promise<void>[] = []
-
-    if (this.applicationLogger.isInitialized()) {
-      flushPromises.push(this.applicationLogger.instance.flush())
-    }
-
-    if (this.auditLogger.isInitialized()) {
-      const audLogger = this.auditLogger.instance as any
-      if (typeof audLogger.flush === 'function') {
-        flushPromises.push(audLogger.flush())
-      }
-    }
-
-    await Promise.all(flushPromises)
-  }
-
-  /**
    * Add event listener.
    */
   on(event: string, listener: (data?: any) => void): void {
@@ -663,39 +631,16 @@ export class LoggerFactory {
   }
 
   /**
-   * Shutdown all loggers and clean up resources.
+   * Shutdown logger factory and clear cache.
+   * For synchronous loggers, no cleanup is needed as all writes are immediate.
    */
-  async shutdown(): Promise<void> {
+  shutdown(): void {
     if (this.isShuttingDown) return
 
     this.isShuttingDown = true
 
     try {
-      // Flush all pending operations
-      await this.flush()
-
-      // Close loggers
-      const closePromises: Promise<void>[] = []
-
-      if (this.applicationLogger.isInitialized()) {
-        const appLogger = this.applicationLogger.instance as any
-        if (typeof appLogger.destroy === 'function') {
-          closePromises.push(appLogger.destroy())
-        } else if (typeof appLogger.close === 'function') {
-          closePromises.push(appLogger.close())
-        }
-      }
-
-      if (this.auditLogger.isInitialized()) {
-        const audLogger = this.auditLogger.instance as any
-        if (typeof audLogger.close === 'function') {
-          closePromises.push(audLogger.close())
-        }
-      }
-
-      await Promise.all(closePromises)
-
-      // Clear cache and listeners
+      // Clear cache and listeners - no logger cleanup needed for sync loggers
       this.clearCache()
       this.eventEmitter.removeAllListeners()
 
@@ -816,9 +761,9 @@ export const LoggerFactoryDI = {
    * Create shutdown function for DI containers.
    */
   createShutdown() {
-    return async (container: any) => {
+    return (container: any) => {
       const factory: LoggerFactory = container.resolve('LoggerFactory')
-      await factory.shutdown()
+      factory.shutdown()
     }
   },
 }

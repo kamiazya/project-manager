@@ -13,17 +13,16 @@ export {
   FileAuditLoggerAdapter as FileAuditLogger,
   type FileAuditLoggerConfig,
 } from './file-audit-logger.ts'
-// Pino Logger Infrastructure
-export {
-  createDevelopmentLogger,
-  createProductionLogger,
-  createTestLogger,
-  PinoLoggerAdapter,
-  type PinoLoggerConfig,
-} from './pino-logger.ts'
-
 // AsyncLocalStorage Infrastructure
 export {
   createNodeAsyncLocalStorage,
   NodeAsyncLocalStorage,
 } from './services/node-async-local-storage.ts'
+// Synchronous Logger Infrastructure
+export {
+  createDevelopmentSyncLogger as createDevelopmentLogger,
+  createProductionSyncLogger as createProductionLogger,
+  createTestSyncLogger as createTestLogger,
+  SyncLoggerAdapter,
+  type SyncLoggerConfig,
+} from './sync-logger-adapter.ts'

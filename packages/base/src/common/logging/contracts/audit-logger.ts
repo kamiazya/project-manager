@@ -16,7 +16,7 @@ export interface AuditLogger {
    *
    * @param event - Create operation event with null before state and complete after state
    */
-  recordCreate(event: CreateOperationEvent): Promise<void>
+  recordCreate(event: CreateOperationEvent): void
 
   /**
    * Record an UPDATE operation in the audit trail.
@@ -24,7 +24,7 @@ export interface AuditLogger {
    *
    * @param event - Update operation event with before/after state and field-level changes
    */
-  recordUpdate(event: UpdateOperationEvent): Promise<void>
+  recordUpdate(event: UpdateOperationEvent): void
 
   /**
    * Record a DELETE operation in the audit trail.
@@ -32,7 +32,7 @@ export interface AuditLogger {
    *
    * @param event - Delete operation event with complete before state and null after state
    */
-  recordDelete(event: DeleteOperationEvent): Promise<void>
+  recordDelete(event: DeleteOperationEvent): void
 
   /**
    * Query audit events by filter criteria.

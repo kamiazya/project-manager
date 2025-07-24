@@ -2,9 +2,8 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import type { DevelopmentProcessService, IdGenerator } from '@project-manager/application'
+import type { DevelopmentProcessService } from '@project-manager/application'
 import type { EnvironmentMode } from '@project-manager/base'
-import { getStorageDir } from '@project-manager/base'
 
 const ENV_VARS = {
   XDG_CONFIG_HOME: 'XDG_CONFIG_HOME',

@@ -7,7 +7,7 @@ import { JsonTicketRepository } from './json-ticket-repository.ts'
 
 interface FileSystemOperations {
   readFile: (path: string) => Promise<string>
-  writeFile: (path: string, data: string) => Promise<void>
+  writeFile: (path: string, data: string) => void
 }
 
 describe('JsonTicketRepository', () => {
