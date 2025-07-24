@@ -40,9 +40,7 @@
     "@project-manager/application": "workspace:*",
     "@project-manager/base": "workspace:*",
     "@project-manager/domain": "workspace:*",
-    "env-paths": "^3.0.0",
-    "pino": "^8.21.0",
-    "sonic-boom": "^4.2.0"
+    "env-paths": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",
