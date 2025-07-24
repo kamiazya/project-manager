@@ -351,27 +351,19 @@ describe('LoggerFactory SDK Integration', () => {
       expect(mockAuditLogger.initialize).toHaveBeenCalled()
     })
 
-    it('should gracefully shutdown all loggers', async () => {
-      const mockLogger = {
-        close: vi.fn().mockResolvedValue(undefined),
-      }
-
-      const mockAuditLogger = {
-        close: vi.fn().mockResolvedValue(undefined),
-      }
-
+    it('should gracefully shutdown logger factory', () => {
+      // For synchronous loggers, shutdown is just cache clearing
       const mockFactory = {
-        applicationLogger: mockLogger,
-        auditLogger: mockAuditLogger,
-        shutdown: vi.fn(async () => {
-          await Promise.all([mockLogger.close(), mockAuditLogger.close()])
+        shutdown: vi.fn(() => {
+          // Synchronous shutdown - no cleanup needed for sync loggers
         }),
+        clearCache: vi.fn(),
+        isShuttingDown: false,
       }
 
-      await mockFactory.shutdown()
+      mockFactory.shutdown()
 
-      expect(mockLogger.close).toHaveBeenCalled()
-      expect(mockAuditLogger.close).toHaveBeenCalled()
+      expect(mockFactory.shutdown).toHaveBeenCalled()
     })
 
     it('should handle logger health checks', () => {

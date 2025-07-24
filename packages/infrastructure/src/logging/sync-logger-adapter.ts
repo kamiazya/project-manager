@@ -5,8 +5,8 @@
  * Uses fs.writeFileSync and console.log for immediate, blocking I/O operations.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { existsSync, mkdirSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { basename, dirname, extname, resolve } from 'node:path'
 import { LoggingError } from '@project-manager/application'
 import type {
   LogConfig,
@@ -17,24 +17,43 @@ import type {
 } from '@project-manager/base/common/logging'
 
 /**
- * Transport configuration for synchronous logger.
+ * Log rotation configuration for file transport.
  */
-export interface SyncTransportConfig {
-  type: 'console' | 'file' | 'memory'
+export interface SyncRotationConfig {
+  /** Enable log rotation (default: true for file transport) */
+  enabled?: boolean
+
+  /** Maximum file size before rotation in bytes (default: 10MB) */
+  maxSize?: number
+
+  /** Maximum number of rotated files to keep (default: 5) */
+  maxFiles?: number
+
+  /** Pattern for rotated file names (default: logs rotation) */
+  pattern?: string
 }
+
+/**
+ * Default rotation configuration for file transport.
+ */
+export const DEFAULT_ROTATION_CONFIG: Required<Omit<SyncRotationConfig, 'pattern'>> = {
+  enabled: true,
+  maxSize: 10 * 1024 * 1024, // 10MB
+  maxFiles: 5,
+} as const
 
 /**
  * Sync-specific configuration options.
  */
 export interface SyncLoggerConfig extends LogConfig {
-  /** Transport configuration */
-  transport: SyncTransportConfig
-
   /** Enable colorized console output */
   colorize?: boolean
 
   /** Custom timestamp format */
   timestampFormat?: 'iso' | 'locale' | 'epoch'
+
+  /** Log rotation configuration (only for file transport) */
+  rotation?: SyncRotationConfig
 }
 
 /**
@@ -86,16 +105,28 @@ export class SyncLoggerAdapter implements Logger {
   private childContext?: LogContext
 
   constructor(config: SyncLoggerConfig, childContext?: LogContext) {
-    this.config = config
+    // Apply default rotation config for file transport
+    if (config.transportType === 'file') {
+      this.config = {
+        ...config,
+        rotation: {
+          ...DEFAULT_ROTATION_CONFIG,
+          ...config.rotation, // User overrides take precedence
+        },
+      }
+    } else {
+      this.config = config
+    }
+
     this.childContext = childContext
 
     // Initialize memory buffer if using memory transport
-    if (config.transport.type === 'memory') {
+    if (config.transportType === 'memory') {
       this.memoryBuffer = new SyncMemoryBuffer()
     }
 
     // Ensure log directory exists for file transport
-    if (config.transport.type === 'file') {
+    if (config.transportType === 'file') {
       this.ensureDirectoryExists()
     }
   }
@@ -204,7 +235,7 @@ export class SyncLoggerAdapter implements Logger {
       return
     }
 
-    switch (this.config.transport.type) {
+    switch (this.config.transportType) {
       case 'console':
         this.writeToConsole(level, entry)
         break
@@ -251,7 +282,7 @@ export class SyncLoggerAdapter implements Logger {
   }
 
   /**
-   * Write to file (synchronous).
+   * Write to file (synchronous) with rotation support.
    */
   private writeToFile(entry: string): void {
     if (!this.config.logFile) {
@@ -260,11 +291,84 @@ export class SyncLoggerAdapter implements Logger {
 
     try {
       const filePath = resolve(this.config.logFile)
+
+      // Ensure directory exists
+      const dir = dirname(filePath)
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true })
+      }
+
+      // Check if rotation is needed before writing
+      if (this.config.rotation?.enabled) {
+        this.checkAndRotateFile(filePath)
+      }
+
       writeFileSync(filePath, `${entry}\n`, { flag: 'a', encoding: 'utf8' })
     } catch (error: any) {
       // Fallback to console on file write error
       console.error(`[LOGGER] Failed to write to file: ${error.message}`)
       console.error(`[LOGGER] ${entry}`)
+    }
+  }
+
+  /**
+   * Check if file needs rotation and perform it synchronously.
+   */
+  private checkAndRotateFile(filePath: string): void {
+    if (!this.config.rotation?.enabled) {
+      return
+    }
+
+    try {
+      // Check if file exists and its size
+      if (!existsSync(filePath)) {
+        return
+      }
+
+      const stats = statSync(filePath)
+      const maxSize = this.config.rotation?.maxSize || DEFAULT_ROTATION_CONFIG.maxSize
+
+      if (stats.size >= maxSize) {
+        this.rotateFile(filePath)
+      }
+    } catch (error: any) {
+      // Log rotation error but don't stop logging
+      console.error(`[LOGGER] Rotation check failed: ${error.message}`)
+    }
+  }
+
+  /**
+   * Rotate log file synchronously.
+   */
+  private rotateFile(filePath: string): void {
+    const maxFiles = this.config.rotation?.maxFiles || DEFAULT_ROTATION_CONFIG.maxFiles
+    const ext = extname(filePath)
+    const baseName = basename(filePath, ext)
+    const dir = dirname(filePath)
+
+    try {
+      // Rotate existing numbered files (move .3 to .4, .2 to .3, etc.)
+      for (let i = maxFiles - 1; i > 0; i--) {
+        const currentFile = resolve(dir, `${baseName}.${i}${ext}`)
+        const nextFile = resolve(dir, `${baseName}.${i + 1}${ext}`)
+
+        if (existsSync(currentFile)) {
+          if (i === maxFiles - 1) {
+            // Delete the oldest file
+            unlinkSync(currentFile)
+          } else {
+            renameSync(currentFile, nextFile)
+          }
+        }
+      }
+
+      // Move current log file to .1
+      const rotatedFile = resolve(dir, `${baseName}.1${ext}`)
+      if (existsSync(filePath)) {
+        renameSync(filePath, rotatedFile)
+      }
+    } catch (error: any) {
+      console.error(`[LOGGER] File rotation failed: ${error.message}`)
     }
   }
 
@@ -358,7 +462,6 @@ export function createDevelopmentSyncLogger(overrides?: Partial<SyncLoggerConfig
     level: 'debug',
     environment: 'development',
     transportType: 'console',
-    transport: { type: 'console' },
     colorize: true,
     timestampFormat: 'locale',
     ...overrides,
@@ -379,9 +482,9 @@ export function createProductionSyncLogger(
     environment: 'production',
     transportType: 'file',
     logFile: logPath,
-    transport: { type: 'file' },
     colorize: false,
     timestampFormat: 'iso',
+    // rotation will be applied automatically with defaults by constructor
     ...overrides,
   }
 
@@ -396,7 +499,6 @@ export function createTestSyncLogger(overrides?: Partial<SyncLoggerConfig>): Log
     level: 'error',
     environment: 'testing',
     transportType: 'memory',
-    transport: { type: 'memory' },
     colorize: false,
     timestampFormat: 'iso',
     ...overrides,

@@ -251,7 +251,7 @@ export class LoggerFactory {
   /**
    * Initialize the logger factory and all loggers.
    */
-  async initialize(): void {
+  async initialize(): Promise<void> {
     if (this.isInitialized) return
 
     try {
@@ -297,7 +297,6 @@ export class LoggerFactory {
         level: logLevel,
         environment: this.config.environment!,
         transportType: appConfig.transport!,
-        transport: { type: appConfig.transport! },
         logFile: actualLogPath,
         colorize: this.config.environment === 'development',
         timestampFormat: this.config.environment === 'production' ? 'iso' : 'locale',
@@ -457,15 +456,15 @@ export class LoggerFactory {
    */
   private createNullAuditLogger(): AuditLogger {
     const nullAuditLogger: AuditLogger = {
-      async recordCreate(): void {
+      async recordCreate(): Promise<void> {
         // No-op
       },
 
-      async recordUpdate(): void {
+      async recordUpdate(): Promise<void> {
         // No-op
       },
 
-      async recordDelete(): void {
+      async recordDelete(): Promise<void> {
         // No-op
       },
 
@@ -632,36 +631,16 @@ export class LoggerFactory {
   }
 
   /**
-   * Shutdown all loggers and clean up resources.
+   * Shutdown logger factory and clear cache.
+   * For synchronous loggers, no cleanup is needed as all writes are immediate.
    */
-  async shutdown(): void {
+  shutdown(): void {
     if (this.isShuttingDown) return
 
     this.isShuttingDown = true
 
     try {
-      // Close loggers
-      const closePromises: undefined[] = []
-
-      if (this.applicationLogger.isInitialized()) {
-        const appLogger = this.applicationLogger.instance as any
-        if (typeof appLogger.destroy === 'function') {
-          closePromises.push(appLogger.destroy())
-        } else if (typeof appLogger.close === 'function') {
-          closePromises.push(appLogger.close())
-        }
-      }
-
-      if (this.auditLogger.isInitialized()) {
-        const audLogger = this.auditLogger.instance as any
-        if (typeof audLogger.close === 'function') {
-          closePromises.push(audLogger.close())
-        }
-      }
-
-      await Promise.all(closePromises)
-
-      // Clear cache and listeners
+      // Clear cache and listeners - no logger cleanup needed for sync loggers
       this.clearCache()
       this.eventEmitter.removeAllListeners()
 
@@ -782,9 +761,9 @@ export const LoggerFactoryDI = {
    * Create shutdown function for DI containers.
    */
   createShutdown() {
-    return async (container: any) => {
+    return (container: any) => {
       const factory: LoggerFactory = container.resolve('LoggerFactory')
-      await factory.shutdown()
+      factory.shutdown()
     }
   },
 }
