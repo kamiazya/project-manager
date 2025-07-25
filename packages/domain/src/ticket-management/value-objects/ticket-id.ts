@@ -5,17 +5,22 @@ interface TicketIdProps {
   value: string
 }
 
-const INVALID_ID_FORMAT = 'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+const INVALID_ID_FORMAT = 'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
 
 /**
- * Validate ID format (8 hex characters)
+ * Validate ULID format (26 Base32 characters)
+ * ULID uses Crockford Base32: 0123456789ABCDEFGHJKMNPQRSTVWXYZ
+ * Excludes: I, L, O, U to avoid ambiguity
  */
 function isValidId(id: string): boolean {
-  return /^[0-9a-f]{8}$/.test(id)
+  return /^[0-9A-HJKMNP-TV-Z]{26}$/.test(id)
 }
 
 /**
  * Value object representing a Ticket ID
+ *
+ * Uses ULID (Universally Unique Lexicographically Sortable Identifier) format
+ * for distributed systems compatibility and database performance.
  *
  * This is a pure value object that only handles validation and encapsulation.
  * ID generation is delegated to the infrastructure layer via IdGenerator service
@@ -32,11 +37,11 @@ export class TicketId extends ValueObject<TicketIdProps> {
 
   /**
    * Create a TicketId from an existing ID value
-   * @param id - ID value that must meet validation rules
-   * @throws {ValidationError} If the provided ID doesn't meet validation rules
+   * @param id - ULID string that must meet validation rules
+   * @throws {ValidationError} If the provided ID doesn't meet ULID format requirements
    */
   public static create(id: string): TicketId {
-    // Check if the ID matches the expected format (8 hex characters)
+    // Check if the ID matches the expected ULID format (26 Base32 characters)
     if (!isValidId(id)) {
       throw new ValidationError(INVALID_ID_FORMAT, 'ticketId', id)
     }
