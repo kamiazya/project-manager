@@ -25,10 +25,11 @@ async function runTests() {
 
     // Should not contain execSync import or usage
     assert(!content.includes('execSync'), 'Should not use execSync')
-    assert(
-      !content.includes("from 'node:child_process'") || content.includes('spawn'),
-      'Should import spawn'
-    )
+
+    // If importing from node:child_process, must include spawn
+    if (content.includes("from 'node:child_process'")) {
+      assert(content.includes('spawn'), 'Should import spawn when using node:child_process')
+    }
 
     // Should use spawn with array arguments
     assert(
