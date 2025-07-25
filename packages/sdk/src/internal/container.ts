@@ -30,13 +30,14 @@ import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
 import {
   AsyncLocalStorageContextService,
   CrossPlatformStorageConfigService,
-  CryptoIdGenerator,
+  DuckDbTicketRepository,
   FileAuditReader,
   FileLogReader,
   InMemoryTicketRepository,
   JsonTicketRepository,
   NodeAsyncLocalStorage,
   NodeEnvironmentDetectionService,
+  UlidIdGenerator,
   XdgDevelopmentProcessService,
 } from '@project-manager/infrastructure'
 import { Container } from 'inversify'
@@ -67,20 +68,20 @@ export function createContainer(config: SDKConfig): Container {
 
       // Create cross-platform service with environment context
       const service = new CrossPlatformStorageConfigService()
-      // Override getDefaultStoragePath to use environment-specific directory
+      // Override getDefaultStoragePath to use DuckDB file
       service.getDefaultStoragePath = () => {
         const storageDir = service.getDefaultStorageDir()
-        return `${storageDir}/tickets.json`
+        return `${storageDir}/tickets.duckdb`
       }
 
       return service
     })
     .inSingletonScope()
 
-  // ID Generator Service - binds cryptographic implementation
+  // ID Generator Service - binds ULID implementation
   container
     .bind<IdGenerator>(TYPES.IdGenerator)
-    .toDynamicValue(() => new CryptoIdGenerator())
+    .toDynamicValue(() => new UlidIdGenerator())
     .inSingletonScope()
 
   // Repository binding - environment-based selection
@@ -100,7 +101,7 @@ export function createContainer(config: SDKConfig): Container {
         const storageService = container.get<StorageConfigService>(TYPES.StorageConfigService)
         const storagePath = storageService.resolveStoragePath()
         const logger = container.get<Logger>(TYPES.BaseLogger)
-        return new JsonTicketRepository(storagePath, logger)
+        return new DuckDbTicketRepository(storagePath, logger)
       }
     })
     .inSingletonScope()

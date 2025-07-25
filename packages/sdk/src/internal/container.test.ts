@@ -102,10 +102,10 @@ vi.mock('@project-manager/infrastructure', () => ({
     .mockImplementation(function MockXdgDevelopmentProcessService() {
       return { constructor: { name: 'XdgDevelopmentProcessService' } }
     }),
-  CryptoIdGenerator: vi.fn().mockImplementation(function MockCryptoIdGenerator() {
+  UlidIdGenerator: vi.fn().mockImplementation(function MockUlidIdGenerator() {
     return {
-      constructor: { name: 'CryptoIdGenerator' },
-      generateId: vi.fn(() => 'a1b2c3d4'),
+      constructor: { name: 'UlidIdGenerator' },
+      generateId: vi.fn(() => '01ARZ3NDEKTSV4RRFFQ69G5FAV'),
     }
   }),
   AsyncLocalStorageContextService: vi
