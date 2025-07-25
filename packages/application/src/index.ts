@@ -14,6 +14,7 @@ export * from './common/base-usecase.ts'
 export {
   ApplicationError,
   ConfigurationError,
+  IdGenerationError,
   InfrastructureError,
   LoggingError,
   PersistenceError,

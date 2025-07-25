@@ -170,3 +170,13 @@ export class LoggingError extends InfrastructureError {
     super('Logging', operation, message, context, cause)
   }
 }
+
+/**
+ * Application layer error for ID generation failures.
+ * Used when the infrastructure ID generation service fails to create unique identifiers.
+ */
+export class IdGenerationError extends InfrastructureError {
+  constructor(message: string, context?: Record<string, unknown>, cause?: Error) {
+    super('IdGeneration', 'generate', message, context, cause)
+  }
+}
