@@ -147,11 +147,28 @@ export abstract class BaseCommand<
     // Flags to track shutdown state and prevent concurrent cleanup
     let hasExited = false
     let cleanupTimeout: NodeJS.Timeout | null = null
+    let cleanupInProgress = false
 
-    const performGracefulShutdown = async (signal: NodeJS.Signals) => {
+    const performAsyncCleanup = async (): Promise<void> => {
+      try {
+        // Perform async cleanup with proper error handling
+        if (BaseCommand.cachedSDK && typeof BaseCommand.cachedSDK.shutdown === 'function') {
+          await BaseCommand.cachedSDK.shutdown()
+        }
+      } catch (error) {
+        // Cleanup failed, but continue
+      } finally {
+        // Clear SDK references regardless of cleanup success/failure
+        BaseCommand.cachedSDK = null
+        BaseCommand.lastConfigHash = null
+      }
+    }
+
+    const gracefulShutdown = (signal: NodeJS.Signals) => {
       // Prevent concurrent cleanup calls
-      if (isShuttingDown || hasExited) return
+      if (isShuttingDown || hasExited || cleanupInProgress) return
       isShuttingDown = true
+      cleanupInProgress = true
 
       // Set a maximum cleanup time to prevent hanging
       cleanupTimeout = setTimeout(() => {
@@ -161,25 +178,20 @@ export abstract class BaseCommand<
         }
       }, 3000) // 3-second timeout for graceful shutdown
 
-      try {
-        // Perform async cleanup with proper error handling
-        if (BaseCommand.cachedSDK && typeof BaseCommand.cachedSDK.shutdown === 'function') {
-          await BaseCommand.cachedSDK.shutdown()
+      // Use setImmediate to ensure cleanup runs on next tick
+      setImmediate(async () => {
+        try {
+          await performAsyncCleanup()
+        } finally {
+          cleanupInProgress = false
+          // Ensure we exit only once
+          if (!hasExited) {
+            hasExited = true
+            if (cleanupTimeout) clearTimeout(cleanupTimeout)
+            process.exit(0)
+          }
         }
-      } catch (error) {
-        // Cleanup failed, but continue with exit process
-      } finally {
-        // Clear SDK references regardless of cleanup success/failure
-        BaseCommand.cachedSDK = null
-        BaseCommand.lastConfigHash = null
-
-        // Ensure we exit only once
-        if (!hasExited) {
-          hasExited = true
-          if (cleanupTimeout) clearTimeout(cleanupTimeout)
-          process.exit(0)
-        }
-      }
+      })
     }
 
     // Handle various exit scenarios
@@ -195,13 +207,13 @@ export abstract class BaseCommand<
       }
     })
 
-    // Graceful shutdown signals - ensure cleanup completes before exit
-    process.on('SIGINT', async () => {
-      await performGracefulShutdown('SIGINT')
+    // Graceful shutdown signals - synchronous handlers that manage async cleanup
+    process.on('SIGINT', () => {
+      gracefulShutdown('SIGINT')
     })
 
-    process.on('SIGTERM', async () => {
-      await performGracefulShutdown('SIGTERM')
+    process.on('SIGTERM', () => {
+      gracefulShutdown('SIGTERM')
     })
 
     // CRITICAL: These handlers must be synchronous per Node.js documentation
