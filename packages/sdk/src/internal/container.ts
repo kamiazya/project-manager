@@ -30,7 +30,6 @@ import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
 import {
   AsyncLocalStorageContextService,
   CrossPlatformStorageConfigService,
-  DuckDbTicketRepository,
   FileAuditReader,
   FileLogReader,
   InMemoryTicketRepository,
@@ -67,14 +66,7 @@ export function createContainer(config: SDKConfig): Container {
       const _environment = envService.resolveEnvironment(config.environment)
 
       // Create cross-platform service with environment context
-      const service = new CrossPlatformStorageConfigService()
-      // Override getDefaultStoragePath to use DuckDB file
-      service.getDefaultStoragePath = () => {
-        const storageDir = service.getDefaultStorageDir()
-        return `${storageDir}/tickets.duckdb`
-      }
-
-      return service
+      return new CrossPlatformStorageConfigService()
     })
     .inSingletonScope()
 
@@ -101,7 +93,7 @@ export function createContainer(config: SDKConfig): Container {
         const storageService = container.get<StorageConfigService>(TYPES.StorageConfigService)
         const storagePath = storageService.resolveStoragePath()
         const logger = container.get<Logger>(TYPES.BaseLogger)
-        return new DuckDbTicketRepository(storagePath, logger)
+        return new JsonTicketRepository(storagePath, logger)
       }
     })
     .inSingletonScope()

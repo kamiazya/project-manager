@@ -25,7 +25,6 @@ export type {
 export * from './common/events/node-event-emitter-adapter.ts'
 // Event system infrastructure
 export * from './common/events/simple-event-emitter.ts'
-export * from './infrastructure/adapters/duckdb-ticket-repository.ts'
 export * from './infrastructure/adapters/in-memory-ticket-repository.ts'
 // Infrastructure implementations
 export * from './infrastructure/adapters/json-ticket-repository.ts'

@@ -7,7 +7,6 @@ import type {
 // LoggingContextService is now managed through dependency injection
 import {
   CrossPlatformStorageConfigService,
-  DuckDbTicketRepository,
   InMemoryTicketRepository,
   JsonTicketRepository,
   NodeEnvironmentDetectionService,
@@ -77,9 +76,6 @@ vi.mock('@project-manager/infrastructure', () => ({
   JsonTicketRepository: vi.fn().mockImplementation(function MockJsonTicketRepository() {
     return { constructor: { name: 'JsonTicketRepository' } }
   }),
-  DuckDbTicketRepository: vi.fn().mockImplementation(function MockDuckDbTicketRepository() {
-    return { constructor: { name: 'DuckDbTicketRepository' } }
-  }),
   NodeEnvironmentDetectionService: vi
     .fn()
     .mockImplementation(function MockNodeEnvironmentDetectionService() {
@@ -93,9 +89,9 @@ vi.mock('@project-manager/infrastructure', () => ({
     .mockImplementation(function MockCrossPlatformStorageConfigService() {
       return {
         constructor: { name: 'CrossPlatformStorageConfigService' },
-        getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.duckdb'),
+        getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.json'),
         getDefaultStorageDir: vi.fn(() => '/default/storage'),
-        resolveStoragePath: vi.fn(() => '/resolved/path/tickets.duckdb'),
+        resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
         getLogsPath: vi.fn(() => '/default/logs'),
         getApplicationLogPath: vi.fn(() => '/default/logs/app.log'),
         getAuditLogPath: vi.fn(() => '/default/logs/audit.log'),
@@ -283,7 +279,7 @@ describe('createContainer', () => {
       const service = container.get<StorageConfigService>(TYPES.StorageConfigService)
       const path = service.getDefaultStoragePath()
 
-      expect(path).toContain('tickets.duckdb')
+      expect(path).toContain('tickets.json')
     })
   })
 
@@ -304,35 +300,35 @@ describe('createContainer', () => {
       expect(InMemoryTicketRepository).toHaveBeenCalled()
     })
 
-    it('should bind DuckDbTicketRepository for production environment', () => {
+    it('should bind JsonTicketRepository for production environment', () => {
       const container = createContainer({ environment: 'production' })
 
       container.get<TicketRepository>(TYPES.TicketRepository)
 
-      expect(DuckDbTicketRepository).toHaveBeenCalledWith(
-        '/resolved/path/tickets.duckdb',
+      expect(JsonTicketRepository).toHaveBeenCalledWith(
+        '/resolved/path/tickets.json',
         expect.any(Object)
       )
     })
 
-    it('should bind DuckDbTicketRepository for development environment', () => {
+    it('should bind JsonTicketRepository for development environment', () => {
       const container = createContainer({ environment: 'development' })
 
       container.get<TicketRepository>(TYPES.TicketRepository)
 
-      expect(DuckDbTicketRepository).toHaveBeenCalledWith(
-        '/resolved/path/tickets.duckdb',
+      expect(JsonTicketRepository).toHaveBeenCalledWith(
+        '/resolved/path/tickets.json',
         expect.any(Object)
       )
     })
 
-    it('should bind DuckDbTicketRepository for isolated environment', () => {
+    it('should bind JsonTicketRepository for isolated environment', () => {
       const container = createContainer({ environment: 'isolated' })
 
       container.get<TicketRepository>(TYPES.TicketRepository)
 
-      expect(DuckDbTicketRepository).toHaveBeenCalledWith(
-        '/resolved/path/tickets.duckdb',
+      expect(JsonTicketRepository).toHaveBeenCalledWith(
+        '/resolved/path/tickets.json',
         expect.any(Object)
       )
     })
@@ -447,7 +443,7 @@ describe('createContainer', () => {
       newContainer.get(TYPES.UpdateTicketStatusUseCase)
 
       // Repository should be created only once (singleton)
-      expect(DuckDbTicketRepository).toHaveBeenCalledTimes(1)
+      expect(JsonTicketRepository).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -467,7 +463,7 @@ describe('createContainer', () => {
       // Should resolve to default (production)
       container.get<TicketRepository>(TYPES.TicketRepository)
 
-      expect(DuckDbTicketRepository).toHaveBeenCalled()
+      expect(JsonTicketRepository).toHaveBeenCalled()
     })
 
     it('should handle undefined environment', () => {
@@ -476,7 +472,7 @@ describe('createContainer', () => {
       // Should resolve to default (production)
       container.get<TicketRepository>(TYPES.TicketRepository)
 
-      expect(DuckDbTicketRepository).toHaveBeenCalled()
+      expect(JsonTicketRepository).toHaveBeenCalled()
     })
 
     it('should handle all environment modes', () => {
@@ -492,8 +488,8 @@ describe('createContainer', () => {
             return { constructor: { name: 'InMemoryTicketRepository' } } as any
           }
         )
-        vi.mocked(DuckDbTicketRepository).mockImplementation(function MockDuckDbTicketRepository() {
-          return { constructor: { name: 'DuckDbTicketRepository' } } as any
+        vi.mocked(JsonTicketRepository).mockImplementation(function MockJsonTicketRepository() {
+          return { constructor: { name: 'JsonTicketRepository' } } as any
         })
         vi.mocked(NodeEnvironmentDetectionService).mockImplementation(
           function MockNodeEnvironmentDetectionService() {
@@ -507,9 +503,9 @@ describe('createContainer', () => {
           function MockCrossPlatformStorageConfigService() {
             return {
               constructor: { name: 'CrossPlatformStorageConfigService' },
-              getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.duckdb'),
+              getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.json'),
               getDefaultStorageDir: vi.fn(() => '/default/storage'),
-              resolveStoragePath: vi.fn(() => '/resolved/path/tickets.duckdb'),
+              resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
             } as any
           }
         )
@@ -520,7 +516,7 @@ describe('createContainer', () => {
         if (env === 'testing' || env === 'in-memory') {
           expect(InMemoryTicketRepository).toHaveBeenCalled()
         } else {
-          expect(DuckDbTicketRepository).toHaveBeenCalled()
+          expect(JsonTicketRepository).toHaveBeenCalled()
         }
       }
     })
@@ -575,8 +571,8 @@ describe('createContainer', () => {
           return { constructor: { name: 'InMemoryTicketRepository' } } as any
         }
       )
-      vi.mocked(DuckDbTicketRepository).mockImplementation(function MockDuckDbTicketRepository() {
-        return { constructor: { name: 'DuckDbTicketRepository' } } as any
+      vi.mocked(JsonTicketRepository).mockImplementation(function MockJsonTicketRepository() {
+        return { constructor: { name: 'JsonTicketRepository' } } as any
       })
       vi.mocked(NodeEnvironmentDetectionService).mockImplementation(
         function MockNodeEnvironmentDetectionService() {
@@ -590,9 +586,9 @@ describe('createContainer', () => {
         function MockCrossPlatformStorageConfigService() {
           return {
             constructor: { name: 'CrossPlatformStorageConfigService' },
-            getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.duckdb'),
+            getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.json'),
             getDefaultStorageDir: vi.fn(() => '/default/storage'),
-            resolveStoragePath: vi.fn(() => '/resolved/path/tickets.duckdb'),
+            resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
           } as any
         }
       )
@@ -615,7 +611,7 @@ describe('createContainer', () => {
 
       // Verify file-based repository is used
       container.get<TicketRepository>(TYPES.TicketRepository)
-      expect(DuckDbTicketRepository).toHaveBeenCalled()
+      expect(JsonTicketRepository).toHaveBeenCalled()
 
       // DevelopmentProcessService should be bound for development environment
       expect(container.isBound(TYPES.DevelopmentProcessService)).toBe(true)

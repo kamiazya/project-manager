@@ -108,8 +108,6 @@ export default defineConfig({
         'node:os',
         'node:url',
         'node:child_process',
-        '@duckdb/node-api',
-        /^@duckdb\//,
       ],
       output: {
         banner: chunk => {
