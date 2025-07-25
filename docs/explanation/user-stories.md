@@ -28,7 +28,15 @@
 - Needs context from previous sessions
 - Must understand project state and priorities
 
-### 5. Bug Reporter/System Administrator
+### 5. Multi-Device Developer
+
+- Works across multiple development machines (laptop, desktop, remote servers)
+- Switches between devices frequently during development
+- Needs seamless context preservation across devices
+- Collaborates with AI assistants from different machines
+- Values offline development capability on each device
+
+### 6. Bug Reporter/System Administrator
 
 - Encounters system issues during usage
 - Needs to gather diagnostic information quickly
@@ -405,6 +413,91 @@ sequenceDiagram
   - Re-executes failing operation
   - Captures detailed execution trace
 
+### UC-13: Multi-Device Project Synchronization
+
+**Actor**: Multi-Device Developer
+**Precondition**: Developer has Project Manager installed on multiple devices
+**Postcondition**: Project data synchronized across all devices with consistent state
+
+#### Main Flow
+
+1. Developer creates tickets and makes progress on Device A
+2. Switches to Device B for continued development
+3. Initiates sync operation between devices
+4. System performs device-to-device synchronization:
+   - Identifies changes since last sync using ULID timestamps
+   - Merges new tickets, updates, and status changes
+   - Resolves conflicts using causal ordering from ULID timestamps
+   - Preserves all device-specific preferences and configurations
+5. Developer continues work seamlessly on Device B with full context
+6. All changes propagate back to Device A on next sync
+
+#### Alternative Flows
+
+- 3a. Network unavailable between devices
+  - System queues sync operations for later execution
+  - Developer can continue working offline on Device B
+  - Sync completes automatically when connectivity restored
+- 4a. Conflicting changes detected
+  - System presents conflict resolution options
+  - Developer chooses resolution strategy (merge, take latest, manual)
+  - Conflict resolution preserved for similar future conflicts
+
+### UC-14: Offline Distributed Development
+
+**Actor**: Multi-Device Developer + AI Assistant
+**Precondition**: Multiple devices working offline on the same project
+**Postcondition**: All offline changes successfully merged without data loss
+
+#### Main Flow
+
+1. Developer works offline on Device A, creating tickets T1 and T2
+2. Simultaneously, AI assistant on Device B creates tickets T3 and T4 offline
+3. Both devices come back online and initiate synchronization
+4. System uses ULID causal ordering to merge changes:
+   - Establishes temporal sequence: T1 → T2 → T3 → T4
+   - No conflicts as each ticket has unique ULID
+   - Project state reflects all changes in causally correct order
+5. Both devices now have complete, consistent project state
+6. Developer and AI can continue collaborative work
+
+#### Alternative Flows
+
+- 4a. Same ticket modified on both devices
+  - System detects concurrent modifications using ULID timestamps
+  - Applies conflict resolution strategy (last-write-wins with causal ordering)
+  - Creates audit trail of conflict resolution decisions
+
+### UC-15: Cross-Device AI Context Sharing
+
+**Actor**: Multi-Device Developer + AI Assistant
+**Precondition**: Developer uses AI assistants across multiple devices
+**Postcondition**: AI maintains consistent context regardless of device
+
+#### Main Flow
+
+1. Developer starts AI-assisted development session on Device A
+2. AI creates implementation plan and begins work on tickets
+3. Developer switches to Device B and starts new AI session
+4. AI loads synchronized project context from Device A:
+   - Previous implementation decisions and rationale
+   - Current ticket states and progress
+   - AI conversation history and context
+   - Pending decisions and open questions
+5. AI continues seamlessly with full context on Device B
+6. All AI actions and decisions sync back to Device A
+
+#### Alternative Flows
+
+- 4a. Partial sync available
+  - AI works with available context
+  - Requests missing information from developer
+  - Updates context as more data becomes available
+- 2a. AI context becomes too large
+  - System compresses historical context
+  - Preserves critical decisions and current state
+  - Maintains performance while preserving essential information
+
 ## Acceptance Criteria
 
 ### For Developers
@@ -435,6 +528,14 @@ sequenceDiagram
 - Clear task boundaries
 - Validation capabilities
 
+### For Multi-Device Developers
+
+- Seamless context switching between devices
+- Conflict-free synchronization in < 30 seconds
+- Offline development with full functionality
+- No data loss during device transitions
+- AI context preserved across devices
+
 ### For Bug Reporters and System Administrators
 
 - Can generate diagnostic logs in < 30 seconds
@@ -457,6 +558,10 @@ sequenceDiagram
 - **Quality**: 80% first-pass implementation success
 - **Adoption**: Used in 90% of AI-assisted tasks
 - **Reliability**: 99.9% data integrity maintained
+- **Multi-Device Efficiency**: 70% reduction in device transition overhead
+- **Synchronization Reliability**: 99.99% conflict-free merge rate
+- **Offline Capability**: 100% functionality available without network
+- **Cross-Device AI Context**: 90% context preservation across devices
 - **Debugging Effectiveness**: 70% reduction in time to identify bugs with log context
 - **Audit Compliance**: 100% operation traceability for compliance requirements
 - **Performance Monitoring**: < 5% system overhead from logging operations
