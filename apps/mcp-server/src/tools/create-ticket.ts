@@ -1,4 +1,3 @@
-import { createTicketPriority, createTicketStatus, createTicketType } from '@project-manager/domain'
 import type { ProjectManagerSDK } from '@project-manager/sdk'
 import { z } from 'zod'
 import { BaseTool } from '../lib/base-tool.ts'
@@ -24,9 +23,9 @@ class CreateTicketTool extends BaseTool<typeof createTicketSchema> {
     const ticket = await sdk.tickets.create({
       title: input.title,
       description: input.description || '',
-      priority: createTicketPriority(input.priority),
-      type: createTicketType(input.type),
-      status: createTicketStatus('pending'), // Default status for new tickets
+      priority: input.priority,
+      type: input.type,
+      status: 'pending', // Default status for new tickets
     })
 
     return {

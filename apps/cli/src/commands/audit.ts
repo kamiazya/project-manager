@@ -1,6 +1,5 @@
 import { Flags } from '@oclif/core'
-import type { GetAuditLogs } from '@project-manager/application'
-import type { AuditLogsResponse } from '@project-manager/sdk'
+import type { AuditLogsResponse, GetAuditLogsRequest } from '@project-manager/sdk'
 import chalk from 'chalk'
 import { BaseCommand } from '../lib/base-command.ts'
 
@@ -93,7 +92,7 @@ export class AuditCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, AuditLo
   }
 
   async execute(_args: ExecuteArgs, flags: ExecuteFlags): Promise<AuditLogsResponse> {
-    const request: GetAuditLogs.Request = {
+    const request: GetAuditLogsRequest = {
       operation: flags.operation as 'create' | 'read' | 'update' | 'delete' | 'search' | undefined,
       operationId: flags['operation-id'],
       resourceType: flags['resource-type'],

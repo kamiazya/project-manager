@@ -284,6 +284,15 @@ export abstract class BaseCommand<
   protected abstract execute(args: TArgs, flags: TFlags): Promise<TResult | undefined>
 
   /**
+   * Outputs JSON data to stdout in a consistent format.
+   * Override this method to customize JSON output formatting.
+   * @param data The data to output as JSON
+   */
+  protected logJson(data: TResult): void {
+    this.log(JSON.stringify(data, null, 2))
+  }
+
+  /**
    * Type-safe error handler that provides user-friendly error messages.
    * Uses instanceof checks for robust error type detection with hierarchical error structure.
    * Override this method to customize error handling.

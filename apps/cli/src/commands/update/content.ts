@@ -42,6 +42,18 @@ export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
   ]
 
   async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
+    // Validate required ticket ID
+    if (!args.ticketId || args.ticketId.trim() === '') {
+      this.error('Ticket ID is required')
+      return
+    }
+
+    // Validate that at least one update field is provided
+    if (!flags.title && !flags.description) {
+      this.error('At least one of title or description must be provided')
+      return
+    }
+
     // Execute the update operation using SDK
     const updatedTicket = await this.sdk.tickets.updateContent({
       id: args.ticketId,

@@ -1,4 +1,3 @@
-import { createTicketStatus } from '@project-manager/domain'
 import type { ProjectManagerSDK } from '@project-manager/sdk'
 import { z } from 'zod'
 import { BaseTool } from '../lib/base-tool.ts'
@@ -15,7 +14,7 @@ class UpdateTicketStatusTool extends BaseTool<typeof updateTicketStatusSchema> {
   readonly inputSchema = updateTicketStatusSchema.shape
 
   protected async execute(input: z.infer<typeof updateTicketStatusSchema>, sdk: ProjectManagerSDK) {
-    const ticket = await sdk.tickets.updateStatus(input.id, createTicketStatus(input.status))
+    const ticket = await sdk.tickets.updateStatus(input.id, input.status)
 
     return {
       ticket: {

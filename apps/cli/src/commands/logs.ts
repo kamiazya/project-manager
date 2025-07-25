@@ -1,6 +1,5 @@
 import { Flags } from '@oclif/core'
-import type { GetLogs } from '@project-manager/application'
-import type { LogsResponse } from '@project-manager/sdk'
+import type { GetLogsRequest, LogsResponse } from '@project-manager/sdk'
 import chalk from 'chalk'
 import { BaseCommand } from '../lib/base-command.ts'
 
@@ -71,7 +70,7 @@ export class LogsCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, LogsResp
   }
 
   async execute(_args: ExecuteArgs, flags: ExecuteFlags): Promise<LogsResponse> {
-    const request: GetLogs.Request = {
+    const request: GetLogsRequest = {
       level: flags.level as 'debug' | 'info' | 'warn' | 'error' | undefined,
       component: flags.component,
       operation: flags.operation,
