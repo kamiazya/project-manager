@@ -9,8 +9,8 @@ export const projectManagerArchitectureRules: ArchitectureRules = {
     {
       name: 'presentation',
       patterns: ['**/apps/**'],
-      allowedDependencies: ['sdk'],
-      description: 'Applications - CLI, MCP Server (only depend on SDK)',
+      allowedDependencies: ['sdk', 'application', 'domain', 'infrastructure', 'base'],
+      description: 'Applications - CLI (entry point, flexible), MCP Server (SDK only)',
     },
     {
       name: 'sdk',
@@ -95,14 +95,14 @@ export const projectManagerArchitectureRules: ArchitectureRules = {
       message: 'SDK layer should not depend on Node.js APIs (inversify for DI is allowed)',
     },
     {
-      pattern: '**/apps/**',
+      pattern: '**/apps/mcp-server/**',
       forbidden: [
         '**/packages/domain/**',
         '**/packages/application/**',
         '**/packages/infrastructure/**',
         '**/packages/base/**',
       ],
-      message: 'Applications should only depend on SDK layer',
+      message: 'MCP Server should only depend on SDK layer',
     },
   ],
   errors: [

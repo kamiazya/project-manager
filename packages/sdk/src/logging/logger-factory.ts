@@ -632,22 +632,38 @@ export class LoggerFactory {
 
   /**
    * Shutdown logger factory and clear cache.
-   * For synchronous loggers, no cleanup is needed as all writes are immediate.
+   * Properly close async resources like audit loggers.
    */
-  shutdown(): void {
+  async shutdown(): Promise<void> {
     if (this.isShuttingDown) return
 
     this.isShuttingDown = true
 
     try {
-      // Clear cache and listeners - no logger cleanup needed for sync loggers
+      // Close audit logger if it has async resources
+      if (this.auditLogger.isInitialized()) {
+        const audLogger = this.auditLogger.instance
+        if (typeof (audLogger as any).close === 'function') {
+          await (audLogger as any).close()
+        }
+      }
+
+      // Close application logger if it has async resources
+      if (this.applicationLogger.isInitialized()) {
+        const appLogger = this.applicationLogger.instance
+        if (typeof (appLogger as any).close === 'function') {
+          await (appLogger as any).close()
+        }
+      }
+
+      // Clear cache and listeners
       this.clearCache()
       this.eventEmitter.removeAllListeners()
 
       this.eventEmitter.emit('shutdown')
     } catch (error) {
       this.eventEmitter.emit('error', { message: 'Error during shutdown', error })
-      throw error
+      // Don't re-throw to prevent hanging
     }
   }
 }
@@ -672,6 +688,16 @@ export function getGlobalLoggerFactory(config?: LoggerFactoryConfig): LoggerFact
  */
 export function createLoggerFactory(config: LoggerFactoryConfig = {}): LoggerFactory {
   return new LoggerFactory(config)
+}
+
+/**
+ * Shutdown and reset the global logger factory instance.
+ */
+export async function shutdownGlobalLoggerFactory(): Promise<void> {
+  if (globalLoggerFactory) {
+    await globalLoggerFactory.shutdown()
+    globalLoggerFactory = null
+  }
 }
 
 /**
@@ -761,9 +787,9 @@ export const LoggerFactoryDI = {
    * Create shutdown function for DI containers.
    */
   createShutdown() {
-    return (container: any) => {
+    return async (container: any) => {
       const factory: LoggerFactory = container.resolve('LoggerFactory')
-      factory.shutdown()
+      await factory.shutdown()
     }
   },
 }

@@ -42,6 +42,13 @@ describe('UpdateContentCommand', () => {
     // Reset mocks
     vi.clearAllMocks()
 
+    // Mock BaseCommand methods - logJson is protected, so we access it through any cast
+    Object.defineProperty(command, 'logJson', {
+      value: vi.fn(),
+      writable: true,
+      configurable: true,
+    })
+
     // Setup default successful response
     vi.mocked(mockSDK.tickets.updateContent).mockResolvedValue(mockUpdatedTicket)
   })
@@ -151,7 +158,7 @@ describe('UpdateContentCommand', () => {
       // Act & Assert
       await expect(command.execute(args, flags)).rejects.toThrow('Command error')
       expect(command.error).toHaveBeenCalledWith(
-        'At least one of --title or --description must be provided'
+        'At least one of title or description must be provided'
       )
     })
 

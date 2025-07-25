@@ -30,13 +30,13 @@ import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
 import {
   AsyncLocalStorageContextService,
   CrossPlatformStorageConfigService,
-  CryptoIdGenerator,
   FileAuditReader,
   FileLogReader,
   InMemoryTicketRepository,
   JsonTicketRepository,
   NodeAsyncLocalStorage,
   NodeEnvironmentDetectionService,
+  UlidIdGenerator,
   XdgDevelopmentProcessService,
 } from '@project-manager/infrastructure'
 import { Container } from 'inversify'
@@ -66,21 +66,14 @@ export function createContainer(config: SDKConfig): Container {
       const _environment = envService.resolveEnvironment(config.environment)
 
       // Create cross-platform service with environment context
-      const service = new CrossPlatformStorageConfigService()
-      // Override getDefaultStoragePath to use environment-specific directory
-      service.getDefaultStoragePath = () => {
-        const storageDir = service.getDefaultStorageDir()
-        return `${storageDir}/tickets.json`
-      }
-
-      return service
+      return new CrossPlatformStorageConfigService()
     })
     .inSingletonScope()
 
-  // ID Generator Service - binds cryptographic implementation
+  // ID Generator Service - binds ULID implementation
   container
     .bind<IdGenerator>(TYPES.IdGenerator)
-    .toDynamicValue(() => new CryptoIdGenerator())
+    .toDynamicValue(() => new UlidIdGenerator())
     .inSingletonScope()
 
   // Repository binding - environment-based selection

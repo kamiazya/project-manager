@@ -1,5 +1,3 @@
-#!/usr/bin/env tsx
-
 /**
  * Development wrapper for oclif CLI runner.
  * This script automatically sets NODE_ENV=development before executing the main CLI.

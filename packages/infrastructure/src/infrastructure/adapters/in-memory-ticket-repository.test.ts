@@ -1,5 +1,6 @@
 import { Ticket, TicketId } from '@project-manager/domain'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { getValidUlidByIndex, VALID_ULID_1, VALID_ULID_2 } from '../test-helpers.ts'
 import { InMemoryTicketRepository } from './in-memory-ticket-repository.ts'
 
 describe('InMemoryTicketRepository', () => {
@@ -8,7 +9,7 @@ describe('InMemoryTicketRepository', () => {
 
   beforeEach(() => {
     repository = new InMemoryTicketRepository()
-    const ticketId = TicketId.create('12345678')
+    const ticketId = TicketId.create(VALID_ULID_1)
     sampleTicket = Ticket.create(ticketId, {
       title: 'Test Ticket',
       description: 'Test Description',
@@ -59,7 +60,7 @@ describe('InMemoryTicketRepository', () => {
     })
 
     it('should return null for non-existent ticket', async () => {
-      const nonExistentId = TicketId.create('abcdabcd')
+      const nonExistentId = TicketId.create(VALID_ULID_2)
       const found = await repository.findById(nonExistentId)
       expect(found).toBeNull()
     })
@@ -76,7 +77,7 @@ describe('InMemoryTicketRepository', () => {
     })
 
     it('should not throw when deleting non-existent ticket', async () => {
-      const nonExistentId = TicketId.create('abcdabcd')
+      const nonExistentId = TicketId.create(VALID_ULID_2)
       await expect(repository.delete(nonExistentId)).resolves.not.toThrow()
     })
   })
@@ -85,21 +86,21 @@ describe('InMemoryTicketRepository', () => {
     beforeEach(async () => {
       // Create multiple test tickets
       const tickets = [
-        Ticket.create(TicketId.create('11111111'), {
+        Ticket.create(TicketId.create(getValidUlidByIndex(0)), {
           title: 'Bug Fix',
           description: 'Fix critical bug',
           priority: 'high',
           type: 'bug',
           status: 'pending',
         }),
-        Ticket.create(TicketId.create('22222222'), {
+        Ticket.create(TicketId.create(getValidUlidByIndex(1)), {
           title: 'Feature Request',
           description: 'Add new feature',
           priority: 'medium',
           type: 'feature',
           status: 'in_progress',
         }),
-        Ticket.create(TicketId.create('33333333'), {
+        Ticket.create(TicketId.create(getValidUlidByIndex(2)), {
           title: 'Documentation',
           description: 'Update docs',
           priority: 'low',
@@ -197,7 +198,7 @@ describe('InMemoryTicketRepository', () => {
       await repository.save(sampleTicket)
       expect(repository.size()).toBe(1)
 
-      const anotherTicket = Ticket.create(TicketId.create('87654321'), {
+      const anotherTicket = Ticket.create(TicketId.create(VALID_ULID_2), {
         title: 'Another Ticket',
         description: 'Another Description',
         priority: 'medium',

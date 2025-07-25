@@ -1,6 +1,18 @@
 import { TicketId } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TicketNotFoundError } from '../common/errors/application-errors.js'
+import {
+  getValidUlidByIndex,
+  INVALID_ID_CONTAINS_INVALID_CHARS,
+  INVALID_ID_CONTAINS_SPECIAL,
+  INVALID_ID_TOO_LONG,
+  INVALID_ID_TOO_SHORT,
+  VALID_ULID_1,
+  VALID_ULID_2,
+  VALID_ULID_3,
+  VALID_ULID_4,
+  VALID_ULID_5,
+} from '../common/test-helpers.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { DeleteTicket } from './delete-ticket.ts'
 
@@ -10,7 +22,7 @@ describe('DeleteTicket', () => {
   let validTicketId: string
 
   beforeEach(() => {
-    validTicketId = '12345678' // 8 hex characters
+    validTicketId = VALID_ULID_1 // Valid ULID format
     mockTicketRepository = {
       save: vi.fn(),
       findById: vi.fn(),
@@ -86,7 +98,7 @@ describe('DeleteTicket', () => {
         const request: DeleteTicket.Request = { id: '' }
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
       })
 
@@ -94,7 +106,7 @@ describe('DeleteTicket', () => {
         const request: DeleteTicket.Request = { id: null as any }
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
       })
 
@@ -102,94 +114,94 @@ describe('DeleteTicket', () => {
         const request: DeleteTicket.Request = { id: undefined as any }
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
       })
 
       it('should throw error for ID with wrong length (too short)', async () => {
-        const request: DeleteTicket.Request = { id: '1234567' } // 7 characters
+        const request: DeleteTicket.Request = { id: INVALID_ID_TOO_SHORT }
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
         expect(mockTicketRepository.delete).not.toHaveBeenCalled()
       })
 
       it('should throw error for ID with wrong length (too long)', async () => {
-        const request: DeleteTicket.Request = { id: '123456789' } // 9 characters
+        const request: DeleteTicket.Request = { id: INVALID_ID_TOO_LONG }
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
         expect(mockTicketRepository.delete).not.toHaveBeenCalled()
       })
 
-      it('should throw error for ID with uppercase letters', async () => {
-        const request: DeleteTicket.Request = { id: '1234567A' } // Uppercase A
+      it('should throw error for ID with invalid characters', async () => {
+        const request: DeleteTicket.Request = { id: INVALID_ID_CONTAINS_INVALID_CHARS }
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
         expect(mockTicketRepository.delete).not.toHaveBeenCalled()
       })
 
       it('should throw error for ID with special characters', async () => {
-        const request: DeleteTicket.Request = { id: '1234567!' } // Special character
+        const request: DeleteTicket.Request = { id: INVALID_ID_CONTAINS_SPECIAL }
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
         expect(mockTicketRepository.delete).not.toHaveBeenCalled()
       })
 
       it('should throw error for ID with spaces', async () => {
-        const request: DeleteTicket.Request = { id: '1234567 ' } // Space
+        const request: DeleteTicket.Request = { id: '01ARZ3NDEKTSV4RRFFQ69G5F V' } // Space in ULID
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
         expect(mockTicketRepository.delete).not.toHaveBeenCalled()
       })
 
-      it('should throw error for ID with non-hex characters', async () => {
-        const request: DeleteTicket.Request = { id: '123456gh' } // 'g' and 'h' are not hex
+      it('should throw error for ID with lowercase letters', async () => {
+        const request: DeleteTicket.Request = { id: '01arz3ndektsv4rrffq69g5fav' } // ULID must be uppercase
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
         expect(mockTicketRepository.delete).not.toHaveBeenCalled()
       })
 
-      it('should handle valid hex ID with numbers only', async () => {
-        const request: DeleteTicket.Request = { id: '12345678' }
+      it('should handle valid ULID', async () => {
+        const request: DeleteTicket.Request = { id: VALID_ULID_2 }
 
         await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
-      it('should handle valid hex ID with letters only', async () => {
-        const request: DeleteTicket.Request = { id: 'abcdefab' }
+      it('should handle another valid ULID', async () => {
+        const request: DeleteTicket.Request = { id: VALID_ULID_3 }
 
         await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
-      it('should handle valid hex ID with mix of numbers and letters', async () => {
-        const request: DeleteTicket.Request = { id: '12ab34cd' }
+      it('should handle yet another valid ULID', async () => {
+        const request: DeleteTicket.Request = { id: VALID_ULID_4 }
 
         await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
-      it('should handle boundary case with all zeros', async () => {
-        const request: DeleteTicket.Request = { id: '00000000' }
+      it('should handle boundary case with all zeros in ULID', async () => {
+        const request: DeleteTicket.Request = { id: '00000000000000000000000000' } // 26 zeros
 
         await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
-      it('should handle boundary case with all f', async () => {
-        const request: DeleteTicket.Request = { id: 'ffffffff' }
+      it('should handle boundary case with all max values', async () => {
+        const request: DeleteTicket.Request = { id: '7ZZZZZZZZZZZZZZZZZZZZZZZZZ' } // Max ULID
 
         await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
@@ -197,25 +209,25 @@ describe('DeleteTicket', () => {
     })
 
     describe('Edge Case IDs', () => {
-      it('should handle ID with only numeric characters', async () => {
-        const request: DeleteTicket.Request = { id: '01234567' }
+      it('should handle ULID with mostly numbers', async () => {
+        const request: DeleteTicket.Request = { id: '01234567890ABCDEFGHJKMNPQR' }
 
         await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
-      it('should handle ID with only letter characters', async () => {
-        const request: DeleteTicket.Request = { id: 'abcdefab' }
+      it('should handle ULID with mostly letters', async () => {
+        const request: DeleteTicket.Request = { id: 'ABCDEFGHJKMNPQRSTVWXYZ0123' }
 
         await expect(deleteTicketUseCase.execute(request)).resolves.toBeUndefined()
         expect(mockTicketRepository.delete).toHaveBeenCalled()
       })
 
       it('should handle ID with mixed case (should fail)', async () => {
-        const request: DeleteTicket.Request = { id: 'AbCdEfAb' }
+        const request: DeleteTicket.Request = { id: '01ArZ3NdEkTsV4RrFfQ69G5FaV' } // Mixed case ULID
 
         await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-          'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
         )
         expect(mockTicketRepository.delete).not.toHaveBeenCalled()
       })
@@ -337,9 +349,9 @@ describe('DeleteTicket', () => {
 
   describe('Concurrency and Performance', () => {
     it('should handle concurrent deletions of different tickets', async () => {
-      const request1: DeleteTicket.Request = { id: '12345678' }
-      const request2: DeleteTicket.Request = { id: 'abcdefab' }
-      const request3: DeleteTicket.Request = { id: 'deadbeef' }
+      const request1: DeleteTicket.Request = { id: VALID_ULID_1 }
+      const request2: DeleteTicket.Request = { id: VALID_ULID_2 }
+      const request3: DeleteTicket.Request = { id: VALID_ULID_3 }
 
       const promises = [
         deleteTicketUseCase.execute(request1),
@@ -358,7 +370,7 @@ describe('DeleteTicket', () => {
     })
 
     it('should handle rapid sequential deletions', async () => {
-      const ticketIds = ['12345678', 'abcdefab', 'deadbeef', '11111111', '22222222']
+      const ticketIds = [VALID_ULID_1, VALID_ULID_2, VALID_ULID_3, VALID_ULID_4, VALID_ULID_5]
 
       for (const ticketId of ticketIds) {
         const request: DeleteTicket.Request = { id: ticketId }
@@ -369,8 +381,8 @@ describe('DeleteTicket', () => {
     })
 
     it('should handle mixed success and failure scenarios', async () => {
-      const successId = '12345678'
-      const failureId = 'abcdefab'
+      const successId = VALID_ULID_1
+      const failureId = VALID_ULID_2
 
       // Setup one to succeed, one to fail
       vi.mocked(mockTicketRepository.delete).mockImplementation(async ticketId => {
@@ -426,10 +438,10 @@ describe('DeleteTicket', () => {
     })
 
     it('should handle validation errors before repository call', async () => {
-      const request: DeleteTicket.Request = { id: 'invalidid' } // Invalid format
+      const request: DeleteTicket.Request = { id: INVALID_ID_TOO_SHORT } // Invalid format
 
       await expect(deleteTicketUseCase.execute(request)).rejects.toThrow(
-        'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
+        'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
       )
 
       // Repository should not be called when validation fails
@@ -438,7 +450,7 @@ describe('DeleteTicket', () => {
 
     it('should maintain consistency across multiple failed operations', async () => {
       const validRequest: DeleteTicket.Request = { id: validTicketId }
-      const invalidRequest: DeleteTicket.Request = { id: 'invalidid' } // Invalid format
+      const invalidRequest: DeleteTicket.Request = { id: INVALID_ID_TOO_SHORT } // Invalid format
 
       // First operation should succeed
       await expect(deleteTicketUseCase.execute(validRequest)).resolves.toBeUndefined()

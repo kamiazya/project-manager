@@ -1,4 +1,4 @@
-# ADR-0010: Adopt Apache License 2.0
+# ADR-0009: Adopt Apache License 2.0
 
 ## Status
 

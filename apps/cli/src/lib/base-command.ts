@@ -54,6 +54,7 @@ export abstract class BaseCommand<
   // Static cache for SDK instances - following oclif Cache pattern
   private static cachedSDK: ProjectManagerSDK | null = null
   private static lastConfigHash: string | null = null
+  private static cleanupRegistered = false
 
   /**
    * Enable JSON flag support for all commands by default.
@@ -82,6 +83,12 @@ export abstract class BaseCommand<
       this.sdk = await createProjectManagerSDK(config)
       BaseCommand.cachedSDK = this.sdk
       BaseCommand.lastConfigHash = configHash
+
+      // Register global cleanup handler once
+      if (!BaseCommand.cleanupRegistered) {
+        BaseCommand.setupGlobalCleanup()
+        BaseCommand.cleanupRegistered = true
+      }
     } catch (error) {
       if (error instanceof Error) {
         this.error(`Failed to initialize SDK: ${error.message}`)
@@ -112,6 +119,135 @@ export abstract class BaseCommand<
   static clearSDKCache(): void {
     BaseCommand.cachedSDK = null
     BaseCommand.lastConfigHash = null
+  }
+
+  /**
+   * Setup global cleanup handlers for process exit.
+   */
+  private static setupGlobalCleanup(): void {
+    // Flag to track if graceful shutdown has been initiated
+    let isShuttingDown = false
+
+    const performSyncCleanup = () => {
+      if (isShuttingDown) return
+      isShuttingDown = true
+
+      // Only perform synchronous cleanup operations
+      if (BaseCommand.cachedSDK) {
+        try {
+          // Clear the cached SDK reference to prevent further usage
+          BaseCommand.cachedSDK = null
+          BaseCommand.lastConfigHash = null
+        } catch (error) {
+          // Ignore cleanup errors during shutdown
+        }
+      }
+    }
+
+    // Flags to track shutdown state and prevent concurrent cleanup
+    let hasExited = false
+    let cleanupTimeout: NodeJS.Timeout | null = null
+    let cleanupInProgress = false
+
+    const performAsyncCleanup = async (): Promise<void> => {
+      try {
+        // Perform async cleanup with proper error handling
+        if (BaseCommand.cachedSDK && typeof BaseCommand.cachedSDK.shutdown === 'function') {
+          await BaseCommand.cachedSDK.shutdown()
+        }
+      } catch (error) {
+        // Cleanup failed, but continue
+      } finally {
+        // Clear SDK references regardless of cleanup success/failure
+        BaseCommand.cachedSDK = null
+        BaseCommand.lastConfigHash = null
+      }
+    }
+
+    const gracefulShutdown = (signal: NodeJS.Signals) => {
+      // Prevent concurrent cleanup calls
+      if (isShuttingDown || hasExited || cleanupInProgress) return
+      isShuttingDown = true
+      cleanupInProgress = true
+
+      // Set a maximum cleanup time to prevent hanging
+      cleanupTimeout = setTimeout(() => {
+        if (!hasExited) {
+          hasExited = true
+          process.kill(process.pid, 'SIGKILL')
+        }
+      }, 3000) // 3-second timeout for graceful shutdown
+
+      // Use setImmediate to ensure cleanup runs on next tick
+      setImmediate(async () => {
+        try {
+          await performAsyncCleanup()
+        } finally {
+          cleanupInProgress = false
+          // Ensure we exit only once
+          if (!hasExited) {
+            hasExited = true
+            if (cleanupTimeout) clearTimeout(cleanupTimeout)
+            process.exit(0)
+          }
+        }
+      })
+    }
+
+    // Handle various exit scenarios
+    process.on('exit', () => {
+      // Synchronous cleanup only - no async operations allowed here
+      // Clear timeout if still active
+      if (cleanupTimeout) clearTimeout(cleanupTimeout)
+
+      // Perform final synchronous cleanup
+      if (BaseCommand.cachedSDK && !isShuttingDown) {
+        BaseCommand.cachedSDK = null
+        BaseCommand.lastConfigHash = null
+      }
+    })
+
+    // Graceful shutdown signals - synchronous handlers that manage async cleanup
+    process.on('SIGINT', () => {
+      gracefulShutdown('SIGINT')
+    })
+
+    process.on('SIGTERM', () => {
+      gracefulShutdown('SIGTERM')
+    })
+
+    // CRITICAL: These handlers must be synchronous per Node.js documentation
+    // After uncaughtException/unhandledRejection, the process is in an unknown state
+    // and async operations can cause unpredictable behavior or hanging
+    process.on('uncaughtException', error => {
+      // Only synchronous cleanup - no async operations allowed
+      performSyncCleanup()
+
+      // Log error synchronously if possible
+      try {
+        console.error('Uncaught Exception:', error)
+      } catch {
+        // Ignore logging errors during crash
+      }
+
+      // Terminate immediately - don't use process.exit() as it may hang
+      process.kill(process.pid, 'SIGTERM')
+    })
+
+    process.on('unhandledRejection', (reason, promise) => {
+      // Only synchronous cleanup - no async operations allowed
+      performSyncCleanup()
+
+      // Log error synchronously if possible
+      try {
+        console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+      } catch {
+        // Ignore logging errors during crash
+      }
+
+      // Terminate immediately - don't use process.exit() as it may hang
+      process.kill(process.pid, 'SIGTERM')
+    })
   }
 
   /**
@@ -146,6 +282,15 @@ export abstract class BaseCommand<
    * @returns Result data for JSON output (optional)
    */
   protected abstract execute(args: TArgs, flags: TFlags): Promise<TResult | undefined>
+
+  /**
+   * Outputs JSON data to stdout in a consistent format.
+   * Override this method to customize JSON output formatting.
+   * @param data The data to output as JSON
+   */
+  protected logJson(data: TResult): void {
+    this.log(JSON.stringify(data, null, 2))
+  }
 
   /**
    * Type-safe error handler that provides user-friendly error messages.

@@ -1,4 +1,3 @@
-import { createTicketPriority } from '@project-manager/domain'
 import type { ProjectManagerSDK } from '@project-manager/sdk'
 import { z } from 'zod'
 import { BaseTool } from '../lib/base-tool.ts'
@@ -18,7 +17,7 @@ class UpdateTicketPriorityTool extends BaseTool<typeof updateTicketPrioritySchem
     input: z.infer<typeof updateTicketPrioritySchema>,
     sdk: ProjectManagerSDK
   ) {
-    const ticket = await sdk.tickets.updatePriority(input.id, createTicketPriority(input.priority))
+    const ticket = await sdk.tickets.updatePriority(input.id, input.priority)
 
     return {
       ticket: {

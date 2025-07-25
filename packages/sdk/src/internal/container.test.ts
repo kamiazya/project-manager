@@ -89,7 +89,7 @@ vi.mock('@project-manager/infrastructure', () => ({
     .mockImplementation(function MockCrossPlatformStorageConfigService() {
       return {
         constructor: { name: 'CrossPlatformStorageConfigService' },
-        getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
+        getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.json'),
         getDefaultStorageDir: vi.fn(() => '/default/storage'),
         resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
         getLogsPath: vi.fn(() => '/default/logs'),
@@ -102,10 +102,10 @@ vi.mock('@project-manager/infrastructure', () => ({
     .mockImplementation(function MockXdgDevelopmentProcessService() {
       return { constructor: { name: 'XdgDevelopmentProcessService' } }
     }),
-  CryptoIdGenerator: vi.fn().mockImplementation(function MockCryptoIdGenerator() {
+  UlidIdGenerator: vi.fn().mockImplementation(function MockUlidIdGenerator() {
     return {
-      constructor: { name: 'CryptoIdGenerator' },
-      generateId: vi.fn(() => 'a1b2c3d4'),
+      constructor: { name: 'UlidIdGenerator' },
+      generateId: vi.fn(() => '01ARZ3NDEKTSV4RRFFQ69G5FAV'),
     }
   }),
   AsyncLocalStorageContextService: vi
@@ -503,7 +503,7 @@ describe('createContainer', () => {
           function MockCrossPlatformStorageConfigService() {
             return {
               constructor: { name: 'CrossPlatformStorageConfigService' },
-              getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
+              getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.json'),
               getDefaultStorageDir: vi.fn(() => '/default/storage'),
               resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
             } as any
@@ -586,7 +586,7 @@ describe('createContainer', () => {
         function MockCrossPlatformStorageConfigService() {
           return {
             constructor: { name: 'CrossPlatformStorageConfigService' },
-            getDefaultStoragePath: vi.fn(() => '/default/path/tickets.json'),
+            getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.json'),
             getDefaultStorageDir: vi.fn(() => '/default/storage'),
             resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
           } as any

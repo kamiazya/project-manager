@@ -8,14 +8,12 @@
   "types": "src/index.ts",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     },
     "./logging": {
-      "development": "./src/logging/index.ts",
-      "types": "./dist/logging/index.d.ts",
-      "import": "./dist/logging/index.js"
+      "types": "./src/logging/index.ts",
+      "import": "./src/logging/index.ts"
     }
   },
   "publishConfig": {
@@ -41,7 +39,8 @@
     "@project-manager/application": "workspace:*",
     "@project-manager/base": "workspace:*",
     "@project-manager/domain": "workspace:*",
-    "env-paths": "^3.0.0"
+    "env-paths": "^3.0.0",
+    "ulid": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

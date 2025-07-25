@@ -14,6 +14,7 @@ export default defineConfig({
     name: 'mcp-server',
     environment: 'node',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    globals: true,
   },
   resolve: {
     conditions: ['development', 'import', 'module', 'browser', 'default'],
@@ -38,8 +39,8 @@ export default defineConfig({
       external: id => {
         // External all Node.js built-in modules and their sub-paths
         if (id.startsWith('node:')) return true
-        // External all our internal packages
-        if (id.startsWith('@project-manager/')) return true
+        // External only allowed internal packages (SDK layer only)
+        if (id.startsWith('@project-manager/sdk')) return true
         // External all third-party packages
         return ['@modelcontextprotocol/sdk', 'zod'].includes(id)
       },

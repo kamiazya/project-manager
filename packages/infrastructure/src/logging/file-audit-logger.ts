@@ -5,7 +5,6 @@
  * and compliance-focused features for tamper-proof audit trails.
  */
 
-import { EventEmitter } from 'node:events'
 import { createReadStream, createWriteStream, type WriteStream } from 'node:fs'
 import { mkdir, readdir, rename, stat, unlink } from 'node:fs/promises'
 import { basename, dirname, join, resolve } from 'node:path'
@@ -108,7 +107,7 @@ interface AuditOperationStats {
 /**
  * File audit logger implementation with comprehensive features.
  */
-export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger {
+export class FileAuditLoggerAdapter implements AuditLogger {
   private config: FileAuditLoggerConfig
   private logger: Logger
   private writeStream?: WriteStream
@@ -119,7 +118,6 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
   private isShuttingDown = false
 
   constructor(config: FileAuditLoggerConfig, logger: Logger) {
-    super()
     this.config = config
     this.logger = logger
     this.stats = {
@@ -159,7 +157,6 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
       }
 
       this.isInitialized = true
-      this.emit('initialized')
     } catch (error) {
       this.handleError('Failed to initialize audit logger', error)
       throw error
@@ -183,9 +180,7 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
       this.handleError('Write stream error', error)
     })
 
-    this.writeStream.on('close', () => {
-      this.emit('streamClosed')
-    })
+    // Stream close event no longer needed
   }
 
   /**
@@ -199,23 +194,33 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
         await this.flushPendingWrites()
       }
     }, flushInterval)
+
+    // Allow process to exit even with active timer
+    this.flushTimer.unref()
   }
 
   /**
    * Setup graceful shutdown handling.
    */
   private setupGracefulShutdown(): void {
+    // Store references to shutdown handlers for cleanup
     const shutdown = async () => {
+      if (this.isShuttingDown) return // Prevent duplicate shutdown
+
       this.isShuttingDown = true
       try {
         await this.close()
-        process.exit(0)
+        // Don't call process.exit() here - let the calling process handle exit
       } catch (error) {
         console.error('Error during audit logger shutdown:', error)
-        process.exit(1)
+        // Don't call process.exit() here either
       }
     }
 
+    // Store shutdown handler references for cleanup
+    ;(this as any)._shutdownHandler = shutdown
+
+    // Add process listeners but don't force exit
     process.on('SIGINT', shutdown)
     process.on('SIGTERM', shutdown)
   }
@@ -553,8 +558,6 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
 
       // Clean up old files if needed
       await this.cleanupOldFiles(filePath, rotation.maxFiles || 10)
-
-      this.emit('fileRotated', { original: filePath, rotated: rotatedPath })
     } catch (error) {
       this.handleError('Failed to rotate audit file', error)
     }
@@ -769,7 +772,6 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
    */
   private handleError(message: string, error: any): void {
     this.stats.errorCount++
-    this.emit('error', { message, error })
 
     // Log to console as fallback (avoid circular logging)
     console.error(`[FileAuditLogger] ${message}:`, error)
@@ -834,18 +836,54 @@ export class FileAuditLoggerAdapter extends EventEmitter implements AuditLogger 
       // Flush any pending writes
       await this.flushPendingWrites()
 
-      // Close write stream
+      // Close write stream properly
       if (this.writeStream) {
         await new Promise<void>(resolve => {
-          this.writeStream!.end(resolve)
+          // Set a timeout to prevent hanging on stream close
+          const timeout = setTimeout(() => {
+            // Force destroy after timeout to prevent hanging
+            if (this.writeStream && !this.writeStream.destroyed) {
+              this.writeStream.destroy()
+            }
+            this.writeStream = undefined
+            resolve() // Always resolve to prevent hanging
+          }, 1000) // Reduced timeout to 1 second
+
+          const cleanup = () => {
+            clearTimeout(timeout)
+            this.writeStream = undefined
+            resolve()
+          }
+
+          // Handle both end and close events
+          this.writeStream?.once('close', cleanup)
+          this.writeStream?.once('error', error => {
+            clearTimeout(timeout)
+            console.error('[FileAuditLogger] Error closing write stream:', error)
+            this.writeStream = undefined
+            resolve() // Resolve anyway to prevent hanging
+          })
+
+          // End the stream and destroy it if needed
+          this.writeStream?.end(() => {
+            // Force destroy if the stream doesn't close naturally
+            if (this.writeStream && !this.writeStream.closed) {
+              this.writeStream.destroy()
+            }
+          })
         })
-        this.writeStream = undefined
       }
 
-      this.removeAllListeners()
-      this.emit('closed')
+      // Remove our specific process event listeners if they were set up
+      const shutdownHandler = (this as any)._shutdownHandler
+      if (shutdownHandler) {
+        process.removeListener('SIGINT', shutdownHandler)
+        process.removeListener('SIGTERM', shutdownHandler)
+        delete (this as any)._shutdownHandler
+      }
     } catch (error) {
       this.handleError('Error during close', error)
+      // Don't re-throw to prevent hanging on error
     }
   }
 }

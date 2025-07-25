@@ -1,5 +1,6 @@
 import { Ticket, TicketId } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { VALID_ULID_1 } from '../common/test-helpers.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { GetTicketById } from './get-ticket-by-id.ts'
 
@@ -31,9 +32,9 @@ describe('GetTicketByIdUseCase', () => {
   describe('execute', () => {
     it('should return ticket when found', async () => {
       // Arrange
-      const ticketId = '12345678' // 8 hex characters
+      const ticketId = VALID_ULID_1 // Valid ULID
       const request: GetTicketById.Request = { id: ticketId }
-      const mockTicketId = TicketId.create('12345678')
+      const mockTicketId = TicketId.create(VALID_ULID_1)
       const mockTicket = Ticket.create(mockTicketId, {
         title: 'Test Ticket',
         description: 'Test Description',
@@ -56,7 +57,7 @@ describe('GetTicketByIdUseCase', () => {
 
     it('should return null when ticket not found', async () => {
       // Arrange
-      const ticketId = '87654321' // 8 hex characters
+      const ticketId = VALID_ULID_1
       const request: GetTicketById.Request = { id: ticketId }
 
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
@@ -71,7 +72,7 @@ describe('GetTicketByIdUseCase', () => {
 
     it('should call repository with correct TicketId', async () => {
       // Arrange
-      const ticketId = '12345678' // 8 hex characters
+      const ticketId = VALID_ULID_1
       const request: GetTicketById.Request = { id: ticketId }
 
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)

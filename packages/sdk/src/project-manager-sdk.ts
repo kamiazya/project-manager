@@ -407,24 +407,6 @@ export class ProjectManagerSDK {
   }
 
   /**
-   * Shutdown the SDK and clean up resources
-   */
-  async shutdown(): Promise<void> {
-    try {
-      // Get LoggerFactory from container and shutdown
-      const loggerFactory = this.container.get<any>('LoggerFactory')
-      if (loggerFactory && typeof loggerFactory.shutdown === 'function') {
-        loggerFactory.shutdown()
-      }
-    } catch (error) {
-      // Ignore errors during shutdown
-      if (process.env.DEBUG) {
-        console.error('Error during SDK shutdown:', error)
-      }
-    }
-  }
-
-  /**
    * Helper method to map TicketResponse from Application layer to SDK Response DTO
    */
   private mapTicketResponseToSDKResponse(
@@ -494,6 +476,23 @@ export class ProjectManagerSDK {
       totalCount: response.totalCount,
       hasMore: response.hasMore,
       summary: response.summary,
+    }
+  }
+
+  /**
+   * Shutdown the SDK and cleanup resources
+   */
+  async shutdown(): Promise<void> {
+    try {
+      // Import the global logger factory and shut it down
+      const { getGlobalLoggerFactory } = await import('./logging/logger-factory.ts')
+      const loggerFactory = getGlobalLoggerFactory()
+      if (loggerFactory && typeof loggerFactory.shutdown === 'function') {
+        await loggerFactory.shutdown()
+      }
+    } catch (error) {
+      // Log error but don't throw to prevent hanging
+      console.error('[SDK] Error during shutdown:', error)
     }
   }
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { VALID_ULID_1 } from '../test-helpers.ts'
 import { TicketId } from '../value-objects/ticket-id.ts'
 import type { CreateTicketData, ReconstituteTicketData } from './ticket.ts'
 import { Ticket } from './ticket.ts'
@@ -6,7 +7,7 @@ import { Ticket } from './ticket.ts'
 describe('Ticket Entity', () => {
   describe('create factory method', () => {
     it('should create a ticket with valid data', () => {
-      const ticketId = TicketId.create('a1b2c3d4')
+      const ticketId = TicketId.create(VALID_ULID_1)
       const data: CreateTicketData = {
         title: 'Fix login bug',
         description: 'Users cannot log in with valid credentials',
@@ -36,7 +37,7 @@ describe('Ticket Entity', () => {
         type: 'task',
       }
 
-      const ticketId = TicketId.create('a1b2c3d4')
+      const ticketId = TicketId.create(VALID_ULID_1)
       expect(() => Ticket.create(ticketId, data)).toThrow(
         'Invalid ticket status: invalid-status. Must contain only lowercase letters and underscores.'
       )
@@ -51,7 +52,7 @@ describe('Ticket Entity', () => {
         type: 'task',
       }
 
-      const ticketId = TicketId.create('a1b2c3d4')
+      const ticketId = TicketId.create(VALID_ULID_1)
       expect(() => Ticket.create(ticketId, data)).toThrow(
         'Invalid ticket priority: INVALID. Must contain only lowercase letters and underscores.'
       )
@@ -66,7 +67,7 @@ describe('Ticket Entity', () => {
         type: '123-invalid',
       }
 
-      const ticketId = TicketId.create('a1b2c3d4')
+      const ticketId = TicketId.create(VALID_ULID_1)
       expect(() => Ticket.create(ticketId, data)).toThrow(
         'Invalid ticket type: 123-invalid. Must contain only lowercase letters and underscores.'
       )
@@ -81,7 +82,7 @@ describe('Ticket Entity', () => {
         type: 'task',
       }
 
-      const ticketId = TicketId.create('a1b2c3d4')
+      const ticketId = TicketId.create(VALID_ULID_1)
       expect(() => Ticket.create(ticketId, data)).toThrow(
         'Invalid ticket status: . Must contain only lowercase letters and underscores.'
       )

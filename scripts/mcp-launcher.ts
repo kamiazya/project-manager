@@ -17,6 +17,7 @@ import { constants } from 'node:fs'
 import { access, readdir, watch } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { sanitizeCommandLineArgs } from './security-utils.ts'
 
 // --- Constants ---
 const colors = {
@@ -48,8 +49,8 @@ process.env.NODE_ENV = 'development'
 const sessionId = Math.random().toString(36).substring(2, 8)
 process.env.PM_SESSION_ID = sessionId
 
-// Forward all command line arguments to the MCP server
-const forwardedArgs = process.argv.slice(2)
+// Forward all command line arguments to the MCP server with validation
+const forwardedArgs = sanitizeCommandLineArgs(process.argv.slice(2), HOT_RELOAD_PREFIX)
 
 // --- Main Logic ---
 runWithHotReload().catch(error => {
@@ -102,9 +103,38 @@ async function runWithHotReload() {
       `${colors.green}Starting MCP server with hot reload (session: ${sessionId})...${colors.reset}`
     )
     try {
-      child = spawn('tsx', ['--tsconfig', scriptsConfigPath, mcpServerEntry, ...forwardedArgs], {
+      // Build arguments array securely - each argument is a separate array element
+      const spawnArgs: string[] = [
+        '--tsconfig',
+        scriptsConfigPath,
+        mcpServerEntry,
+        ...forwardedArgs,
+      ]
+
+      // Final validation: ensure all arguments are strings and don't contain null bytes
+      const validatedArgs = spawnArgs.filter(arg => {
+        if (typeof arg !== 'string') {
+          log(`${colors.red}Filtering out non-string argument:${colors.reset} ${typeof arg}`)
+          return false
+        }
+        if (arg.includes('\0')) {
+          log(`${colors.red}Filtering out argument containing null byte${colors.reset}`)
+          return false
+        }
+        return true
+      })
+
+      log(`Executing: tsx with ${validatedArgs.length} arguments`)
+
+      child = spawn('tsx', validatedArgs, {
         stdio: 'inherit',
-        env: { ...process.env, NODE_ENV: 'development', PM_SESSION_ID: sessionId },
+        env: {
+          ...process.env,
+          NODE_ENV: 'development',
+          PM_SESSION_ID: sessionId,
+        },
+        // Additional security: disable shell interpretation
+        shell: false,
       })
 
       child.on('close', (code: number | null) => {

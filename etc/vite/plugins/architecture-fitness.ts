@@ -206,6 +206,17 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
     async resolveId(source: string, importer?: string) {
       if (!importer) return null
 
+      // Skip coverage files and other unrelated files
+      const normalizedImporter = importer.replace(/\\/g, '/')
+      if (
+        normalizedImporter.includes('/coverage/') ||
+        normalizedImporter.includes('/node_modules/') ||
+        normalizedImporter.includes('/dist/') ||
+        normalizedImporter.endsWith('.html')
+      ) {
+        return null
+      }
+
       // Skip node_modules and virtual modules, but allow @project-manager/* packages
       if (
         source.startsWith('virtual:') ||
@@ -277,6 +288,17 @@ export function architectureFitnessPlugin(rules: ArchitectureRules): Plugin {
 
     // Hook into code transformation
     async transform(code: string, id: string) {
+      // Skip coverage files and other unrelated files
+      const normalizedId = id.replace(/\\/g, '/')
+      if (
+        normalizedId.includes('/coverage/') ||
+        normalizedId.includes('/node_modules/') ||
+        normalizedId.includes('/dist/') ||
+        normalizedId.endsWith('.html')
+      ) {
+        return null
+      }
+
       // Check for @project-manager/* imports in the code
       if (checks.layerViolations) {
         const importerLayer = detectLayer(id)
