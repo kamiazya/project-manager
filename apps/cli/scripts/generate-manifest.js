@@ -113,39 +113,42 @@ async function generateManifest() {
 
     // Transform CLI package (change to workspace root to resolve dependencies)
     const originalCwd = process.cwd()
-    process.chdir(workspaceRoot)
 
-    const exportableCliManifest = await createExportableManifest(
-      workspaceRoot,
-      currentCliPkg,
-      exportOptions
-    )
+    try {
+      process.chdir(workspaceRoot)
 
-    // Manually merge oclif publishConfig since createExportableManifest doesn't handle nested object merging
-    if (currentCliPkg.publishConfig?.oclif) {
-      exportableCliManifest.oclif = {
-        ...exportableCliManifest.oclif,
-        ...currentCliPkg.publishConfig.oclif,
-      }
-    }
-
-    transformedPackages.set('@project-manager/cli', exportableCliManifest)
-
-    // Transform workspace packages
-    for (const pkg of workspacePackages) {
-      if (pkg.manifest.name === '@project-manager/cli') continue
-
-      const originalData = originalPackageData.get(pkg.manifest.name)
-      const exportableManifest = await createExportableManifest(
+      const exportableCliManifest = await createExportableManifest(
         workspaceRoot,
-        originalData.originalContent,
+        currentCliPkg,
         exportOptions
       )
-      transformedPackages.set(pkg.manifest.name, exportableManifest)
-    }
 
-    // Restore original working directory
-    process.chdir(originalCwd)
+      // Manually merge oclif publishConfig since createExportableManifest doesn't handle nested object merging
+      if (currentCliPkg.publishConfig?.oclif) {
+        exportableCliManifest.oclif = {
+          ...exportableCliManifest.oclif,
+          ...currentCliPkg.publishConfig.oclif,
+        }
+      }
+
+      transformedPackages.set('@project-manager/cli', exportableCliManifest)
+
+      // Transform workspace packages
+      for (const pkg of workspacePackages) {
+        if (pkg.manifest.name === '@project-manager/cli') continue
+
+        const originalData = originalPackageData.get(pkg.manifest.name)
+        const exportableManifest = await createExportableManifest(
+          workspaceRoot,
+          originalData.originalContent,
+          exportOptions
+        )
+        transformedPackages.set(pkg.manifest.name, exportableManifest)
+      }
+    } finally {
+      // Restore original working directory regardless of success or failure
+      process.chdir(originalCwd)
+    }
 
     // Write transformed package.json files
     for (const [packageName, transformedManifest] of transformedPackages) {
@@ -157,8 +160,7 @@ async function generateManifest() {
       // Generate manifest
       console.log('Generating oclif manifest using pnpm publishConfig mechanism...')
       const cliDir = join(workspaceRoot, 'apps/cli')
-      const oclifCommand = `cd "${cliDir}" && npx oclif manifest`
-      await execAsync(oclifCommand)
+      await execAsync('npx oclif manifest', { cwd: cliDir })
       console.log('Manifest generated successfully')
     } finally {
       // Restore all original package.json files with immutable restoration

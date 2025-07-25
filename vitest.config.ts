@@ -8,6 +8,16 @@ export default defineConfig({
     projects: [
       // Include all packages with their individual vitest.config.ts files
       'packages/*',
+      // Include apps with their individual vitest.config.ts files
+      'apps/*',
+      // Include scripts tests as a separate project
+      {
+        test: {
+          name: 'scripts',
+          include: ['scripts/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+          environment: 'node',
+        },
+      },
       // Include architecture tests as a separate project
       {
         test: {

