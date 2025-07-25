@@ -48,8 +48,63 @@ process.env.NODE_ENV = 'development'
 const sessionId = Math.random().toString(36).substring(2, 8)
 process.env.PM_SESSION_ID = sessionId
 
-// Forward all command line arguments to the MCP server
-const forwardedArgs = process.argv.slice(2)
+// Forward all command line arguments to the MCP server with validation
+const forwardedArgs = sanitizeCommandLineArgs(process.argv.slice(2))
+
+/**
+ * Sanitize command line arguments to prevent shell injection attacks
+ * Only allows safe arguments that don't contain shell metacharacters
+ */
+function sanitizeCommandLineArgs(args: string[]): string[] {
+  const safeArgs: string[] = []
+
+  // Limit total number of arguments to prevent resource exhaustion
+  if (args.length > 50) {
+    console.warn(
+      `${HOT_RELOAD_PREFIX} Too many arguments provided (${args.length}), limiting to first 50`
+    )
+    args = args.slice(0, 50)
+  }
+
+  for (const arg of args) {
+    // Check for potentially dangerous characters that could be used for shell injection
+    if (typeof arg !== 'string') {
+      console.warn(`${HOT_RELOAD_PREFIX} Skipping non-string argument:`, arg)
+      continue
+    }
+
+    // Reject empty arguments
+    if (arg.length === 0) {
+      continue
+    }
+
+    // Allow only safe characters: alphanumeric, hyphens, underscores, dots, forward slashes, colons, equals
+    // This covers most legitimate MCP server arguments while blocking shell metacharacters
+    // Specifically blocks: $, `, ;, |, &, >, <, (, ), [, ], {, }, *, ?, \, ", ', space, tab
+    if (!/^[a-zA-Z0-9\-_./:=]+$/.test(arg)) {
+      console.warn(`${HOT_RELOAD_PREFIX} Skipping potentially unsafe argument: ${arg}`)
+      continue
+    }
+
+    // Limit argument length to prevent buffer overflow attempts
+    if (arg.length > 500) {
+      console.warn(`${HOT_RELOAD_PREFIX} Skipping oversized argument (${arg.length} chars)`)
+      continue
+    }
+
+    // Additional validation: reject arguments that look like command injection attempts
+    const suspiciousPatterns = [/&&/, /\|\|/, /;/, /\$\(/, /`/, /\$\{/, />/, /</, /\|/]
+
+    if (suspiciousPatterns.some(pattern => pattern.test(arg))) {
+      console.warn(`${HOT_RELOAD_PREFIX} Skipping argument with suspicious pattern: ${arg}`)
+      continue
+    }
+
+    safeArgs.push(arg)
+  }
+
+  return safeArgs
+}
 
 // --- Main Logic ---
 runWithHotReload().catch(error => {
@@ -102,9 +157,38 @@ async function runWithHotReload() {
       `${colors.green}Starting MCP server with hot reload (session: ${sessionId})...${colors.reset}`
     )
     try {
-      child = spawn('tsx', ['--tsconfig', scriptsConfigPath, mcpServerEntry, ...forwardedArgs], {
+      // Build arguments array securely - each argument is a separate array element
+      const spawnArgs: string[] = [
+        '--tsconfig',
+        scriptsConfigPath,
+        mcpServerEntry,
+        ...forwardedArgs,
+      ]
+
+      // Final validation: ensure all arguments are strings and don't contain null bytes
+      const validatedArgs = spawnArgs.filter(arg => {
+        if (typeof arg !== 'string') {
+          log(`${colors.red}Filtering out non-string argument:${colors.reset} ${typeof arg}`)
+          return false
+        }
+        if (arg.includes('\0')) {
+          log(`${colors.red}Filtering out argument containing null byte${colors.reset}`)
+          return false
+        }
+        return true
+      })
+
+      log(`Executing: tsx with ${validatedArgs.length} arguments`)
+
+      child = spawn('tsx', validatedArgs, {
         stdio: 'inherit',
-        env: { ...process.env, NODE_ENV: 'development', PM_SESSION_ID: sessionId },
+        env: {
+          ...process.env,
+          NODE_ENV: 'development',
+          PM_SESSION_ID: sessionId,
+        },
+        // Additional security: disable shell interpretation
+        shell: false,
       })
 
       child.on('close', (code: number | null) => {
