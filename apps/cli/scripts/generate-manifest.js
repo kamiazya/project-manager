@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { exec } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { getCatalogsFromWorkspaceManifest } from '@pnpm/catalogs.config'
 import { createExportableManifest } from '@pnpm/exportable-manifest'
@@ -10,10 +11,55 @@ import { readWorkspaceManifest } from '@pnpm/workspace.read-manifest'
 
 const execAsync = promisify(exec)
 
+/**
+ * Robustly find the workspace root by traversing up the directory tree
+ * and looking for characteristic files that identify a pnpm workspace.
+ *
+ * @param {string} startDir - Directory to start searching from
+ * @returns {string} - Absolute path to workspace root
+ * @throws {Error} - If workspace root cannot be found
+ */
+function findWorkspaceRoot(startDir = process.cwd()) {
+  let currentDir = resolve(startDir)
+  const rootDir = resolve('/')
+
+  while (currentDir !== rootDir) {
+    // Check for workspace indicators in order of reliability
+    const indicators = [
+      'pnpm-workspace.yaml', // Primary pnpm workspace indicator
+      'pnpm-lock.yaml', // pnpm lockfile indicates workspace root
+      '.git', // Git root often matches workspace root
+      'lerna.json', // Alternative workspace tool
+      'rush.json', // Alternative workspace tool
+    ]
+
+    for (const indicator of indicators) {
+      const indicatorPath = join(currentDir, indicator)
+      if (existsSync(indicatorPath)) {
+        // Additional validation: ensure this is actually a workspace root
+        const packageJsonPath = join(currentDir, 'package.json')
+        if (existsSync(packageJsonPath)) {
+          return currentDir
+        }
+      }
+    }
+
+    // Move up one directory
+    const parentDir = dirname(currentDir)
+    if (parentDir === currentDir) {
+      // Reached filesystem root without finding workspace
+      break
+    }
+    currentDir = parentDir
+  }
+
+  throw new Error(`Could not find workspace root starting from: ${startDir}`)
+}
+
 async function generateManifest() {
   try {
     // Read workspace manifest and get catalogs
-    const workspaceRoot = process.cwd().includes('apps/cli') ? resolve('../..') : process.cwd()
+    const workspaceRoot = findWorkspaceRoot()
     const workspaceManifest = await readWorkspaceManifest(workspaceRoot)
     const catalogs = workspaceManifest ? getCatalogsFromWorkspaceManifest(workspaceManifest) : {}
 
@@ -37,9 +83,7 @@ async function generateManifest() {
     const originalPackageData = new Map()
 
     // Process CLI package separately
-    const cliPackagePath = process.cwd().includes('apps/cli')
-      ? 'package.json'
-      : 'apps/cli/package.json'
+    const cliPackagePath = join(workspaceRoot, 'apps/cli/package.json')
     const currentCliContent = await readFile(cliPackagePath, 'utf8')
     const currentCliPkg = JSON.parse(currentCliContent)
     originalPackageData.set('@project-manager/cli', {
@@ -112,9 +156,8 @@ async function generateManifest() {
     try {
       // Generate manifest
       console.log('Generating oclif manifest using pnpm publishConfig mechanism...')
-      const oclifCommand = process.cwd().includes('apps/cli')
-        ? 'npx oclif manifest'
-        : 'cd apps/cli && npx oclif manifest'
+      const cliDir = join(workspaceRoot, 'apps/cli')
+      const oclifCommand = `cd "${cliDir}" && npx oclif manifest`
       await execAsync(oclifCommand)
       console.log('Manifest generated successfully')
     } finally {
