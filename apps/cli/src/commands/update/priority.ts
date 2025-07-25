@@ -1,4 +1,5 @@
 import { Args } from '@oclif/core'
+import type { TicketResponse } from '@project-manager/sdk'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
@@ -13,7 +14,7 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Update a ticket's priority
  */
-export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void> {
+export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, TicketResponse> {
   static override description = 'Update ticket priority'
 
   static override args = {
@@ -32,7 +33,7 @@ export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags
     'pm update priority ticket-456 low',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<TicketResponse | undefined> {
     // Validate required arguments
     if (!args.ticketId) {
       this.error('Ticket ID is required')
@@ -46,13 +47,12 @@ export class UpdatePriorityCommand extends BaseCommand<ExecuteArgs, ExecuteFlags
 
     // Handle JSON output
     if (flags.json) {
-      this.logJson(updatedTicket)
-      return
+      return updatedTicket
     }
 
     // Display success message
     this.log(`Ticket ${args.ticketId} priority updated to: ${args.priority}`)
 
-    return
+    return undefined
   }
 }

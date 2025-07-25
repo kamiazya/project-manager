@@ -42,8 +42,12 @@ describe('UpdateContentCommand', () => {
     // Reset mocks
     vi.clearAllMocks()
 
-    // Mock BaseCommand methods
-    command.logJson = vi.fn()
+    // Mock BaseCommand methods - logJson is protected, so we access it through any cast
+    Object.defineProperty(command, 'logJson', {
+      value: vi.fn(),
+      writable: true,
+      configurable: true,
+    })
 
     // Setup default successful response
     vi.mocked(mockSDK.tickets.updateContent).mockResolvedValue(mockUpdatedTicket)

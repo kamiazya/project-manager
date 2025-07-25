@@ -1,4 +1,5 @@
 import { Args, Flags } from '@oclif/core'
+import type { TicketResponse } from '@project-manager/sdk'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
@@ -14,7 +15,7 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Update a ticket's content (title and description)
  */
-export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, void> {
+export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, TicketResponse> {
   static override description = 'Update ticket content (title and description)'
 
   static override args = {
@@ -41,17 +42,15 @@ export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
     'pm update content ticket-789 -t "Bug fix" -d "Fixed the login issue"',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<void> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<TicketResponse | undefined> {
     // Validate required ticket ID
     if (!args.ticketId || args.ticketId.trim() === '') {
       this.error('Ticket ID is required')
-      return
     }
 
     // Validate that at least one update field is provided
     if (!flags.title && !flags.description) {
       this.error('At least one of title or description must be provided')
-      return
     }
 
     // Execute the update operation using SDK
@@ -63,8 +62,7 @@ export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
 
     // Handle JSON output
     if (flags.json) {
-      this.logJson(updatedTicket)
-      return
+      return updatedTicket
     }
 
     // Display success message
@@ -73,5 +71,6 @@ export class UpdateContentCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
     if (flags.description) updates.push('description')
 
     this.log(`Ticket ${args.ticketId} ${updates.join(' and ')} updated successfully.`)
+    return undefined
   }
 }
