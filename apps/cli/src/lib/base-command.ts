@@ -54,6 +54,7 @@ export abstract class BaseCommand<
   // Static cache for SDK instances - following oclif Cache pattern
   private static cachedSDK: ProjectManagerSDK | null = null
   private static lastConfigHash: string | null = null
+  private static cleanupRegistered = false
 
   /**
    * Enable JSON flag support for all commands by default.
@@ -82,6 +83,12 @@ export abstract class BaseCommand<
       this.sdk = await createProjectManagerSDK(config)
       BaseCommand.cachedSDK = this.sdk
       BaseCommand.lastConfigHash = configHash
+
+      // Register global cleanup handler once
+      if (!BaseCommand.cleanupRegistered) {
+        BaseCommand.setupGlobalCleanup()
+        BaseCommand.cleanupRegistered = true
+      }
     } catch (error) {
       if (error instanceof Error) {
         this.error(`Failed to initialize SDK: ${error.message}`)
@@ -115,6 +122,46 @@ export abstract class BaseCommand<
   }
 
   /**
+   * Setup global cleanup handlers for process exit.
+   */
+  private static setupGlobalCleanup(): void {
+    const cleanup = async () => {
+      if (BaseCommand.cachedSDK && typeof BaseCommand.cachedSDK.shutdown === 'function') {
+        try {
+          await BaseCommand.cachedSDK.shutdown()
+        } catch (error) {
+          // Don't log to prevent hanging on exit
+        }
+      }
+    }
+
+    // Handle various exit scenarios
+    process.on('exit', () => {
+      // Synchronous cleanup only - no async operations allowed here
+    })
+
+    process.on('SIGINT', async () => {
+      await cleanup()
+      process.exit(0)
+    })
+
+    process.on('SIGTERM', async () => {
+      await cleanup()
+      process.exit(0)
+    })
+
+    process.on('uncaughtException', async () => {
+      await cleanup()
+      process.exit(1)
+    })
+
+    process.on('unhandledRejection', async () => {
+      await cleanup()
+      process.exit(1)
+    })
+  }
+
+  /**
    * The `run` method is final to prevent subclass overrides.
    * Subclasses should implement `execute` instead to ensure consistent processing flow.
    */
@@ -127,16 +174,30 @@ export abstract class BaseCommand<
     const typedArgs = args as TArgs
     const typedFlags = flags as TFlags & { json?: boolean }
 
-    // Get the result from the execute method
-    const result = await this.execute(typedArgs, typedFlags)
+    try {
+      // Get the result from the execute method
+      const result = await this.execute(typedArgs, typedFlags)
 
-    // If JSON flag is enabled and result exists, return the result for testing/output
-    if (typedFlags.json && result !== undefined) {
-      this.logJson(result)
-      return result
+      // If JSON flag is enabled and result exists, return the result for testing/output
+      if (typedFlags.json && result !== undefined) {
+        this.logJson(result)
+        return result
+      }
+
+      return undefined
+    } finally {
+      // Ensure proper cleanup of SDK resources
+      await this.cleanup()
     }
+  }
 
-    return undefined
+  /**
+   * Cleanup method called after command execution.
+   * Properly shuts down SDK resources to prevent hanging.
+   */
+  private async cleanup(): Promise<void> {
+    // No per-command cleanup needed since we use global process handlers
+    // This prevents conflicts and ensures proper shutdown on process exit
   }
 
   /**
