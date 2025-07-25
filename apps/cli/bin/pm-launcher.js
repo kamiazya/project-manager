@@ -5,7 +5,7 @@
  * This script determines whether to run in development or production mode.
  */
 
-import { execSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -22,15 +22,26 @@ if (isDevelopment) {
   // Development mode: use tsx to run TypeScript directly
   process.env.NODE_ENV = process.env.NODE_ENV || 'development'
 
-  // Pass all arguments to tsx
+  // Pass all arguments to tsx securely using spawn
   const args = process.argv.slice(2)
-  const tsxCommand = `tsx "${srcPath}" ${args.map(arg => `"${arg}"`).join(' ')}`
 
   try {
-    execSync(tsxCommand, { stdio: 'inherit' })
+    const child = spawn('tsx', [srcPath, ...args], {
+      stdio: 'inherit',
+      shell: false, // Disable shell interpretation for security
+    })
+
+    child.on('close', code => {
+      process.exit(code || 0)
+    })
+
+    child.on('error', error => {
+      console.error('Failed to start tsx:', error)
+      process.exit(1)
+    })
   } catch (error) {
-    // execSync throws on non-zero exit codes
-    process.exit(error.status || 1)
+    console.error('Failed to spawn tsx process:', error)
+    process.exit(1)
   }
 } else {
   // Production mode: run compiled JavaScript
