@@ -69,6 +69,7 @@ export default defineConfig({
         'node_modules/',
         'dist/',
         'packages/*/dist/',
+        'coverage/',
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
         '**/*.d.ts',
       ],

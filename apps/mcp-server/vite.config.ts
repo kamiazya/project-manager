@@ -20,8 +20,7 @@ export default defineConfig({
     conditions: ['development', 'import', 'module', 'browser', 'default'],
   },
   plugins: [
-    // TODO: Re-enable architecture fitness when SDK dependency issues are resolved
-    // cleanArchitecture(projectManagerArchitectureRules),
+    cleanArchitecture(projectManagerArchitectureRules),
     dts({
       rollupTypes: true,
       insertTypesEntry: true,
