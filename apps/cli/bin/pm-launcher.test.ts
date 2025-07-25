@@ -18,72 +18,45 @@ const __dirname = dirname(__filename)
 async function runTests() {
   console.log('🧪 Running CLI Launcher Security Tests...\n')
 
-  // Test: Verify pm-launcher.js uses spawn instead of execSync
-  {
-    const launcherPath = join(__dirname, 'pm-launcher.js')
-    const content = await readFile(launcherPath, 'utf-8')
+  // Read the launcher file once and reuse content for all tests
+  const launcherPath = join(__dirname, 'pm-launcher.js')
+  const content = await readFile(launcherPath, 'utf-8')
+  // Should not contain execSync import or usage
+  assert(!content.includes('execSync'), 'Should not use execSync')
 
-    // Should not contain execSync import or usage
-    assert(!content.includes('execSync'), 'Should not use execSync')
-
-    // If importing from node:child_process, must include spawn
-    if (content.includes("from 'node:child_process'")) {
-      assert(content.includes('spawn'), 'Should import spawn when using node:child_process')
-    }
-
-    // Should use spawn with array arguments
-    assert(
-      content.includes("spawn('tsx', [srcPath, ...args]"),
-      'Should use spawn with array arguments'
-    )
-
-    // Should disable shell interpretation
-    assert(content.includes('shell: false'), 'Should disable shell interpretation')
-
-    console.log('✅ Code structure security test passed')
+  // If importing from node:child_process, must include spawn
+  if (content.includes("from 'node:child_process'")) {
+    assert(content.includes('spawn'), 'Should import spawn when using node:child_process')
   }
 
-  // Test: Verify no string concatenation in command construction
-  {
-    const launcherPath = join(__dirname, 'pm-launcher.js')
-    const content = await readFile(launcherPath, 'utf-8')
+  // Should use spawn with array arguments
+  assert(
+    content.includes("spawn('tsx', [srcPath, ...args]"),
+    'Should use spawn with array arguments'
+  )
 
-    // Should not contain dangerous string concatenation patterns
-    assert(!content.includes('`tsx'), 'Should not use template literals for command construction')
-    assert(
-      !content.includes('tsx "'),
-      'Should not use string concatenation for command construction'
-    )
-    assert(!content.includes(".join(' ')"), 'Should not join arguments with spaces')
+  // Should disable shell interpretation
+  assert(content.includes('shell: false'), 'Should disable shell interpretation')
 
-    console.log('✅ String concatenation security test passed')
-  }
+  console.log('✅ Code structure security test passed')
+  // Should not contain dangerous string concatenation patterns
+  assert(!content.includes('`tsx'), 'Should not use template literals for command construction')
+  assert(!content.includes('tsx "'), 'Should not use string concatenation for command construction')
+  assert(!content.includes(".join(' ')"), 'Should not join arguments with spaces')
 
-  // Test: Verify secure argument handling
-  {
-    const launcherPath = join(__dirname, 'pm-launcher.js')
-    const content = await readFile(launcherPath, 'utf-8')
+  console.log('✅ String concatenation security test passed')
+  // Should pass arguments as array elements to spawn
+  assert(content.includes('[srcPath, ...args]'), 'Should spread args array into spawn arguments')
 
-    // Should pass arguments as array elements to spawn
-    assert(content.includes('[srcPath, ...args]'), 'Should spread args array into spawn arguments')
+  // Should handle process events securely
+  assert(content.includes("child.on('close'"), 'Should handle close event')
+  assert(content.includes("child.on('error'"), 'Should handle error event')
 
-    // Should handle process events securely
-    assert(content.includes("child.on('close'"), 'Should handle close event')
-    assert(content.includes("child.on('error'"), 'Should handle error event')
+  console.log('✅ Argument handling security test passed')
+  // Should inherit stdio for proper CLI interaction
+  assert(content.includes("stdio: 'inherit'"), 'Should inherit stdio')
 
-    console.log('✅ Argument handling security test passed')
-  }
-
-  // Test: Verify stdio inheritance is preserved
-  {
-    const launcherPath = join(__dirname, 'pm-launcher.js')
-    const content = await readFile(launcherPath, 'utf-8')
-
-    // Should inherit stdio for proper CLI interaction
-    assert(content.includes("stdio: 'inherit'"), 'Should inherit stdio')
-
-    console.log('✅ stdio inheritance test passed')
-  }
+  console.log('✅ stdio inheritance test passed')
 
   console.log('\n🎉 All CLI launcher security tests passed!')
   console.log('The CLI launcher is now protected against shell injection attacks.')
