@@ -42,6 +42,9 @@ describe('UpdateContentCommand', () => {
     // Reset mocks
     vi.clearAllMocks()
 
+    // Mock BaseCommand methods
+    command.logJson = vi.fn()
+
     // Setup default successful response
     vi.mocked(mockSDK.tickets.updateContent).mockResolvedValue(mockUpdatedTicket)
   })
@@ -151,7 +154,7 @@ describe('UpdateContentCommand', () => {
       // Act & Assert
       await expect(command.execute(args, flags)).rejects.toThrow('Command error')
       expect(command.error).toHaveBeenCalledWith(
-        'At least one of --title or --description must be provided'
+        'At least one of title or description must be provided'
       )
     })
 
