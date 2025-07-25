@@ -7,6 +7,12 @@ import {
   TicketId,
 } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  getValidUlidByIndex,
+  VALID_ULID_1,
+  VALID_ULID_2,
+  VALID_ULID_3,
+} from '../../test-helpers.ts'
 import type { TicketJSON } from '../../types/persistence-types.ts'
 import {
   InfrastructureError,
@@ -22,7 +28,7 @@ describe('TicketMapper', () => {
 
   beforeEach(() => {
     // Create a sample domain ticket for testing
-    const ticketId = TicketId.create('a1b2c3d4')
+    const ticketId = TicketId.create(VALID_ULID_1)
     sampleTicket = Ticket.create(ticketId, {
       title: 'Test Ticket',
       description: 'Test Description',
@@ -64,7 +70,7 @@ describe('TicketMapper', () => {
 
     it('should handle ticket without description', () => {
       // Arrange
-      const ticketId = TicketId.create('1234abcd')
+      const ticketId = TicketId.create(VALID_ULID_2)
       const ticketWithoutDescription = Ticket.create(ticketId, {
         title: 'No Description Ticket',
         status: 'pending',
@@ -238,7 +244,7 @@ describe('TicketMapper', () => {
       // Arrange
       const secondTicketJSON: TicketJSON = {
         ...sampleTicketJSON,
-        id: 'ticket-2',
+        id: VALID_ULID_2,
         title: 'Second Ticket',
       }
       const jsonList = [sampleTicketJSON, secondTicketJSON]
@@ -280,7 +286,7 @@ describe('TicketMapper', () => {
         const invalidTicket = { ...sampleTicketJSON, id: undefined } as any
         const anotherValidTicket = {
           ...sampleTicketJSON,
-          id: 'valid-id-2',
+          id: VALID_ULID_2,
           title: 'Valid Ticket 2',
         }
 
@@ -356,7 +362,7 @@ describe('TicketMapper', () => {
         // Arrange
         const invalidTicket = {
           ...sampleTicketJSON,
-          id: 'error-ticket-id',
+          id: VALID_ULID_3,
           title: undefined,
         } as any
         const jsonList = [invalidTicket]
@@ -367,7 +373,7 @@ describe('TicketMapper', () => {
         // Should log with correct ticket ID
         expect(mockLogger.warn).toHaveBeenCalledWith(
           expect.stringContaining('Skipping invalid ticket during bulk reconstitution'),
-          expect.objectContaining({ ticketId: 'error-ticket-id' })
+          expect.objectContaining({ ticketId: VALID_ULID_3 })
         )
       })
     })
@@ -376,7 +382,7 @@ describe('TicketMapper', () => {
   describe('toPersistenceList', () => {
     it('should convert array of domain objects to array of JSON', () => {
       // Arrange
-      const secondTicketId = TicketId.create('b2c3d4e5')
+      const secondTicketId = TicketId.create(VALID_ULID_2)
       const secondTicket = Ticket.create(secondTicketId, {
         title: 'Second Ticket',
         description: 'Second Description',
@@ -425,7 +431,7 @@ describe('TicketMapper', () => {
 
     it('should handle round-trip for tickets without description', () => {
       // Arrange
-      const ticketId = TicketId.create('12345678')
+      const ticketId = TicketId.create(VALID_ULID_2)
       const ticketWithoutDescription = Ticket.create(ticketId, {
         title: 'No Description',
         status: 'completed',
@@ -448,7 +454,7 @@ describe('TicketMapper', () => {
       // Arrange
       const longTitle = 'A'.repeat(200) // Maximum title length
       const longDescription = 'B'.repeat(2000) // Long description
-      const ticketId = TicketId.create('abcdabcd')
+      const ticketId = TicketId.create(VALID_ULID_3)
 
       const ticketWithLongContent = Ticket.create(ticketId, {
         title: longTitle,
@@ -476,10 +482,10 @@ describe('TicketMapper', () => {
         priorityValues.forEach((priority, pi) => {
           typeValues.forEach((type, ti) => {
             // Arrange - Generate valid 8-char hex ID (pad with zeros)
-            const hexId = `${si.toString(16)}${pi.toString(16)}${ti.toString(16)}abcd0`
-              .padStart(8, '0')
-              .slice(0, 8)
-            const ticketId = TicketId.create(hexId)
+            // Use different ULID for each combination
+            const ulidIndex =
+              si * priorityValues.length * typeValues.length + pi * typeValues.length + ti
+            const ticketId = TicketId.create(getValidUlidByIndex(ulidIndex))
             const ticket = Ticket.create(ticketId, {
               title: `Ticket ${status}-${priority}-${type}`,
               status: status,

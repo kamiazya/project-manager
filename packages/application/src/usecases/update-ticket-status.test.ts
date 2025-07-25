@@ -1,6 +1,7 @@
 import { Ticket, TicketId } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TicketNotFoundError } from '../common/errors/application-errors.ts'
+import { VALID_ULID_1 } from '../common/test-helpers.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { UpdateTicketStatus } from './update-ticket-status.ts'
 
@@ -11,8 +12,8 @@ describe('UpdateTicketStatus', () => {
   let existingTicket: Ticket
 
   beforeEach(() => {
-    validTicketId = '12345678'
-    const testTicketId = TicketId.create('12345678')
+    validTicketId = VALID_ULID_1
+    const testTicketId = TicketId.create(VALID_ULID_1)
     existingTicket = Ticket.create(testTicketId, {
       title: 'Test Ticket',
       description: 'Test Description',

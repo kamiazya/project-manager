@@ -1,5 +1,6 @@
 import { Ticket, TicketValidationError } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { getValidUlidByIndex, VALID_ULID_1, VALID_ULID_2 } from '../common/test-helpers.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import type { IdGenerator } from '../services/id-generator.interface.ts'
 import { CreateTicket } from './create-ticket.ts'
@@ -17,7 +18,7 @@ describe('CreateTicket', () => {
       delete: vi.fn(),
     }
     mockIdGenerator = {
-      generateId: vi.fn().mockReturnValue('a1b2c3d4'),
+      generateId: vi.fn().mockReturnValue(VALID_ULID_1),
     }
 
     const mockLogger = {
@@ -93,8 +94,8 @@ describe('CreateTicket', () => {
     it('should generate unique IDs for multiple tickets', async () => {
       // Configure the mock to return different values for different calls
       vi.mocked(mockIdGenerator.generateId)
-        .mockReturnValueOnce('a1b2c3d4')
-        .mockReturnValueOnce('e5f6a7b8')
+        .mockReturnValueOnce(VALID_ULID_1)
+        .mockReturnValueOnce(VALID_ULID_2)
 
       const request1: CreateTicket.Request = {
         title: 'Ticket 1',

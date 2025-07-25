@@ -1,6 +1,7 @@
 import { Ticket, TicketId } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.ts'
+import { VALID_ULID_1 } from '../common/test-helpers.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { UpdateTicketContent } from './update-ticket-content.ts'
 
@@ -29,7 +30,7 @@ describe('UpdateTicketContentUseCase', () => {
     useCase = new UpdateTicketContent.UseCase(mockRepository)
     useCase.logger = mockLogger as any
 
-    const testTicketId = TicketId.create('12345678')
+    const testTicketId = TicketId.create(VALID_ULID_1)
     testTicket = Ticket.create(testTicketId, {
       title: 'Original Title',
       description: 'Original Description',
@@ -42,7 +43,7 @@ describe('UpdateTicketContentUseCase', () => {
   describe('execute', () => {
     it('should throw TicketValidationError when no updates are provided', async () => {
       const request: UpdateTicketContent.Request = {
-        id: 'test-id',
+        id: VALID_ULID_1,
         updates: {},
       }
 
@@ -56,12 +57,14 @@ describe('UpdateTicketContentUseCase', () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(null)
 
       const request: UpdateTicketContent.Request = {
-        id: 'abc12345',
+        id: VALID_ULID_1,
         updates: { title: 'New Title' },
       }
 
       await expect(useCase.execute(request)).rejects.toThrow(TicketNotFoundError)
-      await expect(useCase.execute(request)).rejects.toThrow("Ticket with ID 'abc12345' not found")
+      await expect(useCase.execute(request)).rejects.toThrow(
+        `Ticket with ID '${VALID_ULID_1}' not found`
+      )
     })
 
     it('should update title only when title is provided', async () => {
@@ -178,7 +181,7 @@ describe('UpdateTicketContentUseCase', () => {
   describe('UpdateTicketContentRequest', () => {
     it('should validate that no updates are provided via request structure', () => {
       const request: UpdateTicketContent.Request = {
-        id: 'test-id',
+        id: VALID_ULID_1,
         updates: {},
       }
       // No updates provided - use case will validate this
@@ -187,7 +190,7 @@ describe('UpdateTicketContentUseCase', () => {
 
     it('should allow title updates via request structure', () => {
       const request: UpdateTicketContent.Request = {
-        id: 'test-id',
+        id: VALID_ULID_1,
         updates: { title: 'New Title' },
       }
       expect(request.updates.title).toBe('New Title')
@@ -196,7 +199,7 @@ describe('UpdateTicketContentUseCase', () => {
 
     it('should allow description updates via request structure', () => {
       const request: UpdateTicketContent.Request = {
-        id: 'test-id',
+        id: VALID_ULID_1,
         updates: { description: 'New Description' },
       }
       expect(request.updates.description).toBe('New Description')

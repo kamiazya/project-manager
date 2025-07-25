@@ -1,46 +1,45 @@
-// Test constants (previously from shared package)
-const _VALIDATION = {
-  TICKET_ID_MIN_LENGTH: 8,
-  TICKET_ID_MAX_LENGTH: 8,
-}
-
 import { describe, expect, it } from 'vitest'
+import {
+  INVALID_ID_CONTAINS_INVALID_CHARS,
+  INVALID_ID_CONTAINS_LOWERCASE,
+  INVALID_ID_CONTAINS_SPECIAL,
+  INVALID_ID_TOO_LONG,
+  INVALID_ID_TOO_SHORT,
+  VALID_ULID_1,
+  VALID_ULID_2,
+} from '../test-helpers.ts'
 import { TicketId } from './ticket-id.ts'
 
 describe('TicketId', () => {
   describe('create', () => {
     it('should create a TicketId with provided valid id', () => {
-      const validId = 'a1b2c3d4' // 8 hex characters
+      const validId = VALID_ULID_1
       const ticketId = TicketId.create(validId)
 
       expect(ticketId.value).toBe(validId)
-      expect(ticketId.value.length).toBe(8)
+      expect(ticketId.value.length).toBe(26)
     })
 
     it('should throw error when id has invalid format', () => {
-      const invalidId1 = 'abc' // Too short
-      const invalidId2 = 'abcd12345' // Too long
-      const invalidId3 = 'abcd123g' // Contains non-hex character
-      const invalidId4 = 'ABCD1234' // Contains uppercase (not allowed)
+      const testCases = [
+        { id: INVALID_ID_TOO_SHORT, desc: 'Too short' },
+        { id: INVALID_ID_TOO_LONG, desc: 'Too long' },
+        { id: INVALID_ID_CONTAINS_LOWERCASE, desc: 'Contains lowercase' },
+        { id: INVALID_ID_CONTAINS_INVALID_CHARS, desc: 'Contains invalid chars' },
+        { id: INVALID_ID_CONTAINS_SPECIAL, desc: 'Contains special chars' },
+      ]
 
-      expect(() => TicketId.create(invalidId1)).toThrow(
-        'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
-      )
-      expect(() => TicketId.create(invalidId2)).toThrow(
-        'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
-      )
-      expect(() => TicketId.create(invalidId3)).toThrow(
-        'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
-      )
-      expect(() => TicketId.create(invalidId4)).toThrow(
-        'Ticket ID must be exactly 8 hexadecimal characters (0-9, a-f)'
-      )
+      testCases.forEach(({ id, desc }) => {
+        expect(() => TicketId.create(id)).toThrow(
+          'Ticket ID must be a valid ULID (26 characters, Base32 encoded)'
+        )
+      })
     })
   })
 
   describe('fromValue', () => {
     it('should reconstitute a TicketId without validation', () => {
-      const shortId = 'abc' // Would fail validation in create()
+      const shortId = INVALID_ID_TOO_SHORT // Would fail validation in create()
       const ticketId = TicketId.fromValue(shortId)
 
       expect(ticketId.value).toBe(shortId)
@@ -49,7 +48,7 @@ describe('TicketId', () => {
 
   describe('equals', () => {
     it('should return true for equal TicketIds', () => {
-      const id = '12345678' // 8 hex characters
+      const id = VALID_ULID_1
       const ticketId1 = TicketId.create(id)
       const ticketId2 = TicketId.create(id)
 
@@ -57,21 +56,21 @@ describe('TicketId', () => {
     })
 
     it('should return false for different TicketIds', () => {
-      const ticketId1 = TicketId.create('12345678')
-      const ticketId2 = TicketId.create('87654321')
+      const ticketId1 = TicketId.create(VALID_ULID_1)
+      const ticketId2 = TicketId.create(VALID_ULID_2)
 
       expect(ticketId1.equals(ticketId2)).toBe(false)
     })
 
     it('should return false when comparing with null', () => {
-      const validId = 'a1b2c3d4' // 8 hex characters
+      const validId = VALID_ULID_1
       const ticketId = TicketId.create(validId)
 
       expect(ticketId.equals(null as any)).toBe(false)
     })
 
     it('should return false when comparing with undefined', () => {
-      const validId = 'a1b2c3d4' // 8 hex characters
+      const validId = VALID_ULID_1
       const ticketId = TicketId.create(validId)
 
       expect(ticketId.equals(undefined as any)).toBe(false)
@@ -80,7 +79,7 @@ describe('TicketId', () => {
 
   describe('toString', () => {
     it('should return the id value as string', () => {
-      const id = 'abc12345' // 8 hex characters
+      const id = VALID_ULID_1
       const ticketId = TicketId.create(id)
 
       expect(ticketId.toString()).toBe(id)
