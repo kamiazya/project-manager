@@ -19,8 +19,8 @@ export interface TicketQueryCriteria {
  * Uses domain objects (value objects) instead of primitives
  */
 export interface TicketRepository {
-  save(ticket: Ticket): void
+  save(ticket: Ticket): Promise<void>
   findById(id: TicketId): Promise<Ticket | null>
   queryTickets(criteria: TicketQueryCriteria): Promise<Ticket[]>
-  delete(id: TicketId): void
+  delete(id: TicketId): Promise<void>
 }
