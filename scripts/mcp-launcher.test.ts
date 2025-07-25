@@ -1,59 +1,7 @@
 #!/usr/bin/env tsx
 
 import assert from 'node:assert'
-
-/**
- * Extract the sanitizeCommandLineArgs function for testing
- * We'll copy the function here to avoid modifying the main script
- */
-function sanitizeCommandLineArgs(args: string[]): string[] {
-  const safeArgs: string[] = []
-
-  // Limit total number of arguments to prevent resource exhaustion
-  if (args.length > 50) {
-    console.warn(`Too many arguments provided (${args.length}), limiting to first 50`)
-    args = args.slice(0, 50)
-  }
-
-  for (const arg of args) {
-    // Check for potentially dangerous characters that could be used for shell injection
-    if (typeof arg !== 'string') {
-      console.warn(`Skipping non-string argument:`, arg)
-      continue
-    }
-
-    // Reject empty arguments
-    if (arg.length === 0) {
-      continue
-    }
-
-    // Allow only safe characters: alphanumeric, hyphens, underscores, dots, forward slashes, colons, equals
-    // This covers most legitimate MCP server arguments while blocking shell metacharacters
-    // Specifically blocks: $, `, ;, |, &, >, <, (, ), [, ], {, }, *, ?, \, ", ', space, tab
-    if (!/^[a-zA-Z0-9\-_./:=]+$/.test(arg)) {
-      console.warn(`Skipping potentially unsafe argument: ${arg}`)
-      continue
-    }
-
-    // Limit argument length to prevent buffer overflow attempts
-    if (arg.length > 500) {
-      console.warn(`Skipping oversized argument (${arg.length} chars)`)
-      continue
-    }
-
-    // Additional validation: reject arguments that look like command injection attempts
-    const suspiciousPatterns = [/&&/, /\|\|/, /;/, /\$\(/, /`/, /\$\{/, />/, /</, /\|/]
-
-    if (suspiciousPatterns.some(pattern => pattern.test(arg))) {
-      console.warn(`Skipping argument with suspicious pattern: ${arg}`)
-      continue
-    }
-
-    safeArgs.push(arg)
-  }
-
-  return safeArgs
-}
+import { sanitizeCommandLineArgs } from './security-utils.ts'
 
 // Test runner
 function runTests() {
