@@ -144,24 +144,51 @@ export abstract class BaseCommand<
       }
     }
 
-    const performAsyncCleanup = async () => {
-      if (isShuttingDown) return
+    // Flags to track shutdown state and prevent concurrent cleanup
+    let hasExited = false
+    let cleanupTimeout: NodeJS.Timeout | null = null
+
+    const performGracefulShutdown = (signal: NodeJS.Signals) => {
+      // Prevent concurrent cleanup calls
+      if (isShuttingDown || hasExited) return
       isShuttingDown = true
 
-      if (BaseCommand.cachedSDK && typeof BaseCommand.cachedSDK.shutdown === 'function') {
-        try {
-          // Set a timeout to prevent hanging during shutdown
-          const shutdownPromise = BaseCommand.cachedSDK.shutdown()
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Shutdown timeout')), 5000)
-          )
+      // Set a maximum cleanup time to prevent hanging
+      cleanupTimeout = setTimeout(() => {
+        if (!hasExited) {
+          hasExited = true
+          process.kill(process.pid, 'SIGKILL')
+        }
+      }, 3000) // 3-second timeout for graceful shutdown
 
-          await Promise.race([shutdownPromise, timeoutPromise])
-        } catch (error) {
-          // Don't log to prevent hanging on exit
-        } finally {
-          BaseCommand.cachedSDK = null
-          BaseCommand.lastConfigHash = null
+      // Perform async cleanup with proper error handling
+      if (BaseCommand.cachedSDK && typeof BaseCommand.cachedSDK.shutdown === 'function') {
+        BaseCommand.cachedSDK
+          .shutdown()
+          .then(() => {
+            // Cleanup completed successfully
+            BaseCommand.cachedSDK = null
+            BaseCommand.lastConfigHash = null
+          })
+          .catch(() => {
+            // Cleanup failed, but still clear references
+            BaseCommand.cachedSDK = null
+            BaseCommand.lastConfigHash = null
+          })
+          .finally(() => {
+            // Ensure we exit only once
+            if (!hasExited) {
+              hasExited = true
+              if (cleanupTimeout) clearTimeout(cleanupTimeout)
+              process.exit(0)
+            }
+          })
+      } else {
+        // No SDK to clean up, exit immediately
+        if (!hasExited) {
+          hasExited = true
+          if (cleanupTimeout) clearTimeout(cleanupTimeout)
+          process.exit(0)
         }
       }
     }
@@ -169,18 +196,19 @@ export abstract class BaseCommand<
     // Handle various exit scenarios
     process.on('exit', () => {
       // Synchronous cleanup only - no async operations allowed here
-      performSyncCleanup()
+      // Clear timeout if still active
+      if (cleanupTimeout) clearTimeout(cleanupTimeout)
+
+      // Perform final synchronous cleanup
+      if (BaseCommand.cachedSDK && !isShuttingDown) {
+        BaseCommand.cachedSDK = null
+        BaseCommand.lastConfigHash = null
+      }
     })
 
-    process.on('SIGINT', async () => {
-      await performAsyncCleanup()
-      process.exit(0)
-    })
-
-    process.on('SIGTERM', async () => {
-      await performAsyncCleanup()
-      process.exit(0)
-    })
+    // Graceful shutdown signals - allow async cleanup with timeout protection
+    process.on('SIGINT', () => performGracefulShutdown('SIGINT'))
+    process.on('SIGTERM', () => performGracefulShutdown('SIGTERM'))
 
     // CRITICAL: These handlers must be synchronous per Node.js documentation
     // After uncaughtException/unhandledRejection, the process is in an unknown state
@@ -229,30 +257,16 @@ export abstract class BaseCommand<
     const typedArgs = args as TArgs
     const typedFlags = flags as TFlags & { json?: boolean }
 
-    try {
-      // Get the result from the execute method
-      const result = await this.execute(typedArgs, typedFlags)
+    // Get the result from the execute method
+    const result = await this.execute(typedArgs, typedFlags)
 
-      // If JSON flag is enabled and result exists, return the result for testing/output
-      if (typedFlags.json && result !== undefined) {
-        this.logJson(result)
-        return result
-      }
-
-      return undefined
-    } finally {
-      // Ensure proper cleanup of SDK resources
-      await this.cleanup()
+    // If JSON flag is enabled and result exists, return the result for testing/output
+    if (typedFlags.json && result !== undefined) {
+      this.logJson(result)
+      return result
     }
-  }
 
-  /**
-   * Cleanup method called after command execution.
-   * Properly shuts down SDK resources to prevent hanging.
-   */
-  private async cleanup(): Promise<void> {
-    // No per-command cleanup needed since we use global process handlers
-    // This prevents conflicts and ensures proper shutdown on process exit
+    return undefined
   }
 
   /**
