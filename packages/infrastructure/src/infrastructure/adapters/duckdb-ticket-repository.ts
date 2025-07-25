@@ -96,18 +96,27 @@ export class DuckDbTicketRepository implements TicketRepository {
     const connection = await this.getConnection()
     const data = TicketMapper.toPersistence(ticket)
 
-    // Use INSERT ... ON CONFLICT for upsert behavior
-    // This is more reliable than separate check + update/insert
+    // Use parameterized queries to prevent SQL injection
     await connection.run(
       `INSERT INTO tickets (id, title, description, status, priority, type, created_at, updated_at)
-       VALUES ('${data.id}', '${data.title}', ${data.description ? `'${data.description}'` : 'NULL'}, '${data.status}', '${data.priority}', '${data.type}', '${data.createdAt}', '${data.updatedAt}')
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        ON CONFLICT (id) DO UPDATE SET
          title = EXCLUDED.title,
          description = EXCLUDED.description,
          status = EXCLUDED.status,
          priority = EXCLUDED.priority,
          type = EXCLUDED.type,
-         updated_at = EXCLUDED.updated_at`
+         updated_at = EXCLUDED.updated_at`,
+      [
+        data.id,
+        data.title,
+        data.description || null,
+        data.status,
+        data.priority,
+        data.type,
+        data.createdAt,
+        data.updatedAt,
+      ]
     )
   }
 
@@ -116,7 +125,9 @@ export class DuckDbTicketRepository implements TicketRepository {
    */
   async findById(id: TicketId): Promise<Ticket | null> {
     const connection = await this.getConnection()
-    const result = await connection.runAndReadAll(`SELECT * FROM tickets WHERE id = '${id.value}'`)
+
+    // Use parameterized query to prevent SQL injection
+    const result = await connection.runAndReadAll('SELECT * FROM tickets WHERE id = $1', [id.value])
 
     const rows = result.getRowObjects()
     if (!rows || rows.length === 0) {
@@ -144,22 +155,30 @@ export class DuckDbTicketRepository implements TicketRepository {
   async queryTickets(criteria: TicketQueryCriteria): Promise<Ticket[]> {
     const connection = await this.getConnection()
 
-    let query = 'SELECT * FROM tickets WHERE 1=1'
+    // Build query with parameterized placeholders
+    const queryParts: string[] = ['SELECT * FROM tickets WHERE 1=1']
+    const params: any[] = []
 
-    // Add filters
+    // Helper function to get next parameter placeholder
+    const getNextParam = () => `$${params.length + 1}`
+
+    // Add filters with parameterized queries
     if (criteria.status) {
-      query += ` AND status = '${criteria.status}'`
+      queryParts.push(`AND status = ${getNextParam()}`)
+      params.push(criteria.status)
     }
 
     if (criteria.priority) {
-      query += ` AND priority = '${criteria.priority}'`
+      queryParts.push(`AND priority = ${getNextParam()}`)
+      params.push(criteria.priority)
     }
 
     if (criteria.type) {
-      query += ` AND type = '${criteria.type}'`
+      queryParts.push(`AND type = ${getNextParam()}`)
+      params.push(criteria.type)
     }
 
-    // Add search
+    // Add search with parameterized queries
     if (criteria.search) {
       // Use provided searchIn fields, or default to both title and description
       const searchFields =
@@ -167,33 +186,38 @@ export class DuckDbTicketRepository implements TicketRepository {
           ? criteria.searchIn
           : ['title', 'description']
 
-      const searchConditions = searchFields
-        .map(field => {
-          if (field === 'title' || field === 'description') {
-            return `${field} ILIKE '%${criteria.search}%'`
-          }
-          return null
-        })
-        .filter(Boolean)
+      const searchConditions: string[] = []
+      searchFields.forEach(field => {
+        if (field === 'title' || field === 'description') {
+          searchConditions.push(`${field} ILIKE ${getNextParam()}`)
+          params.push(`%${criteria.search}%`)
+        }
+      })
 
       if (searchConditions.length > 0) {
-        query += ` AND (${searchConditions.join(' OR ')})`
+        queryParts.push(`AND (${searchConditions.join(' OR ')})`)
       }
     }
 
     // Add ordering
-    query += ' ORDER BY updated_at DESC'
+    queryParts.push('ORDER BY updated_at DESC')
 
     // Add limit and offset
     if (criteria.limit) {
-      query += ` LIMIT ${criteria.limit}`
+      queryParts.push(`LIMIT ${getNextParam()}`)
+      params.push(criteria.limit)
     }
 
     if (criteria.offset) {
-      query += ` OFFSET ${criteria.offset}`
+      queryParts.push(`OFFSET ${getNextParam()}`)
+      params.push(criteria.offset)
     }
 
-    const result = await connection.runAndReadAll(query)
+    const query = queryParts.join(' ')
+
+    // Use parameterized query to prevent SQL injection
+    const result = await connection.runAndReadAll(query, params)
+
     const rows = result.getRowObjects() as any[]
 
     // Convert rows to TicketJSON format
@@ -220,7 +244,9 @@ export class DuckDbTicketRepository implements TicketRepository {
    */
   async delete(id: TicketId): Promise<void> {
     const connection = await this.getConnection()
-    await connection.run(`DELETE FROM tickets WHERE id = '${id.value}'`)
+
+    // Use parameterized query to prevent SQL injection
+    await connection.run('DELETE FROM tickets WHERE id = $1', [id.value])
   }
 
   /**

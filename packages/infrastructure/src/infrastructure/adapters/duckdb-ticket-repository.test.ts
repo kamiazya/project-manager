@@ -339,6 +339,78 @@ describe('DuckDbTicketRepository', () => {
     })
   })
 
+  describe('security', () => {
+    describe('SQL injection prevention', () => {
+      it('should prevent SQL injection in search queries', async () => {
+        // Arrange - malicious search input
+        const maliciousSearch = "'; DROP TABLE tickets; --"
+
+        // Act & Assert - should not execute malicious SQL
+        await expect(async () => {
+          await repository.queryTickets({ search: maliciousSearch })
+        }).not.toThrow()
+
+        // Verify table still exists by running a simple query
+        const tickets = await repository.queryTickets({})
+        expect(Array.isArray(tickets)).toBe(true)
+      })
+
+      it('should prevent SQL injection in filter values', async () => {
+        // Arrange - malicious filter values
+        const maliciousStatus = "pending'; DROP TABLE tickets; --"
+        const maliciousPriority = "high' OR '1'='1"
+        const maliciousType = "task'; UPDATE tickets SET title='HACKED"
+
+        // Act & Assert - should not execute malicious SQL
+        await expect(async () => {
+          await repository.queryTickets({
+            status: maliciousStatus as any,
+            priority: maliciousPriority as any,
+            type: maliciousType as any,
+          })
+        }).not.toThrow()
+
+        // Verify no unauthorized changes occurred
+        const tickets = await repository.queryTickets({})
+        expect(tickets.every(t => !t.title.value.includes('HACKED'))).toBe(true)
+      })
+
+      it('should prevent SQL injection in ticket ID lookups', async () => {
+        // Arrange - malicious ticket ID should be rejected by domain validation
+        const maliciousIdString = "01K10'; DROP TABLE tickets; --"
+
+        // Act & Assert - domain layer should reject invalid ID format
+        expect(() => {
+          TicketId.create(maliciousIdString)
+        }).toThrow('Ticket ID must be a valid ULID')
+
+        // Verify table integrity after domain validation prevents the attack
+        const tickets = await repository.queryTickets({})
+        expect(Array.isArray(tickets)).toBe(true)
+      })
+
+      it('should sanitize special characters in search', async () => {
+        // Arrange - ticket with special characters for legitimate search
+        const ticket = createTestTicket({
+          title: 'Test with \'quotes\' and "double quotes"',
+          description: 'Content with % and _ wildcards',
+        })
+        await repository.save(ticket)
+
+        // Act - search for legitimate special characters
+        const results1 = await repository.queryTickets({ search: 'quotes' })
+        const results2 = await repository.queryTickets({ search: 'wildcards' })
+
+        // Assert - should find legitimate content
+        expect(results1.length).toBeGreaterThan(0)
+        expect(results2.length).toBeGreaterThan(0)
+
+        // Should find the specific ticket
+        expect(results1.some(t => t.id.value === ticket.id.value)).toBe(true)
+      })
+    })
+  })
+
   describe('concurrent operations', () => {
     it('should handle concurrent saves correctly', async () => {
       // Arrange
