@@ -125,12 +125,43 @@ export abstract class BaseCommand<
    * Setup global cleanup handlers for process exit.
    */
   private static setupGlobalCleanup(): void {
-    const cleanup = async () => {
+    // Flag to track if graceful shutdown has been initiated
+    let isShuttingDown = false
+
+    const performSyncCleanup = () => {
+      if (isShuttingDown) return
+      isShuttingDown = true
+
+      // Only perform synchronous cleanup operations
+      if (BaseCommand.cachedSDK) {
+        try {
+          // Clear the cached SDK reference to prevent further usage
+          BaseCommand.cachedSDK = null
+          BaseCommand.lastConfigHash = null
+        } catch (error) {
+          // Ignore cleanup errors during shutdown
+        }
+      }
+    }
+
+    const performAsyncCleanup = async () => {
+      if (isShuttingDown) return
+      isShuttingDown = true
+
       if (BaseCommand.cachedSDK && typeof BaseCommand.cachedSDK.shutdown === 'function') {
         try {
-          await BaseCommand.cachedSDK.shutdown()
+          // Set a timeout to prevent hanging during shutdown
+          const shutdownPromise = BaseCommand.cachedSDK.shutdown()
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Shutdown timeout')), 5000)
+          )
+
+          await Promise.race([shutdownPromise, timeoutPromise])
         } catch (error) {
           // Don't log to prevent hanging on exit
+        } finally {
+          BaseCommand.cachedSDK = null
+          BaseCommand.lastConfigHash = null
         }
       }
     }
@@ -138,26 +169,50 @@ export abstract class BaseCommand<
     // Handle various exit scenarios
     process.on('exit', () => {
       // Synchronous cleanup only - no async operations allowed here
+      performSyncCleanup()
     })
 
     process.on('SIGINT', async () => {
-      await cleanup()
+      await performAsyncCleanup()
       process.exit(0)
     })
 
     process.on('SIGTERM', async () => {
-      await cleanup()
+      await performAsyncCleanup()
       process.exit(0)
     })
 
-    process.on('uncaughtException', async () => {
-      await cleanup()
-      process.exit(1)
+    // CRITICAL: These handlers must be synchronous per Node.js documentation
+    // After uncaughtException/unhandledRejection, the process is in an unknown state
+    // and async operations can cause unpredictable behavior or hanging
+    process.on('uncaughtException', error => {
+      // Only synchronous cleanup - no async operations allowed
+      performSyncCleanup()
+
+      // Log error synchronously if possible
+      try {
+        console.error('Uncaught Exception:', error)
+      } catch {
+        // Ignore logging errors during crash
+      }
+
+      // Terminate immediately - don't use process.exit() as it may hang
+      process.kill(process.pid, 'SIGTERM')
     })
 
-    process.on('unhandledRejection', async () => {
-      await cleanup()
-      process.exit(1)
+    process.on('unhandledRejection', (reason, promise) => {
+      // Only synchronous cleanup - no async operations allowed
+      performSyncCleanup()
+
+      // Log error synchronously if possible
+      try {
+        console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+      } catch {
+        // Ignore logging errors during crash
+      }
+
+      // Terminate immediately - don't use process.exit() as it may hang
+      process.kill(process.pid, 'SIGTERM')
     })
   }
 
