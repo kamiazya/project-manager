@@ -9,14 +9,12 @@
   "types": "src/index.ts",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     },
     "./common/logging": {
-      "development": "./src/common/logging/index.ts",
-      "types": "./dist/common/logging/index.d.ts",
-      "import": "./dist/common/logging/index.js"
+      "types": "./src/common/logging/index.ts",
+      "import": "./src/common/logging/index.ts"
     }
   },
   "publishConfig": {

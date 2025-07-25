@@ -2,13 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "allowImportingTsExtensions": true,
-    "customConditions": ["development"],
-    "baseUrl": "../..",
-    "paths": {
-      "@project-manager/*": ["packages/*/src"]
-    }
+    "rootDir": "src",
+    "allowImportingTsExtensions": true
   },
-  "include": ["src/**/*", "../../packages/*/src/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["dist", "**/*.test.ts", "**/*.spec.ts"]
 }

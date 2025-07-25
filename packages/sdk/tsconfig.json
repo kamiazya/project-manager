@@ -5,8 +5,7 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "skipLibCheck": true,
-    "customConditions": ["development"]
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["**/*.test.ts", "**/*.spec.ts"]
