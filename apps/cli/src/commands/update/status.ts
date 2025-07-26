@@ -18,7 +18,7 @@ export class UpdateStatusCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, 
 
   static override args = {
     ticketId: Args.string({
-      description: 'ID of the ticket to update',
+      description: 'ID or alias of the ticket to update',
       required: true,
     }),
     status: Args.string({

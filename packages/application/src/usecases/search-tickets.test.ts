@@ -13,6 +13,10 @@ describe('SearchTicketsUseCase', () => {
       findById: vi.fn(),
       queryTickets: vi.fn(),
       delete: vi.fn(),
+      findByAlias: vi.fn(),
+      isAliasAvailable: vi.fn(),
+      getAllAliases: vi.fn(),
+      findTicketsWithAliases: vi.fn(),
     }
 
     const mockLogger = {
@@ -74,6 +78,7 @@ describe('SearchTicketsUseCase', () => {
           status: { value: 'pending' },
           priority: { value: 'high' },
           type: { value: 'bug' },
+          aliases: { canonical: null, custom: [] },
           createdAt: new Date(),
           updatedAt: new Date(),
         } as unknown as Ticket,
@@ -103,6 +108,7 @@ describe('SearchTicketsUseCase', () => {
           status: { value: 'pending' },
           priority: { value: 'high' },
           type: { value: 'bug' },
+          aliases: { canonical: null, custom: [] },
           createdAt: new Date(),
           updatedAt: new Date(),
         } as unknown as Ticket,
@@ -145,6 +151,7 @@ describe('SearchTicketsUseCase', () => {
           status: { value: 'pending' },
           priority: { value: 'high' },
           type: { value: 'bug' },
+          aliases: { canonical: null, custom: [] },
           createdAt: new Date(),
           updatedAt: new Date(),
         } as unknown as Ticket,
@@ -154,6 +161,7 @@ describe('SearchTicketsUseCase', () => {
           status: { value: 'completed' },
           priority: { value: 'low' },
           type: { value: 'feature' },
+          aliases: { canonical: null, custom: [] },
           createdAt: new Date(),
           updatedAt: new Date(),
         } as unknown as Ticket,

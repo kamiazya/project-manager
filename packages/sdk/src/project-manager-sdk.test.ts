@@ -244,7 +244,7 @@ describe('ProjectManagerSDK', () => {
       const result = await sdk.tickets.getById('ticket-123')
 
       // Assert
-      expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({ id: 'ticket-123' })
+      expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({ identifier: 'ticket-123' })
       expect(result).toEqual({
         id: mockTicketResponse.id,
         title: mockTicketResponse.title,
@@ -281,21 +281,21 @@ describe('ProjectManagerSDK', () => {
       it('should handle empty ID', async () => {
         mockGetTicketByIdUseCase.execute.mockResolvedValue(null)
         await sdk.tickets.getById('')
-        expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({ id: '' })
+        expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({ identifier: '' })
       })
 
       it('should handle very long ID', async () => {
         mockGetTicketByIdUseCase.execute.mockResolvedValue(null)
         const longId = 'id-'.repeat(100)
         await sdk.tickets.getById(longId)
-        expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({ id: longId })
+        expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({ identifier: longId })
       })
 
       it('should handle special characters in ID', async () => {
         mockGetTicketByIdUseCase.execute.mockResolvedValue(null)
         const specialId = 'id-@#$%^&*()'
         await sdk.tickets.getById(specialId)
-        expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({ id: specialId })
+        expect(mockGetTicketByIdUseCase.execute).toHaveBeenCalledWith({ identifier: specialId })
       })
     })
   })
@@ -318,7 +318,7 @@ describe('ProjectManagerSDK', () => {
 
       // Assert
       expect(mockUpdateTicketContentUseCase.execute).toHaveBeenCalledWith({
-        id: 'ticket-123',
+        identifier: 'ticket-123',
         updates: {
           title: 'Updated Title',
           description: 'Updated Description',
@@ -339,7 +339,7 @@ describe('ProjectManagerSDK', () => {
 
       // Assert
       expect(mockUpdateTicketContentUseCase.execute).toHaveBeenCalledWith({
-        id: 'ticket-123',
+        identifier: 'ticket-123',
         updates: {
           title: 'New Title Only',
           description: undefined,
@@ -359,7 +359,7 @@ describe('ProjectManagerSDK', () => {
 
       // Assert
       expect(mockUpdateTicketContentUseCase.execute).toHaveBeenCalledWith({
-        id: 'ticket-123',
+        identifier: 'ticket-123',
         updates: {
           title: undefined,
           description: 'New Description Only',
@@ -390,7 +390,7 @@ describe('ProjectManagerSDK', () => {
 
       // Assert
       expect(mockUpdateTicketStatusUseCase.execute).toHaveBeenCalledWith({
-        id: 'ticket-123',
+        identifier: 'ticket-123',
         newStatus: 'completed',
       })
       expect(result).toBeDefined()
@@ -402,7 +402,7 @@ describe('ProjectManagerSDK', () => {
       for (const status of statuses) {
         await sdk.tickets.updateStatus('ticket-123', status)
         expect(mockUpdateTicketStatusUseCase.execute).toHaveBeenCalledWith({
-          id: 'ticket-123',
+          identifier: 'ticket-123',
           newStatus: status,
         })
       }
@@ -429,7 +429,7 @@ describe('ProjectManagerSDK', () => {
       await sdk.tickets.delete('ticket-123')
 
       // Assert
-      expect(mockDeleteTicketUseCase.execute).toHaveBeenCalledWith({ id: 'ticket-123' })
+      expect(mockDeleteTicketUseCase.execute).toHaveBeenCalledWith({ identifier: 'ticket-123' })
     })
 
     it('should handle errors from use case', async () => {
@@ -445,14 +445,14 @@ describe('ProjectManagerSDK', () => {
       it('should handle empty ID', async () => {
         mockDeleteTicketUseCase.execute.mockResolvedValue(undefined)
         await sdk.tickets.delete('')
-        expect(mockDeleteTicketUseCase.execute).toHaveBeenCalledWith({ id: '' })
+        expect(mockDeleteTicketUseCase.execute).toHaveBeenCalledWith({ identifier: '' })
       })
 
       it('should handle special characters in ID', async () => {
         mockDeleteTicketUseCase.execute.mockResolvedValue(undefined)
         const specialId = 'ticket-!@#$%'
         await sdk.tickets.delete(specialId)
-        expect(mockDeleteTicketUseCase.execute).toHaveBeenCalledWith({ id: specialId })
+        expect(mockDeleteTicketUseCase.execute).toHaveBeenCalledWith({ identifier: specialId })
       })
     })
   })

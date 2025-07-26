@@ -1,5 +1,7 @@
-import { Ticket, TicketId } from '@project-manager/domain'
+import type { AliasGenerator } from '@project-manager/domain'
+import { Ticket, TicketAlias, TicketId } from '@project-manager/domain'
 import { BaseUseCase } from '../common/base-usecase.ts'
+import { UseCaseExecutionError } from '../common/errors/application-errors.ts'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
@@ -51,13 +53,14 @@ export namespace CreateTicket {
 
     constructor(
       private readonly ticketRepository: TicketRepository,
-      private readonly idGenerator: IdGenerator
+      private readonly idGenerator: IdGenerator,
+      private readonly aliasGenerator: AliasGenerator
     ) {
       super()
     }
 
     async execute(request: Request): Promise<Response> {
-      await this.logger.info('Starting ticket creation', {
+      this.logger.info('Starting ticket creation', {
         title: request.title,
         priority: request.priority || 'medium',
         type: request.type ?? 'task',
@@ -67,7 +70,7 @@ export namespace CreateTicket {
       const idValue = this.idGenerator.generateId()
       const ticketId = TicketId.create(idValue)
 
-      await this.logger.debug('ID generation completed', {
+      this.logger.debug('ID generation completed', {
         generatedId: idValue,
       })
 
@@ -80,27 +83,71 @@ export namespace CreateTicket {
         status: request.status || 'pending',
       })
 
-      await this.logger.debug('Ticket entity creation completed', {
+      this.logger.debug('Ticket entity creation completed', {
         ticketId: ticket.id.value,
         status: ticket.status,
+      })
+
+      // Generate and set canonical alias
+      const aliasValue = await this.generateUniqueAlias(ticketId)
+      const ticketAlias = TicketAlias.createCanonical(aliasValue)
+      ticket.setCanonicalAlias(ticketAlias)
+
+      this.logger.debug('Canonical alias generated', {
+        ticketId: ticket.id.value,
+        alias: aliasValue,
       })
 
       // Persist through repository
       await this.ticketRepository.save(ticket)
 
-      await this.logger.info('Ticket persistence completed', {
+      this.logger.info('Ticket persistence completed', {
         ticketId: ticket.id.value,
       })
 
       // Return response DTO
       const response = createTicketResponse(ticket)
 
-      await this.logger.info('Ticket creation successful', {
+      this.logger.info('Ticket creation successful', {
         ticketId: response.id,
         title: response.title,
       })
 
       return response
+    }
+
+    /**
+     * Generate a unique alias that doesn't conflict with existing aliases
+     */
+    private async generateUniqueAlias(ticketId: TicketId): Promise<string> {
+      let attempts = 0
+      const maxAttempts = 10
+
+      while (attempts < maxAttempts) {
+        const candidateAlias = this.aliasGenerator.generate(ticketId)
+
+        // Check if this alias is already in use
+        const existingTicket = await this.ticketRepository.findByAlias(candidateAlias)
+
+        if (!existingTicket) {
+          return candidateAlias
+        }
+
+        // If alias is in use by the same ticket, that's okay (shouldn't happen during creation)
+        if (existingTicket.id.equals(ticketId)) {
+          return candidateAlias
+        }
+
+        // Collision detected - try again
+        attempts++
+      }
+
+      throw new UseCaseExecutionError(
+        'CreateTicketUseCase',
+        'aliasGeneration',
+        `Unable to generate unique alias for ticket ${ticketId.value} after ${maxAttempts} attempts. ` +
+          `This may indicate high collision rate with current alias generation strategy.`
+      )
     }
   }
 }

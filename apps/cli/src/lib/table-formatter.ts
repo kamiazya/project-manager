@@ -15,6 +15,7 @@ const TITLE_TRUNCATE_LENGTH = MAX_TITLE_LENGTH - 3
 
 export interface TableFormatterOptions {
   showStatus?: boolean
+  showAliases?: boolean
   sectionTitle?: string
   customCompactFormat?: (ticket: TicketSummary) => string
   useStatusAbbreviations?: boolean
@@ -64,7 +65,8 @@ function displayCompactFormat(
 
       const title = truncateTitle(ticket.title)
       const statusDisplay = `${priority}${type}`
-      logFn(`${ticket.id || 'Unknown'} [${statusDisplay}]${statusPart} ${title}`)
+      const aliasInfo = ticket.aliases?.canonical ? ` (${ticket.aliases.canonical})` : ''
+      logFn(`${ticket.id || 'Unknown'}${aliasInfo} [${statusDisplay}]${statusPart} ${title}`)
     }
   })
 }
@@ -77,8 +79,9 @@ function displayTableFormat(
   logFn: (message: string) => void,
   options: TableFormatterOptions
 ): void {
-  const headers = getTableHeaders(options.showStatus)
-  const rows = tickets.map(ticket => getTableRow(ticket, options.showStatus))
+  const showAliases = options.showAliases ?? true
+  const headers = getTableHeaders(options.showStatus, showAliases)
+  const rows = tickets.map(ticket => getTableRow(ticket, options.showStatus, showAliases))
 
   const sectionTitle = options.sectionTitle || 'Tickets:'
   const separator = '='.repeat(sectionTitle.length)
@@ -91,8 +94,11 @@ function displayTableFormat(
 /**
  * Get table headers based on options
  */
-function getTableHeaders(showStatus = false): string[] {
+function getTableHeaders(showStatus = false, showAliases = true): string[] {
   const baseHeaders = ['ID', 'Title', 'Priority', 'Type']
+  if (showAliases) {
+    baseHeaders.push('Alias')
+  }
   if (showStatus) {
     baseHeaders.push('Status')
   }
@@ -103,13 +109,18 @@ function getTableHeaders(showStatus = false): string[] {
 /**
  * Get table row data for a ticket
  */
-function getTableRow(ticket: TicketSummary, showStatus = false): string[] {
+function getTableRow(ticket: TicketSummary, showStatus = false, showAliases = true): string[] {
   const row = [
     ticket.id || 'Unknown',
     truncateTitle(ticket.title),
     ticket.priority || 'unknown',
     ticket.type || 'unknown',
   ]
+
+  if (showAliases) {
+    const aliasDisplay = ticket.aliases?.canonical || '-'
+    row.push(aliasDisplay)
+  }
 
   if (showStatus) {
     row.push(ticket.status || 'unknown')

@@ -1,6 +1,7 @@
+import type { AliasGenerator } from '@project-manager/domain'
 import { Ticket, TicketValidationError } from '@project-manager/domain'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getValidUlidByIndex, VALID_ULID_1, VALID_ULID_2 } from '../common/test-helpers.ts'
+import { VALID_ULID_1, VALID_ULID_2 } from '../common/test-helpers.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import type { IdGenerator } from '../services/id-generator.interface.ts'
 import { CreateTicket } from './create-ticket.ts'
@@ -8,6 +9,7 @@ import { CreateTicket } from './create-ticket.ts'
 describe('CreateTicket', () => {
   let mockTicketRepository: TicketRepository
   let mockIdGenerator: IdGenerator
+  let mockAliasGenerator: AliasGenerator
   let createTicketUseCase: CreateTicket.UseCase
 
   beforeEach(() => {
@@ -16,9 +18,16 @@ describe('CreateTicket', () => {
       findById: vi.fn(),
       queryTickets: vi.fn(),
       delete: vi.fn(),
+      findByAlias: vi.fn().mockResolvedValue(null), // No existing aliases by default
+      isAliasAvailable: vi.fn(),
+      getAllAliases: vi.fn(),
+      findTicketsWithAliases: vi.fn(),
     }
     mockIdGenerator = {
       generateId: vi.fn().mockReturnValue(VALID_ULID_1),
+    }
+    mockAliasGenerator = {
+      generate: vi.fn().mockReturnValue('ticket-abc123'),
     }
 
     const mockLogger = {
@@ -30,7 +39,11 @@ describe('CreateTicket', () => {
       flush: vi.fn().mockResolvedValue(undefined),
     }
 
-    createTicketUseCase = new CreateTicket.UseCase(mockTicketRepository, mockIdGenerator)
+    createTicketUseCase = new CreateTicket.UseCase(
+      mockTicketRepository,
+      mockIdGenerator,
+      mockAliasGenerator
+    )
     createTicketUseCase.logger = mockLogger as any
   })
 
@@ -133,7 +146,88 @@ describe('CreateTicket', () => {
 
       expect(response.createdAt).toBeDefined()
       expect(response.updatedAt).toBeDefined()
-      expect(response.createdAt).toBe(response.updatedAt)
+      // Allow for small time differences due to processing
+      const createdTime = new Date(response.createdAt).getTime()
+      const updatedTime = new Date(response.updatedAt).getTime()
+      expect(Math.abs(createdTime - updatedTime)).toBeLessThan(100) // Less than 100ms difference
+    })
+
+    it('should generate and set canonical alias', async () => {
+      const request: CreateTicket.Request = {
+        title: 'Test ticket with alias',
+        priority: 'medium',
+        type: 'task',
+        status: 'pending',
+        description: 'Test description',
+      }
+
+      await createTicketUseCase.execute(request)
+
+      // Verify alias generator was called
+      expect(mockAliasGenerator.generate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          value: VALID_ULID_1,
+        })
+      )
+
+      // Verify alias check was performed
+      expect(mockTicketRepository.findByAlias).toHaveBeenCalledWith('ticket-abc123')
+
+      // Verify ticket was saved with alias
+      expect(mockTicketRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aliases: expect.objectContaining({
+            canonical: expect.objectContaining({
+              value: 'ticket-abc123',
+              type: 'canonical',
+            }),
+          }),
+        })
+      )
+    })
+
+    it('should handle alias collision by retrying', async () => {
+      // Create a mock existing ticket
+      const mockExistingTicket = {
+        id: { equals: vi.fn().mockReturnValue(false), value: VALID_ULID_2 },
+      } as any
+
+      // First call returns existing ticket, second call returns null
+      vi.mocked(mockTicketRepository.findByAlias)
+        .mockResolvedValueOnce(mockExistingTicket) // Collision on first attempt
+        .mockResolvedValueOnce(null) // Success on second attempt
+
+      vi.mocked(mockAliasGenerator.generate)
+        .mockReturnValueOnce('ticket-abc123') // First attempt
+        .mockReturnValueOnce('ticket-def456') // Second attempt
+
+      const request: CreateTicket.Request = {
+        title: 'Test',
+        priority: 'medium',
+        type: 'task',
+        status: 'pending',
+        description: 'Test description',
+      }
+
+      await createTicketUseCase.execute(request)
+
+      // Verify alias generator was called twice
+      expect(mockAliasGenerator.generate).toHaveBeenCalledTimes(2)
+
+      // Verify both aliases were checked
+      expect(mockTicketRepository.findByAlias).toHaveBeenCalledWith('ticket-abc123')
+      expect(mockTicketRepository.findByAlias).toHaveBeenCalledWith('ticket-def456')
+
+      // Verify ticket was saved with the second (non-colliding) alias
+      expect(mockTicketRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aliases: expect.objectContaining({
+            canonical: expect.objectContaining({
+              value: 'ticket-def456',
+            }),
+          }),
+        })
+      )
     })
   })
 

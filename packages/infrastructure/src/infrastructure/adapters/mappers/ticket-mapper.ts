@@ -1,7 +1,7 @@
 import { PersistenceError } from '@project-manager/application'
 import type { Logger } from '@project-manager/base/common/logging'
 import { Ticket } from '@project-manager/domain'
-import type { TicketJSON } from '../../types/persistence-types.ts'
+import type { TicketAliasCollectionJSON, TicketJSON } from '../../types/persistence-types.ts'
 
 /**
  * Infrastructure-specific error for mapper operations
@@ -34,6 +34,25 @@ export { MapperInfrastructureError as InfrastructureError }
  * Convert a domain Ticket to persistence format (JSON)
  */
 export function toPersistence(ticket: Ticket): TicketJSON {
+  const aliases = ticket.aliases
+  let aliasesJSON: TicketJSON['aliases']
+
+  // Only include aliases if the ticket has any
+  if (aliases.canonical || aliases.custom.length > 0) {
+    aliasesJSON = {
+      canonical: aliases.canonical
+        ? {
+            value: aliases.canonical.value,
+            type: aliases.canonical.type,
+          }
+        : undefined,
+      custom: aliases.custom.map(alias => ({
+        value: alias.value,
+        type: alias.type,
+      })),
+    }
+  }
+
   return {
     id: ticket.id.value,
     title: ticket.title.value,
@@ -41,6 +60,7 @@ export function toPersistence(ticket: Ticket): TicketJSON {
     status: ticket.status,
     priority: ticket.priority,
     type: ticket.type,
+    aliases: aliasesJSON,
     createdAt: ticket.createdAt.toISOString(),
     updatedAt: ticket.updatedAt.toISOString(),
   }
@@ -62,6 +82,23 @@ export function toDomain(json: TicketJSON): Ticket {
     // Validate that required persistence fields are present
     validatePersistenceData(json)
 
+    // Convert aliases if present
+    let aliases: TicketAliasCollectionJSON | undefined
+    if (json.aliases) {
+      aliases = {
+        canonical: json.aliases.canonical
+          ? {
+              value: json.aliases.canonical.value,
+              type: json.aliases.canonical.type,
+            }
+          : undefined,
+        custom: json.aliases.custom.map(alias => ({
+          value: alias.value,
+          type: alias.type,
+        })),
+      }
+    }
+
     // Attempt domain reconstitution with validation
     return Ticket.reconstitute({
       id: json.id,
@@ -70,6 +107,7 @@ export function toDomain(json: TicketJSON): Ticket {
       status: json.status,
       priority: json.priority,
       type: json.type,
+      aliases,
       createdAt: json.createdAt,
       updatedAt: json.updatedAt,
     })

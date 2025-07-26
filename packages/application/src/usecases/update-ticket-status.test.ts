@@ -27,7 +27,12 @@ describe('UpdateTicketStatus', () => {
       findById: vi.fn(),
       queryTickets: vi.fn(),
       delete: vi.fn(),
+      findByAlias: vi.fn(),
+      isAliasAvailable: vi.fn(),
+      getAllAliases: vi.fn(),
+      findTicketsWithAliases: vi.fn(),
     }
+    mockTicketRepository.queryTickets = vi.fn().mockResolvedValue([])
 
     const mockLogger = {
       debug: vi.fn().mockResolvedValue(undefined),
@@ -44,9 +49,12 @@ describe('UpdateTicketStatus', () => {
 
   describe('Request DTO', () => {
     it('should create request with ticket ID and new status', () => {
-      const request: UpdateTicketStatus.Request = { id: validTicketId, newStatus: 'in_progress' }
+      const request: UpdateTicketStatus.Request = {
+        identifier: validTicketId,
+        newStatus: 'in_progress',
+      }
 
-      expect(request.id).toBe(validTicketId)
+      expect(request.identifier).toBe(validTicketId)
       expect(request.newStatus).toBe('in_progress')
     })
   })
@@ -57,7 +65,10 @@ describe('UpdateTicketStatus', () => {
     })
 
     it('should update ticket status from pending to in_progress', async () => {
-      const request: UpdateTicketStatus.Request = { id: validTicketId, newStatus: 'in_progress' }
+      const request: UpdateTicketStatus.Request = {
+        identifier: validTicketId,
+        newStatus: 'in_progress',
+      }
 
       const response = await updateTicketStatusUseCase.execute(request)
 
@@ -71,7 +82,10 @@ describe('UpdateTicketStatus', () => {
     it('should throw TicketNotFoundError when ticket does not exist', async () => {
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 
-      const request: UpdateTicketStatus.Request = { id: validTicketId, newStatus: 'in_progress' }
+      const request: UpdateTicketStatus.Request = {
+        identifier: validTicketId,
+        newStatus: 'in_progress',
+      }
 
       await expect(updateTicketStatusUseCase.execute(request)).rejects.toThrow(TicketNotFoundError)
       expect(mockTicketRepository.save).not.toHaveBeenCalled()

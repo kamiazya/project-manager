@@ -80,7 +80,7 @@ export namespace SearchTickets {
     async execute(request: Request): Promise<Response> {
       const criteria = request.criteria || {}
 
-      await this.logger.info('Starting ticket search', {
+      this.logger.info('Starting ticket search', {
         hasSearchQuery: !!criteria.search,
         hasFilters: !!(criteria.status || criteria.priority || criteria.type),
         limit: criteria.limit,
@@ -98,14 +98,14 @@ export namespace SearchTickets {
         offset: criteria.offset,
       }
 
-      await this.logger.debug('Executing repository query', {
+      this.logger.debug('Executing repository query', {
         criteria: queryCriteria,
       })
 
       const tickets = await this.ticketRepository.queryTickets(queryCriteria)
       const response = Response.fromTickets(tickets)
 
-      await this.logger.info('Ticket search completed', {
+      this.logger.info('Ticket search completed', {
         resultCount: response.tickets.length,
         hasMoreResults: tickets.length === (criteria.limit || 0),
       })

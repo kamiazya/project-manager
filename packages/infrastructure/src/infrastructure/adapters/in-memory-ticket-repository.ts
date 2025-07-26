@@ -74,6 +74,52 @@ export class InMemoryTicketRepository implements TicketRepository {
     this.tickets.delete(id.value)
   }
 
+  async findByAlias(alias: string): Promise<Ticket | null> {
+    for (const ticket of this.tickets.values()) {
+      // Check canonical alias
+      if (ticket.aliases.canonical?.value.toLowerCase() === alias.toLowerCase()) {
+        return ticket
+      }
+
+      // Check custom aliases
+      for (const customAlias of ticket.aliases.custom) {
+        if (customAlias.value.toLowerCase() === alias.toLowerCase()) {
+          return ticket
+        }
+      }
+    }
+    return null
+  }
+
+  async isAliasAvailable(alias: string): Promise<boolean> {
+    const ticket = await this.findByAlias(alias)
+    return ticket === null
+  }
+
+  async getAllAliases(): Promise<string[]> {
+    const aliases: string[] = []
+
+    for (const ticket of this.tickets.values()) {
+      // Add canonical alias
+      if (ticket.aliases.canonical) {
+        aliases.push(ticket.aliases.canonical.value)
+      }
+
+      // Add custom aliases
+      for (const customAlias of ticket.aliases.custom) {
+        aliases.push(customAlias.value)
+      }
+    }
+
+    return aliases
+  }
+
+  async findTicketsWithAliases(): Promise<Ticket[]> {
+    return Array.from(this.tickets.values()).filter(
+      ticket => ticket.hasCanonicalAlias() || ticket.aliases.custom.length > 0
+    )
+  }
+
   /**
    * Test helper methods
    */

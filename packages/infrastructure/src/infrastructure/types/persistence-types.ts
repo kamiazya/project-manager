@@ -3,7 +3,28 @@
  * These types are specific to the infrastructure layer and handle persistence concerns
  */
 
-import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '@project-manager/domain'
+import type {
+  AliasType,
+  TicketPriorityKey,
+  TicketStatusKey,
+  TicketTypeKey,
+} from '@project-manager/domain'
+
+/**
+ * JSON representation of alias for persistence
+ */
+export interface AliasJSON {
+  value: string
+  type: AliasType
+}
+
+/**
+ * JSON representation of ticket aliases collection for persistence
+ */
+export interface TicketAliasCollectionJSON {
+  canonical?: AliasJSON
+  custom: AliasJSON[]
+}
 
 /**
  * JSON representation of a ticket for persistence
@@ -16,6 +37,7 @@ export interface TicketJSON {
   status: TicketStatusKey
   priority: TicketPriorityKey
   type: TicketTypeKey
+  aliases?: TicketAliasCollectionJSON
   createdAt: string
   updatedAt: string
 }

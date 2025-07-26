@@ -1,6 +1,7 @@
 import { Flags } from '@oclif/core'
 import type { TicketPriorityKey, TicketStatusKey, TicketTypeKey } from '@project-manager/domain'
 import { BaseCommand } from '../lib/base-command.ts'
+import { displayTickets } from '../lib/table-formatter.ts'
 
 interface ExecuteFlags {
   status?: TicketStatusKey
@@ -58,15 +59,24 @@ export class ListCommand extends BaseCommand {
       return tickets
     }
 
-    // Format and display results
-    const output = tickets
-      .map(ticket => `${ticket.id}: ${ticket.title} [${ticket.status}]`)
-      .join('\n')
-    this.log(output)
+    // Handle different output formats
+    if (flags.format === 'table') {
+      displayTickets(tickets, 'table', this.log.bind(this))
+      this.log(`\nFound ${tickets.length} ticket(s)`)
+    } else {
+      // Compact format (default behavior)
+      const output = tickets
+        .map(ticket => {
+          const aliasInfo = ticket.aliases?.canonical ? ` (${ticket.aliases.canonical})` : ''
+          return `${ticket.id}${aliasInfo}: ${ticket.title} [${ticket.status}]`
+        })
+        .join('\n')
+      this.log(output)
 
-    // Show summary message
-    if (tickets.length > 0) {
-      this.log(`\nFound${tickets.length} ticket(s)`)
+      // Show summary message
+      if (tickets.length > 0) {
+        this.log(`\nFound ${tickets.length} ticket(s)`)
+      }
     }
 
     return undefined

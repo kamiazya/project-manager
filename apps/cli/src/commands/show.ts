@@ -1,6 +1,7 @@
 import { Args } from '@oclif/core'
 import type { TicketResponse } from '@project-manager/sdk'
 import { BaseCommand } from '../lib/base-command.ts'
+import { TicketFormatter } from '../utils/ticket-formatter.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
   ticketId: string
@@ -22,7 +23,7 @@ export class ShowCommand extends BaseCommand<
 
   static override args = {
     ticketId: Args.string({
-      description: 'ID of the ticket to show',
+      description: 'ID or alias of the ticket to show',
       required: true,
     }),
   }
@@ -46,8 +47,7 @@ export class ShowCommand extends BaseCommand<
     }
 
     // Format and display the ticket
-    const output = `ID: ${ticket.id}\nTitle: ${ticket.title}\nStatus: ${ticket.status}\nPriority: ${ticket.priority}\nType: ${ticket.type}\nDescription: ${ticket.description}\nCreated: ${ticket.createdAt}\nUpdated: ${ticket.updatedAt}`
-    this.log(output)
+    this.log(TicketFormatter.format(ticket))
 
     return undefined
   }

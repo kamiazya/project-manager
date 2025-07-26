@@ -173,6 +173,8 @@ Provide comprehensive logging and audit capabilities to support debugging, compl
 - File attachments and references
 - Comment threads with timestamps
 - Task checklists within tickets
+- Human-friendly ticket aliases (canonical and custom)
+- Flexible ticket resolution by ID or alias with partial matching
 
 ### FR-2: Implementation Planning
 
@@ -210,7 +212,18 @@ Provide comprehensive logging and audit capabilities to support debugging, compl
 - Privacy-aware export options
 - Batch operations support
 
-### FR-6: Logging and Audit Operations
+### FR-6: Ticket Alias Management
+
+- Automatic generation of canonical aliases using collision-resistant algorithm
+- Support for multiple custom aliases per ticket
+- Flexible resolution supporting both IDs and aliases
+- Partial matching with prefix-based lookup (GitHub CLI style)
+- Case-insensitive alias matching
+- Duplicate alias prevention across tickets
+- CLI commands for alias generation and management
+- Persistence of aliases with tickets in storage
+
+### FR-7: Logging and Audit Operations
 
 - Multi-level structured logging with configurable levels
 - Comprehensive audit trail for all system operations
@@ -235,6 +248,8 @@ Provide comprehensive logging and audit capabilities to support debugging, compl
 - Minimal memory footprint
 - Fast startup time
 - Background sync without UI blocking
+- Fast alias resolution even with large ticket volumes
+- Efficient partial matching algorithm for aliases
 
 ### NFR-2: Reliability
 

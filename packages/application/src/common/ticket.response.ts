@@ -12,12 +12,26 @@ export interface TicketResponse {
   readonly createdAt: string
   readonly updatedAt: string
   readonly description?: string
+  readonly aliases?: {
+    readonly canonical?: string
+    readonly custom: readonly string[]
+  }
 }
 
 /**
  * Factory function to create TicketResponse from domain entity
  */
 export function createTicketResponse(ticket: Ticket): TicketResponse {
+  // Extract alias information
+  const aliases = ticket.aliases
+  const aliasData =
+    aliases.canonical || aliases.custom.length > 0
+      ? {
+          canonical: aliases.canonical?.value,
+          custom: aliases.custom.map(alias => alias.value),
+        }
+      : undefined
+
   return {
     id: ticket.id.value,
     title: ticket.title.value,
@@ -27,5 +41,6 @@ export function createTicketResponse(ticket: Ticket): TicketResponse {
     createdAt: ticket.createdAt.toISOString(),
     updatedAt: ticket.updatedAt.toISOString(),
     description: ticket.description?.value,
+    aliases: aliasData,
   }
 }

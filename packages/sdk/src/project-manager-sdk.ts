@@ -6,18 +6,27 @@
  */
 
 import {
+  AddCustomAliasUseCase,
   type TicketResponse as ApplicationLayerTicketResponse,
+  ClearCustomAliasesUseCase,
   CreateTicket,
   DeleteTicket,
   type DevelopmentProcessService,
   type EnvironmentDetectionService,
+  FindTicketByAliasUseCase,
   GetAuditLogs,
   GetLogs,
   GetTicketById,
+  ListAliasesUseCase,
+  PromoteCustomAliasUseCase,
+  RegenerateCanonicalAliasUseCase,
+  RemoveCustomAliasUseCase,
+  RenameCustomAliasUseCase,
   SearchTickets,
   UpdateTicketContent,
   UpdateTicketPriority,
   UpdateTicketStatus,
+  ValidateAliasUseCase,
 } from '@project-manager/application'
 import { type EnvironmentMode, isDevelopmentLike } from '@project-manager/base'
 import type { Container } from 'inversify'
@@ -149,6 +158,108 @@ export interface AuditLogsResponse {
   }
 }
 
+export interface ListAliasesRequest {
+  ticketId: string
+}
+
+export interface RemoveAliasRequest {
+  ticketId: string
+  alias: string
+}
+
+export interface RenameAliasRequest {
+  ticketId: string
+  oldAlias: string
+  newAlias: string
+}
+
+export interface AliasInfo {
+  alias: string
+  type: 'canonical' | 'custom'
+}
+
+export interface ListAliasesResponse {
+  ticketId: string
+  aliases: readonly AliasInfo[]
+}
+
+export interface PromoteAliasRequest {
+  ticketId: string
+  alias: string
+}
+
+export interface PromoteAliasResponse {
+  alias: string
+  previousCanonicalAlias?: string
+  wasPromoted: boolean
+  totalCustomAliases: number
+}
+
+export interface RegenerateCanonicalAliasRequest {
+  ticketId: string
+  force?: boolean
+}
+
+export interface RegenerateCanonicalAliasResponse {
+  newCanonicalAlias: string
+  previousCanonicalAlias?: string
+  wasRegenerated: boolean
+  wasForced: boolean
+}
+
+export interface ClearCustomAliasesRequest {
+  ticketId: string
+  confirm?: boolean
+}
+
+export interface ClearCustomAliasesResponse {
+  clearedCount: number
+  clearedAliases: string[]
+  wasCleared: boolean
+  remainingCanonicalAlias?: string
+}
+
+export interface FindTicketByAliasRequest {
+  alias: string
+  caseSensitive?: boolean
+}
+
+export interface FindTicketByAliasResponse {
+  ticket: TicketResponse | null
+  searchAlias: string
+  matchedAliasType?: 'canonical' | 'custom'
+  caseSensitive: boolean
+}
+
+export interface ValidateAliasRequest {
+  alias: string
+  aliasType?: 'canonical' | 'custom'
+  checkUniqueness?: boolean
+  excludeTicketId?: string
+}
+
+export interface ValidateAliasResponse {
+  isValid: boolean
+  alias: string
+  validation: {
+    format: {
+      isValid: boolean
+      errors: string[]
+    }
+    uniqueness?: {
+      isUnique: boolean
+      conflictingTicketId?: string
+      conflictingAliasType?: 'canonical' | 'custom'
+    }
+    typeSpecific?: {
+      isValid: boolean
+      errors: string[]
+    }
+  }
+  errors: string[]
+  suggestions: string[]
+}
+
 export interface TicketResponse {
   id: string
   title: string
@@ -158,6 +269,10 @@ export interface TicketResponse {
   type: string
   createdAt: string
   updatedAt: string
+  aliases?: {
+    canonical?: string
+    custom: readonly string[]
+  }
 }
 
 /**
@@ -205,7 +320,7 @@ export class ProjectManagerSDK {
      */
     getById: async (id: string): Promise<TicketResponse | null> => {
       const useCase = this.container.get<GetTicketById.UseCase>(TYPES.GetTicketByIdUseCase)
-      const request = { id }
+      const request = { identifier: id }
 
       const response = await useCase.execute(request)
       return response ? this.mapTicketResponseToSDKResponse(response) : null
@@ -219,7 +334,7 @@ export class ProjectManagerSDK {
         TYPES.UpdateTicketContentUseCase
       )
       const updateRequest = {
-        id: request.id,
+        identifier: request.id,
         updates: {
           title: request.title,
           description: request.description,
@@ -237,7 +352,7 @@ export class ProjectManagerSDK {
       const useCase = this.container.get<UpdateTicketStatus.UseCase>(
         TYPES.UpdateTicketStatusUseCase
       )
-      const request = { id, newStatus: status }
+      const request = { identifier: id, newStatus: status }
 
       const response = await useCase.execute(request)
       return this.mapTicketResponseToSDKResponse(response)
@@ -250,7 +365,7 @@ export class ProjectManagerSDK {
       const useCase = this.container.get<UpdateTicketPriority.UseCase>(
         TYPES.UpdateTicketPriorityUseCase
       )
-      const request = { id, newPriority: priority }
+      const request = { identifier: id, newPriority: priority }
 
       const response = await useCase.execute(request)
       return this.mapTicketResponseToSDKResponse(response)
@@ -261,7 +376,7 @@ export class ProjectManagerSDK {
      */
     delete: async (id: string): Promise<void> => {
       const useCase = this.container.get<DeleteTicket.UseCase>(TYPES.DeleteTicketUseCase)
-      const request = { id }
+      const request = { identifier: id }
 
       await useCase.execute(request)
     },
@@ -284,6 +399,98 @@ export class ProjectManagerSDK {
       return response.tickets.map((ticket: ApplicationLayerTicketResponse) =>
         this.mapTicketResponseToSDKResponse(ticket)
       )
+    },
+  }
+
+  /**
+   * Alias Management Operations
+   */
+  public readonly aliases = {
+    /**
+     * Add a custom alias to a ticket
+     */
+    add: async (ticketId: string, alias: string): Promise<void> => {
+      const useCase = this.container.get<AddCustomAliasUseCase>(TYPES.AddCustomAliasUseCase)
+      await useCase.execute({ ticketId, alias })
+    },
+
+    /**
+     * List all aliases for a ticket
+     */
+    list: async (request: ListAliasesRequest): Promise<ListAliasesResponse> => {
+      const useCase = this.container.get<ListAliasesUseCase>(TYPES.ListAliasesUseCase)
+      const response = await useCase.execute(request)
+      return response
+    },
+
+    /**
+     * Remove a custom alias from a ticket
+     */
+    remove: async (request: RemoveAliasRequest): Promise<void> => {
+      const useCase = this.container.get<RemoveCustomAliasUseCase>(TYPES.RemoveCustomAliasUseCase)
+      await useCase.execute(request)
+    },
+
+    /**
+     * Rename a custom alias
+     */
+    rename: async (request: RenameAliasRequest): Promise<void> => {
+      const useCase = this.container.get<RenameCustomAliasUseCase>(TYPES.RenameCustomAliasUseCase)
+      await useCase.execute(request)
+    },
+
+    /**
+     * Promote a custom alias to canonical status
+     */
+    promote: async (request: PromoteAliasRequest): Promise<PromoteAliasResponse> => {
+      const useCase = this.container.get<PromoteCustomAliasUseCase>(TYPES.PromoteCustomAliasUseCase)
+      const response = await useCase.execute(request)
+      return response
+    },
+
+    /**
+     * Regenerate the canonical alias for a ticket
+     */
+    regenerateCanonical: async (
+      request: RegenerateCanonicalAliasRequest
+    ): Promise<RegenerateCanonicalAliasResponse> => {
+      const useCase = this.container.get<RegenerateCanonicalAliasUseCase>(
+        TYPES.RegenerateCanonicalAliasUseCase
+      )
+      const response = await useCase.execute(request)
+      return response
+    },
+
+    /**
+     * Clear all custom aliases from a ticket
+     */
+    clear: async (request: ClearCustomAliasesRequest): Promise<ClearCustomAliasesResponse> => {
+      const useCase = this.container.get<ClearCustomAliasesUseCase>(TYPES.ClearCustomAliasesUseCase)
+      const response = await useCase.execute(request)
+      return response
+    },
+
+    /**
+     * Find a ticket by its alias
+     */
+    findTicket: async (request: FindTicketByAliasRequest): Promise<FindTicketByAliasResponse> => {
+      const useCase = this.container.get<FindTicketByAliasUseCase>(TYPES.FindTicketByAliasUseCase)
+      const response = await useCase.execute(request)
+      return {
+        ticket: response.ticket ? this.mapTicketResponseToSDKResponse(response.ticket) : null,
+        searchAlias: response.searchAlias,
+        matchedAliasType: response.matchedAliasType,
+        caseSensitive: response.caseSensitive,
+      }
+    },
+
+    /**
+     * Validate an alias for format, uniqueness, and type-specific rules
+     */
+    validate: async (request: ValidateAliasRequest): Promise<ValidateAliasResponse> => {
+      const useCase = this.container.get<ValidateAliasUseCase>(TYPES.ValidateAliasUseCase)
+      const response = await useCase.execute(request)
+      return response
     },
   }
 
@@ -421,6 +628,7 @@ export class ProjectManagerSDK {
       type: ticketResponse.type,
       createdAt: ticketResponse.createdAt,
       updatedAt: ticketResponse.updatedAt,
+      aliases: ticketResponse.aliases,
     }
   }
 

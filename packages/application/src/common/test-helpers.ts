@@ -2,6 +2,8 @@
  * Test helper utilities for generating valid ULID values
  */
 
+import { Ticket, TicketId } from '@project-manager/domain'
+
 /**
  * Valid ULID examples for testing
  * ULIDs are 26 characters long using Crockford's Base32 alphabet
@@ -44,4 +46,24 @@ export function getValidUlidByIndex(index: number): string {
     VALID_ULID_10,
   ]
   return ulids[index % ulids.length] as string
+}
+
+/**
+ * Create a test ticket with default values
+ */
+export function createTestTicket(overrides?: {
+  id?: string
+  title?: string
+  description?: string
+  status?: string
+  priority?: string
+  type?: string
+}) {
+  return Ticket.create(TicketId.create(overrides?.id || VALID_ULID_1), {
+    title: overrides?.title || 'Test Ticket',
+    description: overrides?.description || 'Test Description',
+    status: overrides?.status || 'pending',
+    priority: overrides?.priority || 'medium',
+    type: overrides?.type || 'task',
+  })
 }
