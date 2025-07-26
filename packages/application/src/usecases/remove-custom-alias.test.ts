@@ -24,8 +24,8 @@ describe('RemoveCustomAliasUseCase', () => {
 
     useCase = new RemoveCustomAliasUseCase(mockRepository)
 
-    // Create a mock ticket with custom aliases
-    mockTicket = createTestTicket()
+    // Create a mock ticket with custom aliases using the valid ULID
+    mockTicket = createTestTicket({ id: VALID_ULID_1 })
 
     // Add canonical and custom aliases
     const canonicalAlias = TicketAlias.create('canon123', 'canonical')
@@ -42,7 +42,7 @@ describe('RemoveCustomAliasUseCase', () => {
       // Arrange
       vi.mocked(mockRepository.findById).mockResolvedValue(mockTicket)
       const request = {
-        ticketId: 'test-123',
+        ticketId: VALID_ULID_1,
         alias: 'custom1',
       }
 
@@ -75,7 +75,7 @@ describe('RemoveCustomAliasUseCase', () => {
       // Arrange
       vi.mocked(mockRepository.findById).mockResolvedValue(mockTicket)
       const request = {
-        ticketId: 'test-123',
+        ticketId: VALID_ULID_1,
         alias: 'canon123', // Canonical alias
       }
 
@@ -91,14 +91,14 @@ describe('RemoveCustomAliasUseCase', () => {
       // Arrange
       vi.mocked(mockRepository.findById).mockResolvedValue(mockTicket)
       const request = {
-        ticketId: 'test-123',
+        ticketId: VALID_ULID_1,
         alias: 'non-existent-alias',
       }
 
       // Act & Assert
       await expect(useCase.execute(request)).rejects.toThrow(TicketValidationError)
       await expect(useCase.execute(request)).rejects.toThrow(
-        'Custom alias "non-existent-alias" not found on ticket test-123'
+        `Custom alias "non-existent-alias" not found on ticket ${VALID_ULID_1}`
       )
       expect(mockRepository.save).not.toHaveBeenCalled()
     })
@@ -107,7 +107,7 @@ describe('RemoveCustomAliasUseCase', () => {
       // Arrange
       vi.mocked(mockRepository.findById).mockResolvedValue(mockTicket)
       const request = {
-        ticketId: 'test-123',
+        ticketId: VALID_ULID_1,
         alias: 'CUSTOM1', // Different case
       }
 
@@ -126,13 +126,13 @@ describe('RemoveCustomAliasUseCase', () => {
 
       // Act - Remove first custom alias
       const result1 = await useCase.execute({
-        ticketId: 'test-123',
+        ticketId: VALID_ULID_1,
         alias: 'custom1',
       })
 
       // Act - Remove second custom alias
       const result2 = await useCase.execute({
-        ticketId: 'test-123',
+        ticketId: VALID_ULID_1,
         alias: 'custom2',
       })
 

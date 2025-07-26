@@ -139,7 +139,7 @@ describe('FindTicketByAliasUseCase', () => {
 
       // Assert
       expect(result.ticket).toBeDefined()
-      expect(result.searchAlias).toBe('TEST-ALIAS')
+      expect(result.searchAlias).toBe('test-alias') // searchAlias is lowercased when caseSensitive is false
       expect(result.matchedAliasType).toBe('canonical')
       expect(result.caseSensitive).toBe(false)
     })
