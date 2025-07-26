@@ -4,6 +4,7 @@
  */
 
 import {
+  AddCustomAliasUseCase,
   ApplicationLogger,
   type AsyncContextStorage,
   AuditInterceptor,
@@ -27,6 +28,7 @@ import {
 } from '@project-manager/application'
 import { isDevelopmentLike, isMemoryEnvironment } from '@project-manager/base'
 import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
+import type { AliasGenerator } from '@project-manager/domain'
 import {
   AsyncLocalStorageContextService,
   CrossPlatformStorageConfigService,
@@ -36,6 +38,7 @@ import {
   JsonTicketRepository,
   NodeAsyncLocalStorage,
   NodeEnvironmentDetectionService,
+  TailBasedAliasGenerator,
   UlidIdGenerator,
   XdgDevelopmentProcessService,
 } from '@project-manager/infrastructure'
@@ -74,6 +77,12 @@ export function createContainer(config: SDKConfig): Container {
   container
     .bind<IdGenerator>(TYPES.IdGenerator)
     .toDynamicValue(() => new UlidIdGenerator())
+    .inSingletonScope()
+
+  // Alias Generator Service - binds tail-based implementation
+  container
+    .bind<AliasGenerator>(TYPES.AliasGenerator)
+    .toDynamicValue(() => new TailBasedAliasGenerator())
     .inSingletonScope()
 
   // Repository binding - environment-based selection
@@ -191,7 +200,8 @@ export function createContainer(config: SDKConfig): Container {
     .toDynamicValue(() => {
       const repo = container.get<TicketRepository>(TYPES.TicketRepository)
       const idGenerator = container.get<IdGenerator>(TYPES.IdGenerator)
-      return new CreateTicket.UseCase(repo, idGenerator)
+      const aliasGenerator = container.get<AliasGenerator>(TYPES.AliasGenerator)
+      return new CreateTicket.UseCase(repo, idGenerator, aliasGenerator)
     })
     .onActivation(createUseCaseActivationHandler(container))
 
@@ -280,6 +290,15 @@ export function createContainer(config: SDKConfig): Container {
     .toDynamicValue(context => {
       const auditReader = context.get<FileAuditReader>(TYPES.AuditReader)
       return new GetAuditLogs.UseCase(auditReader as any)
+    })
+    .onActivation(createUseCaseActivationHandler(container))
+
+  // Alias Use Cases
+  container
+    .bind(TYPES.AddCustomAliasUseCase)
+    .toDynamicValue(context => {
+      const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
+      return new AddCustomAliasUseCase(ticketRepository)
     })
     .onActivation(createUseCaseActivationHandler(container))
 

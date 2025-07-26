@@ -6,6 +6,7 @@
  */
 
 import {
+  AddCustomAliasUseCase,
   type TicketResponse as ApplicationLayerTicketResponse,
   CreateTicket,
   DeleteTicket,
@@ -205,7 +206,7 @@ export class ProjectManagerSDK {
      */
     getById: async (id: string): Promise<TicketResponse | null> => {
       const useCase = this.container.get<GetTicketById.UseCase>(TYPES.GetTicketByIdUseCase)
-      const request = { id }
+      const request = { identifier: id }
 
       const response = await useCase.execute(request)
       return response ? this.mapTicketResponseToSDKResponse(response) : null
@@ -219,7 +220,7 @@ export class ProjectManagerSDK {
         TYPES.UpdateTicketContentUseCase
       )
       const updateRequest = {
-        id: request.id,
+        identifier: request.id,
         updates: {
           title: request.title,
           description: request.description,
@@ -237,7 +238,7 @@ export class ProjectManagerSDK {
       const useCase = this.container.get<UpdateTicketStatus.UseCase>(
         TYPES.UpdateTicketStatusUseCase
       )
-      const request = { id, newStatus: status }
+      const request = { identifier: id, newStatus: status }
 
       const response = await useCase.execute(request)
       return this.mapTicketResponseToSDKResponse(response)
@@ -250,7 +251,7 @@ export class ProjectManagerSDK {
       const useCase = this.container.get<UpdateTicketPriority.UseCase>(
         TYPES.UpdateTicketPriorityUseCase
       )
-      const request = { id, newPriority: priority }
+      const request = { identifier: id, newPriority: priority }
 
       const response = await useCase.execute(request)
       return this.mapTicketResponseToSDKResponse(response)
@@ -261,7 +262,7 @@ export class ProjectManagerSDK {
      */
     delete: async (id: string): Promise<void> => {
       const useCase = this.container.get<DeleteTicket.UseCase>(TYPES.DeleteTicketUseCase)
-      const request = { id }
+      const request = { identifier: id }
 
       await useCase.execute(request)
     },
@@ -284,6 +285,14 @@ export class ProjectManagerSDK {
       return response.tickets.map((ticket: ApplicationLayerTicketResponse) =>
         this.mapTicketResponseToSDKResponse(ticket)
       )
+    },
+
+    /**
+     * Add a custom alias to a ticket
+     */
+    addAlias: async (ticketId: string, alias: string): Promise<void> => {
+      const useCase = this.container.get<AddCustomAliasUseCase>(TYPES.AddCustomAliasUseCase)
+      await useCase.execute({ ticketId, alias })
     },
   }
 

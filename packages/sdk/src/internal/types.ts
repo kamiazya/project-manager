@@ -12,6 +12,7 @@ export const TYPES = {
   DevelopmentProcessService: Symbol('DevelopmentProcessService'),
   EnvironmentDetectionService: Symbol('EnvironmentDetectionService'),
   IdGenerator: Symbol('IdGenerator'),
+  AliasGenerator: Symbol('AliasGenerator'),
 
   // Logging Services
   AsyncContextStorage: Symbol('AsyncContextStorage'),
@@ -32,6 +33,7 @@ export const TYPES = {
   SearchTicketsUseCase: Symbol('SearchTicketsUseCase'),
   GetLogsUseCase: Symbol('GetLogsUseCase'),
   GetAuditLogsUseCase: Symbol('GetAuditLogsUseCase'),
+  AddCustomAliasUseCase: Symbol('AddCustomAliasUseCase'),
 
   // Readers for logs and audit
   LogReader: Symbol('LogReader'),
