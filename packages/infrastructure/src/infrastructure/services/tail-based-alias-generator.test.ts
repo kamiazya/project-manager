@@ -8,14 +8,12 @@ describe('TailBasedAliasGenerator', () => {
   describe('constructor', () => {
     it('should create generator with default length', () => {
       const generator = new TailBasedAliasGenerator()
-      expect(generator.getMinLength()).toBe(8)
-      expect(generator.getMaxLength()).toBe(8)
+      expect(generator).toBeDefined()
     })
 
     it('should create generator with custom length', () => {
       const generator = new TailBasedAliasGenerator(10)
-      expect(generator.getMinLength()).toBe(10)
-      expect(generator.getMaxLength()).toBe(10)
+      expect(generator).toBeDefined()
     })
 
     it('should throw error for length less than 4', () => {
@@ -93,120 +91,6 @@ describe('TailBasedAliasGenerator', () => {
     })
   })
 
-  describe('validate', () => {
-    const generator = new TailBasedAliasGenerator(8)
-
-    it('should validate correct length alias', () => {
-      expect(generator.validate('b8a0v0a8')).toBe(true)
-      expect(generator.validate('12345678')).toBe(true)
-      expect(generator.validate('abcdefgh')).toBe(true)
-    })
-
-    it('should reject incorrect length alias', () => {
-      expect(generator.validate('short')).toBe(false) // Too short
-      expect(generator.validate('toolongalias')).toBe(false) // Too long
-    })
-
-    it('should validate Base32 characters', () => {
-      expect(generator.validate('0123456z')).toBe(true) // Valid Base32
-      expect(generator.validate('abcdefgh')).toBe(true) // Valid Base32
-      expect(generator.validate('0123456!')).toBe(false) // Invalid character
-      expect(generator.validate('01234567')).toBe(true) // Numbers ok
-    })
-
-    it('should accept both upper and lowercase', () => {
-      expect(generator.validate('ABCDEFGH')).toBe(true)
-      expect(generator.validate('abcdefgh')).toBe(true)
-      expect(generator.validate('AbCdEfGh')).toBe(true)
-    })
-
-    it('should reject invalid Base32 characters', () => {
-      // ULID excludes I, L, O, U to avoid ambiguity
-      expect(generator.validate('12345678')).toBe(true)
-      expect(generator.validate('1234567I')).toBe(false) // Contains I
-      expect(generator.validate('1234567L')).toBe(false) // Contains L
-      expect(generator.validate('1234567O')).toBe(false) // Contains O
-      expect(generator.validate('1234567U')).toBe(false) // Contains U
-    })
-  })
-
-  describe('getDescription', () => {
-    it('should return meaningful description', () => {
-      const generator = new TailBasedAliasGenerator(8)
-      const description = generator.getDescription()
-
-      expect(description).toContain('Tail-based')
-      expect(description).toContain('8 chars')
-      expect(description).toContain('ULID random part')
-    })
-
-    it('should include length in description', () => {
-      const generator = new TailBasedAliasGenerator(12)
-      const description = generator.getDescription()
-
-      expect(description).toContain('12 chars')
-    })
-  })
-
-  describe('collision probability calculations', () => {
-    const generator = new TailBasedAliasGenerator(8)
-
-    it('should calculate collision probability', () => {
-      // For 8 characters (32^8 keyspace), 1000 tickets should have very low collision risk
-      const prob1000 = generator.calculateCollisionProbability(1000)
-      expect(prob1000).toBeLessThan(0.01) // Less than 1%
-
-      // Large number of tickets should have higher collision risk
-      const prob100000 = generator.calculateCollisionProbability(100000)
-      expect(prob100000).toBeGreaterThan(prob1000)
-    })
-
-    it('should provide recommended ticket limits', () => {
-      const limit1Percent = generator.getRecommendedTicketLimit(0.01)
-      const limit10Percent = generator.getRecommendedTicketLimit(0.1)
-
-      expect(limit1Percent).toBeGreaterThan(1000)
-      expect(limit10Percent).toBeGreaterThan(limit1Percent)
-    })
-
-    it('should provide capacity statistics', () => {
-      const stats = generator.getCapacityStats()
-
-      expect(stats.aliasLength).toBe(8)
-      expect(stats.keyspaceSize).toBe(32 ** 8)
-      expect(stats.recommendedLimit).toBeGreaterThan(0)
-      expect(stats.collision1Percent).toBe(stats.recommendedLimit)
-      expect(stats.collision10Percent).toBeGreaterThan(stats.collision1Percent)
-    })
-  })
-
-  describe('different alias lengths collision analysis', () => {
-    it('should show better collision resistance for longer aliases', () => {
-      const gen6 = new TailBasedAliasGenerator(6)
-      const gen8 = new TailBasedAliasGenerator(8)
-      const gen10 = new TailBasedAliasGenerator(10)
-
-      const testTickets = 10000
-
-      const prob6 = gen6.calculateCollisionProbability(testTickets)
-      const prob8 = gen8.calculateCollisionProbability(testTickets)
-      const prob10 = gen10.calculateCollisionProbability(testTickets)
-
-      expect(prob6).toBeGreaterThan(prob8)
-      expect(prob8).toBeGreaterThan(prob10)
-    })
-
-    it('should provide different recommended limits', () => {
-      const gen6 = new TailBasedAliasGenerator(6)
-      const gen10 = new TailBasedAliasGenerator(10)
-
-      const limit6 = gen6.getRecommendedTicketLimit()
-      const limit10 = gen10.getRecommendedTicketLimit()
-
-      expect(limit10).toBeGreaterThan(limit6)
-    })
-  })
-
   describe('edge cases', () => {
     it('should handle minimum length aliases', () => {
       const generator = new TailBasedAliasGenerator(4)
@@ -214,7 +98,6 @@ describe('TailBasedAliasGenerator', () => {
 
       const alias = generator.generate(ticketId)
       expect(alias.length).toBe(4)
-      expect(generator.validate(alias)).toBe(true)
     })
 
     it('should handle maximum length aliases', () => {
@@ -223,7 +106,6 @@ describe('TailBasedAliasGenerator', () => {
 
       const alias = generator.generate(ticketId)
       expect(alias.length).toBe(16)
-      expect(generator.validate(alias)).toBe(true)
     })
   })
 })

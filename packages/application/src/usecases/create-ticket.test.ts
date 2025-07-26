@@ -28,7 +28,6 @@ describe('CreateTicket', () => {
     }
     mockAliasGenerator = {
       generate: vi.fn().mockReturnValue('ticket-abc123'),
-      getDescription: vi.fn().mockReturnValue('Tail-based alias generator'),
     }
 
     const mockLogger = {
