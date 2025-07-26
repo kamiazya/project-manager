@@ -28,7 +28,6 @@ export {
   ENVIRONMENT_PROFILES,
   getEnvironmentProfile,
   getLogLevel,
-  getStorageDir,
   isFileEnvironment,
   isMemoryEnvironment,
   shouldEnableCache,
@@ -39,9 +38,7 @@ export {
   isCacheEnabled,
   isDebugMode,
   isDevelopmentLike,
-  shouldEnableHotReload,
   shouldLogErrors,
-  shouldLogVerbose,
 } from './common/environment/environment-utilities.ts'
 // Export commonly used logging types directly
 export type { ActorType, OperationType } from './common/logging/index.ts'

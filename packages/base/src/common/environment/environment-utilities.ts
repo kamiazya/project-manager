@@ -26,13 +26,6 @@ export function isDevelopmentLike(mode: EnvironmentMode): boolean {
 }
 
 /**
- * Check if hot reload should be enabled
- */
-export function shouldEnableHotReload(mode: EnvironmentMode): boolean {
-  return mode === 'development'
-}
-
-/**
  * Check if caching should be enabled (alias for shouldEnableCache)
  */
 export function isCacheEnabled(mode: EnvironmentMode): boolean {
@@ -57,14 +50,6 @@ export function getEnvironmentDisplayName(mode: EnvironmentMode): string {
     default:
       return 'unknown'
   }
-}
-
-/**
- * Check if verbose logging should be enabled
- */
-export function shouldLogVerbose(mode: EnvironmentMode): boolean {
-  const logLevel = getLogLevel(mode)
-  return logLevel === 'debug' || logLevel === 'info'
 }
 
 /**

@@ -94,7 +94,6 @@ export interface GetAuditLogsRequest {
   entityId?: string
   actorType?: 'human' | 'ai' | 'system'
   actorId?: string
-  source?: 'cli' | 'mcp' | 'api' | 'test' | 'scheduler'
   traceId?: string
   startTime?: string
   endTime?: string
@@ -127,7 +126,6 @@ export interface AuditLogEntry {
     name: string
     coAuthor?: string
   }
-  source: string
   traceId: string
   before?: any
   after?: any
@@ -155,7 +153,6 @@ export interface AuditLogsResponse {
     successRate: number
     operationCounts: Record<string, number>
     actorTypeCounts: Record<string, number>
-    sourceCounts: Record<string, number>
   }
 }
 
@@ -565,7 +562,6 @@ export class ProjectManagerSDK {
         entityId: request.entityId,
         actorType: request.actorType,
         actorId: request.actorId,
-        source: request.source,
         traceId: request.traceId,
         startTime: request.startTime,
         endTime: request.endTime,
@@ -677,7 +673,6 @@ export class ProjectManagerSDK {
           name: log.actor.name,
           coAuthor: log.actor.coAuthor,
         },
-        source: log.source,
         traceId: log.traceId,
         before: log.before,
         after: log.after,

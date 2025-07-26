@@ -18,11 +18,6 @@ export * from './ticket-management/types/alias-types.ts'
 // Ticket Management Context - Types and validation
 export * from './ticket-management/types/errors.ts'
 export * from './ticket-management/types/ticket-types.ts'
-export {
-  createTicketPriority,
-  createTicketStatus,
-  createTicketType,
-} from './ticket-management/types/ticket-types.ts'
 export * from './ticket-management/value-objects/ticket-alias.ts'
 // Ticket Management Context - Value Objects (classes)
 export * from './ticket-management/value-objects/ticket-description.ts'

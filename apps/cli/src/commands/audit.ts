@@ -59,10 +59,6 @@ export class AuditCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, AuditLo
     'actor-id': Flags.string({
       description: 'Filter by specific actor ID',
     }),
-    source: Flags.string({
-      description: 'Filter by source (cli, mcp, api, test, scheduler)',
-      options: ['cli', 'mcp', 'api', 'test', 'scheduler'],
-    }),
     'trace-id': Flags.string({
       description: 'Filter by trace ID',
     }),
@@ -99,7 +95,6 @@ export class AuditCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, AuditLo
       entityId: flags['entity-id'],
       actorType: flags['actor-type'] as 'human' | 'ai' | 'system' | undefined,
       actorId: flags['actor-id'],
-      source: flags.source as 'cli' | 'mcp' | 'api' | 'test' | 'scheduler' | undefined,
       traceId: flags['trace-id'],
       startTime: flags.since,
       endTime: flags.until,
@@ -156,11 +151,9 @@ export class AuditCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, AuditLo
         `${chalk.gray(timestamp)} ${statusIcon} ${operationColor(log.operation.toUpperCase())} ${chalk.white(log.resourceType)}`
       )
 
-      // Show actor and source info
+      // Show actor info
       const actorIcon = this.getActorIcon(log.actor.type)
-      this.log(
-        chalk.gray(`      ${actorIcon} ${log.actor.name} (${log.actor.type}) via ${log.source}`)
-      )
+      this.log(chalk.gray(`      ${actorIcon} ${log.actor.name} (${log.actor.type})`))
 
       // Show entity ID if available
       if (log.entityId) {
@@ -220,14 +213,6 @@ export class AuditCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, AuditLo
       Object.entries(summary.actorTypeCounts).forEach(([actorType, count]) => {
         const icon = this.getActorIcon(actorType)
         this.log(`  ${icon} ${actorType.padEnd(6)}: ${count}`)
-      })
-    }
-
-    // Sources breakdown
-    if (Object.keys(summary.sourceCounts).length > 0) {
-      this.log(chalk.white('Sources:'))
-      Object.entries(summary.sourceCounts).forEach(([source, count]) => {
-        this.log(`  ${source.padEnd(8)}: ${count}`)
       })
     }
   }

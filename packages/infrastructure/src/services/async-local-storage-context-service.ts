@@ -11,6 +11,7 @@ import type {
   LoggingContextService,
 } from '@project-manager/application'
 import { ConfigurationError } from '@project-manager/application'
+import type { EnvironmentMode } from '@project-manager/base'
 
 /**
  * Service for managing logging context using AsyncLocalStorage.
@@ -206,7 +207,7 @@ export class AsyncLocalStorageContextService implements LoggingContextService {
         id: actor.id,
         name: actor.name,
       },
-      environment: (process.env.NODE_ENV as any) || 'development',
+      environment: (process.env.NODE_ENV as EnvironmentMode) || 'development',
     }
   }
 
@@ -232,7 +233,7 @@ export class AsyncLocalStorageContextService implements LoggingContextService {
         name: aiAgent.name,
         coAuthor,
       },
-      environment: (process.env.NODE_ENV as any) || 'development',
+      environment: (process.env.NODE_ENV as EnvironmentMode) || 'development',
     }
   }
 
@@ -252,7 +253,7 @@ export class AsyncLocalStorageContextService implements LoggingContextService {
         id: systemId,
         name: `System: ${systemId}`,
       },
-      environment: (process.env.NODE_ENV as any) || 'production',
+      environment: (process.env.NODE_ENV as EnvironmentMode) || 'production',
     }
   }
 

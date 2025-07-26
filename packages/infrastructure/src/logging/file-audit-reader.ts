@@ -192,7 +192,6 @@ export class FileAuditReader implements AuditReader {
           type: data.actor.type,
           id: data.actor.id,
         },
-        source: data.source || 'unknown',
         traceId: data.traceId,
         before: data.before,
         after: data.after,
