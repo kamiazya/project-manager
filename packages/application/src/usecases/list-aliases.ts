@@ -1,3 +1,4 @@
+import { TicketNotFoundError } from '../common/errors/application-errors.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import { TicketResolutionService } from '../services/ticket-resolution.service.ts'
 
@@ -26,7 +27,7 @@ export class ListAliasesUseCase {
     // Resolve ticket by ID or alias
     const { ticket } = await this.resolutionService.resolveTicket(request.ticketId)
     if (!ticket) {
-      throw new Error('Ticket not found')
+      throw new TicketNotFoundError(request.ticketId, 'ListAliasesUseCase')
     }
 
     const aliases: AliasInfo[] = []
