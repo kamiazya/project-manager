@@ -12,7 +12,9 @@ export * from './shared/patterns/base-value-object.ts'
 export * from './shared/patterns/domain-event.ts'
 // Ticket Management Context - Entities
 export * from './ticket-management/entities/ticket.ts'
-
+// Ticket Management Context - Services and Types for Alias Support
+export * from './ticket-management/services/alias-generator.ts'
+export * from './ticket-management/types/alias-types.ts'
 // Ticket Management Context - Types and validation
 export * from './ticket-management/types/errors.ts'
 export * from './ticket-management/types/ticket-types.ts'
@@ -21,7 +23,7 @@ export {
   createTicketStatus,
   createTicketType,
 } from './ticket-management/types/ticket-types.ts'
-
+export * from './ticket-management/value-objects/ticket-alias.ts'
 // Ticket Management Context - Value Objects (classes)
 export * from './ticket-management/value-objects/ticket-description.ts'
 export * from './ticket-management/value-objects/ticket-id.ts'
