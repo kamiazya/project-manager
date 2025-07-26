@@ -10,10 +10,21 @@ interface ExecuteFlags extends Record<string, unknown> {
   json?: boolean // Inherited from BaseCommand
 }
 
+interface AddAliasResult {
+  ticketId: string
+  alias: string
+  type: 'custom'
+  status: 'added'
+}
+
 /**
  * Add custom alias to ticket
  */
-export class AliasAddCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class AliasAddCommand extends BaseCommand<
+  ExecuteArgs,
+  ExecuteFlags,
+  AddAliasResult | undefined
+> {
   static override description = 'Add custom alias to a ticket'
 
   static override args = {
@@ -36,13 +47,13 @@ export class AliasAddCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any>
     'pm alias add ticket-456 login-fix',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any> {
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<AddAliasResult | undefined> {
     if (!args.ticketId || !args.alias) {
       this.error('Both ticket ID and alias are required')
     }
 
     try {
-      await this.sdk.tickets.addAlias(args.ticketId, args.alias)
+      await this.sdk.aliases.add(args.ticketId, args.alias)
 
       if (flags.json) {
         return {
