@@ -1,4 +1,5 @@
 import { Args, Flags } from '@oclif/core'
+import type { RegenerateCanonicalAliasResponse } from '@project-manager/application'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
@@ -13,7 +14,11 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Regenerate canonical alias for a ticket
  */
-export class AliasRegenerateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class AliasRegenerateCommand extends BaseCommand<
+  ExecuteArgs,
+  ExecuteFlags,
+  RegenerateCanonicalAliasResponse | undefined
+> {
   static override description = 'Regenerate the canonical alias for a ticket'
 
   static override args = {
@@ -37,11 +42,10 @@ export class AliasRegenerateCommand extends BaseCommand<ExecuteArgs, ExecuteFlag
     'pm alias regenerate ticket-456 --force',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any> {
-    if (!args.ticketId) {
-      this.error('Ticket ID is required')
-    }
-
+  async execute(
+    args: ExecuteArgs,
+    flags: ExecuteFlags
+  ): Promise<RegenerateCanonicalAliasResponse | undefined> {
     try {
       const result = await this.sdk.aliases.regenerateCanonical({
         ticketId: args.ticketId,
@@ -66,8 +70,9 @@ export class AliasRegenerateCommand extends BaseCommand<ExecuteArgs, ExecuteFlag
 
       this.log(message)
       return undefined
-    } catch (error: any) {
-      this.error(`Failed to regenerate canonical alias: ${error.message}`)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred'
+      this.error(`Failed to regenerate canonical alias: ${message}`)
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Ticket, TicketAlias, TicketId } from '@project-manager/domain'
+import { Ticket, TicketAlias } from '@project-manager/domain'
 import { BaseUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
@@ -84,18 +84,6 @@ export class AddCustomAliasUseCase extends BaseUseCase<
 
     // Check if alias is unique across all tickets
     await this.validateAliasUniqueness(request.alias, ticket)
-
-    // Check if ticket already has this custom alias
-    const existingCustomAlias = ticket.aliases.custom.find(
-      alias => alias.value.toLowerCase() === request.alias.toLowerCase()
-    )
-    if (existingCustomAlias) {
-      throw new TicketValidationError(
-        `Ticket already has custom alias "${request.alias}"`,
-        'customAlias',
-        request.alias
-      )
-    }
 
     // Add custom alias to ticket
     ticket.addCustomAlias(customAlias)

@@ -274,6 +274,20 @@ export class Ticket {
   }
 
   /**
+   * Business operation: Clear all custom aliases
+   * @returns {string[]} The list of cleared alias values
+   */
+  public clearCustomAliases(): string[] {
+    if (!this.props.aliases?.custom || this.props.aliases.custom.length === 0) {
+      return []
+    }
+    const clearedAliases = this.props.aliases.custom.map(a => a.value)
+    this.props.aliases.custom = []
+    this.updateTimestamp()
+    return clearedAliases
+  }
+
+  /**
    * Check if this ticket has a canonical alias
    */
   public hasCanonicalAlias(): boolean {

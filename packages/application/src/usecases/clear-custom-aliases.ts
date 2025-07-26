@@ -1,4 +1,3 @@
-import { Ticket, TicketId } from '@project-manager/domain'
 import { BaseUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
@@ -88,33 +87,12 @@ export class ClearCustomAliasesUseCase extends BaseUseCase<
       )
     }
 
-    // Get current custom aliases before clearing
-    const customAliasesToClear = ticket.aliases.custom.map(alias => alias.value)
-    const clearedCount = customAliasesToClear.length
-
-    // If no custom aliases to clear, return early
-    if (clearedCount === 0) {
-      return {
-        clearedCount: 0,
-        clearedAliases: [],
-        wasCleared: true,
-        remainingCanonicalAlias: ticket.aliases.canonical?.value,
-      }
-    }
-
-    // Clear all custom aliases
-    // Create a copy of the aliases to iterate over to avoid mutation during iteration
-    const aliasesToRemove = [...customAliasesToClear]
-
-    for (const aliasValue of aliasesToRemove) {
-      ticket.removeCustomAlias(aliasValue)
-    }
-
+    // Use the Ticket entity's clearCustomAliases method
+    const clearedAliases = ticket.clearCustomAliases()
     await this.ticketRepository.save(ticket)
-
     return {
-      clearedCount,
-      clearedAliases: customAliasesToClear,
+      clearedCount: clearedAliases.length,
+      clearedAliases,
       wasCleared: true,
       remainingCanonicalAlias: ticket.aliases.canonical?.value,
     }

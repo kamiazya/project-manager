@@ -10,10 +10,20 @@ interface ExecuteFlags extends Record<string, unknown> {
   json?: boolean // Inherited from BaseCommand
 }
 
+interface RemoveAliasResult {
+  ticketId: string
+  alias: string
+  status: 'removed'
+}
+
 /**
  * Remove custom alias from ticket
  */
-export class AliasRemoveCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class AliasRemoveCommand extends BaseCommand<
+  ExecuteArgs,
+  ExecuteFlags,
+  RemoveAliasResult | undefined
+> {
   static override description = 'Remove custom alias from a ticket'
 
   static override args = {
@@ -36,11 +46,7 @@ export class AliasRemoveCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, a
     'pm alias remove ticket-456 login-fix',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any> {
-    if (!args.ticketId || !args.alias) {
-      this.error('Both ticket ID and alias are required')
-    }
-
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<RemoveAliasResult | undefined> {
     try {
       await this.sdk.aliases.remove({ ticketId: args.ticketId, alias: args.alias })
 
@@ -54,8 +60,9 @@ export class AliasRemoveCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, a
 
       this.log(`Removed custom alias "${args.alias}" from ticket ${args.ticketId}`)
       return undefined
-    } catch (error: any) {
-      this.error(`Failed to remove alias: ${error.message}`)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred'
+      this.error(`Failed to remove alias: ${message}`)
     }
   }
 }

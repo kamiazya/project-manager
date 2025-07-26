@@ -47,10 +47,6 @@ export class AliasSearchCommand extends BaseCommand<
     args: ExecuteArgs,
     flags: ExecuteFlags
   ): Promise<FindTicketByAliasResponse | undefined> {
-    if (!args.alias) {
-      this.error('Alias is required')
-    }
-
     try {
       const result = await this.sdk.aliases.findTicket({
         alias: args.alias,
@@ -80,8 +76,9 @@ export class AliasSearchCommand extends BaseCommand<
         }
         return undefined
       }
-    } catch (error: any) {
-      this.error(`Failed to search for ticket: ${error.message}`)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred'
+      this.error(`Failed to search for ticket: ${message}`)
     }
   }
 }

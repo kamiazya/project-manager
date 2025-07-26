@@ -1,4 +1,5 @@
 import { Args, Flags } from '@oclif/core'
+import type { ValidateAliasResponse } from '@project-manager/application'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
@@ -6,7 +7,7 @@ interface ExecuteArgs extends Record<string, unknown> {
 }
 
 interface ExecuteFlags extends Record<string, unknown> {
-  type?: string
+  type?: 'canonical' | 'custom'
   'check-uniqueness'?: boolean
   'exclude-ticket'?: string
   json?: boolean // Inherited from BaseCommand
@@ -15,7 +16,11 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Validate an alias for format, uniqueness, and rules
  */
-export class AliasValidateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class AliasValidateCommand extends BaseCommand<
+  ExecuteArgs,
+  ExecuteFlags,
+  ValidateAliasResponse | undefined
+> {
   static override description = 'Validate an alias for format, uniqueness, and type-specific rules'
 
   static override args = {
@@ -47,15 +52,14 @@ export class AliasValidateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
     'pm alias validate "updated-alias" --check-uniqueness --exclude-ticket 1234567890',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any> {
-    if (!args.alias) {
-      this.error('Alias is required')
-    }
-
+  async execute(
+    args: ExecuteArgs,
+    flags: ExecuteFlags
+  ): Promise<ValidateAliasResponse | undefined> {
     try {
       const result = await this.sdk.aliases.validate({
         alias: args.alias,
-        aliasType: flags.type as 'canonical' | 'custom',
+        aliasType: flags.type,
         checkUniqueness: flags['check-uniqueness'],
         excludeTicketId: flags['exclude-ticket'],
       })
@@ -135,8 +139,9 @@ export class AliasValidateCommand extends BaseCommand<ExecuteArgs, ExecuteFlags,
       }
 
       return undefined
-    } catch (error: any) {
-      this.error(`Failed to validate alias: ${error.message}`)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred'
+      this.error(`Failed to validate alias: ${message}`)
     }
   }
 }

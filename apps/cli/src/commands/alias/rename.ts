@@ -11,10 +11,21 @@ interface ExecuteFlags extends Record<string, unknown> {
   json?: boolean // Inherited from BaseCommand
 }
 
+interface RenameAliasResult {
+  ticketId: string
+  oldAlias: string
+  newAlias: string
+  status: 'renamed'
+}
+
 /**
  * Rename custom alias
  */
-export class AliasRenameCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class AliasRenameCommand extends BaseCommand<
+  ExecuteArgs,
+  ExecuteFlags,
+  RenameAliasResult | undefined
+> {
   static override description = 'Rename a custom alias'
 
   static override args = {
@@ -41,11 +52,7 @@ export class AliasRenameCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, a
     'pm alias rename ticket-456 old-name new-name',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any> {
-    if (!args.ticketId || !args.oldAlias || !args.newAlias) {
-      this.error('Ticket ID, old alias, and new alias are all required')
-    }
-
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<RenameAliasResult | undefined> {
     try {
       await this.sdk.aliases.rename({
         ticketId: args.ticketId,
@@ -66,8 +73,9 @@ export class AliasRenameCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, a
         `Renamed custom alias "${args.oldAlias}" to "${args.newAlias}" for ticket ${args.ticketId}`
       )
       return undefined
-    } catch (error: any) {
-      this.error(`Failed to rename alias: ${error.message}`)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred'
+      this.error(`Failed to rename alias: ${message}`)
     }
   }
 }

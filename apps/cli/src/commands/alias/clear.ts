@@ -1,4 +1,5 @@
 import { Args, Flags } from '@oclif/core'
+import type { ClearCustomAliasesResponse } from '@project-manager/application'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
@@ -13,7 +14,11 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Clear all custom aliases from a ticket
  */
-export class AliasClearCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class AliasClearCommand extends BaseCommand<
+  ExecuteArgs,
+  ExecuteFlags,
+  ClearCustomAliasesResponse | undefined
+> {
   static override description = 'Clear all custom aliases from a ticket'
 
   static override args = {
@@ -37,11 +42,10 @@ export class AliasClearCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, an
     'pm alias clear ticket-456 -y',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any> {
-    if (!args.ticketId) {
-      this.error('Ticket ID is required')
-    }
-
+  async execute(
+    args: ExecuteArgs,
+    flags: ExecuteFlags
+  ): Promise<ClearCustomAliasesResponse | undefined> {
     // Safety check - require confirmation
     if (!flags.confirm) {
       this.error(
@@ -76,8 +80,9 @@ export class AliasClearCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, an
       }
 
       return undefined
-    } catch (error: any) {
-      this.error(`Failed to clear custom aliases: ${error.message}`)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred'
+      this.error(`Failed to clear custom aliases: ${message}`)
     }
   }
 }

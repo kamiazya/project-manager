@@ -1,4 +1,5 @@
 import { Args } from '@oclif/core'
+import type { PromoteCustomAliasResponse } from '@project-manager/application'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
@@ -13,7 +14,11 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * Promote custom alias to canonical status
  */
-export class AliasPromoteCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class AliasPromoteCommand extends BaseCommand<
+  ExecuteArgs,
+  ExecuteFlags,
+  PromoteCustomAliasResponse | undefined
+> {
   static override description = 'Promote a custom alias to canonical status'
 
   static override args = {
@@ -36,11 +41,10 @@ export class AliasPromoteCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, 
     'pm alias promote ticket-456 better-name',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any> {
-    if (!args.ticketId || !args.alias) {
-      this.error('Both ticket ID and alias are required')
-    }
-
+  async execute(
+    args: ExecuteArgs,
+    flags: ExecuteFlags
+  ): Promise<PromoteCustomAliasResponse | undefined> {
     try {
       const result = await this.sdk.aliases.promote({
         ticketId: args.ticketId,
@@ -65,8 +69,9 @@ export class AliasPromoteCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, 
 
       this.log(message)
       return undefined
-    } catch (error: any) {
-      this.error(`Failed to promote alias: ${error.message}`)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred'
+      this.error(`Failed to promote alias: ${message}`)
     }
   }
 }

@@ -47,11 +47,7 @@ export class AliasAddCommand extends BaseCommand<
     'pm alias add ticket-456 login-fix',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<AddAliasResult | undefined> {
-    if (!args.ticketId || !args.alias) {
-      this.error('Both ticket ID and alias are required')
-    }
-
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<AddAliasResult> {
     try {
       await this.sdk.aliases.add(args.ticketId, args.alias)
 
@@ -65,9 +61,15 @@ export class AliasAddCommand extends BaseCommand<
       }
 
       this.log(`Added custom alias "${args.alias}" to ticket ${args.ticketId}`)
-      return undefined
-    } catch (error: any) {
-      this.error(`Failed to add alias: ${error.message}`)
+      return {
+        ticketId: args.ticketId,
+        alias: args.alias,
+        type: 'custom',
+        status: 'added',
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred'
+      this.error(`Failed to add alias: ${message}`)
     }
   }
 }

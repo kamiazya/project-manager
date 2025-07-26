@@ -1,4 +1,5 @@
 import { Args } from '@oclif/core'
+import type { ListAliasesResponse } from '@project-manager/application'
 import { BaseCommand } from '../../lib/base-command.ts'
 
 interface ExecuteArgs extends Record<string, unknown> {
@@ -12,7 +13,11 @@ interface ExecuteFlags extends Record<string, unknown> {
 /**
  * List all aliases for a ticket
  */
-export class AliasListCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any> {
+export class AliasListCommand extends BaseCommand<
+  ExecuteArgs,
+  ExecuteFlags,
+  ListAliasesResponse | undefined
+> {
   static override description = 'List all aliases for a ticket'
 
   static override args = {
@@ -31,11 +36,7 @@ export class AliasListCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any
     'pm alias list ticket-456',
   ]
 
-  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<any> {
-    if (!args.ticketId) {
-      this.error('Ticket ID is required')
-    }
-
+  async execute(args: ExecuteArgs, flags: ExecuteFlags): Promise<ListAliasesResponse | undefined> {
     try {
       const result = await this.sdk.aliases.list({ ticketId: args.ticketId })
 
@@ -56,8 +57,9 @@ export class AliasListCommand extends BaseCommand<ExecuteArgs, ExecuteFlags, any
       }
 
       return undefined
-    } catch (error: any) {
-      this.error(`Failed to list aliases: ${error.message}`)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred'
+      this.error(`Failed to list aliases: ${message}`)
     }
   }
 }
