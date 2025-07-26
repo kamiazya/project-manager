@@ -184,6 +184,73 @@ export class JsonTicketRepository implements TicketRepository {
     })
   }
 
+  // Alias-related methods implementation
+
+  async findByAlias(alias: string): Promise<Ticket | null> {
+    const tickets = await this.loadTicketsFromFile()
+    const aliasLower = alias.toLowerCase()
+
+    const ticketJson = tickets.find(ticket => {
+      if (!ticket.aliases) return false
+
+      // Check canonical alias
+      if (ticket.aliases.canonical?.value.toLowerCase() === aliasLower) {
+        return true
+      }
+
+      // Check custom aliases
+      return ticket.aliases.custom.some(
+        customAlias => customAlias.value.toLowerCase() === aliasLower
+      )
+    })
+
+    if (!ticketJson) {
+      return null
+    }
+
+    // Convert persistence format to domain object
+    return TicketMapper.toDomain(ticketJson)
+  }
+
+  async isAliasAvailable(alias: string): Promise<boolean> {
+    const existingTicket = await this.findByAlias(alias)
+    return existingTicket === null
+  }
+
+  async getAllAliases(): Promise<string[]> {
+    const tickets = await this.loadTicketsFromFile()
+    const aliases: string[] = []
+
+    for (const ticket of tickets) {
+      if (!ticket.aliases) continue
+
+      // Add canonical alias if exists
+      if (ticket.aliases.canonical) {
+        aliases.push(ticket.aliases.canonical.value)
+      }
+
+      // Add all custom aliases
+      for (const customAlias of ticket.aliases.custom) {
+        aliases.push(customAlias.value)
+      }
+    }
+
+    // Return unique aliases sorted alphabetically
+    return [...new Set(aliases)].sort()
+  }
+
+  async findTicketsWithAliases(): Promise<Ticket[]> {
+    const tickets = await this.loadTicketsFromFile()
+
+    // Filter tickets that have at least one alias
+    const ticketsWithAliases = tickets.filter(ticket => {
+      return ticket.aliases && (ticket.aliases.canonical || ticket.aliases.custom.length > 0)
+    })
+
+    // Convert filtered persistence objects to domain objects
+    return TicketMapper.toDomainList(ticketsWithAliases, this.logger)
+  }
+
   private async withFileLock<T>(operation: () => Promise<T>): Promise<T> {
     return this.fileMutex.withLock(operation)
   }
