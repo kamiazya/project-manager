@@ -32,9 +32,6 @@ export interface UseCaseAuditRecord {
     coAuthor?: string
   }
 
-  /** Source of the operation */
-  source: 'cli' | 'mcp' | 'api' | 'scheduler' | 'test'
-
   /** Trace ID for request correlation */
   traceId: string
 
@@ -141,7 +138,6 @@ export class AuditInterceptor {
       actor: context.actor,
       entityType: this.entityType,
       entityId: `${auditRecord.operation}-${auditRecord.execution.startTime}`,
-      source: context.source,
       traceId: context.traceId,
       before: null,
       after: auditRecord as unknown as Record<string, unknown>,
@@ -198,7 +194,6 @@ export class AuditInterceptor {
       actor: context.actor,
       entityType: this.entityType,
       entityId: `${auditRecord.operation}-${auditRecord.execution.startTime}`,
-      source: context.source,
       traceId: context.traceId,
       before: null,
       after: auditRecord as unknown as Record<string, unknown>,
@@ -274,7 +269,6 @@ export class AuditInterceptor {
       entityType: auditMetadata.resourceType,
       entityId,
       actor: context.actor,
-      source: context.source,
       traceId: context.traceId,
       before: beforeState,
       after: afterState,

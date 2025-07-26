@@ -17,7 +17,6 @@ describe('AuditEventModel', () => {
     actor: { type: 'human', id: 'user-123', name: 'Test User' },
     entityType: 'ticket',
     entityId: 'ticket-001',
-    source: 'cli',
   }
 
   describe('AuditEventModel creation', () => {
@@ -28,7 +27,6 @@ describe('AuditEventModel', () => {
       expect(event.actor).toEqual(baseParams.actor)
       expect(event.entityType).toBe('ticket')
       expect(event.entityId).toBe('ticket-001')
-      expect(event.source).toBe('cli')
       expect(event.id).toMatch(/^audit-\d+-[a-z0-9]+$/)
       expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
       expect(event.traceId).toMatch(/^trace-[a-z0-9]+-[a-z0-9]+$/)
@@ -101,8 +99,7 @@ describe('AuditEventModel', () => {
         baseParams.actor,
         'ticket',
         'ticket-001',
-        afterState,
-        'cli'
+        afterState
       )
 
       expect(event).toBeInstanceOf(CreateAuditEventModel)
@@ -156,7 +153,6 @@ describe('AuditEventModel', () => {
         'ticket',
         'ticket-001',
         state,
-        'api',
         accessDetails
       )
 
@@ -199,8 +195,7 @@ describe('AuditEventModel', () => {
         'ticket',
         'ticket-001',
         before,
-        after,
-        'cli'
+        after
       )
 
       expect(event).toBeInstanceOf(UpdateAuditEventModel)
@@ -234,7 +229,6 @@ describe('AuditEventModel', () => {
         'ticket-001',
         { title: 'Old' },
         { title: 'New' },
-        'cli',
         { changes: customChanges }
       )
 
@@ -259,7 +253,6 @@ describe('AuditEventModel', () => {
         'ticket',
         'ticket-001',
         beforeState,
-        'cli',
         deletionDetails
       )
 
@@ -302,7 +295,6 @@ describe('AuditEventModel', () => {
         actor: event.actor,
         entityType: event.entityType,
         entityId: event.entityId,
-        source: event.source,
         context: event.context,
       })
     })
@@ -325,8 +317,7 @@ describe('AuditEventModel', () => {
           title: 'Test',
           password: 'secret123',
           apiKey: 'key-456',
-        },
-        baseParams.source
+        }
       )
 
       const serialized = eventWithSensitiveData.serialize() // Sanitize by default
@@ -363,11 +354,6 @@ describe('AuditEventModel', () => {
       expect(event.matches({ actor: { id: 'user-123' } })).toBe(true)
       expect(event.matches({ actor: { type: 'human' } })).toBe(true)
       expect(event.matches({ actor: { id: 'user-456' } })).toBe(false)
-
-      // Source filter
-      expect(event.matches({ source: 'cli' })).toBe(true)
-      expect(event.matches({ source: ['cli', 'api'] })).toBe(true)
-      expect(event.matches({ source: 'mcp' })).toBe(false)
     })
 
     it('should match date range filters', () => {
@@ -432,7 +418,6 @@ describe('AuditEventModel', () => {
         actor: { type: 'human' as const, id: 'user-123' },
         entityType: 'ticket',
         entityId: 'ticket-001',
-        source: 'cli' as const,
       }
 
       const event = AuditEventModel.fromObject(obj)
@@ -454,7 +439,6 @@ describe('AuditEventModel', () => {
           actor: { type: 'human' as const, id: 'user-123' },
           entityType: 'ticket',
           entityId: 'ticket-001',
-          source: 'cli' as const,
         }
 
         const errors = AuditEventUtils.validate(validEvent)
@@ -474,7 +458,6 @@ describe('AuditEventModel', () => {
         expect(errors).toContain('Actor is required')
         expect(errors).toContain('Entity type is required')
         expect(errors).toContain('Entity ID is required')
-        expect(errors).toContain('Source is required')
       })
 
       it('should validate actor requirements', () => {
@@ -486,7 +469,6 @@ describe('AuditEventModel', () => {
           actor: { type: 'human' as const, id: '' }, // Empty ID for testing
           entityType: 'ticket',
           entityId: 'ticket-001',
-          source: 'cli' as const,
         }
 
         const errors = AuditEventUtils.validate(eventWithInvalidActor)
@@ -520,7 +502,6 @@ describe('AuditEventModel', () => {
           actor: { type: 'human' as const, id: 'user-123' },
           entityType: 'ticket',
           entityId: 'ticket-001',
-          source: 'cli' as const,
           before: null,
           after: {
             title: 'Test Ticket',
@@ -585,7 +566,6 @@ describe('AuditEventModel', () => {
           actor: { type: 'human' as const, id: 'user-123' },
           entityType: 'user',
           entityId: 'user-001',
-          source: 'cli' as const,
           before: {
             password: 'oldSecret123',
             name: 'John',
@@ -701,7 +681,6 @@ describe('AuditEventModel', () => {
           actor: { type: 'human', id: 'user-123' },
           entityType: 'ticket',
           entityId: 'ticket-001',
-          source: 'cli',
         })
 
         const event = AuditEventUtils.parseFromJson(json)
@@ -771,7 +750,6 @@ describe('AuditEventModel', () => {
         expect(stats.operationsByType?.update).toBe(1)
         expect(stats.operationsByActor?.human).toBe(3)
         expect(stats.operationsByEntity?.ticket).toBe(3)
-        expect(stats.operationsBySource?.cli).toBe(3)
       })
     })
   })
@@ -783,7 +761,6 @@ describe('AuditEventModel', () => {
         actor: { type: 'system', id: 's' }, // Single character
         entityType: 'x', // Single character
         entityId: 'y', // Single character
-        source: 'test',
       }
 
       const event = AuditEventModel.create(minimalParams)
@@ -812,7 +789,6 @@ describe('AuditEventModel', () => {
         },
         entityType: longString,
         entityId: longString,
-        source: 'cli',
         before: largeData,
         after: largeData,
       }
@@ -829,7 +805,6 @@ describe('AuditEventModel', () => {
         actor: { type: 'human', id: 'user-123', name: undefined },
         entityType: 'ticket',
         entityId: 'ticket-001',
-        source: 'cli',
         before: null,
         after: {
           field1: null,
@@ -855,7 +830,6 @@ describe('AuditEventModel', () => {
         },
         entityType: 'チケット',
         entityId: 'ticket-αβγ-🎫',
-        source: 'cli',
         after: {
           title: 'Тест с эмодзи 🚀',
           description: 'Description with quotes "test" and apostrophes \'test\'',

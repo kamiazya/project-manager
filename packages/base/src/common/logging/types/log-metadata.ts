@@ -44,9 +44,6 @@ export interface LogMetadata {
   /** Architectural layer where the log originated */
   layer?: ArchitectureLayer
 
-  /** Source system or interface generating the log */
-  source?: LogSource
-
   // Performance metrics
   /** Start time for performance measurement (timestamp) */
   startTime?: number
@@ -140,20 +137,6 @@ export type ArchitectureLayer =
   | 'sdk' // SDK layer (facades)
   | 'cli' // CLI application
   | 'mcp' // MCP server application
-
-/**
- * Log source enumeration for identifying the interface or system generating logs.
- */
-export type LogSource =
-  | 'cli' // Command-line interface
-  | 'mcp' // MCP (Model Context Protocol) server
-  | 'sdk' // SDK programmatic access
-  | 'api' // REST API interface
-  | 'test' // Test execution
-  | 'sync' // External synchronization
-  | 'system' // System-generated operations
-  | 'scheduler' // Scheduled operations
-  | 'webhook' // Webhook operations
 
 /**
  * Context interface for child logger creation.
@@ -370,7 +353,6 @@ export const LogMetadataUtils = {
       'coAuthor',
       'component',
       'layer',
-      'source',
       'startTime',
       'duration',
       'entityType',
@@ -406,7 +388,6 @@ export const LogMetadataUtils = {
       'coAuthor',
       'component',
       'layer',
-      'source',
       'startTime',
       'duration',
       'entityType',

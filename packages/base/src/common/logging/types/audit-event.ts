@@ -5,7 +5,7 @@
  * with complete traceability, actor attribution, and state tracking.
  */
 
-import type { LogSource, OperationType } from './log-metadata.ts'
+import type { OperationType } from './log-metadata.ts'
 
 /**
  * Base interface for all audit events.
@@ -32,9 +32,6 @@ export interface BaseAuditEvent {
 
   /** Unique identifier of the specific entity */
   entityId: string
-
-  /** Source system or interface where the operation originated */
-  source: LogSource
 
   /** Optional additional context for the operation */
   context?: AuditEventContext
@@ -349,9 +346,6 @@ export interface AuditEventFilter {
     name?: string
   }
 
-  /** Filter by source system */
-  source?: LogSource | LogSource[]
-
   /** Filter by date range */
   dateRange?: {
     /** Start date (inclusive) */
@@ -406,9 +400,6 @@ export interface AuditEventStatistics {
 
   /** Operations broken down by entity type */
   operationsByEntity: Record<string, number>
-
-  /** Operations broken down by source */
-  operationsBySource: Record<LogSource, number>
 
   /** Operations broken down by risk level */
   operationsByRisk: Record<'low' | 'medium' | 'high' | 'critical', number>
@@ -481,7 +472,6 @@ export const AuditEventUtils = {
     if (!event.actor) errors.push('Actor is required')
     if (!event.entityType) errors.push('Entity type is required')
     if (!event.entityId) errors.push('Entity ID is required')
-    if (!event.source) errors.push('Source is required')
 
     if (event.actor) {
       if (!event.actor.id) errors.push('Actor ID is required')
