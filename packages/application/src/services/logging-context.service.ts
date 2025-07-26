@@ -5,7 +5,7 @@
  * The implementation will be provided by the Infrastructure layer.
  */
 
-import type { ActorType, EnvironmentMode, LogSource } from '@project-manager/base'
+import type { ActorType, EnvironmentMode } from '@project-manager/base'
 
 /**
  * Logging context interface containing all contextual information
@@ -17,9 +17,6 @@ export interface LoggingContext {
 
   /** Session identifier */
   sessionId?: string
-
-  /** Source of the operation (cli, mcp, api, etc.) */
-  source: LogSource
 
   /** Current operation being performed */
   operation?: string
@@ -71,7 +68,6 @@ export function isLoggingContext(obj: any): obj is LoggingContext {
   return (
     obj &&
     typeof obj.traceId === 'string' &&
-    typeof obj.source === 'string' &&
     obj.actor &&
     typeof obj.actor.type === 'string' &&
     typeof obj.actor.id === 'string' &&

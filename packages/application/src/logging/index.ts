@@ -14,7 +14,6 @@ export {
   ApplicationLogger,
   ApplicationLogger as AppLogger,
   ApplicationLoggerUtils,
-  createApplicationLogger,
 } from './application-logger.ts'
 export type { UseCaseAuditRecord } from './audit-interceptor.ts'
 export {

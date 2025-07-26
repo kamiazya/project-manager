@@ -3,14 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Ticket, TicketId } from '@project-manager/domain'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  getValidUlidByIndex,
-  VALID_ULID_1,
-  VALID_ULID_2,
-  VALID_ULID_3,
-  VALID_ULID_4,
-  VALID_ULID_5,
-} from '../test-helpers.ts'
+import { getValidUlidByIndex, VALID_ULID_1, VALID_ULID_2, VALID_ULID_3 } from '../test-helpers.ts'
 import { JsonTicketRepository } from './json-ticket-repository.ts'
 
 interface FileSystemOperations {

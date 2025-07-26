@@ -512,6 +512,9 @@ describe('createContainer', () => {
               getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.json'),
               getDefaultStorageDir: vi.fn(() => '/default/storage'),
               resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
+              getLogsPath: vi.fn(() => '/default/logs'),
+              getApplicationLogPath: vi.fn(() => '/default/logs/app.log'),
+              getAuditLogPath: vi.fn(() => '/default/logs/audit.log'),
             } as any
           }
         )
@@ -595,6 +598,9 @@ describe('createContainer', () => {
             getDefaultStoragePath: vi.fn(() => '/default/storage/tickets.json'),
             getDefaultStorageDir: vi.fn(() => '/default/storage'),
             resolveStoragePath: vi.fn(() => '/resolved/path/tickets.json'),
+            getLogsPath: vi.fn(() => '/default/logs'),
+            getApplicationLogPath: vi.fn(() => '/default/logs/app.log'),
+            getAuditLogPath: vi.fn(() => '/default/logs/audit.log'),
           } as any
         }
       )

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
+import { Logging } from '@project-manager/base'
 import { createProjectManagerSDK } from '@project-manager/sdk'
 import { createMcpServer } from '../apps/mcp-server/src/index.ts'
 
@@ -31,8 +32,10 @@ async function parseRequestBody(req: IncomingMessage): Promise<any> {
 /**
  * Helper function to send JSON-RPC parse error response
  */
-function sendParseErrorResponse(res: ServerResponse, error: unknown): void {
-  console.error('Error parsing request body:', error)
+function sendParseErrorResponse(logger: Logging.Logger, res: ServerResponse, error: unknown): void {
+  logger.error('Error parsing request body:', {
+    error: error instanceof Error ? error.message : String(error),
+  })
   if (!res.headersSent) {
     res.writeHead(400, { 'Content-Type': 'application/json' })
     res.end(
@@ -46,6 +49,9 @@ function sendParseErrorResponse(res: ServerResponse, error: unknown): void {
 }
 
 async function main() {
+  const sdk = await createProjectManagerSDK()
+  const logger = sdk.createLogger('mcp-server')
+
   try {
     // Handle command line arguments
     const args = process.argv.slice(2)
@@ -57,7 +63,7 @@ async function main() {
     // Validate port range (1-65535) and handle invalid values
     let port: number
     if (Number.isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
-      console.error(
+      logger.error(
         `Invalid port: ${portArg}. Port must be a number between 1 and 65535. Using default port 3000.`
       )
       port = 3000
@@ -65,10 +71,7 @@ async function main() {
       port = parsedPort
     }
 
-    console.error('Starting MCP server...')
-
-    // Initialize SDK for MCP server
-    const sdk = await createProjectManagerSDK({ environment: 'auto' })
+    logger.error('Starting MCP server...')
 
     const server = await createMcpServer(sdk)
 
@@ -99,7 +102,7 @@ async function main() {
                 const requestData = await parseRequestBody(req)
                 await transport.handleRequest(req, res, requestData)
               } catch (parseError) {
-                sendParseErrorResponse(res, parseError)
+                sendParseErrorResponse(logger, res, parseError)
               }
             } else {
               // Stateful mode: reuse or create transport by session ID
@@ -133,7 +136,7 @@ async function main() {
                 const requestData = await parseRequestBody(req)
                 await transport.handleRequest(req, res, requestData)
               } catch (parseError) {
-                sendParseErrorResponse(res, parseError)
+                sendParseErrorResponse(logger, res, parseError)
               }
             }
           } else if (req.method === 'GET') {
@@ -193,7 +196,9 @@ async function main() {
             res.end(JSON.stringify({ error: 'Method not allowed' }))
           }
         } catch (error) {
-          console.error('Error handling HTTP request:', error)
+          logger.error('Error handling HTTP request:', {
+            error: error instanceof Error ? error.message : String(error),
+          })
           if (!res.headersSent) {
             res.writeHead(500, { 'Content-Type': 'application/json' })
             res.end(
@@ -210,12 +215,12 @@ async function main() {
       // Start HTTP server
       httpServer.listen(port, '127.0.0.1', () => {
         const statefulMode = isStateless ? 'stateless' : 'stateful'
-        console.error(`MCP HTTP server started on http://127.0.0.1:${port} (${statefulMode})`)
+        logger.debug(`MCP HTTP server started on http://127.0.0.1:${port} (${statefulMode})`)
       })
 
       // Graceful shutdown
       process.on('SIGINT', () => {
-        console.error('\nShutting down HTTP server...')
+        logger.debug('\nShutting down HTTP server...')
         httpServer.close(() => {
           process.exit(0)
         })
@@ -225,10 +230,12 @@ async function main() {
       const transport = new StdioServerTransport()
       await server.connect(transport)
 
-      console.error('MCP server started successfully (stdio)')
+      logger.debug('MCP server started successfully (stdio)')
     }
   } catch (error) {
-    console.error('Failed to start MCP server:', error)
+    logger.error('Failed to start MCP server:', {
+      error: error instanceof Error ? error.message : String(error),
+    })
     process.exit(1)
   }
 }

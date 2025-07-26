@@ -16,7 +16,6 @@ export const TYPES = {
 
   // Logging Services
   AsyncContextStorage: Symbol('AsyncContextStorage'),
-  LoggerFactory: Symbol('LoggerFactory'),
   BaseLogger: Symbol('BaseLogger'),
   AuditLogger: Symbol('AuditLogger'),
   ApplicationLogger: Symbol('ApplicationLogger'),

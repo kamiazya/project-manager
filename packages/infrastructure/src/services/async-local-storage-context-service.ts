@@ -135,7 +135,6 @@ export class AsyncLocalStorageContextService implements LoggingContextService {
 
     const logContext: Record<string, any> = {
       traceId: context.traceId,
-      source: context.source,
       operation: context.operation,
       actor: {
         type: context.actor.type,
@@ -201,7 +200,6 @@ export class AsyncLocalStorageContextService implements LoggingContextService {
   static createCliContext(operation: string, actor: { id: string; name: string }): LoggingContext {
     return {
       traceId: AsyncLocalStorageContextService.generateTraceId(),
-      source: 'cli',
       operation,
       actor: {
         type: 'human',
@@ -227,7 +225,6 @@ export class AsyncLocalStorageContextService implements LoggingContextService {
   ): LoggingContext {
     return {
       traceId: AsyncLocalStorageContextService.generateTraceId(),
-      source: 'mcp',
       operation,
       actor: {
         type: 'ai',
@@ -249,7 +246,6 @@ export class AsyncLocalStorageContextService implements LoggingContextService {
   static createSystemContext(operation: string, systemId: string): LoggingContext {
     return {
       traceId: AsyncLocalStorageContextService.generateTraceId(),
-      source: 'scheduler',
       operation,
       actor: {
         type: 'system',

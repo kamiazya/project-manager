@@ -25,15 +25,12 @@ export interface LogConfig {
 
   /** Whether to colorize console output */
   colorize?: boolean
-
-  /** Maximum entries for memory transport (test/debugging) */
-  maxEntries?: number
 }
 
 /**
  * Available transport mechanisms.
  */
-export type TransportType = 'console' | 'file' | 'memory'
+export type TransportType = 'file' | 'memory'
 
 /**
  * Predefined configuration templates for different environments.
@@ -43,9 +40,10 @@ export const LogConfigPresets = {
    * Development configuration optimized for debugging and local development.
    */
   development: {
-    level: 'debug' as LogLevel,
-    environment: 'development' as EnvironmentMode,
-    transportType: 'console' as TransportType,
+    level: 'debug',
+    environment: 'development',
+    transportType: 'file',
+    logFile: '~/.local/share/project-manager-dev/logs/app.log',
     colorize: true,
   } satisfies LogConfig,
 
@@ -53,21 +51,20 @@ export const LogConfigPresets = {
    * Test configuration optimized for test reliability and debugging.
    */
   test: {
-    level: 'warn' as LogLevel,
-    environment: 'testing' as EnvironmentMode,
-    transportType: 'memory' as TransportType,
-    maxEntries: 1000,
+    level: 'warn',
+    environment: 'testing',
+    transportType: 'memory',
   } satisfies LogConfig,
 
   /**
    * Production configuration optimized for performance and operational monitoring.
    */
   production: {
-    level: 'info' as LogLevel,
-    environment: 'production' as EnvironmentMode,
+    level: 'info',
+    environment: 'production',
+    transportType: 'file',
     logFile: '~/.local/share/project-manager/logs/app.log',
     auditFile: '~/.local/share/project-manager/logs/audit.log',
-    transportType: 'file' as TransportType,
   } satisfies LogConfig,
 } as const
 
@@ -103,7 +100,7 @@ export const LogConfigUtils = {
     const base: LogConfig = {
       level: 'info',
       environment: 'production',
-      transportType: 'console',
+      transportType: 'file',
     }
 
     return configs.reduce<LogConfig>((merged, config) => {
@@ -114,7 +111,6 @@ export const LogConfigUtils = {
         logFile: config.logFile || merged.logFile,
         auditFile: config.auditFile || merged.auditFile,
         colorize: config.colorize !== undefined ? config.colorize : merged.colorize,
-        maxEntries: config.maxEntries !== undefined ? config.maxEntries : merged.maxEntries,
       }
     }, base)
   },
@@ -140,7 +136,7 @@ export const LogConfigUtils = {
     }
 
     // Validate transport
-    if (!['console', 'file', 'memory'].includes(config.transportType)) {
+    if (!['file', 'memory'].includes(config.transportType)) {
       errors.push(`Invalid transport type: ${config.transportType}`)
     }
 

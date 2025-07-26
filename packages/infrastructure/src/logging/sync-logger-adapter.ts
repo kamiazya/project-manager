@@ -82,7 +82,7 @@ class SyncMemoryBuffer<T> {
 /**
  * Simple color codes for console output.
  */
-const Colors = {
+const _Colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
   dim: '\x1b[2m',
@@ -193,38 +193,6 @@ export class SyncLoggerAdapter implements Logger {
   }
 
   /**
-   * Colorize log entry for console output.
-   */
-  private colorizeLogEntry(level: LogLevel, entry: string): string {
-    if (!this.config.colorize) {
-      return entry
-    }
-
-    const color = this.getLevelColor(level)
-    return `${color}${entry}${Colors.reset}`
-  }
-
-  /**
-   * Get color for log level.
-   */
-  private getLevelColor(level: LogLevel): string {
-    switch (level) {
-      case 'debug':
-        return Colors.gray
-      case 'info':
-        return Colors.blue
-      case 'warn':
-        return Colors.yellow
-      case 'error':
-        return Colors.red
-      case 'fatal':
-        return Colors.magenta
-      default:
-        return Colors.white
-    }
-  }
-
-  /**
    * Write log entry using configured transport(s).
    */
   private writeLogEntry(level: LogLevel, message: string, metadata?: LogMetadata): void {
@@ -236,10 +204,6 @@ export class SyncLoggerAdapter implements Logger {
     }
 
     switch (this.config.transportType) {
-      case 'console':
-        this.writeToConsole(level, entry)
-        break
-
       case 'file':
         this.writeToFile(entry)
         break
@@ -264,21 +228,6 @@ export class SyncLoggerAdapter implements Logger {
 
     const configLevel = this.config.level || 'info'
     return levels[level] >= levels[configLevel]
-  }
-
-  /**
-   * Write to console (synchronous).
-   */
-  private writeToConsole(level: LogLevel, entry: string): void {
-    const colorizedEntry = this.colorizeLogEntry(level, entry)
-
-    if (level === 'error' || level === 'fatal') {
-      // Use stderr for errors and fatal
-      process.stderr.write(`${colorizedEntry}\n`)
-    } else {
-      // Use stdout for other levels
-      process.stdout.write(`${colorizedEntry}\n`)
-    }
   }
 
   /**
@@ -457,11 +406,15 @@ export class SyncLoggerAdapter implements Logger {
 /**
  * Create development-optimized synchronous logger.
  */
-export function createDevelopmentSyncLogger(overrides?: Partial<SyncLoggerConfig>): Logger {
+export function createDevelopmentSyncLogger(
+  logPath: string,
+  overrides?: Partial<SyncLoggerConfig>
+): Logger {
   const config: SyncLoggerConfig = {
     level: 'debug',
     environment: 'development',
-    transportType: 'console',
+    transportType: 'file',
+    logFile: logPath,
     colorize: true,
     timestampFormat: 'locale',
     ...overrides,
