@@ -16,7 +16,7 @@ export class DeleteCommand extends BaseCommand {
 
   static override args = {
     ticketId: Args.string({
-      description: 'ID of the ticket to delete',
+      description: 'ID or alias of the ticket to delete',
       required: true,
     }),
   }

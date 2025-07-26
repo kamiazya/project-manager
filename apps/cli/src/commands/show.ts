@@ -22,7 +22,7 @@ export class ShowCommand extends BaseCommand<
 
   static override args = {
     ticketId: Args.string({
-      description: 'ID of the ticket to show',
+      description: 'ID or alias of the ticket to show',
       required: true,
     }),
   }

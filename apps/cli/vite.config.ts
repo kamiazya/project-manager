@@ -81,6 +81,7 @@ export default defineConfig({
         'commands/update/content': 'src/commands/update/content.ts',
         'commands/update/priority': 'src/commands/update/priority.ts',
         'commands/update/status': 'src/commands/update/status.ts',
+        'commands/alias/add': 'src/commands/alias/add.ts',
         'commands/mcp': 'src/commands/mcp.ts',
         'lib/base-command': 'src/lib/base-command.ts',
       },
