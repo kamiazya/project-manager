@@ -159,6 +159,10 @@ export interface TicketResponse {
   type: string
   createdAt: string
   updatedAt: string
+  aliases?: {
+    canonical?: string
+    custom: readonly string[]
+  }
 }
 
 /**
@@ -430,6 +434,7 @@ export class ProjectManagerSDK {
       type: ticketResponse.type,
       createdAt: ticketResponse.createdAt,
       updatedAt: ticketResponse.updatedAt,
+      aliases: ticketResponse.aliases,
     }
   }
 

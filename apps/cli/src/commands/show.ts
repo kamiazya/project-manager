@@ -45,8 +45,23 @@ export class ShowCommand extends BaseCommand<
       return ticket
     }
 
+    // Format alias information
+    let aliasOutput = ''
+    if (ticket.aliases) {
+      const aliasLines = []
+      if (ticket.aliases.canonical) {
+        aliasLines.push(`  Canonical: ${ticket.aliases.canonical}`)
+      }
+      if (ticket.aliases.custom.length > 0) {
+        aliasLines.push(`  Custom: ${ticket.aliases.custom.join(', ')}`)
+      }
+      if (aliasLines.length > 0) {
+        aliasOutput = `\nAliases:\n${aliasLines.join('\n')}`
+      }
+    }
+
     // Format and display the ticket
-    const output = `ID: ${ticket.id}\nTitle: ${ticket.title}\nStatus: ${ticket.status}\nPriority: ${ticket.priority}\nType: ${ticket.type}\nDescription: ${ticket.description}\nCreated: ${ticket.createdAt}\nUpdated: ${ticket.updatedAt}`
+    const output = `ID: ${ticket.id}\nTitle: ${ticket.title}\nStatus: ${ticket.status}\nPriority: ${ticket.priority}\nType: ${ticket.type}\nDescription: ${ticket.description}${aliasOutput}\nCreated: ${ticket.createdAt}\nUpdated: ${ticket.updatedAt}`
     this.log(output)
 
     return undefined
