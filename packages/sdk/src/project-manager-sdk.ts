@@ -691,14 +691,6 @@ export class ProjectManagerSDK {
       summary: response.summary,
     }
   }
-
-  /**
-   * Shutdown the SDK and cleanup resources
-   */
-  async shutdown(): Promise<void> {
-    // No need for logger factory shutdown - infrastructure loggers are synchronous
-    // SDK shutdown is now a no-op since we use synchronous loggers
-  }
 }
 
 /**

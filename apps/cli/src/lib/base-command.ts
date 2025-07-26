@@ -128,20 +128,11 @@ export abstract class BaseCommand<
     let cleanupInProgress = false
 
     const performAsyncCleanup = async (): Promise<void> => {
-      try {
-        // Perform async cleanup with proper error handling
-        if (BaseCommand.cachedSDK && typeof BaseCommand.cachedSDK.shutdown === 'function') {
-          await BaseCommand.cachedSDK.shutdown()
-        }
-      } catch (error) {
-        // Cleanup failed, but continue
-      } finally {
-        // Clear SDK references regardless of cleanup success/failure
-        BaseCommand.cachedSDK = null
-      }
+      // Clear SDK references - no cleanup needed since we use synchronous loggers
+      BaseCommand.cachedSDK = null
     }
 
-    const gracefulShutdown = (signal: NodeJS.Signals) => {
+    const gracefulShutdown = (_signal: NodeJS.Signals) => {
       // Prevent concurrent cleanup calls
       if (isShuttingDown || hasExited || cleanupInProgress) return
       isShuttingDown = true
