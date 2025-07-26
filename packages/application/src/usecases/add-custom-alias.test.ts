@@ -205,7 +205,7 @@ describe('AddCustomAliasUseCase', () => {
           ticketId,
           alias: 'existing-alias',
         })
-      ).rejects.toThrow('Ticket already has custom alias "existing-alias"')
+      ).rejects.toThrow("Custom alias 'existing-alias' already exists for this ticket")
     })
 
     it('should prevent duplicate custom aliases on same ticket', async () => {
@@ -224,7 +224,7 @@ describe('AddCustomAliasUseCase', () => {
           ticketId,
           alias: 'existing-alias',
         })
-      ).rejects.toThrow('Ticket already has custom alias "existing-alias"')
+      ).rejects.toThrow("Custom alias 'existing-alias' already exists for this ticket")
     })
   })
 
