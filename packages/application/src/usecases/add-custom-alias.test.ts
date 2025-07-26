@@ -101,6 +101,8 @@ describe('AddCustomAliasUseCase', () => {
       // Arrange
       const mockRepository = createMockTicketRepository()
       vi.mocked(mockRepository.findById).mockResolvedValue(null)
+      vi.mocked(mockRepository.findByAlias).mockResolvedValue(null)
+      vi.mocked(mockRepository.queryTickets).mockResolvedValue([]) // Needed for prefix matching
 
       const useCase = new AddCustomAliasUseCase(mockRepository)
 
