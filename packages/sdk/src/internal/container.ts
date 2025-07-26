@@ -40,6 +40,11 @@ import type { AliasGenerator } from '@project-manager/domain'
 import {
   AsyncLocalStorageContextService,
   CrossPlatformStorageConfigService,
+  createComplianceAuditLogger,
+  createDevelopmentAuditLogger,
+  createDevelopmentLogger,
+  createProductionLogger,
+  createTestLogger,
   FileAuditReader,
   FileLogReader,
   InMemoryTicketRepository,
@@ -51,7 +56,6 @@ import {
   XdgDevelopmentProcessService,
 } from '@project-manager/infrastructure'
 import { Container } from 'inversify'
-import { getGlobalLoggerFactory } from '../logging/logger-factory.ts'
 import type { SDKConfig } from '../project-manager-sdk.ts'
 import { TYPES } from './types.ts'
 
@@ -133,7 +137,7 @@ export function createContainer(config: SDKConfig): Container {
     .bind<AsyncContextStorage<LoggingContext>>(TYPES.AsyncContextStorage)
     .toConstantValue(new NodeAsyncLocalStorage<LoggingContext>())
 
-  // LoggerFactory and base logging services
+  // Base Logger using infrastructure functions directly
   container
     .bind<Logger>(TYPES.BaseLogger)
     .toDynamicValue(() => {
@@ -141,13 +145,21 @@ export function createContainer(config: SDKConfig): Container {
       const envService = container.get<EnvironmentDetectionService>(
         TYPES.EnvironmentDetectionService
       )
-      const environment = envService.resolveEnvironment(config.environment) as
-        | 'development'
-        | 'production'
-        | 'testing'
+      const environment = envService.resolveEnvironment(config.environment)
 
-      const loggerFactory = getGlobalLoggerFactory({ environment })
-      return loggerFactory.getApplicationLogger()
+      // Get storage service for log paths
+      const storageService = container.get<StorageConfigService>(TYPES.StorageConfigService)
+      const logPath = storageService.getApplicationLogPath()
+
+      // Create logger based on environment
+      switch (environment) {
+        case 'production':
+          return createProductionLogger(logPath)
+        case 'testing':
+          return createTestLogger()
+        default:
+          return createDevelopmentLogger(logPath)
+      }
     })
     .inTransientScope()
 
@@ -163,8 +175,20 @@ export function createContainer(config: SDKConfig): Container {
         | 'production'
         | 'testing'
 
-      const loggerFactory = getGlobalLoggerFactory({ environment })
-      return loggerFactory.getAuditLogger()
+      // Get storage service for audit log paths
+      const storageService = container.get<StorageConfigService>(TYPES.StorageConfigService)
+      const auditLogPath = storageService.getAuditLogPath()
+
+      // Get base logger for audit logger
+      const baseLogger = container.get<Logger>(TYPES.BaseLogger)
+
+      // Create audit logger based on environment
+      switch (environment) {
+        case 'production':
+          return createComplianceAuditLogger(auditLogPath, baseLogger)
+        default:
+          return createDevelopmentAuditLogger(auditLogPath, baseLogger)
+      }
     })
     .inSingletonScope()
 

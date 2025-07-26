@@ -29,4 +29,16 @@ export interface StorageConfigService {
    * @param mode Optional SDK mode to override auto-detection
    */
   getLogsPath(mode?: string): string
+
+  /**
+   * Get full path for application log file.
+   * @param filename Optional filename (defaults to 'app.log')
+   */
+  getApplicationLogPath(filename?: string): string
+
+  /**
+   * Get full path for audit log file.
+   * @param filename Optional filename (defaults to 'audit.log')
+   */
+  getAuditLogPath(filename?: string): string
 }
