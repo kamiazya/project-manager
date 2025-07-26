@@ -45,6 +45,7 @@ The Project Manager domain revolves around these core concepts:
 
 - **Project**: A software development initiative with tickets, epics, and contributors
 - **Ticket/Issue**: A discrete unit of work with status, priority, and assignees
+  - **Ticket Alias**: Human-friendly identifiers for tickets (canonical system-generated and custom user-defined)
 - **Epic**: A collection of related tickets forming a larger initiative
 - **User**: Human participants (developers, project managers, stakeholders)
 - **AI Assistant**: AI systems that participate in development workflows
@@ -52,6 +53,7 @@ The Project Manager domain revolves around these core concepts:
 ### Key Workflows
 
 - **Issue Management**: Creating, updating, and tracking development tasks
+  - **Alias Resolution**: Flexible ticket lookup using IDs or aliases with partial matching
 - **AI Collaboration**: Human-AI coordination for development tasks
 - **External Synchronization**: Bidirectional sync with external project management tools
 - **Implementation Planning**: Pre-development design and validation workflows
@@ -73,6 +75,7 @@ The domain is organized into three main bounded contexts:
 - Design proposals capturing architectural decisions
 - Progress tracking throughout issue lifecycle
 - > 80% first-pass completion rate for asynchronously delegated tasks
+- Human-friendly ticket aliases for improved collaboration and memorability
 
 ### Local-First Project Management
 
