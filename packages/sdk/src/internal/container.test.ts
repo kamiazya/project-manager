@@ -108,6 +108,12 @@ vi.mock('@project-manager/infrastructure', () => ({
       generateId: vi.fn(() => '01ARZ3NDEKTSV4RRFFQ69G5FAV'),
     }
   }),
+  TailBasedAliasGenerator: vi.fn().mockImplementation(function MockTailBasedAliasGenerator() {
+    return {
+      constructor: { name: 'TailBasedAliasGenerator' },
+      generate: vi.fn(() => 'abc123'),
+    }
+  }),
   AsyncLocalStorageContextService: vi
     .fn()
     .mockImplementation(function MockAsyncLocalStorageContextService() {
