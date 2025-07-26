@@ -13,6 +13,10 @@ describe('SearchTicketsUseCase', () => {
       findById: vi.fn(),
       queryTickets: vi.fn(),
       delete: vi.fn(),
+      findByAlias: vi.fn(),
+      isAliasAvailable: vi.fn(),
+      getAllAliases: vi.fn(),
+      findTicketsWithAliases: vi.fn(),
     }
 
     const mockLogger = {

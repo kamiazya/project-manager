@@ -14,7 +14,12 @@ describe('GetTicketByIdUseCase', () => {
       findById: vi.fn(),
       queryTickets: vi.fn(),
       delete: vi.fn(),
+      findByAlias: vi.fn(),
+      isAliasAvailable: vi.fn(),
+      getAllAliases: vi.fn(),
+      findTicketsWithAliases: vi.fn(),
     }
+    mockTicketRepository.queryTickets = vi.fn().mockResolvedValue([])
 
     const mockLogger = {
       debug: vi.fn().mockResolvedValue(undefined),
@@ -33,7 +38,7 @@ describe('GetTicketByIdUseCase', () => {
     it('should return ticket when found', async () => {
       // Arrange
       const ticketId = VALID_ULID_1 // Valid ULID
-      const request: GetTicketById.Request = { id: ticketId }
+      const request: GetTicketById.Request = { identifier: ticketId }
       const mockTicketId = TicketId.create(VALID_ULID_1)
       const mockTicket = Ticket.create(mockTicketId, {
         title: 'Test Ticket',
@@ -58,7 +63,7 @@ describe('GetTicketByIdUseCase', () => {
     it('should return null when ticket not found', async () => {
       // Arrange
       const ticketId = VALID_ULID_1
-      const request: GetTicketById.Request = { id: ticketId }
+      const request: GetTicketById.Request = { identifier: ticketId }
 
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 
@@ -73,7 +78,7 @@ describe('GetTicketByIdUseCase', () => {
     it('should call repository with correct TicketId', async () => {
       // Arrange
       const ticketId = VALID_ULID_1
-      const request: GetTicketById.Request = { id: ticketId }
+      const request: GetTicketById.Request = { identifier: ticketId }
 
       vi.mocked(mockTicketRepository.findById).mockResolvedValue(null)
 

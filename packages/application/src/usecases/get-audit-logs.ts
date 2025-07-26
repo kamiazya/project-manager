@@ -151,7 +151,7 @@ export namespace GetAuditLogs {
     }
 
     async execute(request: Request): Promise<Response> {
-      await this.logger.info('Starting audit log retrieval', {
+      this.logger.info('Starting audit log retrieval', {
         hasOperationFilter: !!request.operation,
         hasOperationIdFilter: !!request.operationId,
         hasResourceTypeFilter: !!request.resourceType,
@@ -179,7 +179,7 @@ export namespace GetAuditLogs {
         success: request.success,
       }
 
-      await this.logger.debug('Applying audit log filters', {
+      this.logger.debug('Applying audit log filters', {
         filters: this.sanitizeFilters(filters),
       })
 
@@ -189,14 +189,14 @@ export namespace GetAuditLogs {
         request.offset || 0
       )
 
-      await this.logger.debug('Converting audit logs to response format', {
+      this.logger.debug('Converting audit logs to response format', {
         rawAuditLogCount: auditLogs.length,
       })
 
       const auditLogEntries = auditLogs.map(log => this.convertToAuditLogEntry(log))
       const response = Response.create(auditLogEntries, totalCount, request.limit)
 
-      await this.logger.info('Audit log retrieval completed', {
+      this.logger.info('Audit log retrieval completed', {
         auditLogsRetrieved: response.auditLogs.length,
         totalCount: response.totalCount,
         hasMore: response.hasMore,

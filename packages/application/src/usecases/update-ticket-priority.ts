@@ -1,16 +1,17 @@
-import { createTicketPriority, TicketId } from '@project-manager/domain'
+import { createTicketPriority } from '@project-manager/domain'
 import { BaseUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError } from '../common/errors/application-errors.js'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
+import { TicketResolutionService } from '../services/ticket-resolution.service.ts'
 
 export namespace UpdateTicketPriority {
   /**
    * Request DTO for updating ticket priority
    */
   export interface Request {
-    readonly id: string
+    readonly identifier: string
     readonly newPriority: string
   }
 
@@ -21,8 +22,16 @@ export namespace UpdateTicketPriority {
 
   /**
    * Use case for updating a ticket's priority.
+   * Supports both ticket ID and alias resolution.
    */
   export class UseCase extends BaseUseCase<Request, Response> {
+    private readonly resolutionService: TicketResolutionService
+
+    constructor(private readonly ticketRepository: TicketRepository) {
+      super()
+      this.resolutionService = new TicketResolutionService(ticketRepository)
+    }
+
     public readonly auditMetadata: AuditMetadata = {
       operationId: 'ticket.updatePriority',
       operationType: 'update',
@@ -30,8 +39,7 @@ export namespace UpdateTicketPriority {
       description: 'Updates the priority of a ticket',
 
       extractBeforeState: async (request: Request) => {
-        const ticketId = TicketId.create(request.id)
-        const ticket = await this.ticketRepository.findById(ticketId)
+        const { ticket } = await this.resolutionService.resolveTicket(request.identifier)
         if (!ticket) {
           return null
         }
@@ -49,30 +57,28 @@ export namespace UpdateTicketPriority {
       },
     }
 
-    constructor(private readonly ticketRepository: TicketRepository) {
-      super()
-    }
-
     async execute(request: Request): Promise<Response> {
-      await this.logger.info('Starting ticket priority update', {
-        ticketId: request.id,
+      this.logger.info('Starting ticket priority update', {
+        ticketIdentifier: request.identifier,
         newPriority: request.newPriority,
       })
 
-      const ticketId = TicketId.create(request.id)
-      const ticket = await this.ticketRepository.findById(ticketId)
+      // Resolve ticket by ID or alias
+      const { ticket, resolvedBy } = await this.resolutionService.resolveTicket(request.identifier)
 
       if (!ticket) {
-        await this.logger.warn('Ticket not found for priority update', {
-          ticketId: request.id,
+        this.logger.warn('Ticket not found for priority update', {
+          ticketIdentifier: request.identifier,
         })
-        throw new TicketNotFoundError(request.id, 'UpdateTicketPriority')
+        throw new TicketNotFoundError(request.identifier, 'UpdateTicketPriority')
       }
 
       const oldPriority = ticket.priority
 
-      await this.logger.debug('Changing ticket priority', {
-        ticketId: ticketId.value,
+      this.logger.debug('Changing ticket priority', {
+        ticketId: ticket.id.value,
+        ticketIdentifier: request.identifier,
+        resolvedBy,
         from: oldPriority,
         to: request.newPriority,
       })
@@ -85,7 +91,7 @@ export namespace UpdateTicketPriority {
 
       const response = createTicketResponse(ticket)
 
-      await this.logger.info('Ticket priority updated successfully', {
+      this.logger.info('Ticket priority updated successfully', {
         ticketId: response.id,
         oldPriority,
         newPriority: response.priority,

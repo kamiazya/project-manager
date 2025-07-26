@@ -16,7 +16,12 @@ describe('UpdateTicketContentUseCase', () => {
       save: vi.fn(),
       queryTickets: vi.fn(),
       delete: vi.fn(),
+      findByAlias: vi.fn(),
+      isAliasAvailable: vi.fn(),
+      getAllAliases: vi.fn(),
+      findTicketsWithAliases: vi.fn(),
     }
+    mockRepository.queryTickets = vi.fn().mockResolvedValue([])
 
     const mockLogger = {
       debug: vi.fn().mockResolvedValue(undefined),
@@ -38,12 +43,14 @@ describe('UpdateTicketContentUseCase', () => {
       type: 'task',
       status: 'pending',
     })
+
+    mockRepository.findById = vi.fn().mockResolvedValue(testTicket)
   })
 
   describe('execute', () => {
     it('should throw TicketValidationError when no updates are provided', async () => {
       const request: UpdateTicketContent.Request = {
-        id: VALID_ULID_1,
+        identifier: VALID_ULID_1,
         updates: {},
       }
 
@@ -57,7 +64,7 @@ describe('UpdateTicketContentUseCase', () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(null)
 
       const request: UpdateTicketContent.Request = {
-        id: VALID_ULID_1,
+        identifier: VALID_ULID_1,
         updates: { title: 'New Title' },
       }
 
@@ -71,7 +78,7 @@ describe('UpdateTicketContentUseCase', () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
       const request: UpdateTicketContent.Request = {
-        id: testTicket.id.value,
+        identifier: testTicket.id.value,
         updates: { title: 'New Title' },
       }
       const result = await useCase.execute(request)
@@ -88,7 +95,7 @@ describe('UpdateTicketContentUseCase', () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
       const request: UpdateTicketContent.Request = {
-        id: testTicket.id.value,
+        identifier: testTicket.id.value,
         updates: {
           description: 'New Description',
         },
@@ -107,7 +114,7 @@ describe('UpdateTicketContentUseCase', () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
       const request: UpdateTicketContent.Request = {
-        id: testTicket.id.value,
+        identifier: testTicket.id.value,
         updates: {
           title: 'New Title',
           description: 'New Description',
@@ -128,7 +135,7 @@ describe('UpdateTicketContentUseCase', () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(testTicket)
 
       const request: UpdateTicketContent.Request = {
-        id: testTicket.id.value,
+        identifier: testTicket.id.value,
         updates: {
           title: 'New Title',
           description: 'New Description',
@@ -147,7 +154,7 @@ describe('UpdateTicketContentUseCase', () => {
       const descriptionSpy = vi.spyOn(testTicket, 'updateDescription')
 
       const request: UpdateTicketContent.Request = {
-        id: testTicket.id.value,
+        identifier: testTicket.id.value,
         updates: {
           title: 'New Title',
           description: 'New Description',
@@ -166,7 +173,7 @@ describe('UpdateTicketContentUseCase', () => {
       const descriptionSpy = vi.spyOn(testTicket, 'updateDescription')
 
       const request: UpdateTicketContent.Request = {
-        id: testTicket.id.value,
+        identifier: testTicket.id.value,
         updates: {
           title: 'New Title',
         },
@@ -181,7 +188,7 @@ describe('UpdateTicketContentUseCase', () => {
   describe('UpdateTicketContentRequest', () => {
     it('should validate that no updates are provided via request structure', () => {
       const request: UpdateTicketContent.Request = {
-        id: VALID_ULID_1,
+        identifier: VALID_ULID_1,
         updates: {},
       }
       // No updates provided - use case will validate this
@@ -190,7 +197,7 @@ describe('UpdateTicketContentUseCase', () => {
 
     it('should allow title updates via request structure', () => {
       const request: UpdateTicketContent.Request = {
-        id: VALID_ULID_1,
+        identifier: VALID_ULID_1,
         updates: { title: 'New Title' },
       }
       expect(request.updates.title).toBe('New Title')
@@ -199,7 +206,7 @@ describe('UpdateTicketContentUseCase', () => {
 
     it('should allow description updates via request structure', () => {
       const request: UpdateTicketContent.Request = {
-        id: VALID_ULID_1,
+        identifier: VALID_ULID_1,
         updates: { description: 'New Description' },
       }
       expect(request.updates.description).toBe('New Description')

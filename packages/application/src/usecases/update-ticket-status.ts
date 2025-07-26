@@ -1,16 +1,17 @@
-import { createTicketStatus, TicketId } from '@project-manager/domain'
+import { createTicketStatus } from '@project-manager/domain'
 import { BaseUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError } from '../common/errors/application-errors.js'
 import { createTicketResponse, type TicketResponse } from '../common/ticket.response.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
 import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
+import { TicketResolutionService } from '../services/ticket-resolution.service.ts'
 
 export namespace UpdateTicketStatus {
   /**
    * Request DTO for updating ticket status
    */
   export interface Request {
-    readonly id: string
+    readonly identifier: string
     readonly newStatus: string
   }
 
@@ -23,6 +24,13 @@ export namespace UpdateTicketStatus {
    * Use case for updating a ticket's status.
    */
   export class UseCase extends BaseUseCase<Request, Response> {
+    private readonly resolutionService: TicketResolutionService
+
+    constructor(private readonly ticketRepository: TicketRepository) {
+      super()
+      this.resolutionService = new TicketResolutionService(ticketRepository)
+    }
+
     public readonly auditMetadata: AuditMetadata = {
       operationId: 'ticket.updateStatus',
       operationType: 'update',
@@ -30,8 +38,7 @@ export namespace UpdateTicketStatus {
       description: 'Updates the status of a ticket',
 
       extractBeforeState: async (request: Request) => {
-        const ticketId = TicketId.create(request.id)
-        const ticket = await this.ticketRepository.findById(ticketId)
+        const { ticket } = await this.resolutionService.resolveTicket(request.identifier)
         if (!ticket) {
           return null
         }
@@ -49,30 +56,27 @@ export namespace UpdateTicketStatus {
       },
     }
 
-    constructor(private readonly ticketRepository: TicketRepository) {
-      super()
-    }
-
     async execute(request: Request): Promise<Response> {
-      await this.logger.info('Starting ticket status update', {
-        ticketId: request.id,
+      this.logger.info('Starting ticket status update', {
+        ticketIdentifier: request.identifier,
         newStatus: request.newStatus,
       })
 
-      const ticketId = TicketId.create(request.id)
-      const ticket = await this.ticketRepository.findById(ticketId)
+      const { ticket, resolvedBy } = await this.resolutionService.resolveTicket(request.identifier)
 
       if (!ticket) {
-        await this.logger.warn('Ticket not found for status update', {
-          ticketId: request.id,
+        this.logger.warn('Ticket not found for status update', {
+          ticketIdentifier: request.identifier,
         })
-        throw new TicketNotFoundError(request.id, 'UpdateTicketStatus')
+        throw new TicketNotFoundError(request.identifier, 'UpdateTicketStatus')
       }
 
       const oldStatus = ticket.status
 
-      await this.logger.debug('Changing ticket status', {
-        ticketId: ticketId.value,
+      this.logger.debug('Changing ticket status', {
+        ticketId: ticket.id.value,
+        ticketIdentifier: request.identifier,
+        resolvedBy,
         from: oldStatus,
         to: request.newStatus,
       })
@@ -85,7 +89,7 @@ export namespace UpdateTicketStatus {
 
       const response = createTicketResponse(ticket)
 
-      await this.logger.info('Ticket status updated successfully', {
+      this.logger.info('Ticket status updated successfully', {
         ticketId: response.id,
         oldStatus,
         newStatus: response.status,

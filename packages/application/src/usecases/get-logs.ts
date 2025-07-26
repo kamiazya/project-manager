@@ -101,7 +101,7 @@ export namespace GetLogs {
     }
 
     async execute(request: Request): Promise<Response> {
-      await this.logger.info('Starting log retrieval', {
+      this.logger.info('Starting log retrieval', {
         hasLevelFilter: !!request.level,
         hasComponentFilter: !!request.component,
         hasOperationFilter: !!request.operation,
@@ -120,7 +120,7 @@ export namespace GetLogs {
         endTime: request.endTime ? new Date(request.endTime) : undefined,
       }
 
-      await this.logger.debug('Applying log filters', {
+      this.logger.debug('Applying log filters', {
         filters: this.sanitizeFilters(filters),
       })
 
@@ -134,14 +134,14 @@ export namespace GetLogs {
         request.offset || 0
       )
 
-      await this.logger.debug('Converting logs to response format', {
+      this.logger.debug('Converting logs to response format', {
         rawLogCount: logs.length,
       })
 
       const logEntries = logs.map(log => this.convertToLogEntry(log))
       const response = Response.create(logEntries, totalCount, requestedLimit)
 
-      await this.logger.info('Log retrieval completed', {
+      this.logger.info('Log retrieval completed', {
         logsRetrieved: response.logs.length,
         totalCount: response.totalCount,
         hasMore: response.hasMore,
