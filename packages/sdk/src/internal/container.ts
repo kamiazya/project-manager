@@ -9,22 +9,30 @@ import {
   type AsyncContextStorage,
   AuditInterceptor,
   auditMetadataGenerator,
+  ClearCustomAliasesUseCase,
   CreateTicket,
   DeleteTicket,
   type DevelopmentProcessService,
   type EnvironmentDetectionService,
+  FindTicketByAliasUseCase,
   GetAuditLogs,
   GetLogs,
   GetTicketById,
   type IdGenerator,
+  ListAliasesUseCase,
   type LoggingContext,
   type LoggingContextService,
+  PromoteCustomAliasUseCase,
+  RegenerateCanonicalAliasUseCase,
+  RemoveCustomAliasUseCase,
+  RenameCustomAliasUseCase,
   SearchTickets,
   type StorageConfigService,
   type TicketRepository,
   UpdateTicketContent,
   UpdateTicketPriority,
   UpdateTicketStatus,
+  ValidateAliasUseCase,
 } from '@project-manager/application'
 import { isDevelopmentLike, isMemoryEnvironment } from '@project-manager/base'
 import type { AuditLogger, Logger } from '@project-manager/base/common/logging'
@@ -299,6 +307,71 @@ export function createContainer(config: SDKConfig): Container {
     .toDynamicValue(context => {
       const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
       return new AddCustomAliasUseCase(ticketRepository)
+    })
+    .onActivation(createUseCaseActivationHandler(container))
+
+  container
+    .bind(TYPES.ListAliasesUseCase)
+    .toDynamicValue(context => {
+      const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
+      return new ListAliasesUseCase(ticketRepository)
+    })
+    .onActivation(createUseCaseActivationHandler(container))
+
+  container
+    .bind(TYPES.RemoveCustomAliasUseCase)
+    .toDynamicValue(context => {
+      const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
+      return new RemoveCustomAliasUseCase(ticketRepository)
+    })
+    .onActivation(createUseCaseActivationHandler(container))
+
+  container
+    .bind(TYPES.RenameCustomAliasUseCase)
+    .toDynamicValue(context => {
+      const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
+      return new RenameCustomAliasUseCase(ticketRepository)
+    })
+    .onActivation(createUseCaseActivationHandler(container))
+
+  container
+    .bind(TYPES.PromoteCustomAliasUseCase)
+    .toDynamicValue(context => {
+      const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
+      return new PromoteCustomAliasUseCase(ticketRepository)
+    })
+    .onActivation(createUseCaseActivationHandler(container))
+
+  container
+    .bind(TYPES.RegenerateCanonicalAliasUseCase)
+    .toDynamicValue(context => {
+      const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
+      const aliasGenerator = context.get<any>(TYPES.AliasGenerator)
+      return new RegenerateCanonicalAliasUseCase(ticketRepository, aliasGenerator)
+    })
+    .onActivation(createUseCaseActivationHandler(container))
+
+  container
+    .bind(TYPES.ClearCustomAliasesUseCase)
+    .toDynamicValue(context => {
+      const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
+      return new ClearCustomAliasesUseCase(ticketRepository)
+    })
+    .onActivation(createUseCaseActivationHandler(container))
+
+  container
+    .bind(TYPES.FindTicketByAliasUseCase)
+    .toDynamicValue(context => {
+      const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
+      return new FindTicketByAliasUseCase(ticketRepository)
+    })
+    .onActivation(createUseCaseActivationHandler(container))
+
+  container
+    .bind(TYPES.ValidateAliasUseCase)
+    .toDynamicValue(context => {
+      const ticketRepository = context.get<TicketRepository>(TYPES.TicketRepository)
+      return new ValidateAliasUseCase(ticketRepository)
     })
     .onActivation(createUseCaseActivationHandler(container))
 

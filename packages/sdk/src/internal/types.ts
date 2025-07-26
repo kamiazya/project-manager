@@ -34,6 +34,14 @@ export const TYPES = {
   GetLogsUseCase: Symbol('GetLogsUseCase'),
   GetAuditLogsUseCase: Symbol('GetAuditLogsUseCase'),
   AddCustomAliasUseCase: Symbol('AddCustomAliasUseCase'),
+  ClearCustomAliasesUseCase: Symbol('ClearCustomAliasesUseCase'),
+  FindTicketByAliasUseCase: Symbol('FindTicketByAliasUseCase'),
+  ListAliasesUseCase: Symbol('ListAliasesUseCase'),
+  PromoteCustomAliasUseCase: Symbol('PromoteCustomAliasUseCase'),
+  RegenerateCanonicalAliasUseCase: Symbol('RegenerateCanonicalAliasUseCase'),
+  RemoveCustomAliasUseCase: Symbol('RemoveCustomAliasUseCase'),
+  RenameCustomAliasUseCase: Symbol('RenameCustomAliasUseCase'),
+  ValidateAliasUseCase: Symbol('ValidateAliasUseCase'),
 
   // Readers for logs and audit
   LogReader: Symbol('LogReader'),

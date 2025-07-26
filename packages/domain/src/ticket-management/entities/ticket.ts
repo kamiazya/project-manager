@@ -211,6 +211,24 @@ export class Ticket {
   }
 
   /**
+   * Business operation: Replace canonical alias (for promotion operations)
+   * This allows replacing an existing canonical alias with a new one
+   */
+  public replaceCanonicalAlias(alias: TicketAlias): void {
+    if (!alias.isCanonical()) {
+      throw new ValidationError(
+        'Only canonical aliases can be set as canonical alias',
+        'alias.type',
+        alias.type
+      )
+    }
+
+    this.ensureAliasesInitialized()
+    this.props.aliases!.canonical = alias
+    this.updateTimestamp()
+  }
+
+  /**
    * Business operation: Add custom alias (user-defined)
    */
   public addCustomAlias(alias: TicketAlias): void {

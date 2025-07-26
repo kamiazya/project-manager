@@ -2,6 +2,7 @@ import { Ticket, TicketAlias, TicketId } from '@project-manager/domain'
 import { BaseUseCase } from '../common/base-usecase.ts'
 import { TicketNotFoundError, TicketValidationError } from '../common/errors/application-errors.ts'
 import type { TicketRepository } from '../repositories/ticket-repository.ts'
+import { TicketResolutionService } from '../services/ticket-resolution.service.ts'
 
 /**
  * Request for adding a custom alias to a ticket
@@ -60,17 +61,19 @@ export class AddCustomAliasUseCase extends BaseUseCase<
   AddCustomAliasRequest,
   AddCustomAliasResponse
 > {
+  private readonly resolutionService: TicketResolutionService
+
   constructor(private readonly ticketRepository: TicketRepository) {
     super()
+    this.resolutionService = new TicketResolutionService(ticketRepository)
   }
 
   /**
    * Execute the use case
    */
   async execute(request: AddCustomAliasRequest): Promise<AddCustomAliasResponse> {
-    // Validate and get ticket
-    const ticketId = TicketId.create(request.ticketId)
-    const ticket = await this.ticketRepository.findById(ticketId)
+    // Resolve ticket by ID or alias
+    const { ticket } = await this.resolutionService.resolveTicket(request.ticketId)
 
     if (!ticket) {
       throw new TicketNotFoundError(request.ticketId, 'AddCustomAliasUseCase')
