@@ -465,8 +465,6 @@ echo $NODE_ENV  # Should show 'development' for hot reload
 timeout 5s pnpm pm-mcp-server
 
 # Look for hot reload indicators in output:
-# [Hot Reload] Starting MCP server...
-# [Hot Reload] Watching for changes in src/
 
 # Verify file watching works
 touch packages/mcp-server/src/test.ts
@@ -539,11 +537,6 @@ timeout 5s pnpm dev 2>&1 | head -10
 
 # For MCP Server hot reload specifically
 timeout 5s pnpm pm-mcp-server 2>&1 | head -10
-
-# Look for MCP hot reload indicators:
-# - "[Hot Reload] Starting MCP server..."
-# - "[Hot Reload] Watching for changes in src/"
-# - No TypeScript compilation errors
 ```
 
 #### Verification Checklist for AI

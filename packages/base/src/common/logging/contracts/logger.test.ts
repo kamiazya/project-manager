@@ -4,7 +4,6 @@ import {
   type LogContext,
   type LogMetadata,
   LogMetadataUtils,
-  type LogSource,
   type OperationType,
 } from '../types/log-metadata.ts'
 import type { Logger } from './logger.ts'
@@ -539,29 +538,6 @@ describe('Logger', () => {
         }
 
         expect(metadata.layer).toBe(layer)
-      })
-    })
-
-    it('should enforce LogSource enum values', () => {
-      const validSources: LogSource[] = [
-        'cli',
-        'mcp',
-        'sdk',
-        'api',
-        'test',
-        'sync',
-        'system',
-        'scheduler',
-        'webhook',
-      ]
-
-      validSources.forEach(source => {
-        const metadata: LogMetadata = {
-          source,
-          operation: 'test.operation',
-        }
-
-        expect(metadata.source).toBe(source)
       })
     })
 

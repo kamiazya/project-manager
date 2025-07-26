@@ -53,7 +53,6 @@ export abstract class BaseCommand<
 
   // Static cache for SDK instances - following oclif Cache pattern
   private static cachedSDK: ProjectManagerSDK | null = null
-  private static lastConfigHash: string | null = null
   private static cleanupRegistered = false
 
   /**
@@ -70,19 +69,15 @@ export abstract class BaseCommand<
     await super.init()
 
     try {
-      const config = { environment: 'auto' as const }
-      const configHash = this.generateConfigHash(config)
-
       // Use cached SDK if configuration hasn't changed
-      if (BaseCommand.cachedSDK && BaseCommand.lastConfigHash === configHash) {
+      if (BaseCommand.cachedSDK) {
         this.sdk = BaseCommand.cachedSDK
         return
       }
 
       // Create new SDK and cache it
-      this.sdk = await createProjectManagerSDK(config)
+      this.sdk = await createProjectManagerSDK()
       BaseCommand.cachedSDK = this.sdk
-      BaseCommand.lastConfigHash = configHash
 
       // Register global cleanup handler once
       if (!BaseCommand.cleanupRegistered) {
@@ -99,26 +94,10 @@ export abstract class BaseCommand<
   }
 
   /**
-   * Generates a hash for SDK configuration to enable cache invalidation.
-   * @param config SDK configuration object
-   * @returns Configuration hash string
-   */
-  private generateConfigHash(config: { environment: 'auto' }): string {
-    // Include environment variables that might affect SDK behavior
-    const hashData = {
-      environment: config.environment,
-      nodeEnv: process.env.NODE_ENV,
-      // Add other environment variables that affect SDK configuration
-    }
-    return JSON.stringify(hashData)
-  }
-
-  /**
    * Clear the SDK cache. Useful for testing or when configuration changes.
    */
   static clearSDKCache(): void {
     BaseCommand.cachedSDK = null
-    BaseCommand.lastConfigHash = null
   }
 
   /**
@@ -137,7 +116,6 @@ export abstract class BaseCommand<
         try {
           // Clear the cached SDK reference to prevent further usage
           BaseCommand.cachedSDK = null
-          BaseCommand.lastConfigHash = null
         } catch (error) {
           // Ignore cleanup errors during shutdown
         }
@@ -160,7 +138,6 @@ export abstract class BaseCommand<
       } finally {
         // Clear SDK references regardless of cleanup success/failure
         BaseCommand.cachedSDK = null
-        BaseCommand.lastConfigHash = null
       }
     }
 
@@ -203,7 +180,6 @@ export abstract class BaseCommand<
       // Perform final synchronous cleanup
       if (BaseCommand.cachedSDK && !isShuttingDown) {
         BaseCommand.cachedSDK = null
-        BaseCommand.lastConfigHash = null
       }
     })
 

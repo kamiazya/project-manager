@@ -14,7 +14,7 @@
     },
     "project-manager": {
       "command": "pnpm",
-      "args": ["pm-mcp-server"]
+      "args": ["--silent", "pm-mcp-server"]
     },
     "sequential-thinking": {
       "command": "pnpm",
