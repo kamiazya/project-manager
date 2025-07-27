@@ -201,7 +201,7 @@ export function createContainer(config: SDKConfig): Container {
       const idGenerator = context.get<IdGenerator>(TYPES.IdGenerator)
       return new ApplicationLogger(baseLogger, contextService, idGenerator)
     })
-    .inTransientScope()
+    .inTransientScope() // Transient scope for per-request instances
 
   // AuditInterceptor for UseCase auditing
   container
