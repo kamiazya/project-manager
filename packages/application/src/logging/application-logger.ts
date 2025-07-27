@@ -196,22 +196,6 @@ export class ApplicationLogger implements Logger {
 }
 
 /**
- * Factory function to create ApplicationLogger instances.
- *
- * @param baseLogger - The base logger implementation to wrap
- * @param contextService - Optional logging context service for automatic context integration
- * @param idGenerator - Optional ID generator for execution IDs
- * @returns New ApplicationLogger instance
- */
-export function createApplicationLogger(
-  baseLogger: Logger,
-  contextService?: LoggingContextService,
-  idGenerator?: IdGenerator
-): ApplicationLogger {
-  return new ApplicationLogger(baseLogger, contextService, idGenerator)
-}
-
-/**
  * Utility functions for application logging
  */
 export const ApplicationLoggerUtils = {
@@ -229,7 +213,7 @@ export const ApplicationLoggerUtils = {
     contextService?: LoggingContextService,
     idGenerator?: IdGenerator
   ): ApplicationLogger {
-    const appLogger = createApplicationLogger(baseLogger, contextService, idGenerator)
+    const appLogger = new ApplicationLogger(baseLogger, contextService, idGenerator)
     return appLogger.child({ layer })
   },
 

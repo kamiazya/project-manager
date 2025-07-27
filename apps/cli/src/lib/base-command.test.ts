@@ -79,9 +79,7 @@ describe('BaseCommand', () => {
     await cmd.run()
 
     expect(createProjectManagerSDK).toHaveBeenCalledTimes(1)
-    expect(createProjectManagerSDK).toHaveBeenCalledWith({
-      environment: 'auto',
-    })
+    expect(createProjectManagerSDK).toHaveBeenCalledWith()
   })
 
   it('should handle errors gracefully', async () => {
@@ -149,52 +147,6 @@ describe('BaseCommand', () => {
       // SDK should only be created once
       expect(createProjectManagerSDK).toHaveBeenCalledTimes(1)
       expect(cmd1.sdk).toBe(cmd2.sdk)
-    })
-
-    it('should invalidate cache when configuration changes', async () => {
-      const mockSDK2 = { different: 'sdk' } as unknown as ProjectManagerSDK
-      vi.mocked(createProjectManagerSDK)
-        .mockResolvedValueOnce(mockSDK)
-        .mockResolvedValueOnce(mockSDK2)
-
-      class TestCommand extends BaseCommand {
-        constructor(
-          argv: string[],
-          config: any,
-          private customNodeEnv?: string
-        ) {
-          super(argv, config)
-        }
-
-        async execute(): Promise<void> {}
-
-        // Override to simulate environment change
-        public generateConfigHashOverride(config: { environment: 'auto' }): string {
-          const hashData = {
-            environment: config.environment,
-            nodeEnv: this.customNodeEnv || process.env.NODE_ENV,
-          }
-          return JSON.stringify(hashData)
-        }
-      }
-
-      // First command with default environment
-      const cmd1 = new TestCommand([], {} as any)
-      await cmd1.init()
-
-      // Simulate environment change
-      const originalNodeEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'different-environment'
-
-      // Second command should create new SDK due to environment change
-      const cmd2 = new TestCommand([], {} as any)
-      await cmd2.init()
-
-      // Restore environment
-      process.env.NODE_ENV = originalNodeEnv
-
-      // Should have been called twice due to configuration change
-      expect(createProjectManagerSDK).toHaveBeenCalledTimes(2)
     })
 
     it('should allow manual cache clearing', async () => {

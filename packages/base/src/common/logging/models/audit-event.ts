@@ -22,7 +22,7 @@ import type {
   UpdateAuditEvent,
   ValidationResult,
 } from '../types/audit-event.ts'
-import type { LogSource, OperationType } from '../types/log-metadata.ts'
+import type { OperationType } from '../types/log-metadata.ts'
 
 /**
  * Access details for READ operations.
@@ -88,9 +88,6 @@ export interface CreateAuditEventParams {
   /** Entity identifier */
   entityId: string
 
-  /** Source system */
-  source: LogSource
-
   /** Previous state */
   before?: Record<string, unknown> | null
 
@@ -136,7 +133,6 @@ export class AuditEventModel implements BaseAuditEvent {
   readonly actor: Actor
   readonly entityType: string
   readonly entityId: string
-  readonly source: LogSource
   readonly context?: AuditEventContext
 
   constructor(params: CreateAuditEventParams) {
@@ -147,7 +143,6 @@ export class AuditEventModel implements BaseAuditEvent {
     this.actor = params.actor
     this.entityType = params.entityType
     this.entityId = params.entityId
-    this.source = params.source
     this.context = params.context
 
     // Validate required fields
@@ -169,7 +164,6 @@ export class AuditEventModel implements BaseAuditEvent {
     entityType: string,
     entityId: string,
     after: Record<string, unknown>,
-    source: LogSource,
     options: Partial<CreateAuditEventParams> = {}
   ): CreateAuditEventModel {
     return new CreateAuditEventModel({
@@ -178,7 +172,6 @@ export class AuditEventModel implements BaseAuditEvent {
       actor,
       entityType,
       entityId,
-      source,
       before: null,
       after,
     })
@@ -192,7 +185,6 @@ export class AuditEventModel implements BaseAuditEvent {
     entityType: string,
     entityId: string,
     state: Record<string, unknown>,
-    source: LogSource,
     accessDetails?: AccessDetails,
     options: Partial<CreateAuditEventParams> = {}
   ): ReadAuditEventModel {
@@ -202,7 +194,6 @@ export class AuditEventModel implements BaseAuditEvent {
       actor,
       entityType,
       entityId,
-      source,
       state,
       accessDetails,
     })
@@ -217,7 +208,6 @@ export class AuditEventModel implements BaseAuditEvent {
     entityId: string,
     before: Record<string, unknown>,
     after: Record<string, unknown>,
-    source: LogSource,
     options: Partial<CreateAuditEventParams> = {}
   ): UpdateAuditEventModel {
     const changes = options.changes || AuditEventUtils.calculateChanges(before, after)
@@ -228,7 +218,6 @@ export class AuditEventModel implements BaseAuditEvent {
       actor,
       entityType,
       entityId,
-      source,
       before,
       after,
       changes,
@@ -243,7 +232,6 @@ export class AuditEventModel implements BaseAuditEvent {
     entityType: string,
     entityId: string,
     before: Record<string, unknown>,
-    source: LogSource,
     deletionDetails?: DeletionDetails,
     options: Partial<CreateAuditEventParams> = {}
   ): DeleteAuditEventModel {
@@ -253,7 +241,6 @@ export class AuditEventModel implements BaseAuditEvent {
       actor,
       entityType,
       entityId,
-      source,
       before,
       after: null,
       deletionDetails,
@@ -272,7 +259,6 @@ export class AuditEventModel implements BaseAuditEvent {
       actor: obj.actor || { type: 'system', id: 'unknown' },
       entityType: obj.entityType || '',
       entityId: obj.entityId || '',
-      source: obj.source || 'system',
       before: 'before' in obj ? obj.before : undefined,
       after: 'after' in obj ? obj.after : undefined,
       context: obj.context,
@@ -344,7 +330,6 @@ export class AuditEventModel implements BaseAuditEvent {
       actor: this.actor,
       entityType: this.entityType,
       entityId: this.entityId,
-      source: this.source,
       context: this.context,
     }
   }
@@ -370,7 +355,6 @@ export class AuditEventModel implements BaseAuditEvent {
       actor: modifications.actor || this.actor,
       entityType: modifications.entityType || this.entityType,
       entityId: modifications.entityId || this.entityId,
-      source: modifications.source || this.source,
       context: modifications.context || this.context,
     })
   }
@@ -429,12 +413,6 @@ export class AuditEventModel implements BaseAuditEvent {
     }
 
     // Check source
-    if (filter.source) {
-      const sources = Array.isArray(filter.source) ? filter.source : [filter.source]
-      if (!sources.includes(this.source)) {
-        return false
-      }
-    }
 
     // Check date range
     if (filter.dateRange) {
@@ -652,7 +630,6 @@ export const AuditEventUtils = {
     if (!event.actor) errors.push('Actor is required')
     if (!event.entityType) errors.push('Entity type is required')
     if (!event.entityId) errors.push('Entity ID is required')
-    if (!event.source) errors.push('Source is required')
 
     if (event.actor) {
       if (!event.actor.id) errors.push('Actor ID is required')
@@ -851,7 +828,6 @@ export const AuditEventUtils = {
       operationsByType: {} as Record<OperationType, number>,
       operationsByActor: {} as Record<ActorType, number>,
       operationsByEntity: {} as Record<string, number>,
-      operationsBySource: {} as Record<LogSource, number>,
     }
 
     // Count operations by type
@@ -873,12 +849,6 @@ export const AuditEventUtils = {
         stats.operationsByEntity![event.entityType] = 0
       }
       stats.operationsByEntity![event.entityType]!++
-
-      // Source
-      if (!stats.operationsBySource![event.source]) {
-        stats.operationsBySource![event.source] = 0
-      }
-      stats.operationsBySource![event.source]++
     }
 
     return stats

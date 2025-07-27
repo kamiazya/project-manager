@@ -10,6 +10,7 @@
 
 import { join } from 'node:path'
 import type { StorageConfigService } from '@project-manager/application'
+import type { EnvironmentMode } from '@project-manager/base'
 import envPaths from 'env-paths'
 
 // Storage configuration constants
@@ -153,12 +154,12 @@ export class CrossPlatformStorageConfigService implements StorageConfigService {
    * @private
    */
   private getEnvironmentSpecificAppName(): string {
-    const environment = process.env.NODE_ENV || 'development'
+    const environment = (process.env.NODE_ENV as EnvironmentMode) || 'development'
 
     switch (environment) {
       case 'development':
         return `${STORAGE_CONFIG.APP_NAME}-dev`
-      case 'test':
+      case 'testing':
         return `${STORAGE_CONFIG.APP_NAME}-test`
       case 'production':
         return STORAGE_CONFIG.APP_NAME // No suffix for production

@@ -17,6 +17,7 @@ import { constants } from 'node:fs'
 import { access, readdir, watch } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createProjectManagerSDK } from 'packages/sdk/src/project-manager-sdk.ts'
 import { sanitizeCommandLineArgs } from './security-utils.ts'
 
 // --- Constants ---
@@ -63,6 +64,8 @@ runWithHotReload().catch(error => {
 
 // --- Hot Reload Implementation ---
 async function runWithHotReload() {
+  const sdk = await createProjectManagerSDK()
+  const logger = sdk.createLogger('mcp-launcher')
   let child: ChildProcess | null = null
   let isRestarting = false
   let restartTimeout: NodeJS.Timeout | null = null
@@ -71,7 +74,7 @@ async function runWithHotReload() {
   // Track known files for change detection across all watch directories
   const knownFiles = new Map<string, Set<string>>()
 
-  const log = (message: string) => console.error(`${HOT_RELOAD_PREFIX} ${message}`)
+  const log = (message: string) => logger.debug(message)
 
   // Check if file should be ignored (test files)
   function shouldIgnoreFile(filePath: string): boolean {

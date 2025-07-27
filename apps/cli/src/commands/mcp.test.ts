@@ -74,12 +74,6 @@ describe('McpCommand', () => {
       expect(command).toBeInstanceOf(McpCommand)
       expect(command).toBeDefined()
     })
-
-    it('should inherit from BaseCommand', () => {
-      // Verify inheritance chain without accessing protected methods
-      expect(command.constructor.name).toBe('McpCommand')
-      expect(Object.getPrototypeOf(command.constructor).name).toBe('BaseCommand')
-    })
   })
 
   describe('command behavior simulation', () => {

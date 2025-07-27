@@ -63,7 +63,7 @@ describe('LogConfig', () => {
       expect(result).toEqual({
         level: 'info',
         environment: 'production',
-        transportType: 'console',
+        transportType: 'file',
       })
     })
 
@@ -75,7 +75,7 @@ describe('LogConfig', () => {
       const result = LogConfigUtils.mergeConfigs(config)
       expect(result.level).toBe('debug')
       expect(result.environment).toBe('production') // Default
-      expect(result.transportType).toBe('console') // Default
+      expect(result.transportType).toBe('file') // Default
       expect(result.logFile).toBeUndefined()
     })
 
@@ -88,28 +88,16 @@ describe('LogConfig', () => {
 
       const config2: Partial<LogConfig> = {
         level: 'info',
-        transportType: 'console',
+        transportType: 'file',
+        logFile: '/tmp/test.log',
         colorize: true,
       }
 
       const result = LogConfigUtils.mergeConfigs(config1, config2)
       expect(result.level).toBe('info') // From config2
       expect(result.environment).toBe('development') // From config1
-      expect(result.transportType).toBe('console') // From config2
+      expect(result.transportType).toBe('file') // From config2
       expect(result.colorize).toBe(true) // From config2
-    })
-
-    it('should handle maxEntries merging', () => {
-      const config1: Partial<LogConfig> = {
-        maxEntries: 500,
-      }
-
-      const config2: Partial<LogConfig> = {
-        maxEntries: 1000,
-      }
-
-      const result = LogConfigUtils.mergeConfigs(config1, config2)
-      expect(result.maxEntries).toBe(1000) // From config2 (overrides config1)
     })
 
     it('should handle undefined and null values correctly', () => {
@@ -120,13 +108,14 @@ describe('LogConfig', () => {
       }
 
       const config2: Partial<LogConfig> = {
-        transportType: 'console',
+        transportType: 'file',
+        logFile: '/tmp/test.log',
         // colorize undefined - should not override
       }
 
       const result = LogConfigUtils.mergeConfigs(config1, config2)
       expect(result.level).toBe('debug')
-      expect(result.transportType).toBe('console') // Overridden
+      expect(result.transportType).toBe('file') // Overridden
       expect(result.colorize).toBe(true) // Preserved from config1
     })
   })
@@ -148,7 +137,7 @@ describe('LogConfig', () => {
       const config: LogConfig = {
         level: 'invalid' as LogLevel,
         environment: 'production',
-        transportType: 'console',
+        transportType: 'memory',
       }
 
       const errors = LogConfigUtils.validateConfig(config)
@@ -159,7 +148,7 @@ describe('LogConfig', () => {
       const config: LogConfig = {
         level: 'info',
         environment: 'invalid' as EnvironmentMode,
-        transportType: 'console',
+        transportType: 'memory',
       }
 
       const errors = LogConfigUtils.validateConfig(config)
@@ -218,7 +207,7 @@ describe('LogConfig', () => {
         level: 'info',
         environment: 'production',
         auditFile: '',
-        transportType: 'console',
+        transportType: 'memory',
       }
 
       const errors = LogConfigUtils.validateConfig(config)
@@ -252,7 +241,7 @@ describe('LogConfig', () => {
       expect(errors).toEqual([])
       expect(config.level).toBe('debug')
       expect(config.environment).toBe('development')
-      expect(config.transportType).toBe('console')
+      expect(config.transportType).toBe('file')
       expect(config.colorize).toBe(true)
     })
 
@@ -264,7 +253,6 @@ describe('LogConfig', () => {
       expect(config.level).toBe('warn')
       expect(config.environment).toBe('testing')
       expect(config.transportType).toBe('memory')
-      expect(config.maxEntries).toBe(1000)
     })
 
     it('should provide valid production preset', () => {
@@ -282,15 +270,16 @@ describe('LogConfig', () => {
     it('should allow merging presets with custom config', () => {
       const customConfig: Partial<LogConfig> = {
         level: 'error',
-        transportType: 'console',
+        transportType: 'file',
+        logFile: '/custom/log.log',
       }
 
       const merged = LogConfigUtils.mergeConfigs(LogConfigPresets.production, customConfig)
 
       expect(merged.level).toBe('error') // Overridden
       expect(merged.environment).toBe('production') // From preset
-      expect(merged.transportType).toBe('console') // Overridden
-      expect(merged.logFile).toBe('~/.local/share/project-manager/logs/app.log') // From preset
+      expect(merged.transportType).toBe('file') // Overridden
+      expect(merged.logFile).toBe('/custom/log.log') // Overridden
     })
   })
 
@@ -337,18 +326,6 @@ describe('LogConfig', () => {
     })
 
     describe('Memory transport limits', () => {
-      it('should handle memory transport with max entries', () => {
-        const config: LogConfig = {
-          level: 'info',
-          environment: 'development',
-          transportType: 'memory',
-          maxEntries: 10000,
-        }
-
-        const errors = LogConfigUtils.validateConfig(config)
-        expect(errors).toEqual([])
-      })
-
       it('should handle memory transport without max entries', () => {
         const config: LogConfig = {
           level: 'info',
@@ -370,7 +347,8 @@ describe('LogConfig', () => {
         const config: LogConfig = {
           level,
           environment: 'production',
-          transportType: 'console',
+          transportType: 'file',
+          logFile: '/tmp/test.log',
         }
 
         expect(config.level).toBe(level)
@@ -390,7 +368,8 @@ describe('LogConfig', () => {
         const config: LogConfig = {
           level: 'info',
           environment: env,
-          transportType: 'console',
+          transportType: 'file',
+          logFile: '/tmp/test.log',
         }
 
         expect(config.environment).toBe(env)
@@ -398,13 +377,14 @@ describe('LogConfig', () => {
     })
 
     it('should enforce correct transport types', () => {
-      const validTransports: TransportType[] = ['console', 'file', 'memory']
+      const validTransports: TransportType[] = ['file', 'memory']
 
       validTransports.forEach(type => {
         const config: LogConfig = {
           level: 'info',
           environment: 'production',
           transportType: type,
+          ...(type === 'file' && { logFile: '/tmp/test.log' }),
         }
 
         expect(config.transportType).toBe(type)

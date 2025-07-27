@@ -8,7 +8,7 @@
  * - Query and statistics capabilities
  */
 
-import type { LogSource, OperationType } from '../types/log-metadata.ts'
+import type { OperationType } from '../types/log-metadata.ts'
 export interface AuditLogger {
   /**
    * Record a CREATE operation in the audit trail.
@@ -78,9 +78,6 @@ export interface BaseAuditEvent {
 
   /** Unique identifier of the specific entity */
   entityId: string
-
-  /** Source system or interface where the operation originated */
-  source: LogSource
 }
 
 /**
@@ -186,9 +183,6 @@ export interface AuditFilter {
     type?: 'human' | 'ai' | 'system'
   }
 
-  /** Filter by source system */
-  source?: LogSource
-
   /** Filter by date range */
   dateRange?: {
     /** Start date (inclusive) */
@@ -237,9 +231,6 @@ export interface AuditStatistics {
   /** Operations broken down by entity type */
   operationsByEntity: Record<string, number>
 
-  /** Operations broken down by source */
-  operationsBySource: Record<LogSource, number>
-
   /** Most active actors in the period */
   mostActiveActors: Array<{
     actor: Actor
@@ -255,7 +246,7 @@ export interface AuditStatistics {
 }
 
 /**
- * Re-export operation and source types from the main logging module
+ * Re-export operation types from the main logging module
  * to maintain consistency across the audit logging system.
  */
-export type { LogSource, OperationType } from '../types/log-metadata.ts'
+export type { OperationType } from '../types/log-metadata.ts'

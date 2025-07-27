@@ -1,6 +1,7 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { createMcpServer } from '@project-manager/mcp-server'
-import { BaseCommand } from '../lib/base-command.ts'
+import { createProjectManagerSDK } from '@project-manager/sdk'
+import { BaseCommand } from '../lib/base-command'
 
 /**
  * Start MCP server for AI integration
@@ -17,28 +18,32 @@ export class McpCommand extends BaseCommand {
     _args: Record<string, unknown>,
     _flags: Record<string, unknown>
   ): Promise<void> {
+    // Create MCP server using the SDK from CLI for process consistency
     try {
-      // Create MCP server using the SDK from CLI for process consistency
-      const server = await createMcpServer(this.sdk)
+      const sdk = await createProjectManagerSDK()
+      const logger = sdk.createLogger('mpc-server')
+      const server = await createMcpServer(sdk)
 
       // Use stdio transport for mcp.json compatibility
       const transport = new StdioServerTransport()
       await server.connect(transport)
 
       // Log to stderr so it doesn't interfere with MCP protocol on stdout
-      const environment = this.sdk.environment.getEnvironment()
-      console.error(`MCP server started successfully in ${environment} environment (stdio)`)
+      const environment = sdk.environment.getEnvironment()
+      logger.debug(`MCP server started successfully in ${environment} environment (stdio)`)
 
       // Graceful shutdown function
       const gracefulShutdown = async (signal: string) => {
-        console.error(`\nReceived ${signal}, shutting down MCP server gracefully...`)
+        logger.debug(`Received ${signal}, shutting down MCP server gracefully...`)
         try {
           if (server && typeof server.close === 'function') {
             await server.close()
-            console.error('MCP server closed successfully')
+            logger.debug('MCP server closed successfully')
           }
         } catch (error) {
-          console.error('Error during server shutdown:', error)
+          logger.error('Error during server shutdown:', {
+            error: error instanceof Error ? error.message : String(error),
+          })
         } finally {
           process.exit(0)
         }

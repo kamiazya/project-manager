@@ -112,4 +112,20 @@ export class XdgStorageConfigService implements StorageConfigService {
 
     return join(dataHome, dirName, 'logs')
   }
+
+  /**
+   * Get full path for application log file.
+   * @param filename Optional filename (defaults to 'app.log')
+   */
+  getApplicationLogPath(filename: string = 'app.log'): string {
+    return join(this.getLogsPath(), filename)
+  }
+
+  /**
+   * Get full path for audit log file.
+   * @param filename Optional filename (defaults to 'audit.log')
+   */
+  getAuditLogPath(filename: string = 'audit.log'): string {
+    return join(this.getLogsPath(), filename)
+  }
 }

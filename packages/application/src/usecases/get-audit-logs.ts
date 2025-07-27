@@ -1,3 +1,4 @@
+import type { ActorType, OperationType } from '@project-manager/base'
 import { BaseUseCase } from '../common/base-usecase.ts'
 import type { AuditMetadata } from '../services/audit-metadata-generator.ts'
 
@@ -6,7 +7,7 @@ export namespace GetAuditLogs {
    * Actor information for audit entries
    */
   export interface AuditActor {
-    type: 'human' | 'ai' | 'system'
+    type: ActorType
     id: string
     name: string
     coAuthor?: string
@@ -18,12 +19,11 @@ export namespace GetAuditLogs {
   export interface AuditLogEntry {
     id: string
     timestamp: string
-    operation: 'create' | 'read' | 'update' | 'delete' | 'search'
+    operation: OperationType
     operationId: string
     resourceType: string
     entityId?: string
     actor: AuditActor
-    source: 'cli' | 'mcp' | 'api' | 'test' | 'scheduler'
     traceId: string
     before?: Record<string, unknown>
     after?: Record<string, unknown>
@@ -41,13 +41,12 @@ export namespace GetAuditLogs {
    * Request DTO for getting audit logs
    */
   export interface Request {
-    readonly operation?: 'create' | 'read' | 'update' | 'delete' | 'search'
+    readonly operation?: OperationType
     readonly operationId?: string
     readonly resourceType?: string
     readonly entityId?: string
-    readonly actorType?: 'human' | 'ai' | 'system'
+    readonly actorType?: ActorType
     readonly actorId?: string
-    readonly source?: 'cli' | 'mcp' | 'api' | 'test' | 'scheduler'
     readonly traceId?: string
     readonly startTime?: string // ISO date string
     readonly endTime?: string // ISO date string
@@ -67,7 +66,6 @@ export namespace GetAuditLogs {
       public readonly summary: {
         operationCounts: Record<string, number>
         actorTypeCounts: Record<string, number>
-        sourceCounts: Record<string, number>
         successRate: number
       }
     ) {}
@@ -78,13 +76,11 @@ export namespace GetAuditLogs {
       // Calculate summary statistics
       const operationCounts: Record<string, number> = {}
       const actorTypeCounts: Record<string, number> = {}
-      const sourceCounts: Record<string, number> = {}
       let successCount = 0
 
       auditLogs.forEach(log => {
         operationCounts[log.operation] = (operationCounts[log.operation] || 0) + 1
         actorTypeCounts[log.actor.type] = (actorTypeCounts[log.actor.type] || 0) + 1
-        sourceCounts[log.source] = (sourceCounts[log.source] || 0) + 1
         if (log.success) successCount++
       })
 
@@ -93,7 +89,6 @@ export namespace GetAuditLogs {
       const summary = {
         operationCounts,
         actorTypeCounts,
-        sourceCounts,
         successRate: Math.round(successRate * 100) / 100, // Round to 2 decimal places
       }
 
@@ -121,7 +116,6 @@ export namespace GetAuditLogs {
             entityId: request.entityId,
             actorType: request.actorType,
             actorId: request.actorId,
-            source: request.source,
             traceId: request.traceId,
             success: request.success,
           },
@@ -157,7 +151,6 @@ export namespace GetAuditLogs {
         hasResourceTypeFilter: !!request.resourceType,
         hasEntityIdFilter: !!request.entityId,
         hasActorFilter: !!(request.actorType || request.actorId),
-        hasSourceFilter: !!request.source,
         hasTraceIdFilter: !!request.traceId,
         hasTimeRange: !!(request.startTime || request.endTime),
         hasSuccessFilter: request.success !== undefined,
@@ -172,7 +165,6 @@ export namespace GetAuditLogs {
         entityId: request.entityId,
         actorType: request.actorType,
         actorId: request.actorId,
-        source: request.source,
         traceId: request.traceId,
         startTime: request.startTime ? new Date(request.startTime) : undefined,
         endTime: request.endTime ? new Date(request.endTime) : undefined,
@@ -214,7 +206,6 @@ export namespace GetAuditLogs {
         entityId: filters.entityId,
         actorType: filters.actorType,
         actorId: filters.actorId,
-        source: filters.source,
         traceId: filters.traceId,
         hasStartTime: !!filters.startTime,
         hasEndTime: !!filters.endTime,
@@ -231,7 +222,6 @@ export namespace GetAuditLogs {
         resourceType: rawAuditLog.resourceType,
         entityId: rawAuditLog.entityId,
         actor: rawAuditLog.actor,
-        source: rawAuditLog.source,
         traceId: rawAuditLog.traceId,
         before: rawAuditLog.before,
         after: rawAuditLog.after,
@@ -259,13 +249,12 @@ export interface AuditReader {
  * Audit log filtering criteria
  */
 export interface AuditFilters {
-  operation?: 'create' | 'read' | 'update' | 'delete' | 'search'
+  operation?: OperationType
   operationId?: string
   resourceType?: string
   entityId?: string
-  actorType?: 'human' | 'ai' | 'system'
+  actorType?: ActorType
   actorId?: string
-  source?: 'cli' | 'mcp' | 'api' | 'test' | 'scheduler'
   traceId?: string
   startTime?: Date
   endTime?: Date
@@ -278,12 +267,11 @@ export interface AuditFilters {
 export interface RawAuditLogEntry {
   id: string
   timestamp: Date
-  operation: 'create' | 'read' | 'update' | 'delete' | 'search'
+  operation: OperationType
   operationId: string
   resourceType: string
   entityId?: string
   actor: GetAuditLogs.AuditActor
-  source: 'cli' | 'mcp' | 'api' | 'test' | 'scheduler'
   traceId: string
   before?: Record<string, unknown>
   after?: Record<string, unknown>

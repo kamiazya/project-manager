@@ -30,6 +30,7 @@ import {
 } from '@project-manager/application'
 import { type EnvironmentMode, isDevelopmentLike } from '@project-manager/base'
 import type { Container } from 'inversify'
+import type { Logger } from 'packages/base/src/common/logging/index.ts'
 import { SdkServiceUnavailableError } from './common/errors/sdk-errors.ts'
 import { createContainer } from './internal/container.ts'
 import { TYPES } from './internal/types.ts'
@@ -93,7 +94,6 @@ export interface GetAuditLogsRequest {
   entityId?: string
   actorType?: 'human' | 'ai' | 'system'
   actorId?: string
-  source?: 'cli' | 'mcp' | 'api' | 'test' | 'scheduler'
   traceId?: string
   startTime?: string
   endTime?: string
@@ -126,7 +126,6 @@ export interface AuditLogEntry {
     name: string
     coAuthor?: string
   }
-  source: string
   traceId: string
   before?: any
   after?: any
@@ -154,7 +153,6 @@ export interface AuditLogsResponse {
     successRate: number
     operationCounts: Record<string, number>
     actorTypeCounts: Record<string, number>
-    sourceCounts: Record<string, number>
   }
 }
 
@@ -293,6 +291,10 @@ export class ProjectManagerSDK {
   static async create(config: SDKConfig = {}): Promise<ProjectManagerSDK> {
     const container = createContainer(config)
     return new ProjectManagerSDK(container, config)
+  }
+
+  public createLogger(component: string) {
+    return this.container.get<Logger>(TYPES.BaseLogger).child({ component })
   }
 
   /**
@@ -560,7 +562,6 @@ export class ProjectManagerSDK {
         entityId: request.entityId,
         actorType: request.actorType,
         actorId: request.actorId,
-        source: request.source,
         traceId: request.traceId,
         startTime: request.startTime,
         endTime: request.endTime,
@@ -672,7 +673,6 @@ export class ProjectManagerSDK {
           name: log.actor.name,
           coAuthor: log.actor.coAuthor,
         },
-        source: log.source,
         traceId: log.traceId,
         before: log.before,
         after: log.after,
@@ -684,23 +684,6 @@ export class ProjectManagerSDK {
       totalCount: response.totalCount,
       hasMore: response.hasMore,
       summary: response.summary,
-    }
-  }
-
-  /**
-   * Shutdown the SDK and cleanup resources
-   */
-  async shutdown(): Promise<void> {
-    try {
-      // Import the global logger factory and shut it down
-      const { getGlobalLoggerFactory } = await import('./logging/logger-factory.ts')
-      const loggerFactory = getGlobalLoggerFactory()
-      if (loggerFactory && typeof loggerFactory.shutdown === 'function') {
-        await loggerFactory.shutdown()
-      }
-    } catch (error) {
-      // Log error but don't throw to prevent hanging
-      console.error('[SDK] Error during shutdown:', error)
     }
   }
 }

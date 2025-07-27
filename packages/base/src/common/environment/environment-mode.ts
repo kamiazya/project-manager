@@ -78,23 +78,6 @@ export function isFileEnvironment(mode: EnvironmentMode): boolean {
 }
 
 /**
- * Get storage directory name for file-based environments
- */
-export function getStorageDir(mode: EnvironmentMode): string {
-  const profile = getEnvironmentProfile(mode)
-
-  if (profile.storageType !== 'file') {
-    throw new EnvironmentConfigurationError(mode, 'does not use file storage')
-  }
-
-  if (!profile.storageDir) {
-    throw new EnvironmentConfigurationError(mode, 'does not have a storage directory configured')
-  }
-
-  return profile.storageDir
-}
-
-/**
  * Check if debug features should be enabled
  */
 export function shouldEnableDebug(mode: EnvironmentMode): boolean {

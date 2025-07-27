@@ -5,6 +5,8 @@
  * This enables automatic audit trail generation without explicit configuration.
  */
 
+import type { OperationType } from '@project-manager/base'
+
 /**
  * Audit metadata that defines how to automatically generate audit records
  * for a specific UseCase operation.
@@ -20,7 +22,7 @@ export interface AuditMetadata {
    * Type of operation being performed.
    * Examples: 'create', 'read', 'update', 'delete', 'search'
    */
-  operationType: 'create' | 'read' | 'update' | 'delete' | 'search'
+  operationType: OperationType
 
   /**
    * Type of resource being operated on.
