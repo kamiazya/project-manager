@@ -161,7 +161,7 @@ export function createContainer(config: SDKConfig): Container {
           return createDevelopmentLogger(logPath)
       }
     })
-    .inTransientScope()
+    .inSingletonScope()
 
   container
     .bind<AuditLogger>(TYPES.AuditLogger)
